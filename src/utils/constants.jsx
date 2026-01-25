@@ -1,0 +1,245 @@
+import { UserRole, RegistrationStatus, Gender, BillStatus, AISuggestionType } from "./types.js";
+
+// ==================== USER DATA ====================
+export const MOCK_ADMIN = {
+  id: "admin-1",
+  name: "Quản Trị Viên",
+  email: "admin@ktx.edu.vn",
+  role: UserRole.ADMIN,
+  avatar: "https://ui-avatars.com/api/?name=Admin&background=1e40af&color=fff",
+};
+
+export const MOCK_STUDENT = {
+  id: "std-1",
+  name: "Nguyễn Văn A",
+  email: "sv001@ktx.edu.vn",
+  role: UserRole.STUDENT,
+  studentId: "SV001",
+  gender: Gender.MALE,
+  avatar: "https://ui-avatars.com/api/?name=SV001&background=10b981&color=fff",
+  phone: "0912-345-678",
+  address: "Hà Nội",
+  dob: "2005-01-15",
+  class: "CNTT K68",
+  faculty: "Công nghệ Thông tin",
+  room: "P.201",
+  building: "B1",
+  rentPrice: 500000,
+  deposit: 1000000,
+  year: 2,
+};
+
+// ==================== STUDENT LIST ====================
+export const MOCK_STUDENTS = [
+  MOCK_STUDENT,
+  {
+    id: "std-2",
+    name: "Trần Thị B",
+    email: "sv002@ktx.edu.vn",
+    role: UserRole.STUDENT,
+    studentId: "SV002",
+    gender: Gender.FEMALE,
+    avatar: "https://ui-avatars.com/api/?name=SV002&background=f59e0b&color=fff",
+    phone: "0987-654-321",
+    address: "Thanh Hóa",
+    dob: "2005-05-20",
+    class: "CNTT K68",
+    faculty: "Công nghệ Thông tin",
+    room: "P.202",
+    building: "B1",
+    rentPrice: 500000,
+    deposit: 1000000,
+    year: 2,
+  },
+  {
+    id: "std-3",
+    name: "Lê Văn C",
+    email: "sv003@ktx.edu.vn",
+    role: UserRole.STUDENT,
+    studentId: "SV003",
+    gender: Gender.MALE,
+    avatar: "https://ui-avatars.com/api/?name=SV003&background=8b5cf6&color=fff",
+    phone: "0901-234-567",
+    address: "Hải Phòng",
+    dob: "2005-03-10",
+    class: "KTĐT K68",
+    faculty: "Kinh tế",
+    room: "P.101",
+    building: "A1",
+    rentPrice: 500000,
+    deposit: 1000000,
+    year: 2,
+  },
+];
+
+// ==================== REGISTRATION DATA ====================
+export const MOCK_REGISTRATIONS = [
+  {
+    id: "reg-1",
+    studentName: "Phạm Văn D",
+    studentId: "SV2024001",
+    gender: Gender.MALE,
+    email: "phamd@student.edu.vn",
+    phone: "0912-111-222",
+    address: "Nghệ An",
+    dob: "2006-02-15",
+    faculty: "Công nghệ Thông tin",
+    class: "CNTT K69",
+    year: 1,
+    priorityPoints: 85,
+    distance: 250,
+    status: RegistrationStatus.PENDING,
+    aiSuggestion: AISuggestionType.RECOMMENDED,
+    aiScore: 92,
+    aiReasoning: {
+      priority: 85,
+      distance: 90,
+      year: 95,
+      circumstance: 80,
+    },
+    evidenceImages: ["https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=300&fit=crop", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=300&fit=crop"],
+    note: "",
+  },
+  {
+    id: "reg-2",
+    studentName: "Hoàng Thị E",
+    studentId: "SV2024002",
+    gender: Gender.FEMALE,
+    email: "hoange@student.edu.vn",
+    phone: "0987-333-444",
+    address: "Hà Tĩnh",
+    dob: "2006-08-20",
+    faculty: "Kinh tế",
+    class: "KT K69",
+    year: 1,
+    priorityPoints: 70,
+    distance: 180,
+    status: RegistrationStatus.PENDING,
+    aiSuggestion: AISuggestionType.CONSIDER,
+    aiScore: 75,
+    aiReasoning: {
+      priority: 70,
+      distance: 75,
+      year: 80,
+      circumstance: 65,
+    },
+    evidenceImages: ["https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=300&fit=crop"],
+    note: "",
+  },
+];
+
+// ==================== ROOM DATA ====================
+export const MOCK_ROOMS = [
+  {
+    id: "room-1",
+    name: "P.201",
+    roomNumber: "201",
+    building: "B1",
+    floor: 2,
+    capacity: 4,
+    currentOccupancy: 2,
+    genderType: Gender.MALE,
+    status: "Active",
+    rentPrice: 500000,
+    equipment: [
+      { name: "Giường tầng", quantity: 2 },
+      { name: "Tủ quần áo", quantity: 4 },
+      { name: "Bàn học", quantity: 4 },
+    ],
+    students: ["SV001", "SV003"],
+  },
+  {
+    id: "room-2",
+    name: "P.202",
+    roomNumber: "202",
+    building: "B1",
+    floor: 2,
+    capacity: 4,
+    currentOccupancy: 1,
+    genderType: Gender.FEMALE,
+    status: "Active",
+    rentPrice: 500000,
+    equipment: [
+      { name: "Giường tầng", quantity: 2 },
+      { name: "Tủ quần áo", quantity: 4 },
+    ],
+    students: ["SV002"],
+  },
+  {
+    id: "room-3",
+    name: "P.101",
+    roomNumber: "101",
+    building: "A1",
+    floor: 1,
+    capacity: 6,
+    currentOccupancy: 0,
+    genderType: Gender.MALE,
+    status: "Available",
+    rentPrice: 450000,
+    equipment: [
+      { name: "Giường đơn", quantity: 6 },
+      { name: "Tủ quần áo", quantity: 6 },
+      { name: "Điều hòa", quantity: 1 },
+    ],
+    students: [],
+  },
+];
+
+// ==================== BILL DATA ====================
+export const MOCK_BILLS = [
+  {
+    id: "bill-1",
+    studentId: "SV001",
+    studentName: "Nguyễn Văn A",
+    month: "01/2026",
+    electricity: 150000,
+    water: 50000,
+    roomFee: 500000,
+    internetFee: 100000,
+    total: 800000,
+    status: BillStatus.UNPAID,
+    dueDate: "2026-01-31",
+  },
+  {
+    id: "bill-2",
+    studentId: "SV002",
+    studentName: "Trần Thị B",
+    month: "01/2026",
+    electricity: 120000,
+    water: 45000,
+    roomFee: 500000,
+    internetFee: 100000,
+    total: 765000,
+    status: BillStatus.PAID,
+    dueDate: "2026-01-31",
+    paidDate: "2026-01-20",
+  },
+];
+
+// ==================== NOTIFICATION DATA ====================
+export const MOCK_NOTIFICATIONS = [
+  {
+    id: "notif-1",
+    title: "Thông báo thanh toán hóa đơn tháng 1/2026",
+    content: "Vui lòng thanh toán hóa đơn trước ngày 31/01/2026 để tránh bị ngắt dịch vụ.",
+    type: "Billing",
+    date: "2026-01-15",
+    createdAt: "2026-01-15",
+    author: "Admin",
+    staffId: "admin-1",
+  },
+];
+
+// ==================== FEEDBACK DATA ====================
+export const MOCK_FEEDBACKS = [
+  {
+    id: "fb-1",
+    studentId: "SV001",
+    studentName: "Nguyễn Văn A",
+    content: "Điều hòa phòng 201 bị hỏng, cần sửa chữa gấp.",
+    sentiment: "Negative",
+    status: "New",
+    createdAt: "2026-01-20",
+    type: "Maintenance",
+  },
+];
