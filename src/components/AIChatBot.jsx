@@ -1,6 +1,5 @@
 import React from "react";
 import { MessageCircle, Send, X, Bot } from "lucide-react";
-import { getAIChatResponse } from "../services/geminiService.js";
 
 const AIChatBot = () => {
   const [isOpen, setIsOpen] = React.useState(false);

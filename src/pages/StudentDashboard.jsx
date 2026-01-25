@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { MOCK_BILLS, MOCK_NOTIFICATIONS, MOCK_FEEDBACKS } from "../utils/constants.jsx";
 import { BillStatus } from "../utils/types.js";
 import { CreditCard, FileText, Bell, Send, AlertCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { analyzeSentiment } from "../services/geminiService.js";
 
 const StudentDashboard = ({ user, tab }) => {
   const [bills, setBills] = useState(MOCK_BILLS);
