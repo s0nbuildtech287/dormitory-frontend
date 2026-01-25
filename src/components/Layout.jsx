@@ -14,7 +14,7 @@ const Layout = ({ user, onLogout, activeTab, setActiveTab, children }) => {
     { id: "notifications", label: "Thông báo", icon: Bell },
     { id: "feedback", label: "Phản ánh", icon: MessageSquare },
   ];
-
+  // xs
   const studentMenu = [
     { id: "profile", label: "Thông tin cá nhân", icon: UserCircle },
     { id: "contract", label: "Hợp đồng KTX", icon: FileText },
