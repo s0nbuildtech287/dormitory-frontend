@@ -324,8 +324,8 @@ const RegistrationManagement = () => {
                     <th className="px-8 py-5">Mã sinh viên</th>
                     <th className="px-8 py-5">Tên sinh viên</th>
                     <th className="px-8 py-5">Giới tính</th>
-                    <th className="px-8 py-5 text-center">Điểm UT</th>
-                    <th className="px-8 py-5">Đề xuất AI</th>
+                    <th className="px-8 py-5 text-center">Điểm</th>
+                    <th className="px-8 py-5">Đề xuất</th>
                     <th className="px-8 py-5">Trạng thái</th>
                     <th className="px-8 py-5 text-center">Hành động</th>
                   </tr>
