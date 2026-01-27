@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { MOCK_STUDENTS, MOCK_BILLS } from "../utils/constants.jsx";
 import { Gender, BillStatus } from "../utils/types.js";
 import { Search, UserPlus, ArrowLeft, Eye, Mail, Phone, FileText, BookOpen, Clock, List, Briefcase, BarChart3, Users } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const StudentManagement = () => {
-  const [students] = useState(MOCK_STUDENTS);
+  const [students] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("list");
   const [selectedStudent, setSelectedStudent] = useState(null);
 
@@ -38,7 +37,7 @@ const StudentManagement = () => {
   }, [students]);
 
   if (selectedStudent) {
-    const studentBills = MOCK_BILLS.filter((b) => b.studentId === selectedStudent.id);
+    const studentBills = [];
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
         <button onClick={() => setSelectedStudent(null)} className="flex items-center text-slate-500 hover:text-slate-900 font-bold text-sm transition-colors">

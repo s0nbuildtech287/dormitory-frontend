@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { MOCK_ROOMS, MOCK_STUDENTS } from "../utils/constants.jsx";
 import { Gender } from "../utils/types.js";
 import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const RoomManagement = () => {
-  const [rooms, setRooms] = useState(MOCK_ROOMS);
+  const [rooms, setRooms] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("list");
   const [selectedRoom, setSelectedRoom] = useState(null);
 
@@ -45,7 +44,7 @@ const RoomManagement = () => {
   }, [rooms]);
 
   if (selectedRoom) {
-    const roomStudents = MOCK_STUDENTS.filter((s) => s.room === selectedRoom.name);
+    const roomStudents = [].filter((s) => s.room === selectedRoom.name);
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
         <button onClick={() => setSelectedRoom(null)} className="flex items-center text-slate-500 hover:text-slate-900 font-bold text-sm transition-colors">

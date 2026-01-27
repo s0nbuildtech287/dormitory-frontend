@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { KeyRound, ShieldCheck, Lock, LogIn } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
-import { MOCK_ADMIN, MOCK_STUDENT } from "../../utils/constants.jsx";
 
 /**
  * LoginPage Component
  * Handles user authentication for both admin and student roles
- * 
+ *
  * Props:
  * - onLogin: Function to call after successful login
  */
@@ -22,11 +21,7 @@ const LoginPage = ({ onLogin }) => {
 
     // Validation
     if (!idInput.trim()) {
-      setError(
-        loginRole === UserRole.ADMIN
-          ? "Vui lòng nhập tài khoản quản lý"
-          : "Vui lòng nhập mã sinh viên"
-      );
+      setError(loginRole === UserRole.ADMIN ? "Vui lòng nhập tài khoản quản lý" : "Vui lòng nhập mã sinh viên");
       return;
     }
 
@@ -42,14 +37,27 @@ const LoginPage = ({ onLogin }) => {
     setTimeout(() => {
       if (loginRole === UserRole.ADMIN) {
         if (idInput === "admin" && passwordInput === "123") {
-          onLogin(MOCK_ADMIN);
+          onLogin({
+            id: "admin-1",
+            name: "Quản Trị Viên",
+            email: "admin@ktx.edu.vn",
+            role: UserRole.ADMIN,
+            avatar: "https://ui-avatars.com/api/?name=Admin&background=1e40af&color=fff",
+          });
         } else {
           setError("Tài khoản hoặc mật khẩu quản lý không chính xác (Thử: admin / 123)");
         }
       } else {
         // Student login: any password for demo, validate ID format
         if (idInput.toUpperCase().startsWith("SV") || idInput.length >= 5) {
-          onLogin({ ...MOCK_STUDENT, studentId: idInput.toUpperCase() });
+          onLogin({
+            id: "std-1",
+            name: "Sinh Viên",
+            email: "student@ktx.edu.vn",
+            role: UserRole.STUDENT,
+            studentId: idInput.toUpperCase(),
+            avatar: "https://ui-avatars.com/api/?name=Student&background=10b981&color=fff",
+          });
         } else {
           setError("Mã sinh viên không hợp lệ (Ví dụ: SV2024001)");
         }
@@ -90,21 +98,13 @@ const LoginPage = ({ onLogin }) => {
           <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
             <button
               onClick={() => toggleRole(UserRole.STUDENT)}
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                loginRole === UserRole.STUDENT
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === UserRole.STUDENT ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
             >
               Sinh viên
             </button>
             <button
               onClick={() => toggleRole(UserRole.ADMIN)}
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                loginRole === UserRole.ADMIN
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loginRole === UserRole.ADMIN ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
             >
               Ban quản lý
             </button>
@@ -114,13 +114,9 @@ const LoginPage = ({ onLogin }) => {
           <form onSubmit={handleLogin} className="space-y-4">
             {/* ID Input */}
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                {loginRole === UserRole.ADMIN ? "Tài khoản quản lý" : "Mã số sinh viên"}
-              </label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{loginRole === UserRole.ADMIN ? "Tài khoản quản lý" : "Mã số sinh viên"}</label>
               <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                  {loginRole === UserRole.ADMIN ? <KeyRound size={20} /> : <ShieldCheck size={20} />}
-                </div>
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{loginRole === UserRole.ADMIN ? <KeyRound size={20} /> : <ShieldCheck size={20} />}</div>
                 <input
                   type="text"
                   value={idInput}
@@ -136,9 +132,7 @@ const LoginPage = ({ onLogin }) => {
 
             {/* Password Input */}
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                Mật khẩu
-              </label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Mật khẩu</label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                   <Lock size={20} />
@@ -154,11 +148,7 @@ const LoginPage = ({ onLogin }) => {
                   disabled={isLoading}
                 />
               </div>
-              {error && (
-                <p className="mt-2 text-xs text-red-500 font-medium animate-in slide-in-from-top-1">
-                  {error}
-                </p>
-              )}
+              {error && <p className="mt-2 text-xs text-red-500 font-medium animate-in slide-in-from-top-1">{error}</p>}
             </div>
 
             {/* Submit Button */}
@@ -180,9 +170,7 @@ const LoginPage = ({ onLogin }) => {
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-slate-100 text-center text-slate-400">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-bold">
-              Hệ thống quản lý giáo dục chuyên nghiệp
-            </p>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold">Hệ thống quản lý giáo dục chuyên nghiệp</p>
           </div>
         </div>
       </div>

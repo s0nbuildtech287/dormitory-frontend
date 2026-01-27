@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { MOCK_BILLS, MOCK_NOTIFICATIONS, MOCK_FEEDBACKS } from "../utils/constants.jsx";
 import { BillStatus } from "../utils/types.js";
 import { CreditCard, FileText, Bell, Send, AlertCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 const StudentDashboard = ({ user, tab }) => {
-  const [bills, setBills] = useState(MOCK_BILLS);
-  const [feedbacks, setFeedbacks] = useState(MOCK_FEEDBACKS);
+  const [bills, setBills] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]);
   const [newFeedback, setNewFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -200,7 +199,7 @@ const StudentDashboard = ({ user, tab }) => {
   if (tab === "notifications") {
     return (
       <div className="max-w-3xl mx-auto space-y-4">
-        {MOCK_NOTIFICATIONS.map((notif) => (
+        {[].map((notif) => (
           <div key={notif.id} className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-slate-900 flex gap-4 transition-all hover:shadow-md">
             <div className="shrink-0 p-3 bg-slate-50 text-slate-900 rounded-2xl h-fit">
               <Bell size={24} />

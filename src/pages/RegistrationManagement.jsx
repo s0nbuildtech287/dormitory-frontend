@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { MOCK_REGISTRATIONS } from "../utils/constants.jsx";
 import { RegistrationStatus, AISuggestionType, Gender } from "../utils/types.js";
 import {
   FileSpreadsheet,
@@ -31,7 +30,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 const RegistrationManagement = () => {
-  const [regs, setRegs] = useState(MOCK_REGISTRATIONS);
+  const [regs, setRegs] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("list");
   const [selectedReg, setSelectedReg] = useState(null);
   const [note, setNote] = useState("");

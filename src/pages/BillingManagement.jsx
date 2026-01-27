@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { MOCK_BILLS } from "../utils/constants.jsx";
 import { BillStatus } from "../utils/types.js";
 import { Search, Plus, Download, Printer, Send, Filter, List, TrendingUp, CreditCard, DollarSign } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
 const BillingManagement = () => {
-  const [bills, setBills] = useState(MOCK_BILLS);
+  const [bills, setBills] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("list");
 
   const [searchTerm, setSearchTerm] = useState("");

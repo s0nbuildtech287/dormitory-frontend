@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { MOCK_NOTIFICATIONS } from "../utils/constants.jsx";
 import { Bell, Send, Plus, Trash2, Megaphone } from "lucide-react";
 
 const NotificationManagement = () => {
-  const [notifs, setNotifs] = useState(MOCK_NOTIFICATIONS);
+  const [notifs, setNotifs] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
 
   return (

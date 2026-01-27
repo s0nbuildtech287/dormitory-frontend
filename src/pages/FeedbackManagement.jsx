@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { MOCK_FEEDBACKS } from "../utils/constants.jsx";
 import { MessageSquare, TrendingUp, TrendingDown, Minus, Search } from "lucide-react";
 
 const FeedbackManagement = () => {
-  const [feedbacks, setFeedbacks] = useState(MOCK_FEEDBACKS);
+  const [feedbacks, setFeedbacks] = useState([]);
 
   const getSentimentIcon = (sentiment) => {
     switch (sentiment) {

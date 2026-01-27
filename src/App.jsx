@@ -3,7 +3,6 @@ import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import { UserRole } from "./utils/types.js";
-import { MOCK_ADMIN, MOCK_STUDENT } from "./utils/constants.jsx";
 import { getComponentByRouteId } from "./router/index.js";
 
 const App = () => {
