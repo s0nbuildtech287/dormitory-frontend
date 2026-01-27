@@ -392,9 +392,7 @@ const RegistrationManagement = () => {
                     <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600">{reg.studentId || "N/A"}</td>
                       <td className="px-8 py-5 font-bold text-slate-900 text-sm">{reg.studentName}</td>
-                      <td className="px-8 py-5 text-slate-500 text-xs font-medium">
-                        {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('vi-VN') : "N/A"}
-                      </td>
+                      <td className="px-8 py-5 text-slate-500 text-xs font-medium">{reg.createdAt ? new Date(reg.createdAt).toLocaleDateString("vi-VN") : "N/A"}</td>
                       <td className="px-8 py-5 text-center">
                         <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priorityPoints}</span>
                       </td>
