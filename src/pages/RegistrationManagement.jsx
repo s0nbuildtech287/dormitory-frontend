@@ -305,7 +305,7 @@ const RegistrationManagement = () => {
                 />
               </div>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-black rounded-xl hover:bg-gray-50 transition-all shadow-lg shadow-gray-100 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-50/50 text-slate-700 border-2 border-black rounded-xl hover:bg-slate-100/50 transition-all shadow-lg shadow-gray-100 font-bold text-xs whitespace-nowrap">
                 <FileSpreadsheet size={14} className="mr-1 flex-shrink-0" /> Import CSV
               </button>
 
