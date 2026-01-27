@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { RegistrationStatus, AISuggestionType, Gender } from "../utils/types.js";
+import { RegistrationStatus, AISuggestionType } from "../utils/types.js";
 import {
   FileSpreadsheet,
   Sparkles,
@@ -41,7 +41,6 @@ const RegistrationManagement = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [filterGender, setFilterGender] = useState("All");
   const [filterYear, setFilterYear] = useState("All");
   const [filterScore, setFilterScore] = useState("All");
 
@@ -57,7 +56,6 @@ const RegistrationManagement = () => {
     const matchesSearch = reg.studentName.toLowerCase().includes(searchLower) || (reg.studentId?.toLowerCase().includes(searchLower) ?? false);
 
     const matchesStatus = filterStatus === "All" || reg.status === filterStatus;
-    const matchesGender = filterGender === "All" || reg.gender === filterGender;
     const matchesYear = filterYear === "All" || reg.year === parseInt(filterYear);
     const matchesScore =
       filterScore === "All" ||
@@ -65,7 +63,7 @@ const RegistrationManagement = () => {
       (filterScore === "Medium" && reg.priorityPoints >= 60 && reg.priorityPoints < 80) ||
       (filterScore === "Low" && reg.priorityPoints < 60);
 
-    return matchesSearch && matchesStatus && matchesGender && matchesYear && matchesScore;
+    return matchesSearch && matchesStatus && matchesYear && matchesScore;
   });
 
   const statsData = useMemo(() => {
@@ -351,16 +349,6 @@ const RegistrationManagement = () => {
               </select>
 
               <select
-                value={filterGender}
-                onChange={(e) => setFilterGender(e.target.value)}
-                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-              >
-                <option value="All">Tất cả giới tính</option>
-                <option value={Gender.MALE}>Nam</option>
-                <option value={Gender.FEMALE}>Nữ</option>
-              </select>
-
-              <select
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
                 className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
@@ -392,7 +380,7 @@ const RegistrationManagement = () => {
                   <tr className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                     <th className="px-8 py-5">Mã sinh viên</th>
                     <th className="px-8 py-5">Tên sinh viên</th>
-                    <th className="px-8 py-5">Giới tính</th>
+                    <th className="px-8 py-5">Thời gian đăng ký</th>
                     <th className="px-8 py-5 text-center">Điểm</th>
                     <th className="px-8 py-5">Đề xuất</th>
                     <th className="px-8 py-5">Trạng thái</th>
@@ -404,7 +392,9 @@ const RegistrationManagement = () => {
                     <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600">{reg.studentId || "N/A"}</td>
                       <td className="px-8 py-5 font-bold text-slate-900 text-sm">{reg.studentName}</td>
-                      <td className="px-8 py-5 text-slate-500 text-xs font-medium">{reg.gender}</td>
+                      <td className="px-8 py-5 text-slate-500 text-xs font-medium">
+                        {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('vi-VN') : "N/A"}
+                      </td>
                       <td className="px-8 py-5 text-center">
                         <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priorityPoints}</span>
                       </td>
