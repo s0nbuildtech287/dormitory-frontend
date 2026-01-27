@@ -305,19 +305,19 @@ const RegistrationManagement = () => {
                 />
               </div>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-black rounded-xl hover:bg-gray-50 transition-all shadow-lg shadow-gray-100 font-bold text-xs whitespace-nowrap">
                 <FileSpreadsheet size={14} className="mr-1 flex-shrink-0" /> Import CSV
               </button>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-blue-500 rounded-xl hover:bg-blue-50 transition-all shadow-lg shadow-blue-100 font-bold text-xs whitespace-nowrap">
                 <RefreshCw size={14} className="mr-1 flex-shrink-0" /> Reset
               </button>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
                 <RotateCw size={14} className="mr-1 flex-shrink-0" /> Đồng bộ
               </button>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-700 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
                 <Plus size={14} className="mr-1 flex-shrink-0" /> Thêm hồ sơ
               </button>
             </div>
