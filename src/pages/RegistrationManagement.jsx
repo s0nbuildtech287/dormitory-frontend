@@ -48,18 +48,6 @@ const RegistrationManagement = () => {
     setNote("");
   };
 
-  const batchApproveRecommended = () => {
-    if (confirm("Duyệt hàng loạt tất cả hồ sơ được AI đề xuất 'Nên duyệt'?")) {
-      setRegs((prev) =>
-        prev.map((r) =>
-          r.aiSuggestion === AISuggestionType.RECOMMENDED && r.status === RegistrationStatus.PENDING
-            ? { ...r, status: RegistrationStatus.APPROVED, note: "Hệ thống duyệt hàng loạt (AI Recommended)" }
-            : r,
-        ),
-      );
-    }
-  };
-
   const filteredRegs = regs.filter((reg) => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = reg.studentName.toLowerCase().includes(searchLower) || (reg.studentId?.toLowerCase().includes(searchLower) ?? false);
@@ -292,12 +280,6 @@ const RegistrationManagement = () => {
         >
           <BarChart3 size={18} /> Thống kê & Phân tích
         </button>
-        <button
-          onClick={() => setActiveSubTab("ai-assistant")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${activeSubTab === "ai-assistant" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-        >
-          <Sparkles size={18} className="text-blue-500" /> Duyệt thông minh (AI)
-        </button>
       </div>
 
       {activeSubTab === "list" && (
@@ -306,12 +288,6 @@ const RegistrationManagement = () => {
             <div className="flex flex-wrap gap-2">
               <button className="flex items-center px-4 py-2.5 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 font-bold text-xs">
                 <FileSpreadsheet size={16} className="mr-2" /> Import G-Form
-              </button>
-              <button
-                onClick={batchApproveRecommended}
-                className="flex items-center px-4 py-2.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl hover:bg-blue-100 transition-all font-bold text-xs"
-              >
-                <Sparkles size={16} className="mr-2" /> Gợi ý duyệt tự động (AI)
               </button>
             </div>
 
@@ -444,34 +420,6 @@ const RegistrationManagement = () => {
           </div>
         </div>
       )}
-
-      {activeSubTab === "ai-assistant" && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="bg-blue-900 p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-blue-400/10 rounded-full blur-[100px] -mr-40 -mt-40 transition-all group-hover:bg-blue-400/20"></div>
-            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-              <div className="p-6 bg-white/10 backdrop-blur-md rounded-[2rem] border border-white/20">
-                <Sparkles size={48} className="text-blue-300" />
-              </div>
-              <div className="flex-1 text-center md:text-left text-white">
-                <h4 className="text-2xl font-black tracking-tight mb-2">Trợ lý Phân tích Hồ sơ (AI)</h4>
-                <p className="text-blue-100 text-sm leading-relaxed max-w-xl">
-                  AI sử dụng thuật toán chấm điểm đa mục tiêu để xếp hạng hồ sơ dựa trên 4 tiêu chí cốt lõi: Khoảng cách, Ưu tiên, Năm học và Hoàn cảnh. Admin luôn là người phê duyệt cuối cùng.
-                </p>
-              </div>
-              <button onClick={batchApproveRecommended} className="px-8 py-4 bg-white text-blue-900 rounded-2xl font-black text-sm shadow-xl hover:scale-105 transition-all">
-                Duyệt nhanh hồ sơ đề xuất
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <MetricCard label="Độ tin cậy AI" value="96.4%" sub="Dựa trên dữ liệu cũ" icon={<CheckSquare className="text-emerald-600" />} />
-            <MetricCard label="Hồ sơ đề xuất" value="12" sub="Nên duyệt ngay" icon={<Sparkles className="text-blue-600" />} />
-            <MetricCard label="Thời gian xử lý" value="-40%" sub="Tối ưu quy trình" icon={<History className="text-rose-600" />} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -494,17 +442,6 @@ const AIProgress = ({ label, score }) => (
     </div>
     <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
       <div className="h-full bg-blue-500 rounded-full" style={{ width: `${score}%` }}></div>
-    </div>
-  </div>
-);
-
-const MetricCard = ({ label, value, sub, icon }) => (
-  <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4">
-    <div className="p-4 bg-slate-50 rounded-2xl">{icon}</div>
-    <div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
-      <p className="text-2xl font-black text-slate-900 leading-none mb-1">{value}</p>
-      <p className="text-[10px] text-slate-500 font-medium">{sub}</p>
     </div>
   </div>
 );
