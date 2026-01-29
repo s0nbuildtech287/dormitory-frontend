@@ -43,6 +43,7 @@ const RegistrationManagement = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterYear, setFilterYear] = useState("All");
   const [filterScore, setFilterScore] = useState("All");
+  const [filterGender, setFilterGender] = useState("All");
 
   const handleStatusChange = (id, newStatus) => {
     setRegs((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus, note } : r)));
@@ -63,7 +64,9 @@ const RegistrationManagement = () => {
       (filterScore === "Medium" && reg.priorityPoints >= 60 && reg.priorityPoints < 80) ||
       (filterScore === "Low" && reg.priorityPoints < 60);
 
-    return matchesSearch && matchesStatus && matchesYear && matchesScore;
+    const matchesGender = filterGender === "All" || reg.gender === filterGender;
+
+    return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender;
   });
 
   const statsData = useMemo(() => {
@@ -325,8 +328,8 @@ const RegistrationManagement = () => {
 
           {/* THANH TÌM KIẾM VÀ LỌC */}
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-            <div className="grid grid-cols-5 gap-4 items-center">
-              <div className="relative">
+            <div className="grid grid-cols-6 gap-4 items-center">
+              <div className="relative col-span-2">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
@@ -369,6 +372,16 @@ const RegistrationManagement = () => {
                 <option value="High">Cao (≥80)</option>
                 <option value="Medium">Trung bình (60-79)</option>
                 <option value="Low">Thấp (&lt;60)</option>
+              </select>
+
+              <select
+                value={filterGender}
+                onChange={(e) => setFilterGender(e.target.value)}
+                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              >
+                <option value="All">Tất cả giới tính</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
               </select>
             </div>
           </div>
