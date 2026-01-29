@@ -306,7 +306,7 @@ const RegistrationManagement = () => {
                 />
               </div>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-50/50 text-slate-700 border-2 border-black rounded-xl hover:bg-slate-100/50 transition-all shadow-lg shadow-gray-100 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-slate-50/50 text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-100/50 transition-all shadow-lg shadow-gray-100 font-bold text-xs whitespace-nowrap">
                 <FileSpreadsheet size={14} className="mr-1 flex-shrink-0" /> Import CSV
               </button>
 
@@ -390,26 +390,26 @@ const RegistrationManagement = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                    <th className="px-8 py-5">Mã sinh viên</th>
-                    <th className="px-8 py-5">Tên sinh viên</th>
-                    <th className="px-8 py-5">Thời gian đăng ký</th>
-                    <th className="px-8 py-5 text-center">Điểm</th>
-                    <th className="px-8 py-5">Đề xuất</th>
-                    <th className="px-8 py-5">Trạng thái</th>
+                  <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
+                    <th className="px-8 py-5 border-r border-slate-200">Mã sinh viên</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Tên sinh viên</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Thời gian đăng ký</th>
+                    <th className="px-8 py-5 text-center border-r border-slate-200">Điểm</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Đề xuất</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Trạng thái</th>
                     <th className="px-8 py-5 text-center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredRegs.map((reg) => (
                     <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600">{reg.studentId || "N/A"}</td>
-                      <td className="px-8 py-5 font-bold text-slate-900 text-sm">{reg.studentName}</td>
-                      <td className="px-8 py-5 text-slate-500 text-xs font-medium">{reg.createdAt ? new Date(reg.createdAt).toLocaleDateString("vi-VN") : "N/A"}</td>
-                      <td className="px-8 py-5 text-center">
+                      <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r border-slate-200">{reg.studentId || "N/A"}</td>
+                      <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r border-slate-200">{reg.studentName}</td>
+                      <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r border-slate-200">{reg.createdAt ? new Date(reg.createdAt).toLocaleDateString("vi-VN") : "N/A"}</td>
+                      <td className="px-8 py-5 text-center border-r border-slate-200">
                         <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priorityPoints}</span>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-8 py-5 border-r border-slate-200">
                         <div
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
                             reg.aiSuggestion === AISuggestionType.RECOMMENDED
@@ -427,7 +427,7 @@ const RegistrationManagement = () => {
                           {reg.aiSuggestion}
                         </div>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="px-8 py-5 border-r border-slate-200">
                         <span
                           className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
                             reg.status === RegistrationStatus.PENDING
