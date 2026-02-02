@@ -10,6 +10,7 @@ const RoomManagement = () => {
 
   const [filterBuilding, setFilterBuilding] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [filterFloor, setFilterFloor] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Room settings state
@@ -25,14 +26,16 @@ const RoomManagement = () => {
 
   const filteredRooms = rooms.filter((r) => {
     const matchesBuilding = filterBuilding === "All" || r.building === filterBuilding;
-    const matchesSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFloor = filterFloor === "All" || r.floor === parseInt(filterFloor);
+    const matchesSearch = r.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         r.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesStatus = true;
     if (filterStatus === "Full") matchesStatus = r.currentOccupancy >= r.capacity;
-    else if (filterStatus === "Available") matchesStatus = r.currentOccupancy > 0 && r.currentOccupancy < r.capacity;
+    else if (filterStatus === "Occupied") matchesStatus = r.currentOccupancy > 0 && r.currentOccupancy < r.capacity;
     else if (filterStatus === "Empty") matchesStatus = r.currentOccupancy === 0;
 
-    return matchesBuilding && matchesSearch && matchesStatus;
+    return matchesBuilding && matchesFloor && matchesSearch && matchesStatus;
   });
 
   const analyticsData = useMemo(() => {
@@ -264,24 +267,33 @@ const RoomManagement = () => {
                 <option value="A1">Tòa A1</option>
                 <option value="B1">Tòa B1</option>
               </select>
+              <select className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 outline-none bg-slate-50" value={filterFloor} onChange={(e) => setFilterFloor(e.target.value)}>
+                <option value="All">Tất cả tầng</option>
+                <option value="1">Tầng 1</option>
+                <option value="2">Tầng 2</option>
+                <option value="3">Tầng 3</option>
+                <option value="4">Tầng 4</option>
+                <option value="5">Tầng 5</option>
+              </select>
               <select className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 outline-none bg-slate-50" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
                 <option value="All">Tất cả trạng thái</option>
-                <option value="Available">Còn trống chỗ</option>
+                <option value="Empty">Trống</option>
+                <option value="Occupied">Đang ở</option>
                 <option value="Full">Đã đầy</option>
               </select>
             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-widest font-bold">
-                    <th className="px-6 py-4">Số phòng</th>
-                    <th className="px-6 py-4">Vị trí</th>
-                    <th className="px-6 py-4">Đối tượng</th>
-                    <th className="px-6 py-4">Sức chứa</th>
-                    <th className="px-6 py-4">Trạng thái</th>
-                    <th className="px-6 py-4 text-center">Thao tác</th>
+                  <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
+                    <th className="px-8 py-5 border-r border-slate-200">Số phòng</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Tòa nhà</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Tầng</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Số lượng</th>
+                    <th className="px-8 py-5 border-r border-slate-200">Trạng thái</th>
+                    <th className="px-8 py-5 text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -289,33 +301,39 @@ const RoomManagement = () => {
                     const rate = (room.currentOccupancy / room.capacity) * 100;
                     return (
                       <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <span className="font-bold text-slate-900 text-lg">{room.name}</span>
+                        <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r border-slate-200">
+                          <span className="font-bold text-slate-900 text-lg">{room.room_number || room.name}</span>
                         </td>
-                        <td className="px-6 py-4 text-xs font-bold text-slate-600">
-                          Tòa {room.building} - Tầng {room.floor}
+                        <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r border-slate-200">
+                          Tòa {room.building}
                         </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${room.genderType === Gender.MALE ? "bg-blue-50 text-blue-700" : "bg-rose-50 text-rose-700"}`}>
-                            {room.genderType}
-                          </span>
+                        <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r border-slate-200">
+                          Tầng {room.floor}
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div className={`h-full ${room.genderType === Gender.MALE ? "bg-blue-600" : "bg-rose-500"}`} style={{ width: `${rate}%` }}></div>
-                          </div>
-                          <span className="text-[10px] font-bold text-slate-400 mt-1 block">
+                        <td className="px-8 py-5 text-center border-r border-slate-200">
+                          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">
                             {room.currentOccupancy}/{room.capacity}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5 border-r border-slate-200">
                           <span
-                            className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase ${room.currentOccupancy >= room.capacity ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"}`}
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${
+                              room.currentOccupancy >= room.capacity 
+                                ? "bg-rose-100 text-rose-700" 
+                                : room.currentOccupancy > 0 
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-emerald-100 text-emerald-700"
+                            }`}
                           >
-                            {room.currentOccupancy >= room.capacity ? "Hết chỗ" : "Còn trống"}
+                            {room.currentOccupancy >= room.capacity 
+                              ? "Đã đầy" 
+                              : room.currentOccupancy > 0 
+                                ? "Đang ở"
+                                : "Trống"
+                            }
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-8 py-5 text-center">
                           <button onClick={() => setSelectedRoom(room)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
                             <Eye size={16} />
                           </button>
