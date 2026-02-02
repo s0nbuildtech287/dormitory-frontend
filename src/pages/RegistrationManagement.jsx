@@ -464,30 +464,30 @@ const RegistrationManagement = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
-                    <th className="px-8 py-5 border-r border-slate-200">Mã sinh viên</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Tên sinh viên</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Thời gian đăng ký</th>
-                    <th className="px-8 py-5 text-center border-r border-slate-200">Điểm</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Đề xuất</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Trạng thái</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Mã sinh viên</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Tên sinh viên</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Thời gian đăng ký</th>
+                    <th className="px-8 py-5 text-center border-r-2 border-slate-300">Điểm</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Đề xuất</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
                     <th className="px-8 py-5 text-center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredRegs.map((reg) => (
                     <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r border-slate-200">{reg.studentId || "N/A"}</td>
-                      <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r border-slate-200">{reg.studentName}</td>
-                      <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r border-slate-200">{reg.createdAt ? new Date(reg.createdAt).toLocaleDateString("vi-VN") : "N/A"}</td>
-                      <td className="px-8 py-5 text-center border-r border-slate-200">
+                      <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{reg.studentId || "N/A"}</td>
+                      <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">{reg.studentName}</td>
+                      <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">{reg.createdAt ? new Date(reg.createdAt).toLocaleDateString("vi-VN") : "N/A"}</td>
+                      <td className="px-8 py-5 text-center border-r-2 border-slate-300">
                         <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priorityPoints}</span>
                       </td>
-                      <td className="px-8 py-5 border-r border-slate-200">
+                      <td className="px-8 py-5 border-r-2 border-slate-300">
                         <div
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
                             reg.aiSuggestion === AISuggestionType.RECOMMENDED
@@ -505,7 +505,7 @@ const RegistrationManagement = () => {
                           {reg.aiSuggestion}
                         </div>
                       </td>
-                      <td className="px-8 py-5 border-r border-slate-200">
+                      <td className="px-8 py-5 border-r-2 border-slate-300">
                         <span
                           className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
                             reg.status === RegistrationStatus.PENDING
@@ -716,6 +716,13 @@ const RegistrationManagement = () => {
             <div className="mt-8 p-4 bg-slate-50 rounded-xl">
               <h5 className="font-bold text-slate-900 mb-2">Tổng trọng số: {Object.values(settings).reduce((sum, item) => sum + (item.weight || 0), 0)}%</h5>
               <p className="text-sm text-slate-600">Tổng trọng số phải bằng 100% để hệ thống hoạt động chính xác.</p>
+            </div>
+
+            <div className="mt-6 p-4 bg-blue-50 rounded-xl flex items-start gap-3">
+              <div className="p-1 bg-blue-100 rounded text-blue-600 shrink-0">
+                <Info size={14} />
+              </div>
+              <p className="text-sm text-blue-700 leading-tight">Các cài đặt này sẽ được áp dụng làm mặc định cho việc đánh giá hồ sơ đăng ký mới.</p>
             </div>
           </div>
         </div>

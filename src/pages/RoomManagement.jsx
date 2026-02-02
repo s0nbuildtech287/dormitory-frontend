@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Gender } from "../utils/types.js";
-import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter, Settings, DollarSign, Home, Wifi, Car, Trash2 } from "lucide-react";
+import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter, Settings, DollarSign, Home, Wifi, Car, Trash2, Info } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const RoomManagement = () => {
@@ -244,30 +244,34 @@ const RoomManagement = () => {
 
       {activeSubTab === "list" && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <button className="flex items-center px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors shadow-sm font-bold text-sm">
-                <Plus size={18} className="mr-2" /> Thêm phòng mới
-              </button>
-              <div className="relative w-full md:w-80">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div className="grid grid-cols-6 gap-4 items-center">
+              <div className="relative col-span-2">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Tìm theo số phòng..."
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
+                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-50">
-              <Filter size={14} className="text-slate-400" />
-              <select className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 outline-none bg-slate-50" value={filterBuilding} onChange={(e) => setFilterBuilding(e.target.value)}>
+
+              <select
+                value={filterBuilding}
+                onChange={(e) => setFilterBuilding(e.target.value)}
+                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              >
                 <option value="All">Tất cả tòa</option>
                 <option value="A1">Tòa A1</option>
                 <option value="B1">Tòa B1</option>
               </select>
-              <select className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 outline-none bg-slate-50" value={filterFloor} onChange={(e) => setFilterFloor(e.target.value)}>
+
+              <select
+                value={filterFloor}
+                onChange={(e) => setFilterFloor(e.target.value)}
+                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              >
                 <option value="All">Tất cả tầng</option>
                 <option value="1">Tầng 1</option>
                 <option value="2">Tầng 2</option>
@@ -275,24 +279,33 @@ const RoomManagement = () => {
                 <option value="4">Tầng 4</option>
                 <option value="5">Tầng 5</option>
               </select>
-              <select className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-1.5 outline-none bg-slate-50" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              >
                 <option value="All">Tất cả trạng thái</option>
                 <option value="Empty">Trống</option>
                 <option value="Occupied">Đang ở</option>
                 <option value="Full">Đã đầy</option>
               </select>
+
+              <button className="w-full flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-sm">
+                <Plus size={14} className="mr-2 flex-shrink-0" /> Thêm phòng
+              </button>
             </div>
           </div>
-          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
-                    <th className="px-8 py-5 border-r border-slate-200">Số phòng</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Tòa nhà</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Tầng</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Số lượng</th>
-                    <th className="px-8 py-5 border-r border-slate-200">Trạng thái</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Số phòng</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Tòa nhà</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Tầng</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Số lượng</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
                     <th className="px-8 py-5 text-center">Thao tác</th>
                   </tr>
                 </thead>
@@ -301,21 +314,21 @@ const RoomManagement = () => {
                     const rate = (room.currentOccupancy / room.capacity) * 100;
                     return (
                       <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r border-slate-200">
+                        <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">
                           <span className="font-bold text-slate-900 text-lg">{room.room_number || room.name}</span>
                         </td>
-                        <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r border-slate-200">
+                        <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">
                           Tòa {room.building}
                         </td>
-                        <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r border-slate-200">
+                        <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">
                           Tầng {room.floor}
                         </td>
-                        <td className="px-8 py-5 text-center border-r border-slate-200">
+                        <td className="px-8 py-5 text-center border-r-2 border-slate-300">
                           <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">
                             {room.currentOccupancy}/{room.capacity}
                           </span>
                         </td>
-                        <td className="px-8 py-5 border-r border-slate-200">
+                        <td className="px-8 py-5 border-r-2 border-slate-300">
                           <span
                             className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${
                               room.currentOccupancy >= room.capacity 
@@ -500,14 +513,11 @@ const RoomManagement = () => {
               </div>
             </div>
 
-            <div className="mt-8 p-4 bg-slate-50 rounded-xl">
-              <h5 className="font-bold text-slate-900 mb-2">Tổng phí hàng tháng: {
-                (roomSettings.defaultRentPrice || 0) +
-                (roomSettings.defaultGarbageFee || 0) +
-                (roomSettings.defaultInternetFee || 0) +
-                (roomSettings.defaultParkingFee || 0)
-              }.000 VNĐ</h5>
-              <p className="text-sm text-slate-600">Các cài đặt này sẽ được áp dụng cho các phòng mới được tạo.</p>
+            <div className="mt-8 p-4 bg-blue-50 rounded-xl flex items-start gap-3">
+              <div className="p-1 bg-blue-100 rounded text-blue-600 shrink-0">
+                <Info size={14} />
+              </div>
+              <p className="text-sm text-blue-700 leading-tight">Các cài đặt này sẽ được áp dụng làm mặc định cho các phòng mới được tạo.</p>
             </div>
           </div>
         </div>
