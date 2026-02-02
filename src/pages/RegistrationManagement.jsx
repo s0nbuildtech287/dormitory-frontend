@@ -388,7 +388,7 @@ const RegistrationManagement = () => {
                 <FileSpreadsheet size={14} className="mr-1 flex-shrink-0" /> Import CSV
               </button>
 
-              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-blue-500 rounded-xl hover:bg-blue-50 transition-all shadow-lg shadow-blue-100 font-bold text-xs whitespace-nowrap">
+              <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-lg shadow-slate-100 font-bold text-xs whitespace-nowrap">
                 <RefreshCw size={14} className="mr-1 flex-shrink-0" /> Reset
               </button>
 

@@ -87,7 +87,7 @@ const LoginPage = ({ onLogin }) => {
             <div className="inline-flex p-4 bg-white/10 backdrop-blur-md rounded-2xl mb-4 border border-white/20">
               <ShieldCheck size={48} className="text-blue-400" />
             </div>
-            <h1 className="text-3xl font-bold mb-1">DormiManage</h1>
+            <h1 className="text-3xl font-bold mb-1">Dormitory Unis</h1>
             <p className="text-slate-300 opacity-80 text-sm">Hệ thống quản lý Ký túc xá thông minh</p>
           </div>
         </div>

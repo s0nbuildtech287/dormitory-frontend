@@ -55,7 +55,7 @@ const Layout = ({ user, onLogout, activeTab, setActiveTab, children }) => {
         <div className="p-5 flex items-center justify-between border-b border-slate-800">
           {isSidebarOpen && (
             <span className="font-bold text-xl tracking-tight text-blue-400">
-              DormiManage
+              Dormitory Unis
             </span>
           )}
           <button

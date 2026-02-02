@@ -1,5 +1,5 @@
 {
-  "name": "DormiManage - KTX Management System",
+  "name": "Dormitory Unis - KTX Management System",
   "description": "A comprehensive Dormitory Management System (KTX) featuring registration processing, smart room allocation, utility billing, real-time notifications, and AI-powered sentiment analysis and chatbot.",
   "requestFramePermissions": [
     "camera",

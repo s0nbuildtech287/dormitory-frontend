@@ -2,7 +2,7 @@
  * Logo and branding assets
  */
 export const LOGOS = {
-  MAIN: 'DormiManage',
+  MAIN: 'Dormitory Unis',
   TAGLINE: 'Hệ thống quản lý Ký túc xá thông minh',
 };
 
