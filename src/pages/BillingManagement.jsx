@@ -82,32 +82,32 @@ const BillingManagement = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-widest">
-                    <th className="px-6 py-4">Mã sinh viên</th>
-                    <th className="px-6 py-4">Kỳ tháng</th>
-                    <th className="px-6 py-4">Tổng tiền</th>
-                    <th className="px-6 py-4">Hạn đóng</th>
-                    <th className="px-6 py-4">Trạng thái</th>
-                    <th className="px-6 py-4 text-center">Hành động</th>
+                  <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Mã sinh viên</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Kỳ tháng</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Tổng tiền</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Hạn đóng</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
+                    <th className="px-8 py-5 text-center">Hành động</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredBills.map((bill) => (
                     <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-900 text-sm">{bill.studentId}</td>
-                      <td className="px-6 py-4 text-slate-600 text-sm">{bill.month}</td>
-                      <td className="px-6 py-4 font-bold text-blue-700 text-sm">{bill.total.toLocaleString()}đ</td>
-                      <td className="px-6 py-4 text-slate-500 font-bold text-[11px]">{bill.dueDate}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">{bill.studentId}</td>
+                      <td className="px-8 py-5 text-slate-600 text-sm border-r-2 border-slate-300">{bill.month}</td>
+                      <td className="px-8 py-5 font-bold text-blue-700 text-sm border-r-2 border-slate-300">{bill.total.toLocaleString()}đ</td>
+                      <td className="px-8 py-5 text-slate-500 font-bold text-[11px] border-r-2 border-slate-300">{bill.dueDate}</td>
+                      <td className="px-8 py-5 border-r-2 border-slate-300">
                         <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${bill.status === BillStatus.PAID ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
                           {bill.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-8 py-5 text-center">
                         <div className="flex justify-center space-x-1">
                           <button className="p-1.5 text-slate-400 hover:text-blue-600">
                             <Printer size={18} />

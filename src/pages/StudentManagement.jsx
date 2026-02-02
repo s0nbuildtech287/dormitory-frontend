@@ -106,48 +106,73 @@ const StudentManagement = () => {
 
       {(activeSubTab === "list" || activeSubTab === "contracts") && (
         <div className="animate-in fade-in duration-500 space-y-6">
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-            <button className="flex items-center px-4 py-2 bg-slate-900 text-white rounded-lg font-bold text-sm">
-              <UserPlus size={18} className="mr-2" /> Thêm mới
-            </button>
-            <div className="relative w-full md:w-80">
-              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Tìm tên hoặc mã SV..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm"
-              />
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+            <div className="grid grid-cols-6 gap-4 items-center">
+              <div className="relative col-span-2">
+                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Tìm tên hoặc mã SV..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
+                />
+              </div>
+
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              >
+                <option value="All">Tất cả trạng thái</option>
+                <option value="Active">Nội trú</option>
+                <option value="Inactive">Đã rời</option>
+              </select>
+
+              <select
+                value={filterGender}
+                onChange={(e) => setFilterGender(e.target.value)}
+                className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              >
+                <option value="All">Tất cả giới tính</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+              </select>
+
+              <div className="col-span-2 flex gap-2">
+                <button className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-sm">
+                  <UserPlus size={14} className="mr-2 flex-shrink-0" /> Thêm sinh viên
+                </button>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-widest">
-                    <th className="px-6 py-4">Sinh viên</th>
-                    <th className="px-6 py-4">Mã số SV</th>
+                  <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Sinh viên</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Mã số SV</th>
                     {activeSubTab === "contracts" ? (
                       <>
-                        <th className="px-6 py-4">Tiền cọc</th>
-                        <th className="px-6 py-4">Giá thuê</th>
-                        <th className="px-6 py-4">Thời hạn</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Tiền cọc</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Giá thuê</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Thời hạn</th>
                       </>
                     ) : (
                       <>
-                        <th className="px-6 py-4">Phòng</th>
-                        <th className="px-6 py-4">Trạng thái</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Phòng</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
                       </>
                     )}
-                    <th className="px-6 py-4 text-center">Thao tác</th>
+                    <th className="px-8 py-5 text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredStudents.map((std) => (
-                    <tr key={std.id} className="hover:bg-slate-50/50">
-                      <td className="px-6 py-4">
+                    <tr key={std.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-8 py-5 border-r-2 border-slate-300">
                         <div className="flex items-center">
                           <img src={std.avatar} className="w-8 h-8 rounded-lg mr-3" />
                           <div>
@@ -156,26 +181,26 @@ const StudentManagement = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-xs font-mono font-bold">{std.studentId}</td>
+                      <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{std.studentId}</td>
                       {activeSubTab === "contracts" ? (
                         <>
-                          <td className="px-6 py-4 text-sm font-bold text-emerald-600">{std.deposit?.toLocaleString()}đ</td>
-                          <td className="px-6 py-4 text-sm font-bold text-blue-600">{std.rentPrice?.toLocaleString()}đ</td>
-                          <td className="px-6 py-4 text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                          <td className="px-8 py-5 text-sm font-bold text-emerald-600 border-r-2 border-slate-300">{std.deposit?.toLocaleString()}đ</td>
+                          <td className="px-8 py-5 text-sm font-bold text-blue-600 border-r-2 border-slate-300">{std.rentPrice?.toLocaleString()}đ</td>
+                          <td className="px-8 py-5 text-[10px] font-bold text-slate-500 flex items-center gap-1 border-r-2 border-slate-300">
                             <Clock size={12} /> 12 tháng
                           </td>
                         </>
                       ) : (
                         <>
-                          <td className="px-6 py-4 font-bold text-blue-700 text-sm">{std.room || "N/A"}</td>
-                          <td className="px-6 py-4">
+                          <td className="px-8 py-5 font-bold text-blue-700 text-sm border-r-2 border-slate-300">{std.room || "N/A"}</td>
+                          <td className="px-8 py-5 border-r-2 border-slate-300">
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${std.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
                               {std.status === "Active" ? "Nội trú" : "Đã rời"}
                             </span>
                           </td>
                         </>
                       )}
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-8 py-5 text-center">
                         <button onClick={() => setSelectedStudent(std)} className="p-1.5 text-blue-600">
                           <Eye size={18} />
                         </button>
