@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Gender } from "../utils/types.js";
-import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter } from "lucide-react";
+import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter, Settings, DollarSign, Home, Wifi, Car, Trash2 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const RoomManagement = () => {
@@ -11,6 +11,17 @@ const RoomManagement = () => {
   const [filterBuilding, setFilterBuilding] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Room settings state
+  const [roomSettings, setRoomSettings] = useState({
+    defaultCapacity: 4,
+    defaultRentPrice: 1200000,
+    defaultGarbageFee: 20000,
+    defaultInternetFee: 50000,
+    defaultParkingFee: 100000,
+    defaultArea: 25.5
+  });
+  const [isLoadingSettings, setIsLoadingSettings] = useState(false);
 
   const filteredRooms = rooms.filter((r) => {
     const matchesBuilding = filterBuilding === "All" || r.building === filterBuilding;
@@ -121,6 +132,90 @@ const RoomManagement = () => {
     );
   }
 
+  // Room settings functions
+  const fetchRoomSettings = async () => {
+    try {
+      setIsLoadingSettings(true);
+      // Fetch all room category settings
+      const response = await fetch('/api/settings/category/room', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Map settings to state
+        const settings = {};
+        data.data.forEach(setting => {
+          switch(setting.name) {
+            case 'defaultCapacity':
+            case 'defaultRentPrice':
+            case 'defaultGarbageFee':
+            case 'defaultInternetFee':
+            case 'defaultParkingFee':
+              settings[setting.name] = parseInt(setting.value);
+              break;
+            case 'defaultArea':
+              settings[setting.name] = parseFloat(setting.value);
+              break;
+          }
+        });
+        setRoomSettings(prev => ({ ...prev, ...settings }));
+      }
+    } catch (error) {
+      console.error('Error fetching room settings:', error);
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  };
+
+  const updateRoomSettings = async () => {
+    try {
+      setIsLoadingSettings(true);
+      // Update each setting individually
+      const updates = [
+        { id: 'room_capacity', name: 'defaultCapacity', value: roomSettings.defaultCapacity },
+        { id: 'room_rent_price', name: 'defaultRentPrice', value: roomSettings.defaultRentPrice },
+        { id: 'room_garbage_fee', name: 'defaultGarbageFee', value: roomSettings.defaultGarbageFee },
+        { id: 'room_internet_fee', name: 'defaultInternetFee', value: roomSettings.defaultInternetFee },
+        { id: 'room_parking_fee', name: 'defaultParkingFee', value: roomSettings.defaultParkingFee },
+        { id: 'room_area', name: 'defaultArea', value: roomSettings.defaultArea }
+      ];
+
+      for (const update of updates) {
+        await fetch(`/api/settings/${update.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ value: update.value })
+        });
+      }
+
+      alert('Cài đặt phòng đã được cập nhật thành công!');
+    } catch (error) {
+      console.error('Error updating room settings:', error);
+      alert('Có lỗi xảy ra khi cập nhật cài đặt phòng');
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  };
+
+  const handleRoomSettingChange = (field, value) => {
+    setRoomSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Fetch room settings when settings tab is selected
+  useMemo(() => {
+    if (activeSubTab === "settings") {
+      fetchRoomSettings();
+    }
+  }, [activeSubTab]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-1 border-b border-slate-200">
@@ -135,6 +230,12 @@ const RoomManagement = () => {
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeSubTab === "analytics" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
         >
           <BarChart3 size={18} /> Thống kê & Mật độ
+        </button>
+        <button
+          onClick={() => setActiveSubTab("settings")}
+          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeSubTab === "settings" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
+        >
+          <Settings size={18} /> Điều chỉnh
         </button>
       </div>
 
@@ -264,6 +365,131 @@ const RoomManagement = () => {
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeSubTab === "settings" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Điều chỉnh cài đặt phòng</h3>
+                <p className="text-slate-500">Thiết lập các thông số mặc định cho phòng ký túc xá</p>
+              </div>
+              <button
+                onClick={updateRoomSettings}
+                disabled={isLoadingSettings}
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoadingSettings ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Thông số cơ bản */}
+              <div className="space-y-6">
+                <h4 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Home size={20} className="text-blue-600" />
+                  Thông số cơ bản
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Sức chứa mặc định</label>
+                    <input
+                      type="number"
+                      value={roomSettings.defaultCapacity}
+                      onChange={(e) => handleRoomSettingChange('defaultCapacity', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="1"
+                      max="10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Diện tích mặc định (m²)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={roomSettings.defaultArea}
+                      onChange={(e) => handleRoomSettingChange('defaultArea', parseFloat(e.target.value))}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="10"
+                      max="100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Phí dịch vụ */}
+              <div className="space-y-6">
+                <h4 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <DollarSign size={20} className="text-green-600" />
+                  Phí dịch vụ (VNĐ/tháng)
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Tiền thuê phòng</label>
+                    <input
+                      type="number"
+                      value={roomSettings.defaultRentPrice}
+                      onChange={(e) => handleRoomSettingChange('defaultRentPrice', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      step="50000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                      <Trash2 size={16} /> Phí rác
+                    </label>
+                    <input
+                      type="number"
+                      value={roomSettings.defaultGarbageFee}
+                      onChange={(e) => handleRoomSettingChange('defaultGarbageFee', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      step="5000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                      <Wifi size={16} /> Phí internet
+                    </label>
+                    <input
+                      type="number"
+                      value={roomSettings.defaultInternetFee}
+                      onChange={(e) => handleRoomSettingChange('defaultInternetFee', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      step="5000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+                      <Car size={16} /> Phí gửi xe
+                    </label>
+                    <input
+                      type="number"
+                      value={roomSettings.defaultParkingFee}
+                      onChange={(e) => handleRoomSettingChange('defaultParkingFee', parseInt(e.target.value))}
+                      className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      step="10000"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 p-4 bg-slate-50 rounded-xl">
+              <h5 className="font-bold text-slate-900 mb-2">Tổng phí hàng tháng: {
+                (roomSettings.defaultRentPrice || 0) +
+                (roomSettings.defaultGarbageFee || 0) +
+                (roomSettings.defaultInternetFee || 0) +
+                (roomSettings.defaultParkingFee || 0)
+              }.000 VNĐ</h5>
+              <p className="text-sm text-slate-600">Các cài đặt này sẽ được áp dụng cho các phòng mới được tạo.</p>
             </div>
           </div>
         </div>
