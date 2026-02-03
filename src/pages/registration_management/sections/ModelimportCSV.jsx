@@ -1,36 +1,84 @@
 import React, { useState } from 'react';
-import { FileSpreadsheet } from 'lucide-react';
+import { FileSpreadsheet, Loader2 } from 'lucide-react';
 
-const ModelimportCSV = () => {
+const ModelimportCSV = ({ onImportSuccess }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(null); // { type: 'success'|'error', message: '' }
 
   const handleImportClick = () => {
     setIsModalOpen(true);
+    setUploadStatus(null); // Reset status khi mở modal
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedFile(null);
+    setUploadStatus(null);
+    setIsUploading(false);
   };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'text/csv') {
       setSelectedFile(file);
+      setUploadStatus(null);
     } else {
-      alert('Please select a valid CSV file.');
+      setUploadStatus({ type: 'error', message: 'Vui lòng chọn file CSV hợp lệ!' });
+      setSelectedFile(null);
     }
   };
 
-  const handleUpload = () => {
-    if (selectedFile) {
-      // Logic để upload file, ví dụ gửi đến backend
-      console.log('Uploading file:', selectedFile);
-      // Sau khi upload thành công, đóng modal
-      handleCloseModal();
-    } else {
-      alert('No file selected.');
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setUploadStatus({ type: 'error', message: 'Chưa chọn file!' });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadStatus(null);
+
+    try {
+      // Tạo FormData để gửi file
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      // Gọi API import (NO AUTH FOR TESTING)
+      const response = await fetch('http://localhost:5000/api/registrations/import/excel', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setUploadStatus({
+          type: 'success',
+          message: `Import thành công ${data.data.success} hồ sơ!${data.data.failed > 0 ? ` (${data.data.failed} lỗi)` : ''}`
+        });
+
+        // Gọi callback để refresh data
+        if (onImportSuccess) {
+          setTimeout(() => {
+            onImportSuccess();
+            handleCloseModal();
+          }, 1500);
+        }
+      } else {
+        setUploadStatus({
+          type: 'error',
+          message: data.message || 'Import thất bại!'
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadStatus({
+        type: 'error',
+        message: 'Lỗi kết nối! Vui lòng kiểm tra server.'
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -53,25 +101,46 @@ const ModelimportCSV = () => {
                   type="file"
                   accept=".csv"
                   onChange={handleFileChange}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border-2 border-gray-300 rounded-lg p-2"
+                  disabled={isUploading}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border-2 border-gray-300 rounded-lg p-2 disabled:opacity-50"
                 />
                 {selectedFile && (
                   <p className="mt-2 text-sm text-gray-600">Selected: {selectedFile.name}</p>
                 )}
-                <p className="text-xs text-gray-500 mt-4 text-center">Định dạng file được chấp nhận: CSV, XLSX</p>
+
+                {/* Upload Status */}
+                {uploadStatus && (
+                  <div className={`mt-4 p-3 rounded-lg ${uploadStatus.type === 'success'
+                    ? 'bg-green-50 text-green-800 border border-green-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}>
+                    {uploadStatus.message}
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500 mt-4 text-center">Định dạng file được chấp nhận: CSV</p>
               </div>
               <div className="flex items-center px-4 py-3">
                 <button
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 mr-2"
+                  disabled={isUploading}
+                  className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-300 mr-2 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleUpload}
-                  className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  disabled={isUploading || !selectedFile}
+                  className="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-50 flex items-center justify-center"
                 >
-                  Upload
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={16} />
+                      Uploading...
+                    </>
+                  ) : (
+                    'Upload'
+                  )}
                 </button>
               </div>
             </div>

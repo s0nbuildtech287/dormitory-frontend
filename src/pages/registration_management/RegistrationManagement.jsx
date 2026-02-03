@@ -50,6 +50,11 @@ const RegistrationManagement = () => {
   const [filterScore, setFilterScore] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
 
+  const handleImportSuccess = () => {
+    // Reload page để lấy dữ liệu mới sau khi import
+    window.location.reload();
+  };
+
   const handleStatusChange = (id, newStatus) => {
     setRegs((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus, note } : r)));
     setSelectedReg(null);
@@ -77,13 +82,12 @@ const RegistrationManagement = () => {
                   </div>
                 </div>
                 <span
-                  className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-                    selectedReg.status === RegistrationStatus.PENDING
-                      ? "bg-amber-100 text-amber-700"
-                      : selectedReg.status === RegistrationStatus.APPROVED
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-rose-100 text-rose-700"
-                  }`}
+                  className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${selectedReg.status === RegistrationStatus.PENDING
+                    ? "bg-amber-100 text-amber-700"
+                    : selectedReg.status === RegistrationStatus.APPROVED
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-rose-100 text-rose-700"
+                    }`}
                 >
                   {selectedReg.status}
                 </span>
@@ -145,13 +149,12 @@ const RegistrationManagement = () => {
                     </p>
                   </div>
                   <div
-                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${
-                      selectedReg.aiSuggestion === AISuggestionType.RECOMMENDED
-                        ? "bg-emerald-500/20 text-emerald-400"
-                        : selectedReg.aiSuggestion === AISuggestionType.CONSIDER
-                          ? "bg-amber-500/20 text-amber-400"
-                          : "bg-rose-500/20 text-rose-400"
-                    }`}
+                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${selectedReg.aiSuggestion === AISuggestionType.RECOMMENDED
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : selectedReg.aiSuggestion === AISuggestionType.CONSIDER
+                        ? "bg-amber-500/20 text-amber-400"
+                        : "bg-rose-500/20 text-rose-400"
+                      }`}
                   >
                     {selectedReg.aiSuggestion}
                   </div>
@@ -286,6 +289,7 @@ const RegistrationManagement = () => {
           setFilterScore={setFilterScore}
           filterGender={filterGender}
           setFilterGender={setFilterGender}
+          onImportSuccess={handleImportSuccess}
         />
       )}
 

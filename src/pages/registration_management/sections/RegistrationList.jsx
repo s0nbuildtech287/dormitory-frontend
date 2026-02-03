@@ -23,7 +23,8 @@ const RegistrationList = ({
   filterScore,
   setFilterScore,
   filterGender,
-  setFilterGender
+  setFilterGender,
+  onImportSuccess
 }) => {
   const filteredRegs = regs.filter((reg) => {
     const searchLower = searchTerm.toLowerCase();
@@ -56,7 +57,7 @@ const RegistrationList = ({
           </div>
 
           <div className="col-span-1">
-            <ModelimportCSV />
+            <ModelimportCSV onImportSuccess={onImportSuccess} />
           </div>
 
           <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-lg shadow-slate-100 font-bold text-xs whitespace-nowrap">
@@ -158,31 +159,28 @@ const RegistrationList = ({
                   </td>
                   <td className="px-8 py-5 border-r-2 border-slate-300">
                     <div
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                        reg.aiSuggestion === AISuggestionType.RECOMMENDED
-                          ? "bg-emerald-50 text-emerald-600"
-                          : reg.aiSuggestion === AISuggestionType.CONSIDER
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-rose-50 text-rose-600"
-                      }`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.aiSuggestion === AISuggestionType.RECOMMENDED
+                        ? "bg-emerald-50 text-emerald-600"
+                        : reg.aiSuggestion === AISuggestionType.CONSIDER
+                          ? "bg-amber-50 text-amber-600"
+                          : "bg-rose-50 text-rose-600"
+                        }`}
                     >
                       <div
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          reg.aiSuggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.aiSuggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
-                        }`}
+                        className={`w-1.5 h-1.5 rounded-full ${reg.aiSuggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.aiSuggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
+                          }`}
                       ></div>
                       {reg.aiSuggestion}
                     </div>
                   </td>
                   <td className="px-8 py-5 border-r-2 border-slate-300">
                     <span
-                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                        reg.status === RegistrationStatus.PENDING
-                          ? "bg-amber-100 text-amber-700"
-                          : reg.status === RegistrationStatus.APPROVED
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-rose-100 text-rose-700"
-                      }`}
+                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.status === RegistrationStatus.PENDING
+                        ? "bg-amber-100 text-amber-700"
+                        : reg.status === RegistrationStatus.APPROVED
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-rose-100 text-rose-700"
+                        }`}
                     >
                       {reg.status}
                     </span>
