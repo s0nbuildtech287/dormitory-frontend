@@ -79,7 +79,7 @@ const RegistrationList = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* KHỐI CHỨC NĂNG DỮ LIỆU ĐẦU VÀO */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
         <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Đồng bộ dữ liệu đăng ký</h3>
         <div className="grid grid-cols-7 gap-4 items-stretch">
           <div className="col-span-3 relative">
@@ -109,7 +109,7 @@ const RegistrationList = ({
       </div>
 
       {/* THANH TÌM KIẾM VÀ LỌC */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+      <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
         <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc dữ liệu đăng ký</h3>
         <div className="grid grid-cols-6 gap-4 items-center">
           <div className="relative col-span-2">
@@ -171,7 +171,7 @@ const RegistrationList = ({
 
       {/* BẢNG HỒ SƠ ĐĂNG KÝ */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200">
+        <div className="px-6 py-4 border-b-2 border-slate-300">
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-center">Bảng hồ sơ đăng ký</h3>
         </div>
         <div className="overflow-x-auto">
