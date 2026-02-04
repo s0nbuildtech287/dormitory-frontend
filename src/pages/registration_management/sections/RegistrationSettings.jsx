@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Calendar, MapPin, BookOpen, Star, Info } from "lucide-react";
+import { getScoringWeights, updateScoringWeights } from "../../../api/apiRegistration.js";
 
 const RegistrationSettings = () => {
   const [settings, setSettings] = useState({
@@ -12,13 +13,8 @@ const RegistrationSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings/scoring-weights', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
+      setIsLoadingSettings(true);
+      const data = await getScoringWeights();
       if (data.success) {
         setSettings(data.data.value);
       }
@@ -29,26 +25,14 @@ const RegistrationSettings = () => {
     }
   };
 
-  const updateSettings = async () => {
+  const handleUpdateSettings = async () => {
     try {
       setIsLoadingSettings(true);
-      const response = await fetch('/api/settings/scoring-weights', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ scoringWeights: settings })
-      });
-      const data = await response.json();
-      if (data.success) {
-        alert('Cài đặt đã được cập nhật thành công!');
-      } else {
-        alert('Có lỗi xảy ra khi cập nhật cài đặt');
-      }
+      await updateScoringWeights(settings);
+      alert('Cài đặt đã được cập nhật thành công!');
     } catch (error) {
       console.error('Error updating settings:', error);
-      alert('Có lỗi xảy ra khi cập nhật cài đặt');
+      alert(error.message || 'Có lỗi xảy ra khi cập nhật cài đặt');
     } finally {
       setIsLoadingSettings(false);
     }
@@ -78,7 +62,7 @@ const RegistrationSettings = () => {
             <p className="text-slate-500">Thiết lập trọng số và ngưỡng cho hệ thống đánh giá hồ sơ đăng ký</p>
           </div>
           <button
-            onClick={updateSettings}
+            onClick={handleUpdateSettings}
             disabled={isLoadingSettings}
             className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
           >

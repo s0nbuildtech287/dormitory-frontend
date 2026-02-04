@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { KeyRound, ShieldCheck, Lock, LogIn } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
+import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
 
 /**
  * LoginPage Component
@@ -36,21 +37,17 @@ const LoginPage = ({ onLogin }) => {
     // API call for admin login
     if (loginRole === UserRole.ADMIN) {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: idInput, password: passwordInput })
-        });
-        const data = await response.json();
+        const data = await adminLogin(idInput, passwordInput);
         if (data.success) {
-          // Lưu token vào localStorage
-          localStorage.setItem('token', data.data.token);
+          // Lưu token và user info vào localStorage
+          saveAuthToken(data.data.token);
+          saveCurrentUser(data.data.user);
           onLogin(data.data.user);
         } else {
           setError(data.message || 'Đăng nhập thất bại');
         }
       } catch (err) {
-        setError('Lỗi kết nối đến server');
+        setError(err.message || 'Lỗi kết nối đến server');
       } finally {
         setIsLoading(false);
       }

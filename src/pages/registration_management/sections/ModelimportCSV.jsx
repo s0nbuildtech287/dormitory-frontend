@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FileSpreadsheet, Loader2 } from 'lucide-react';
+import { importRegistrationFile } from '../../../api/apiRegistration.js';
 
 const ModelimportCSV = ({ onImportSuccess }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,71 +41,25 @@ const ModelimportCSV = ({ onImportSuccess }) => {
     setUploadStatus(null);
 
     try {
-      // Tạo FormData để gửi file
-      const formData = new FormData();
-      formData.append('file', selectedFile);
+      // Gọi API import file
+      const data = await importRegistrationFile(selectedFile);
 
-      // Lấy token từ localStorage
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        setUploadStatus({
-          type: 'error',
-          message: 'Vui lòng đăng nhập lại!'
-        });
-        setIsUploading(false);
-        return;
-      }
-
-      // Gọi API import với authentication
-      const response = await fetch('http://localhost:5000/api/registrations/import/excel', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
+      setUploadStatus({
+        type: 'success',
+        message: `Import thành công ${data.data.success} hồ sơ!${data.data.failed > 0 ? ` (${data.data.failed} lỗi)` : ''}`
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setUploadStatus({
-          type: 'success',
-          message: `Import thành công ${data.data.success} hồ sơ!${data.data.failed > 0 ? ` (${data.data.failed} lỗi)` : ''}`
-        });
-
-        // Gọi callback để refresh data
-        if (onImportSuccess) {
-          setTimeout(() => {
-            onImportSuccess();
-            handleCloseModal();
-          }, 1500);
-        }
-      } else {
-        // Kiểm tra lỗi authentication
-        if (response.status === 401) {
-          setUploadStatus({
-            type: 'error',
-            message: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!'
-          });
-          // KHÔNG tự động xóa token và redirect, để user tự logout
-        } else if (response.status === 403) {
-          setUploadStatus({
-            type: 'error',
-            message: 'Bạn không có quyền thực hiện chức năng này!'
-          });
-        } else {
-          setUploadStatus({
-            type: 'error',
-            message: data.message || 'Import thất bại!'
-          });
-        }
+      // Gọi callback để refresh data
+      if (onImportSuccess) {
+        setTimeout(() => {
+          onImportSuccess();
+          handleCloseModal();
+        }, 1500);
       }
     } catch (error) {
-      console.error('Upload error:', error);
       setUploadStatus({
         type: 'error',
-        message: 'Lỗi kết nối! Vui lòng kiểm tra server.'
+        message: error.message || 'Import thất bại!'
       });
     } finally {
       setIsUploading(false);

@@ -31,6 +31,7 @@ import {
   Plus,
   Settings,
 } from "lucide-react";
+import { getRegistrations } from "../../api/apiRegistration.js";
 
 // Import the split components
 import RegistrationList from "./sections/RegistrationList.jsx";
@@ -52,51 +53,12 @@ const RegistrationManagement = () => {
 
   const fetchRegistrations = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const data = await getRegistrations();
       
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-
-      const response = await fetch('http://localhost:5000/api/registrations', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        cache: 'no-cache' // Tránh 304 cache
-      });
-
-      // Kiểm tra nếu 304, vẫn cần xử lý
-      if (response.status === 304) {
-        // Retry with force refresh
-        const retryResponse = await fetch('http://localhost:5000/api/registrations', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-          }
-        });
-        const retryData = await retryResponse.json();
-        if (retryData.success && Array.isArray(retryData.data)) {
-          setRegs(retryData.data);
-        }
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (response.ok && data.success) {
-        if (Array.isArray(data.data)) {
-          setRegs(data.data);
-        } else {
-          console.error('data.data is not an array:', typeof data.data);
-        }
-      } else if (response.status === 401) {
-        console.error('Token expired or invalid');
-        // KHÔNG xóa token ở đây, để user tự logout
+      if (Array.isArray(data.data)) {
+        setRegs(data.data);
       } else {
-        console.error('Failed to fetch registrations:', data.message);
+        console.error('data.data is not an array:', typeof data.data);
       }
     } catch (error) {
       console.error('Error fetching registrations:', error);
