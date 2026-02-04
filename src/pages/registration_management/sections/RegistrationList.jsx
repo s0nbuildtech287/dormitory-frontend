@@ -44,9 +44,9 @@ const RegistrationList = ({
     const matchesYear = filterYear === "All" || reg.year === parseInt(filterYear);
     const matchesScore =
       filterScore === "All" ||
-      (filterScore === "High" && (reg.priority_points ?? 0) >= 80) ||
-      (filterScore === "Medium" && (reg.priority_points ?? 0) >= 60 && (reg.priority_points ?? 0) < 80) ||
-      (filterScore === "Low" && (reg.priority_points ?? 0) < 60);
+      (filterScore === "High" && (reg.ai_score ?? 0) >= 80) ||
+      (filterScore === "Medium" && (reg.ai_score ?? 0) >= 60 && (reg.ai_score ?? 0) < 80) ||
+      (filterScore === "Low" && (reg.ai_score ?? 0) < 60);
 
     const matchesGender = filterGender === "All" || reg.gender === filterGender;
 
@@ -203,7 +203,7 @@ const RegistrationList = ({
                   <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
                   <td className="px-6 py-2 font-semibold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
                   <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priority_points}</span>
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.ai_score ?? 0}</span>
                   </td>
                   <td className="px-6 py-2 border-r-2 border-slate-300">
                     <div
