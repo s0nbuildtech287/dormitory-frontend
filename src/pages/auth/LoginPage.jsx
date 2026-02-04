@@ -16,7 +16,7 @@ const LoginPage = ({ onLogin }) => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     // Validation
@@ -33,21 +33,28 @@ const LoginPage = ({ onLogin }) => {
     setIsLoading(true);
     setError(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      if (loginRole === UserRole.ADMIN) {
-        if (idInput === "admin" && passwordInput === "123") {
-          onLogin({
-            id: "admin-1",
-            name: "Quản Trị Viên",
-            email: "admin@ktx.edu.vn",
-            role: UserRole.ADMIN,
-            avatar: "https://ui-avatars.com/api/?name=Admin&background=1e40af&color=fff",
-          });
+    // API call for admin login
+    if (loginRole === UserRole.ADMIN) {
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: idInput, password: passwordInput })
+        });
+        const data = await response.json();
+        if (data.success) {
+          onLogin(data.data.user);
         } else {
-          setError("Tài khoản hoặc mật khẩu quản lý không chính xác (Thử: admin / 123)");
+          setError(data.message || 'Đăng nhập thất bại');
         }
-      } else {
+      } catch (err) {
+        setError('Lỗi kết nối đến server');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Simulate API call for student
+      setTimeout(() => {
         // Student login: any password for demo, validate ID format
         if (idInput.toUpperCase().startsWith("SV") || idInput.length >= 5) {
           onLogin({
@@ -61,9 +68,9 @@ const LoginPage = ({ onLogin }) => {
         } else {
           setError("Mã sinh viên không hợp lệ (Ví dụ: SV2024001)");
         }
-      }
-      setIsLoading(false);
-    }, 800);
+        setIsLoading(false);
+      }, 800);
+    }
   };
 
   const toggleRole = (role) => {
