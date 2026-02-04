@@ -43,6 +43,8 @@ const LoginPage = ({ onLogin }) => {
         });
         const data = await response.json();
         if (data.success) {
+          // Lưu token vào localStorage
+          localStorage.setItem('token', data.data.token);
           onLogin(data.data.user);
         } else {
           setError(data.message || 'Đăng nhập thất bại');

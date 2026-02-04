@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../utils/types.js";
 import {
   FileSpreadsheet,
@@ -50,10 +50,79 @@ const RegistrationManagement = () => {
   const [filterScore, setFilterScore] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
 
-  const handleImportSuccess = () => {
-    // Reload page để lấy dữ liệu mới sau khi import
-    window.location.reload();
+  const fetchRegistrations = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      console.log('Fetching registrations...');
+      const response = await fetch('http://localhost:5000/api/registrations', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-cache' // Tránh 304 cache
+      });
+
+      console.log('Response status:', response.status);
+      
+      // Kiểm tra nếu 304, vẫn cần xử lý
+      if (response.status === 304) {
+        console.warn('Got 304, trying to refetch with no-cache');
+        // Retry with force refresh
+        const retryResponse = await fetch('http://localhost:5000/api/registrations', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        });
+        const retryData = await retryResponse.json();
+        console.log('Retry response data:', retryData);
+        if (retryData.success && Array.isArray(retryData.data)) {
+          console.log('Setting regs with', retryData.data.length, 'items');
+          setRegs(retryData.data);
+        }
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      console.log('Is data.success?', data.success);
+      console.log('Is data.data array?', Array.isArray(data.data));
+      console.log('data.data:', data.data);
+      
+      if (response.ok && data.success) {
+        if (Array.isArray(data.data)) {
+          console.log('Setting regs with', data.data.length, 'items');
+          setRegs(data.data);
+        } else {
+          console.error('data.data is not an array:', typeof data.data);
+        }
+      } else if (response.status === 401) {
+        console.error('Token expired or invalid');
+        // KHÔNG xóa token ở đây, để user tự logout
+      } else {
+        console.error('Failed to fetch registrations:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching registrations:', error);
+    }
   };
+
+  const handleImportSuccess = () => {
+    // Fetch lại dữ liệu sau khi import thành công
+    fetchRegistrations();
+  };
+
+  // Fetch dữ liệu khi component mount
+  useEffect(() => {
+    fetchRegistrations();
+  }, []);
 
   const handleStatusChange = (id, newStatus) => {
     setRegs((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus, note } : r)));

@@ -44,9 +44,24 @@ const ModelimportCSV = ({ onImportSuccess }) => {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // Gọi API import (NO AUTH FOR TESTING)
+      // Lấy token từ localStorage
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setUploadStatus({
+          type: 'error',
+          message: 'Vui lòng đăng nhập lại!'
+        });
+        setIsUploading(false);
+        return;
+      }
+
+      // Gọi API import với authentication
       const response = await fetch('http://localhost:5000/api/registrations/import/excel', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData
       });
 
@@ -66,10 +81,24 @@ const ModelimportCSV = ({ onImportSuccess }) => {
           }, 1500);
         }
       } else {
-        setUploadStatus({
-          type: 'error',
-          message: data.message || 'Import thất bại!'
-        });
+        // Kiểm tra lỗi authentication
+        if (response.status === 401) {
+          setUploadStatus({
+            type: 'error',
+            message: 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!'
+          });
+          // KHÔNG tự động xóa token và redirect, để user tự logout
+        } else if (response.status === 403) {
+          setUploadStatus({
+            type: 'error',
+            message: 'Bạn không có quyền thực hiện chức năng này!'
+          });
+        } else {
+          setUploadStatus({
+            type: 'error',
+            message: data.message || 'Import thất bại!'
+          });
+        }
       }
     } catch (error) {
       console.error('Upload error:', error);

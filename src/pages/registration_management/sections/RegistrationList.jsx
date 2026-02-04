@@ -26,22 +26,30 @@ const RegistrationList = ({
   setFilterGender,
   onImportSuccess
 }) => {
+  console.log('RegistrationList received regs:', regs.length, 'items');
+  console.log('First reg:', regs[0]);
+  console.log('Filter values:', { searchTerm, filterStatus, filterYear, filterScore, filterGender });
+  
   const filteredRegs = regs.filter((reg) => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = reg.studentName.toLowerCase().includes(searchLower) || (reg.studentId?.toLowerCase().includes(searchLower) ?? false);
+    const matchesSearch = 
+      (reg.student_name?.toLowerCase().includes(searchLower) ?? false) || 
+      (reg.student_id?.toLowerCase().includes(searchLower) ?? false);
 
     const matchesStatus = filterStatus === "All" || reg.status === filterStatus;
     const matchesYear = filterYear === "All" || reg.year === parseInt(filterYear);
     const matchesScore =
       filterScore === "All" ||
-      (filterScore === "High" && reg.priorityPoints >= 80) ||
-      (filterScore === "Medium" && reg.priorityPoints >= 60 && reg.priorityPoints < 80) ||
-      (filterScore === "Low" && reg.priorityPoints < 60);
+      (filterScore === "High" && (reg.priority_points ?? 0) >= 80) ||
+      (filterScore === "Medium" && (reg.priority_points ?? 0) >= 60 && (reg.priority_points ?? 0) < 80) ||
+      (filterScore === "Low" && (reg.priority_points ?? 0) < 60);
 
     const matchesGender = filterGender === "All" || reg.gender === filterGender;
 
     return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender;
   });
+
+  console.log('After filtering, filteredRegs:', filteredRegs.length, 'items');
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -149,28 +157,39 @@ const RegistrationList = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRegs.map((reg) => (
-                <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{reg.studentId || "N/A"}</td>
-                  <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">{reg.studentName}</td>
-                  <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">{reg.createdAt ? new Date(reg.createdAt).toLocaleDateString("vi-VN") : "N/A"}</td>
+              {filteredRegs.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="px-8 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center text-slate-400">
+                      <List size={48} className="mb-4 opacity-50" />
+                      <p className="text-sm font-medium">Chưa có hồ sơ đăng ký nào</p>
+                      <p className="text-xs mt-1">Hãy thử import CSV để thêm dữ liệu</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredRegs.map((reg) => (
+                  <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
+                  <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
+                  <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">{reg.created_at ? new Date(reg.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
                   <td className="px-8 py-5 text-center border-r-2 border-slate-300">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priorityPoints}</span>
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priority_points}</span>
                   </td>
                   <td className="px-8 py-5 border-r-2 border-slate-300">
                     <div
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.aiSuggestion === AISuggestionType.RECOMMENDED
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
                         ? "bg-emerald-50 text-emerald-600"
-                        : reg.aiSuggestion === AISuggestionType.CONSIDER
+                        : reg.ai_suggestion === AISuggestionType.CONSIDER
                           ? "bg-amber-50 text-amber-600"
                           : "bg-rose-50 text-rose-600"
                         }`}
                     >
                       <div
-                        className={`w-1.5 h-1.5 rounded-full ${reg.aiSuggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.aiSuggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
+                        className={`w-1.5 h-1.5 rounded-full ${reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
                           }`}
                       ></div>
-                      {reg.aiSuggestion}
+                      {reg.ai_suggestion}
                     </div>
                   </td>
                   <td className="px-8 py-5 border-r-2 border-slate-300">
@@ -191,7 +210,7 @@ const RegistrationList = ({
                     </button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

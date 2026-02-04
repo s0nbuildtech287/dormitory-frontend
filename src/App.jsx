@@ -13,6 +13,7 @@ const App = () => {
    * Handle user logout
    */
   const handleLogout = () => {
+    localStorage.removeItem('token');
     setUser(null);
   };
 
