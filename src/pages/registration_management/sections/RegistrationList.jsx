@@ -8,6 +8,10 @@ import {
   RotateCw,
   Plus,
   List,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 
@@ -26,9 +30,9 @@ const RegistrationList = ({
   setFilterGender,
   onImportSuccess
 }) => {
-  console.log('RegistrationList received regs:', regs.length, 'items');
-  console.log('First reg:', regs[0]);
-  console.log('Filter values:', { searchTerm, filterStatus, filterYear, filterScore, filterGender });
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   const filteredRegs = regs.filter((reg) => {
     const searchLower = searchTerm.toLowerCase();
@@ -49,7 +53,28 @@ const RegistrationList = ({
     return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender;
   });
 
-  console.log('After filtering, filteredRegs:', filteredRegs.length, 'items');
+  // Pagination calculations
+  const totalItems = filteredRegs.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredRegs.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  const handleFilterChange = (filterSetter, value) => {
+    filterSetter(value);
+    setCurrentPage(1);
+  };
+
+  // Pagination handlers
+  const goToPage = (page) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const goToFirstPage = () => setCurrentPage(1);
+  const goToLastPage = () => setCurrentPage(totalPages);
+  const goToPrevPage = () => setCurrentPage(prev => Math.max(1, prev - 1));
+  const goToNextPage = () => setCurrentPage(prev => Math.min(totalPages, prev + 1));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -91,14 +116,14 @@ const RegistrationList = ({
               type="text"
               placeholder="Tìm tên hoặc mã SV..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
             />
           </div>
 
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterStatus, e.target.value)}
             className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả trạng thái</option>
@@ -109,7 +134,7 @@ const RegistrationList = ({
 
           <select
             value={filterYear}
-            onChange={(e) => setFilterYear(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterYear, e.target.value)}
             className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả năm</option>
@@ -121,7 +146,7 @@ const RegistrationList = ({
 
           <select
             value={filterScore}
-            onChange={(e) => setFilterScore(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterScore, e.target.value)}
             className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả điểm</option>
@@ -132,7 +157,7 @@ const RegistrationList = ({
 
           <select
             value={filterGender}
-            onChange={(e) => setFilterGender(e.target.value)}
+            onChange={(e) => handleFilterChange(setFilterGender, e.target.value)}
             className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả giới tính</option>
@@ -157,7 +182,7 @@ const RegistrationList = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRegs.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-8 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
@@ -168,7 +193,7 @@ const RegistrationList = ({
                   </td>
                 </tr>
               ) : (
-                filteredRegs.map((reg) => (
+                currentItems.map((reg) => (
                   <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
                   <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
@@ -215,6 +240,107 @@ const RegistrationList = ({
           </table>
         </div>
       </div>
+
+      {/* PAGINATION CONTROLS */}
+      {totalItems > 0 && (
+        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mt-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Items per page selector */}
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <span>Hiển thị</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="px-2 py-1 border border-slate-200 rounded text-xs font-medium"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span>mục mỗi trang</span>
+            </div>
+
+            {/* Pagination info */}
+            <div className="text-sm text-slate-600">
+              Hiển thị {startIndex + 1}-{Math.min(endIndex, totalItems)} của {totalItems} mục
+            </div>
+
+            {/* Pagination controls */}
+            <div className="flex items-center gap-1">
+              {/* First page */}
+              <button
+                onClick={goToFirstPage}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronsLeft size={16} />
+              </button>
+
+              {/* Previous page */}
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              {/* Page numbers */}
+              <div className="flex items-center gap-1 mx-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => goToPage(pageNum)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === pageNum
+                          ? "bg-blue-600 text-white"
+                          : "border border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Next page */}
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={16} />
+              </button>
+
+              {/* Last page */}
+              <button
+                onClick={goToLastPage}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronsRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

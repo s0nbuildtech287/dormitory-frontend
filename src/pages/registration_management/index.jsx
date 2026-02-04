@@ -59,7 +59,6 @@ const RegistrationManagement = () => {
         return;
       }
 
-      console.log('Fetching registrations...');
       const response = await fetch('http://localhost:5000/api/registrations', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -68,11 +67,8 @@ const RegistrationManagement = () => {
         cache: 'no-cache' // Tránh 304 cache
       });
 
-      console.log('Response status:', response.status);
-      
       // Kiểm tra nếu 304, vẫn cần xử lý
       if (response.status === 304) {
-        console.warn('Got 304, trying to refetch with no-cache');
         // Retry with force refresh
         const retryResponse = await fetch('http://localhost:5000/api/registrations', {
           headers: {
@@ -82,23 +78,16 @@ const RegistrationManagement = () => {
           }
         });
         const retryData = await retryResponse.json();
-        console.log('Retry response data:', retryData);
         if (retryData.success && Array.isArray(retryData.data)) {
-          console.log('Setting regs with', retryData.data.length, 'items');
           setRegs(retryData.data);
         }
         return;
       }
 
       const data = await response.json();
-      console.log('Response data:', data);
-      console.log('Is data.success?', data.success);
-      console.log('Is data.data array?', Array.isArray(data.data));
-      console.log('data.data:', data.data);
       
       if (response.ok && data.success) {
         if (Array.isArray(data.data)) {
-          console.log('Setting regs with', data.data.length, 'items');
           setRegs(data.data);
         } else {
           console.error('data.data is not an array:', typeof data.data);
