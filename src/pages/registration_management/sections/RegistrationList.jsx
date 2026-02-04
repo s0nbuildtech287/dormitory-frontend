@@ -169,22 +169,21 @@ const RegistrationList = ({
 
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
+          <table className="w-full text-left border-collapse">
+            <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
-                <th className="px-8 py-5 border-r-2 border-slate-300">Mã sinh viên</th>
-                <th className="px-8 py-5 border-r-2 border-slate-300">Tên sinh viên</th>
-                <th className="px-8 py-5 border-r-2 border-slate-300">Thời gian đăng ký</th>
-                <th className="px-8 py-5 text-center border-r-2 border-slate-300">Điểm</th>
-                <th className="px-8 py-5 border-r-2 border-slate-300">Đề xuất</th>
-                <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
-                <th className="px-8 py-5 text-center">Hành động</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300">Mã sinh viên</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300">Tên sinh viên</th>
+                <th className="px-6 py-3 text-center border-r-2 border-slate-300">Điểm</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300">Đề xuất</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300">Trạng thái</th>
+                <th className="px-6 py-3 text-center">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-300">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-8 py-12 text-center">
+                  <td colSpan="6" className="px-6 py-8 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
                       <List size={48} className="mb-4 opacity-50" />
                       <p className="text-sm font-medium">Chưa có hồ sơ đăng ký nào</p>
@@ -194,16 +193,15 @@ const RegistrationList = ({
                 </tr>
               ) : (
                 currentItems.map((reg) => (
-                  <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
-                  <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
-                  <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">{reg.created_at ? new Date(reg.created_at).toLocaleDateString("vi-VN") : "N/A"}</td>
-                  <td className="px-8 py-5 text-center border-r-2 border-slate-300">
+                  <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors h-12">
+                  <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
+                  <td className="px-6 py-2 font-semibold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
+                  <td className="px-6 py-2 text-center border-r-2 border-slate-300">
                     <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.priority_points}</span>
                   </td>
-                  <td className="px-8 py-5 border-r-2 border-slate-300">
+                  <td className="px-6 py-2 border-r-2 border-slate-300">
                     <div
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
+                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
                         ? "bg-emerald-50 text-emerald-600"
                         : reg.ai_suggestion === AISuggestionType.CONSIDER
                           ? "bg-amber-50 text-amber-600"
@@ -217,9 +215,9 @@ const RegistrationList = ({
                       {reg.ai_suggestion}
                     </div>
                   </td>
-                  <td className="px-8 py-5 border-r-2 border-slate-300">
+                  <td className="px-6 py-2 border-r-2 border-slate-300">
                     <span
-                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.status === RegistrationStatus.PENDING
+                      className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.status === RegistrationStatus.PENDING
                         ? "bg-amber-100 text-amber-700"
                         : reg.status === RegistrationStatus.APPROVED
                           ? "bg-emerald-100 text-emerald-700"
@@ -229,9 +227,9 @@ const RegistrationList = ({
                       {reg.status}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-center">
-                    <button onClick={() => setSelectedReg(reg)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
-                      <Eye size={20} />
+                  <td className="px-6 py-2 text-center">
+                    <button onClick={() => setSelectedReg(reg)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                      <Eye size={16} />
                     </button>
                   </td>
                 </tr>
