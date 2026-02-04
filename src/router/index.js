@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminDashboard from '../pages/AdminDashboard.jsx';
-import RegistrationManagement from '../pages/registration_management/RegistrationManagement.jsx';
+import RegistrationManagement from '../pages/registration_management/index.jsx';
 import StudentDashboard from '../pages/StudentDashboard.jsx';
 import RoomManagement from '../pages/RoomManagement.jsx';
 import StudentManagement from '../pages/StudentManagement.jsx';
