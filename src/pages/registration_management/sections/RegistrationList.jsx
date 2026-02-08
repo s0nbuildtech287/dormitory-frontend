@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from "lucide-react";
+import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle } from "lucide-react";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 
 // Helper function to determine priority group
@@ -70,6 +70,7 @@ const RegistrationList = ({
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterGroup, setFilterGroup] = useState("All");
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
+  const [isConfirming, setIsConfirming] = useState(null);
 
   const filteredRegs = regs
     .filter((reg) => {
@@ -292,9 +293,25 @@ const RegistrationList = ({
                       </span>
                     </td>
                     <td className="px-6 py-2 text-center">
-                      <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                        <Eye size={16} />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Xem chi tiết">
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.APPROVED })}
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                          title="Phê duyệt"
+                        >
+                          <CheckCircle2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.REJECTED })}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                          title="Từ chối"
+                        >
+                          <XCircle size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -595,18 +612,72 @@ const RegistrationList = ({
               )}
             </div>
 
-            <div className="sticky bottom-0 bg-slate-100 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200">
-              <button onClick={() => setSelectedRegDetail(null)} className="px-4 py-2 text-slate-700 font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
-                Đóng
+            <div className="sticky bottom-0 bg-slate-100 px-6 py-4 flex items-center justify-between gap-3 border-t border-slate-200">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsConfirming({ id: selectedRegDetail.id, status: RegistrationStatus.APPROVED })}
+                  className="px-4 py-2 text-white font-semibold bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all flex items-center gap-2"
+                >
+                  <CheckCircle2 size={16} /> Phê duyệt
+                </button>
+                <button
+                  onClick={() => setIsConfirming({ id: selectedRegDetail.id, status: RegistrationStatus.REJECTED })}
+                  className="px-4 py-2 text-white font-semibold bg-rose-600 rounded-lg hover:bg-rose-700 transition-all flex items-center gap-2"
+                >
+                  <XCircle size={16} /> Từ chối
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setSelectedRegDetail(null)} className="px-4 py-2 text-slate-700 font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
+                  Đóng
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedReg(convertToCamelCase(selectedRegDetail));
+                    setSelectedRegDetail(null);
+                  }}
+                  className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
+                >
+                  Chỉnh sửa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMATION DIALOG */}
+      {isConfirming && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in scale-in duration-300">
+            <div
+              className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
+                isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+              }`}
+            >
+              {isConfirming.status === RegistrationStatus.APPROVED ? <CheckCircle2 size={32} /> : <XCircle size={32} />}
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Xác nhận quyết định?</h3>
+            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+              Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming.status === RegistrationStatus.APPROVED ? "phê duyệt" : "từ chối"}</span> hồ sơ.
+              {selectedRegDetail && <span> Hệ thống sẽ gửi thông báo kết quả cho sinh viên.</span>}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setIsConfirming(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all">
+                Hủy
               </button>
               <button
                 onClick={() => {
-                  setSelectedReg(convertToCamelCase(selectedRegDetail));
-                  setSelectedRegDetail(null);
+                  // TODO: Call API to update registration status
+                  console.log(`Update registration ${isConfirming.id} to ${isConfirming.status}`);
+                  setIsConfirming(null);
+                  if (selectedRegDetail) setSelectedRegDetail(null);
                 }}
-                className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
+                className={`flex-1 py-3 rounded-xl font-bold text-white transition-all ${
+                  isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+                }`}
               >
-                Chỉnh sửa
+                Xác nhận
               </button>
             </div>
           </div>

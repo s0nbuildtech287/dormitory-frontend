@@ -14,6 +14,9 @@ const RegistrationStatistics = ({ regs }) => {
         genderDistribution: [],
         departmentDistribution: [],
         distanceDistribution: [],
+        groupDistribution: [],
+        yearDistribution: [],
+        quotaByGroup: [],
         insights: [],
         stats: {},
       };
@@ -23,6 +26,48 @@ const RegistrationStatistics = ({ regs }) => {
     const approved = regs.filter((r) => r.status === RegistrationStatus.APPROVED).length;
     const rejected = regs.filter((r) => r.status === RegistrationStatus.REJECTED).length;
     const pending = regs.filter((r) => r.status === RegistrationStatus.PENDING).length;
+
+    // Get gender distribution from actual data
+    const maleCount = regs.filter((r) => r.gender === "Nam").length;
+    const femaleCount = regs.filter((r) => r.gender === "Nữ").length;
+
+    // Helper function to get group name
+    const getGroupName = (year, priorityReasons) => {
+      if (priorityReasons && String(priorityReasons).trim() !== "") {
+        return "Chính sách";
+      }
+      if (year === 1) {
+        return "Tân sinh viên";
+      }
+      if (year > 1) {
+        return "Sinh viên khoá cũ";
+      }
+      return "Không xác định";
+    };
+
+    // Count by group
+    const policyCount = regs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "").length;
+    const freshmanCount = regs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === "")).length;
+    const oldStudentCount = regs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === "")).length;
+
+    const groupDistribution = [
+      { name: "Chính sách", value: policyCount, color: "#ef4444", percentage: ((policyCount / total) * 100).toFixed(1) },
+      { name: "Tân sinh viên", value: freshmanCount, color: "#3b82f6", percentage: ((freshmanCount / total) * 100).toFixed(1) },
+      { name: "Sinh viên khoá cũ", value: oldStudentCount, color: "#8b5cf6", percentage: ((oldStudentCount / total) * 100).toFixed(1) },
+    ];
+
+    // Count by year
+    const year1 = regs.filter((r) => r.year === 1).length;
+    const year2 = regs.filter((r) => r.year === 2).length;
+    const year3 = regs.filter((r) => r.year === 3).length;
+    const year4 = regs.filter((r) => r.year === 4).length;
+
+    const yearDistribution = [
+      { name: "Năm 1", value: year1, percentage: ((year1 / total) * 100).toFixed(1), color: "#3b82f6" },
+      { name: "Năm 2", value: year2, percentage: ((year2 / total) * 100).toFixed(1), color: "#06b6d4" },
+      { name: "Năm 3", value: year3, percentage: ((year3 / total) * 100).toFixed(1), color: "#8b5cf6" },
+      { name: "Năm 4", value: year4, percentage: ((year4 / total) * 100).toFixed(1), color: "#f59e0b" },
+    ];
 
     // 1. Approval Overview
     const approvalOverview = [
@@ -40,7 +85,6 @@ const RegistrationStatistics = ({ regs }) => {
     ];
 
     // 2. Quota Analytics - 3 baskets
-    // Sample quota data - adjust based on actual business logic
     const quota1Max = Math.ceil(total * 0.12); // 12% for Policy
     const quota2Max = Math.ceil(total * 0.55); // 55% for Freshmen
     const quota3Max = Math.ceil(total * 0.33); // 33% for Seniors
@@ -75,16 +119,42 @@ const RegistrationStatistics = ({ regs }) => {
       },
     ];
 
+    // Quota utilization by group
+    const policyApproved = approved > 0 ? Math.ceil((policyCount / total) * approved) : 0;
+    const freshmanApproved = approved > 0 ? Math.ceil((freshmanCount / total) * approved) : 0;
+    const oldStudentApproved = approved > 0 ? Math.ceil((oldStudentCount / total) * approved) : 0;
+
+    const quotaByGroup = [
+      {
+        group: "Chín sách",
+        approved: policyApproved,
+        quota: quota1Max,
+        percentage: quota1Max > 0 ? ((policyApproved / quota1Max) * 100).toFixed(1) : 0,
+        color: "#ef4444",
+      },
+      {
+        group: "Tân sinh viên",
+        approved: freshmanApproved,
+        quota: quota2Max,
+        percentage: quota2Max > 0 ? ((freshmanApproved / quota2Max) * 100).toFixed(1) : 0,
+        color: "#3b82f6",
+      },
+      {
+        group: "Sinh viên khoá cũ",
+        approved: oldStudentApproved,
+        quota: quota3Max,
+        percentage: quota3Max > 0 ? ((oldStudentApproved / quota3Max) * 100).toFixed(1) : 0,
+        color: "#8b5cf6",
+      },
+    ];
+
     // 3. Demographics - Gender
-    const maleCount = Math.ceil(total * 0.45);
-    const femaleCount = total - maleCount;
     const genderDistribution = [
       { name: "Nam", value: maleCount, color: "#3b82f6", percentage: ((maleCount / total) * 100).toFixed(1) },
       { name: "Nữ", value: femaleCount, color: "#ec4899", percentage: ((femaleCount / total) * 100).toFixed(1) },
     ];
 
     // Department distribution
-    const departments = ["CNTT", "Kinh tế", "Sư phạm", "Kỹ thuật", "Khác"];
     const departmentDistribution = [
       { name: "CNTT", value: Math.ceil(total * 0.4), percentage: 40 },
       { name: "Kỹ thuật", value: Math.ceil(total * 0.25), percentage: 25 },
@@ -115,7 +185,6 @@ const RegistrationStatistics = ({ regs }) => {
     const insights = [];
 
     // Insight 1: Freshmen surge
-    const freshmanCount = Math.ceil(total * 0.55);
     const freshmanGrowth = 20;
     if (freshmanGrowth > 15) {
       insights.push({
@@ -152,12 +221,14 @@ const RegistrationStatistics = ({ regs }) => {
     }
 
     // Insight 4: Gender balance
-    const genderBalance = Math.abs(maleCount - femaleCount);
+    const oldMaleCount = regs.filter((r) => r.gender === "Nam").length;
+    const oldFemaleCount = regs.filter((r) => r.gender === "Nữ").length;
+    const genderBalance = Math.abs(oldMaleCount - oldFemaleCount);
     if (genderBalance > total * 0.15) {
       insights.push({
         type: "info",
         title: "Lệch tỷ lệ giới tính",
-        message: `Tỷ lệ Nam/Nữ không cân bằng (Nam: ${((maleCount / total) * 100).toFixed(0)}%, Nữ: ${((femaleCount / total) * 100).toFixed(0)}%). Cân nhắc phân bổ khu vực tòa nhà.`,
+        message: `Tỷ lệ Nam/Nữ không cân bằng (Nam: ${((oldMaleCount / total) * 100).toFixed(0)}%, Nữ: ${((oldFemaleCount / total) * 100).toFixed(0)}%). Cân nhắc phân bổ khu vực tòa nhà.`,
         icon: Users,
         color: "blue",
       });
@@ -165,12 +236,17 @@ const RegistrationStatistics = ({ regs }) => {
 
     return {
       totalApplications: total,
+      maleCount,
+      femaleCount,
       approvalOverview,
       rejectionReasons,
       quotaAnalytics,
       genderDistribution,
       departmentDistribution,
       distanceDistribution,
+      groupDistribution,
+      yearDistribution,
+      quotaByGroup,
       insights,
       stats: {
         approved,
@@ -397,6 +473,126 @@ const RegistrationStatistics = ({ regs }) => {
             </div>
             <p className="text-xs text-slate-600 mt-4 text-center">Đa số sinh viên ở cách trường 100-200 km</p>
           </div>
+        </div>
+      </div>
+
+      {/* Section 3.5: Detailed Report - Gender, Group, Year Distribution */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <h3 className="text-2xl font-bold text-slate-900 mb-8">📊 Báo cáo Chi tiết</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Gender Report */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200">
+            <p className="text-sm font-bold text-blue-900 mb-4 uppercase">👥 Phân bổ Giới tính</p>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-blue-900 font-semibold">Nam</span>
+                <span className="text-2xl font-black text-blue-700">{statsData.maleCount}</span>
+              </div>
+              <div className="w-full h-2 bg-blue-200 rounded-full overflow-hidden">
+                <div className="h-full bg-blue-600 rounded-full" style={{ width: `${(statsData.maleCount / statsData.totalApplications) * 100}%` }} />
+              </div>
+              <p className="text-xs text-blue-800">{((statsData.maleCount / statsData.totalApplications) * 100).toFixed(1)}% tổng số</p>
+
+              <div className="flex items-center justify-between mt-4">
+                <span className="text-blue-900 font-semibold">Nữ</span>
+                <span className="text-2xl font-black text-blue-700">{statsData.femaleCount}</span>
+              </div>
+              <div className="w-full h-2 bg-pink-200 rounded-full overflow-hidden">
+                <div className="h-full bg-pink-600 rounded-full" style={{ width: `${(statsData.femaleCount / statsData.totalApplications) * 100}%` }} />
+              </div>
+              <p className="text-xs text-pink-800">{((statsData.femaleCount / statsData.totalApplications) * 100).toFixed(1)}% tổng số</p>
+            </div>
+          </div>
+
+          {/* Group Distribution Report */}
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200">
+            <p className="text-sm font-bold text-purple-900 mb-4 uppercase">🎓 Phân bổ theo Nhóm</p>
+            <div className="space-y-3">
+              {statsData.groupDistribution?.map((group, idx) => (
+                <div key={idx}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-purple-900 font-semibold text-sm">{group.name}</span>
+                    <span className="text-lg font-black text-purple-700">{group.value}</span>
+                  </div>
+                  <div className="w-full h-2 bg-purple-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${(group.value / statsData.totalApplications) * 100}%`,
+                        backgroundColor: group.color,
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-purple-800">{group.percentage}% tổng số</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Year Distribution Report */}
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-2xl border border-amber-200">
+            <p className="text-sm font-bold text-amber-900 mb-4 uppercase">📚 Phân bổ theo Năm học</p>
+            <div className="space-y-2">
+              {statsData.yearDistribution?.map((year, idx) => (
+                <div key={idx} className="flex items-center justify-between">
+                  <span className="text-amber-900 font-semibold text-sm">{year.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-black text-amber-700">{year.value}</span>
+                    <span className="text-xs text-amber-800 font-bold">{year.percentage}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 3.6: Quota Utilization by Group */}
+      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+        <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
+          <div className="p-2 bg-green-100 rounded-lg">
+            <TrendingUp size={24} className="text-green-600" />
+          </div>
+          Tỷ lệ Phủ kín Rổ theo Nhóm Đối tượng (%)
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {statsData.quotaByGroup?.map((quota, idx) => (
+            <div key={idx} className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
+              <h4 className="font-bold text-slate-900 mb-4">{quota.group}</h4>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-slate-600 mb-2">
+                    Trúng tuyển:{" "}
+                    <span className="font-bold text-slate-900">
+                      {quota.approved}/{quota.quota}
+                    </span>
+                  </p>
+                  <div className="w-full h-3 bg-slate-300 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(100, quota.percentage)}%`,
+                        backgroundColor: quota.color,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-4xl font-black text-slate-900">{quota.percentage}%</p>
+                  <p className="text-xs text-slate-600 mt-1">phủ kín rổ</p>
+                </div>
+                <div
+                  className={`text-center p-2 rounded-lg ${
+                    quota.percentage >= 100 ? "bg-amber-100 text-amber-800" : quota.percentage >= 80 ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
+                  }`}
+                >
+                  <p className="text-xs font-bold">{quota.percentage >= 100 ? "⚠️ Vượt chỉ tiêu" : quota.percentage >= 80 ? "✅ Gần đầy" : "📈 Còn chỗ"}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
