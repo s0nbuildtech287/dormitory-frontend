@@ -1,19 +1,54 @@
 import { useState } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import {
-  FileSpreadsheet,
-  Search,
-  Eye,
-  RefreshCw,
-  RotateCw,
-  Plus,
-  List,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
+import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from "lucide-react";
 import ModelimportCSV from "./ModelimportCSV.jsx";
+
+// Helper function to determine priority group
+const getGroupName = (year, priorityReasons) => {
+  // Check if priority_reasons has any data - if yes, it's policy-based
+  if (priorityReasons && String(priorityReasons).trim() !== "") {
+    return "Chính sách";
+  }
+
+  // If no priority reasons, classify by year
+  if (year === 1) {
+    return "Tân sinh viên";
+  }
+
+  if (year > 1) {
+    return "Sinh viên khoá cũ";
+  }
+
+  return "Không xác định";
+};
+
+// Helper function to convert snake_case object keys to camelCase
+const convertToCamelCase = (obj) => {
+  if (!obj) return null;
+
+  return {
+    id: obj.id,
+    studentName: obj.student_name || obj.studentName,
+    studentId: obj.student_id || obj.studentId,
+    studentEmail: obj.student_email || obj.studentEmail,
+    phone: obj.phone_number || obj.phone,
+    gender: obj.gender,
+    dob: obj.dob,
+    address: obj.address,
+    email: obj.student_email || obj.email,
+    faculty: obj.faculty,
+    class: obj.class,
+    year: obj.year,
+    gpa: obj.gpa,
+    distance: obj.distance || obj.distance_km,
+    priorityReasons: obj.priority_reasons || obj.priorityReasons,
+    status: obj.status,
+    aiScore: obj.ai_score ?? obj.aiScore,
+    aiSuggestion: obj.ai_suggestion || obj.aiSuggestion,
+    aiReasoning: obj.ai_reasoning || obj.aiReasoning,
+    evidenceImages: obj.evidence_images || obj.evidenceImages || [],
+  };
+};
 
 const RegistrationList = ({
   regs,
@@ -28,30 +63,35 @@ const RegistrationList = ({
   setFilterScore,
   filterGender,
   setFilterGender,
-  onImportSuccess
+  onImportSuccess,
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
-  const filteredRegs = regs.filter((reg) => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = 
-      (reg.student_name?.toLowerCase().includes(searchLower) ?? false) || 
-      (reg.student_id?.toLowerCase().includes(searchLower) ?? false);
+  const [filterGroup, setFilterGroup] = useState("All");
+  const [selectedRegDetail, setSelectedRegDetail] = useState(null);
 
-    const matchesStatus = filterStatus === "All" || reg.status === filterStatus;
-    const matchesYear = filterYear === "All" || reg.year === parseInt(filterYear);
-    const matchesScore =
-      filterScore === "All" ||
-      (filterScore === "High" && (reg.ai_score ?? 0) >= 80) ||
-      (filterScore === "Medium" && (reg.ai_score ?? 0) >= 60 && (reg.ai_score ?? 0) < 80) ||
-      (filterScore === "Low" && (reg.ai_score ?? 0) < 60);
+  const filteredRegs = regs
+    .filter((reg) => {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = (reg.student_name?.toLowerCase().includes(searchLower) ?? false) || (reg.student_id?.toLowerCase().includes(searchLower) ?? false);
 
-    const matchesGender = filterGender === "All" || reg.gender === filterGender;
+      const matchesStatus = filterStatus === "All" || reg.status === filterStatus;
+      const matchesYear = filterYear === "All" || reg.year === parseInt(filterYear);
+      const matchesScore =
+        filterScore === "All" ||
+        (filterScore === "High" && (reg.ai_score ?? 0) >= 80) ||
+        (filterScore === "Medium" && (reg.ai_score ?? 0) >= 60 && (reg.ai_score ?? 0) < 80) ||
+        (filterScore === "Low" && (reg.ai_score ?? 0) < 60);
 
-    return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender;
-  });
+      const matchesGender = filterGender === "All" || reg.gender === filterGender;
+
+      const regGroup = getGroupName(reg.year, reg.priority_reasons);
+      const matchesGroup = filterGroup === "All" || regGroup === filterGroup;
+
+      return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup;
+    })
+    .sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0));
 
   // Pagination calculations
   const totalItems = filteredRegs.length;
@@ -73,8 +113,8 @@ const RegistrationList = ({
 
   const goToFirstPage = () => setCurrentPage(1);
   const goToLastPage = () => setCurrentPage(totalPages);
-  const goToPrevPage = () => setCurrentPage(prev => Math.max(1, prev - 1));
-  const goToNextPage = () => setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  const goToPrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
+  const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -111,7 +151,7 @@ const RegistrationList = ({
       {/* THANH TÌM KIẾM VÀ LỌC */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
         <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc dữ liệu đăng ký</h3>
-        <div className="grid grid-cols-6 gap-4 items-center">
+        <div className="grid grid-cols-7 gap-4 items-center">
           <div className="relative col-span-2">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -166,13 +206,24 @@ const RegistrationList = ({
             <option value="Nam">Nam</option>
             <option value="Nữ">Nữ</option>
           </select>
+
+          <select
+            value={filterGroup}
+            onChange={(e) => handleFilterChange(setFilterGroup, e.target.value)}
+            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+          >
+            <option value="All">Tất cả nhóm</option>
+            <option value="Tân sinh viên">Tân sinh viên</option>
+            <option value="Chính sách">Chính sách</option>
+            <option value="Sinh viên khoá cũ">Sinh viên khoá cũ</option>
+          </select>
         </div>
       </div>
 
       {/* BẢNG HỒ SƠ ĐĂNG KÝ */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b-2 border-slate-300">
-          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-center">Bảng hồ sơ đăng ký</h3>
+          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-center">Bảng hồ sơ đăng ký ({totalItems} kết quả)</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -180,6 +231,7 @@ const RegistrationList = ({
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
                 <th className="px-6 py-3 border-r-2 border-slate-300">Mã sinh viên</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300">Tên sinh viên</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300">Nhóm</th>
                 <th className="px-6 py-3 text-center border-r-2 border-slate-300">Điểm</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300">Đề xuất</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300">Trạng thái</th>
@@ -189,7 +241,7 @@ const RegistrationList = ({
             <tbody className="divide-y divide-slate-300">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center">
+                  <td colSpan="7" className="px-6 py-8 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
                       <List size={48} className="mb-4 opacity-50" />
                       <p className="text-sm font-medium">Chưa có hồ sơ đăng ký nào</p>
@@ -200,46 +252,53 @@ const RegistrationList = ({
               ) : (
                 currentItems.map((reg) => (
                   <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors h-12">
-                  <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
-                  <td className="px-6 py-2 font-semibold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
-                  <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.ai_score ?? 0}</span>
-                  </td>
-                  <td className="px-6 py-2 border-r-2 border-slate-300">
-                    <div
-                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
-                        ? "bg-emerald-50 text-emerald-600"
-                        : reg.ai_suggestion === AISuggestionType.CONSIDER
-                          ? "bg-amber-50 text-amber-600"
-                          : "bg-rose-50 text-rose-600"
-                        }`}
-                    >
+                    <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
+                    <td className="px-6 py-2 font-semibold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
+                    <td className="px-6 py-2 border-r-2 border-slate-300">
+                      <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-black">{getGroupName(reg.year, reg.priority_reasons)}</span>
+                    </td>
+                    <td className="px-6 py-2 text-center border-r-2 border-slate-300">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.ai_score ?? 0}</span>
+                    </td>
+                    <td className="px-6 py-2 border-r-2 border-slate-300">
                       <div
-                        className={`w-1.5 h-1.5 rounded-full ${reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
-                          }`}
-                      ></div>
-                      {reg.ai_suggestion}
-                    </div>
-                  </td>
-                  <td className="px-6 py-2 border-r-2 border-slate-300">
-                    <span
-                      className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.status === RegistrationStatus.PENDING
-                        ? "bg-amber-100 text-amber-700"
-                        : reg.status === RegistrationStatus.APPROVED
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
+                          reg.ai_suggestion === AISuggestionType.RECOMMENDED
+                            ? "bg-emerald-50 text-emerald-600"
+                            : reg.ai_suggestion === AISuggestionType.CONSIDER
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-rose-50 text-rose-600"
                         }`}
-                    >
-                      {reg.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-2 text-center">
-                    <button onClick={() => setSelectedReg(reg)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                      <Eye size={16} />
-                    </button>
-                  </td>
-                </tr>
-              )))}
+                      >
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
+                          }`}
+                        ></div>
+                        {reg.ai_suggestion}
+                      </div>
+                    </td>
+                    <td className="px-6 py-2 border-r-2 border-slate-300">
+                      <span
+                        className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
+                          reg.status === RegistrationStatus.PENDING
+                            ? "bg-amber-100 text-amber-700"
+                            : reg.status === RegistrationStatus.APPROVED
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-rose-100 text-rose-700"
+                        }`}
+                      >
+                        {reg.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-2 text-center">
+                      <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                        <Eye size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -312,11 +371,7 @@ const RegistrationList = ({
                     <button
                       key={pageNum}
                       onClick={() => goToPage(pageNum)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === pageNum
-                          ? "bg-blue-600 text-white"
-                          : "border border-slate-200 hover:bg-slate-50"
-                      }`}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"}`}
                     >
                       {pageNum}
                     </button>
@@ -340,6 +395,166 @@ const RegistrationList = ({
                 className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronsRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DETAIL MODAL */}
+      {selectedRegDetail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in scale-in duration-300">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b border-blue-800">
+              <h3 className="text-white font-bold text-lg">Chi tiết hồ sơ đăng ký</h3>
+              <button onClick={() => setSelectedRegDetail(null)} className="p-1 text-white hover:bg-white/20 rounded-lg transition-all">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Personal Information */}
+              <div>
+                <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Thông tin cá nhân</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Mã sinh viên</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.student_id || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Tên sinh viên</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.student_name}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Email</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.student_email || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Số điện thoại</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.phone_number || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Giới tính</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.gender || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Ngày sinh</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.dob || "N/A"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Academic Information */}
+              <div>
+                <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Thông tin học tập</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Khoa</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.faculty || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Chuyên ngành</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.major || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Lớp</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.class || "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Năm theo học</p>
+                    <p className="text-slate-900 font-bold">Năm {selectedRegDetail.year}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">GPA</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.gpa ?? "N/A"}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-1">Khoảng cách</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.distance ?? "N/A"} km</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Priority and Scoring */}
+              <div>
+                <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Ưu tiên & Đánh giá</h4>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                    <p className="text-slate-600 text-xs font-semibold mb-2">Lý do ưu tiên</p>
+                    <p className="text-slate-900 font-bold">{selectedRegDetail.priority_reasons || "Không có"}</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                      <p className="text-slate-600 text-xs font-semibold mb-2">Điểm AI</p>
+                      <p className="text-blue-900 font-black text-2xl">{selectedRegDetail.ai_score ?? 0}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+                      <p className="text-slate-600 text-xs font-semibold mb-2">Nhóm</p>
+                      <p className="text-purple-900 font-bold">{getGroupName(selectedRegDetail.year, selectedRegDetail.priority_reasons)}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200">
+                      <p className="text-slate-600 text-xs font-semibold mb-2">Đề xuất</p>
+                      <p
+                        className={`font-bold ${
+                          selectedRegDetail.ai_suggestion === AISuggestionType.RECOMMENDED
+                            ? "text-emerald-700"
+                            : selectedRegDetail.ai_suggestion === AISuggestionType.CONSIDER
+                              ? "text-amber-700"
+                              : "text-rose-700"
+                        }`}
+                      >
+                        {selectedRegDetail.ai_suggestion}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-600 text-xs font-semibold mb-2">Lý do đánh giá</p>
+                    <p className="text-slate-900 text-sm">{selectedRegDetail.ai_reasoning || "Không có thông tin"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Trạng thái</h4>
+                <div className="bg-slate-50 p-4 rounded-xl">
+                  <span
+                    className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight ${
+                      selectedRegDetail.status === RegistrationStatus.PENDING
+                        ? "bg-amber-100 text-amber-700"
+                        : selectedRegDetail.status === RegistrationStatus.APPROVED
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-rose-100 text-rose-700"
+                    }`}
+                  >
+                    {selectedRegDetail.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedRegDetail.note && (
+                <div>
+                  <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Ghi chú</h4>
+                  <div className="bg-slate-50 p-4 rounded-xl">
+                    <p className="text-slate-900 text-sm">{selectedRegDetail.note}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="sticky bottom-0 bg-slate-100 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200">
+              <button onClick={() => setSelectedRegDetail(null)} className="px-4 py-2 text-slate-700 font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
+                Đóng
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedReg(convertToCamelCase(selectedRegDetail));
+                  setSelectedRegDetail(null);
+                }}
+                className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
+              >
+                Chỉnh sửa
               </button>
             </div>
           </div>
