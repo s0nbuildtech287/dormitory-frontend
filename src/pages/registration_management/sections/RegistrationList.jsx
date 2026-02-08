@@ -404,7 +404,7 @@ const RegistrationList = ({
       {/* DETAIL MODAL */}
       {selectedRegDetail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in scale-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto animate-in scale-in duration-300">
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b border-blue-800">
               <h3 className="text-white font-bold text-lg">Chi tiết hồ sơ đăng ký</h3>
               <button onClick={() => setSelectedRegDetail(null)} className="p-1 text-white hover:bg-white/20 rounded-lg transition-all">
@@ -509,7 +509,34 @@ const RegistrationList = ({
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-2">Lý do đánh giá</p>
-                    <p className="text-slate-900 text-sm">{selectedRegDetail.ai_reasoning || "Không có thông tin"}</p>
+                    {selectedRegDetail.ai_reasoning && typeof selectedRegDetail.ai_reasoning === "object" ? (
+                      <div className="space-y-2 text-sm">
+                        {selectedRegDetail.ai_reasoning.description && <p className="text-slate-900 font-bold">{selectedRegDetail.ai_reasoning.description}</p>}
+                        {selectedRegDetail.ai_reasoning.priority_score !== undefined && (
+                          <p className="text-slate-700">
+                            • Điểm ưu tiên: <span className="font-bold">{selectedRegDetail.ai_reasoning.priority_score}</span>
+                            {selectedRegDetail.ai_reasoning.weight_priority && ` (W: ${selectedRegDetail.ai_reasoning.weight_priority})`}
+                          </p>
+                        )}
+                        {selectedRegDetail.ai_reasoning.year_score !== undefined && (
+                          <p className="text-slate-700">
+                            • Điểm năm học: <span className="font-bold">{selectedRegDetail.ai_reasoning.year_score}</span>
+                            {selectedRegDetail.ai_reasoning.weight_year && ` (W: ${selectedRegDetail.ai_reasoning.weight_year})`}
+                          </p>
+                        )}
+                        {selectedRegDetail.ai_reasoning.gpa_score !== undefined && (
+                          <p className="text-slate-700">
+                            • Điểm GPA: <span className="font-bold">{selectedRegDetail.ai_reasoning.gpa_score}</span>
+                            {selectedRegDetail.ai_reasoning.weight_gpa && ` (W: ${selectedRegDetail.ai_reasoning.weight_gpa})`}
+                          </p>
+                        )}
+                        {selectedRegDetail.ai_reasoning.formula && <p className="text-slate-600 text-xs italic mt-2">Công thức: {selectedRegDetail.ai_reasoning.formula}</p>}
+                      </div>
+                    ) : selectedRegDetail.ai_reasoning ? (
+                      <p className="text-slate-900 text-sm">{selectedRegDetail.ai_reasoning}</p>
+                    ) : (
+                      <p className="text-slate-500 italic">Không có thông tin</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -538,6 +565,31 @@ const RegistrationList = ({
                   <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Ghi chú</h4>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-900 text-sm">{selectedRegDetail.note}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Evidence Images */}
+              {selectedRegDetail.evidence_images && selectedRegDetail.evidence_images.length > 0 && (
+                <div>
+                  <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">📸 Ảnh minh chứng</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {selectedRegDetail.evidence_images.map((img, idx) => (
+                      <div key={idx} className="relative group overflow-hidden rounded-2xl shadow-md border border-slate-200 hover:shadow-lg transition-all">
+                        <img
+                          src={img}
+                          alt={`Evidence ${idx + 1}`}
+                          className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
+                          onClick={() => {
+                            // Open image in new tab
+                            window.open(img, "_blank");
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                          <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-bold">Nhấn xem</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
