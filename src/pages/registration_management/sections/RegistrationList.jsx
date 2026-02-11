@@ -101,6 +101,26 @@ const RegistrationList = ({
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredRegs.slice(startIndex, endIndex);
 
+  // Calculate quota-based pending count for current filter group
+  const totalSlots = 1000; // Default total slots
+  const groupQuotas = {
+    'Chính sách': Math.round(totalSlots * 0.10), // 10%
+    'Tân sinh viên': Math.round(totalSlots * 0.60), // 60%
+    'Sinh viên khoá cũ': Math.round(totalSlots * 0.30), // 30%
+  };
+  
+  // Calculate available slots for current filter group
+  const getAvailableSlotsForGroup = (groupFilter) => {
+    if (groupFilter === 'All') {
+      return totalSlots;
+    }
+    return groupQuotas[groupFilter] || 0;
+  };
+  
+  const availableSlots = getAvailableSlotsForGroup(filterGroup);
+  const actualPendingCount = filteredRegs.filter(reg => reg.status === RegistrationStatus.PENDING).length;
+  const quotaBasedPendingCount = Math.min(actualPendingCount, availableSlots);
+
   // Reset to first page when filters change
   const handleFilterChange = (filterSetter, value) => {
     filterSetter(value);
@@ -224,7 +244,9 @@ const RegistrationList = ({
       {/* BẢNG HỒ SƠ ĐĂNG KÝ */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b-2 border-slate-300">
-          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-center">Bảng hồ sơ đăng ký ({totalItems} kết quả)</h3>
+          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">
+            Bảng hồ sơ đăng ký ({totalItems} kết quả) - chờ duyệt {quotaBasedPendingCount} hồ sơ / {totalItems} hồ sơ
+          </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -256,7 +278,7 @@ const RegistrationList = ({
                     <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
                     <td className="px-6 py-2 font-semibold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
                     <td className="px-6 py-2 border-r-2 border-slate-300">
-                      <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-[10px] font-black">{getGroupName(reg.year, reg.priority_reasons)}</span>
+                      <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-black">{getGroupName(reg.year, reg.priority_reasons)}</span>
                     </td>
                     <td className="px-6 py-2 text-center border-r-2 border-slate-300">
                       <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.ai_score ?? 0}</span>
@@ -280,9 +302,9 @@ const RegistrationList = ({
                       </div>
                     </td>
                     <td className="px-6 py-2 border-r-2 border-slate-300">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-1">
                         <span
-                          className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
+                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
                             reg.status === RegistrationStatus.PENDING
                               ? "bg-amber-100 text-amber-700"
                               : reg.status === RegistrationStatus.APPROVED
@@ -293,7 +315,7 @@ const RegistrationList = ({
                           {reg.status}
                         </span>
                         {reg.isFull && reg.status === RegistrationStatus.PENDING && (
-                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
+                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
                             Đầy chỗ
                           </span>
                         )}
@@ -568,9 +590,9 @@ const RegistrationList = ({
               {/* Status */}
               <div>
                 <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Trạng thái</h4>
-                <div className="bg-slate-50 p-4 rounded-xl flex flex-wrap items-center gap-2">
+                <div className="bg-slate-50 p-4 rounded-xl flex items-center gap-1">
                   <span
-                    className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight ${
+                    className={`inline-block px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-tight ${
                       selectedRegDetail.status === RegistrationStatus.PENDING
                         ? "bg-amber-100 text-amber-700"
                         : selectedRegDetail.status === RegistrationStatus.APPROVED
@@ -581,8 +603,8 @@ const RegistrationList = ({
                     {selectedRegDetail.status}
                   </span>
                   {selectedRegDetail.isFull && selectedRegDetail.status === RegistrationStatus.PENDING && (
-                    <span className="inline-block px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-300">
-                      ⚠️ Đầy chỗ - Danh sách chờ
+                    <span className="inline-block px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
+                      ⚠️ Đầy chỗ
                     </span>
                   )}
                 </div>
