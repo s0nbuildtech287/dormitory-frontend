@@ -12,6 +12,8 @@ import {
   Pie,
   Cell,
   Legend,
+  LineChart,
+  Line,
 } from "recharts";
 import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp } from "lucide-react";
 
@@ -256,7 +258,120 @@ const RegistrationStatistics = ({ regs }) => {
         </div>
       </div>
 
-      {/* 2. BASKET ANALYTICS - Gender Correlation & Priority Breakdown */}
+      {/* INSIGHTS & RECOMMENDATIONS SECTION */}
+      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8 rounded-3xl border border-indigo-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-white rounded-xl shadow-sm">
+            <TrendingUp className="text-indigo-600" size={28} />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-slate-900">Phân tích & Gợi ý</h3>
+            <p className="text-sm text-slate-600">Insights dựa trên dữ liệu đã duyệt</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Insight 1: Basket Distribution */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+              <h4 className="font-bold text-slate-800">Phân bổ Rổ</h4>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="text-rose-500 mt-0.5">●</span>
+                <span>
+                  Rổ 1 chiếm <strong>{statsData.totalApproved > 0 ? ((statsData.baskets[0]?.count / statsData.totalApproved) * 100).toFixed(1) : 0}%</strong> 
+                  {statsData.baskets[0]?.count > statsData.totalApproved * 0.15 ? ' (cao hơn mức khuyến nghị 12-15%)' : ' (phù hợp chính sách ưu tiên)'}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-0.5">●</span>
+                <span>
+                  Rổ 2 (Tân SV) có <strong>{statsData.baskets[1]?.count}</strong> hồ sơ
+                  {statsData.baskets[1]?.count > statsData.totalApproved * 0.6 ? ', cần mở rộng chỗ ở cho năm 1' : ', phù hợp với chỉ tiêu'}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-500 mt-0.5">●</span>
+                <span>
+                  Rổ 3 có <strong>{statsData.baskets[2]?.count}</strong> khóa cũ, 
+                  {statsData.baskets[2]?.count < statsData.baskets[1]?.count * 0.5 ? ' nhu cầu thấp hơn tân sinh viên' : ' cạnh tranh cao'}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Insight 2: Gender Balance */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+              <h4 className="font-bold text-slate-800">Cân bằng Giới tính</h4>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-0.5">●</span>
+                <span>
+                  Tỷ lệ Nam/Nữ: <strong>{statsData.totalApproved > 0 ? (statsData.genderRatio.male / statsData.genderRatio.female).toFixed(2) : 'N/A'}</strong>
+                  {statsData.genderRatio.male > statsData.genderRatio.female * 1.5 ? ' (nam nhiều hơn đáng kể)' : 
+                   statsData.genderRatio.female > statsData.genderRatio.male * 1.5 ? ' (nữ nhiều hơn đáng kể)' : 
+                   ' (tương đối cân bằng)'}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-pink-500 mt-0.5">●</span>
+                <span>
+                  {statsData.genderRatio.male > statsData.genderRatio.female ? 
+                    `Nam chiếm ${((statsData.genderRatio.male / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nam` :
+                    `Nữ chiếm ${((statsData.genderRatio.female / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nữ`}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-indigo-500 mt-0.5">●</span>
+                <span>
+                  Phân bổ giới tính trong Rổ 2 (Tân SV) cần ưu tiên khi bố trí phòng
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Insight 3: Geographic & Academic Distribution */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+              <h4 className="font-bold text-slate-800">Nguồn & Khoa</h4>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-700">
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 mt-0.5">●</span>
+                <span>
+                  Top tỉnh: <strong>{statsData.provinces[0]?.name || 'N/A'}</strong> có{' '}
+                  <strong>{statsData.provinces[0]?.count || 0}</strong> sinh viên
+                  {statsData.provinces[0]?.count > statsData.totalApproved * 0.2 ? ' (tập trung cao)' : ''}
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">●</span>
+                <span>
+                  Khoa <strong>{statsData.faculties[0]?.name || 'N/A'}</strong> nhiều nhất với{' '}
+                  <strong>{statsData.faculties[0]?.value || 0}</strong> hồ sơ
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-500 mt-0.5">●</span>
+                <span>
+                  Năm 1 có <strong>{statsData.cohorts.find(c => c.name === 'Năm 1')?.value || 0}</strong> hồ sơ,
+                  {statsData.cohorts.find(c => c.name === 'Năm 1')?.value > statsData.totalApproved * 0.5 ? 
+                    ' cần ưu tiên hỗ trợ tân sinh viên' : 
+                    ' tỷ lệ phù hợp'}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gender in each basket - Stacked Bar Chart */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
@@ -276,8 +391,8 @@ const RegistrationStatistics = ({ regs }) => {
                 <YAxis />
                 <Tooltip contentStyle={{ borderRadius: '8px' }} />
                 <Legend />
-                <Bar dataKey="Nam" stackId="a" fill="#7fb3d5" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="Nữ" stackId="a" fill="#f1948a" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Nam" stackId="a" fill="#bfdbfe" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="Nữ" stackId="a" fill="#fbcfe8" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -307,7 +422,7 @@ const RegistrationStatistics = ({ regs }) => {
                     dataKey="value"
                   >
                     {statsData.priorityBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={['#fecaca', '#fed7aa', '#fde68a', '#d9f99d', '#a7f3d0', '#e0e7ff'][index % 6]} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -347,13 +462,19 @@ const RegistrationStatistics = ({ regs }) => {
                 />
                 <YAxis />
                 <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
-                <Bar dataKey="count" fill="#f6b26b" radius={[8, 8, 0, 0]} barSize={60} />
+                <defs>
+                  <linearGradient id="provinceGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#fed7aa" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#fdba74" stopOpacity={0.7} />
+                  </linearGradient>
+                </defs>
+                <Bar dataKey="count" fill="url(#provinceGradient)" radius={[8, 8, 0, 0]} barSize={60} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Top 5 Faculties - Vertical Bar Chart */}
+        {/* Top 10 Faculties - Horizontal Bar Chart */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <School className="text-indigo-600" size={24} />
@@ -364,21 +485,27 @@ const RegistrationStatistics = ({ regs }) => {
           </div>
 
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={statsData.faculties} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  tick={{ fontSize: 11, fill: '#475569' }}
-                />
-                <YAxis />
-                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
-                <Bar dataKey="value" fill="#48c9b0" radius={[8, 8, 0, 0]} barSize={60} />
-              </BarChart>
-            </ResponsiveContainer>
+            {statsData.faculties.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={statsData.faculties} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#475569' }} />
+                  <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
+                  <defs>
+                    <linearGradient id="facultyGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#c7d2fe" stopOpacity={0.8} />
+                      <stop offset="100%" stopColor="#818cf8" stopOpacity={0.9} />
+                    </linearGradient>
+                  </defs>
+                  <Bar dataKey="value" fill="url(#facultyGradient)" radius={[0, 8, 8, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400">
+                Không có dữ liệu khoa
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -402,32 +529,55 @@ const RegistrationStatistics = ({ regs }) => {
                 <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#475569' }} />
                 <YAxis />
                 <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
-                <Bar dataKey="count" fill="#3498db" radius={[8, 8, 0, 0]} barSize={60} />
+                <defs>
+                  <linearGradient id="yearlyGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#93c5fd" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.7} />
+                  </linearGradient>
+                </defs>
+                <Bar dataKey="count" fill="url(#yearlyGradient)" radius={[8, 8, 0, 0]} barSize={60} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Cohort Breakdown */}
+        {/* Cohort Breakdown - Pie Chart */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <GraduationCap className="text-slate-600" size={24} />
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Phân bổ theo Khóa học</h3>
-              <p className="text-sm text-slate-500">Dự báo "ra quân" và chuẩn bị tuyển sinh</p>
+              <h3 className="text-lg font-bold text-slate-900">Phân bổ theo các Khóa</h3>
+              <p className="text-sm text-slate-500">Chương trình 4 năm học</p>
             </div>
           </div>
 
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={statsData.cohorts} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#475569' }} />
-                <YAxis />
-                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
-                <Bar dataKey="value" fill="#9b59b6" radius={[8, 8, 0, 0]} barSize={60} />
-              </BarChart>
-            </ResponsiveContainer>
+            {statsData.cohorts.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statsData.cohorts}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                    outerRadius={100}
+                    dataKey="value"
+                  >
+                    <Cell fill="#fecaca" />
+                    <Cell fill="#bfdbfe" />
+                    <Cell fill="#ddd6fe" />
+                    <Cell fill="#fde68a" />
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400">
+                Không có dữ liệu khóa
+              </div>
+            )}
           </div>
         </div>
       </div>

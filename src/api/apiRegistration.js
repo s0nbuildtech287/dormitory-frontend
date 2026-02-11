@@ -365,3 +365,38 @@ export const updateScoringWeights = async (scoringWeights) => {
     throw new Error(error.message || 'Lỗi kết nối đến server');
   }
 };
+
+/**
+ * Recalculate AI scores for all registrations
+ * Used after updating scoring weights/settings
+ * @returns {Promise<Object>} Recalculation result
+ */
+export const recalculateAllScores = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/recalculate-scores`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Tính lại điểm thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Target, Zap, BarChart3, Info, ChevronDown, ChevronUp, AlertCircle, CheckCircle } from "lucide-react";
-import { getScoringWeights, updateScoringWeights } from "../../../api/apiRegistration.js";
+import { getScoringWeights, updateScoringWeights, recalculateAllScores } from "../../../api/apiRegistration.js";
 
 const RegistrationSettings = () => {
   // Quota Settings state
@@ -60,15 +60,22 @@ const RegistrationSettings = () => {
   const handleUpdateSettings = async () => {
     try {
       setIsLoadingSettings(true);
-      // Prepare composite settings object
+      setSaveStatus("saving");
+      
+      // Step 1: Update settings
       const allSettings = { quotas, weights, scoreMappings };
       await updateScoringWeights(allSettings);
+      
+      // Step 2: Recalculate all registration scores with new weights
+      setSaveStatus("recalculating");
+      await recalculateAllScores();
+      
       setSaveStatus("success");
-      setTimeout(() => setSaveStatus(null), 3000);
+      setTimeout(() => setSaveStatus(null), 5000);
     } catch (error) {
       console.error("Error updating settings:", error);
       setSaveStatus("error");
-      setTimeout(() => setSaveStatus(null), 3000);
+      setTimeout(() => setSaveStatus(null), 5000);
     } finally {
       setIsLoadingSettings(false);
     }
@@ -101,13 +108,21 @@ const RegistrationSettings = () => {
           >
             {saveStatus === "success" && <CheckCircle size={18} />}
             {saveStatus === "error" && <AlertCircle size={18} />}
-            {isLoadingSettings ? "Đang lưu..." : "Lưu tất cả cài đặt"}
+            {isLoadingSettings ? 
+              (saveStatus === "recalculating" ? "Đang tính lại điểm..." : "Đang lưu...") : 
+              "Lưu tất cả cài đặt"}
           </button>
         </div>
         {saveStatus === "success" && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-green-700 text-sm">
             <CheckCircle size={16} />
-            Cài đặt đã được lưu thành công!
+            Cài đặt đã được lưu và điểm đã được tính lại cho tất cả hồ sơ!
+          </div>
+        )}
+        {saveStatus === "recalculating" && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2 text-blue-700 text-sm">
+            <AlertCircle size={16} className="animate-pulse" />
+            Đang tính lại điểm cho tất cả hồ sơ đăng ký...
           </div>
         )}
         {saveStatus === "error" && (
@@ -173,7 +188,7 @@ const RegistrationSettings = () => {
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 50-60% | Ưu tiên sinh viên năm 1 xa nhà
+                  <strong>Mặc định:</strong> 50-60% | Ưu tiên sinh viên năm nhất
                 </p>
               </div>
 
