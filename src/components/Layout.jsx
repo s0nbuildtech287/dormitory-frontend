@@ -2,6 +2,7 @@ import React from "react";
 import { Menu, LogOut } from "lucide-react";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "../router/index.js";
 import { UserRole } from "../utils/types.js";
+import { BACKEND_URL } from "../utils/constants.jsx";
 import * as LucideIcons from "lucide-react";
 
 /**
@@ -54,9 +55,12 @@ const Layout = ({ user, onLogout, activeTab, setActiveTab, children }) => {
         {/* Logo */}
         <div className="p-5 flex items-center justify-between border-b border-slate-800">
           {isSidebarOpen && (
-            <span className="font-bold text-xl tracking-tight text-blue-400">
-              Dormitory Unis
-            </span>
+            <div className="flex items-center">
+              <img src={`${BACKEND_URL}/uploads/logo/logo.png`} alt="Logo" className="h-10 w-10 mr-2" />
+              <span className="font-bold text-lg tracking-tight text-blue-400">
+                Dormitory <span className="text-white">Unis</span>
+              </span>
+            </div>
           )}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
