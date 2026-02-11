@@ -318,7 +318,7 @@ const RegistrationManagement = () => {
       )}
 
       {activeSubTab === "adjustment" && (
-        <RegistrationSettings />
+        <RegistrationSettings onSettingsUpdated={fetchRegistrations} />
       )}
     </div>
   );

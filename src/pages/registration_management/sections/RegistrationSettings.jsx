@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Target, Zap, BarChart3, Info, ChevronDown, ChevronUp, AlertCircle, CheckCircle } from "lucide-react";
 import { getScoringWeights, updateScoringWeights, recalculateAllScores } from "../../../api/apiRegistration.js";
 
-const RegistrationSettings = () => {
+const RegistrationSettings = ({ onSettingsUpdated }) => {
   // Quota Settings state
   const [quotas, setQuotas] = useState({
     totalSlots: 1000,
@@ -59,9 +59,64 @@ const RegistrationSettings = () => {
     try {
       setIsLoadingSettings(true);
       const data = await getScoringWeights();
-      if (data.success) {
-        // Map API data to state if available
-        // This is optional - you can keep default values or merge with API
+      if (data.success && data.data && data.data.value) {
+        const settingsValue = data.data.value;
+        
+        // Load quotas
+        if (settingsValue.quotas) {
+          setQuotas({
+            totalSlots: settingsValue.quotas.totalSlots || 1000,
+            policy_priority: settingsValue.quotas.policy_priority || 10,
+            freshmen: settingsValue.quotas.freshmen || 60,
+            seniors: settingsValue.quotas.seniors || 30,
+            waterfall_enabled: settingsValue.quotas.waterfall_enabled !== undefined ? settingsValue.quotas.waterfall_enabled : true,
+          });
+        }
+        
+        // Load weights (3 basket structure)
+        if (settingsValue.weights) {
+          if (settingsValue.weights.basket1 || settingsValue.weights.basket2 || settingsValue.weights.basket3) {
+            setWeights({
+              basket1: {
+                w1_priority: settingsValue.weights.basket1?.w1_priority || 0.4,
+                w2_year: settingsValue.weights.basket1?.w2_year || 0.3,
+                w3_gpa: settingsValue.weights.basket1?.w3_gpa || 0.3,
+              },
+              basket2: {
+                w1_priority: settingsValue.weights.basket2?.w1_priority || 0.2,
+                w2_year: settingsValue.weights.basket2?.w2_year || 0.5,
+                w3_gpa: settingsValue.weights.basket2?.w3_gpa || 0.3,
+              },
+              basket3: {
+                w1_priority: settingsValue.weights.basket3?.w1_priority || 0.1,
+                w2_year: settingsValue.weights.basket3?.w2_year || 0.2,
+                w3_gpa: settingsValue.weights.basket3?.w3_gpa || 0.7,
+              },
+            });
+          }
+        }
+        
+        // Load score mappings
+        if (settingsValue.scoreMappings) {
+          setScoreMappings({
+            priority: {
+              absolute_policy: settingsValue.scoreMappings.priority?.absolute_policy || 100,
+              priority_area: settingsValue.scoreMappings.priority?.priority_area || 70,
+              other_objects: settingsValue.scoreMappings.priority?.other_objects || 30,
+              non_priority: settingsValue.scoreMappings.priority?.non_priority || 0,
+            },
+            year: {
+              year1: settingsValue.scoreMappings.year?.year1 || 100,
+              year2: settingsValue.scoreMappings.year?.year2 || 60,
+              year3: settingsValue.scoreMappings.year?.year3 || 40,
+              year4: settingsValue.scoreMappings.year?.year4 || 20,
+            },
+            gpa: {
+              conversion_factor: settingsValue.scoreMappings.gpa?.conversion_factor || 25,
+              min_gpa_filter: settingsValue.scoreMappings.gpa?.min_gpa_filter || 2.0,
+            },
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -83,6 +138,14 @@ const RegistrationSettings = () => {
       setSaveStatus("recalculating");
       await recalculateAllScores();
       
+      // Step 3: Fetch updated settings to confirm save
+      await fetchSettings();
+      
+      // Step 4: Notify parent to reload registrations
+      if (onSettingsUpdated) {
+        onSettingsUpdated();
+      }
+      
       setSaveStatus("success");
       setTimeout(() => setSaveStatus(null), 5000);
     } catch (error) {
@@ -103,7 +166,7 @@ const RegistrationSettings = () => {
   const quotaValid = Math.abs(totalQuota - 100) < 1;
 
   // Fetch settings when component mounts
-  useMemo(() => {
+  useEffect(() => {
     fetchSettings();
   }, []);
 

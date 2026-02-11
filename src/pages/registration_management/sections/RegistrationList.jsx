@@ -245,7 +245,7 @@ const RegistrationList = ({
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b-2 border-slate-300">
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">
-            Bảng hồ sơ đăng ký ({totalItems} kết quả) - chờ duyệt {quotaBasedPendingCount} hồ sơ / {totalItems} hồ sơ
+            Bảng hồ sơ đăng ký ({totalItems} kết quả) - chờ duyệt {quotaBasedPendingCount} / {totalItems} hồ sơ
           </h3>
         </div>
         <div className="overflow-x-auto">
