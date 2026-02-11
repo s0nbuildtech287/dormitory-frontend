@@ -11,11 +11,23 @@ const RegistrationSettings = () => {
     waterfall_enabled: true,
   });
 
-  // Weighting Factors state
+  // Weighting Factors state - Separate weights for each basket
   const [weights, setWeights] = useState({
-    w1_priority: 0.25,
-    w2_year: 0.35,
-    w3_gpa: 0.4,
+    basket1: {
+      w1_priority: 0.4,
+      w2_year: 0.3,
+      w3_gpa: 0.3,
+    },
+    basket2: {
+      w1_priority: 0.2,
+      w2_year: 0.5,
+      w3_gpa: 0.3,
+    },
+    basket3: {
+      w1_priority: 0.1,
+      w2_year: 0.2,
+      w3_gpa: 0.7,
+    },
   });
 
   // Score Mapping Rules state
@@ -82,8 +94,10 @@ const RegistrationSettings = () => {
   };
 
   // Validation helpers
-  const totalWeights = (weights.w1_priority + weights.w2_year + weights.w3_gpa).toFixed(2);
-  const weightsValid = Math.abs(parseFloat(totalWeights) - 1) < 0.01;
+  const basket1Total = (weights.basket1.w1_priority + weights.basket1.w2_year + weights.basket1.w3_gpa).toFixed(2);
+  const basket2Total = (weights.basket2.w1_priority + weights.basket2.w2_year + weights.basket2.w3_gpa).toFixed(2);
+  const basket3Total = (weights.basket3.w1_priority + weights.basket3.w2_year + weights.basket3.w3_gpa).toFixed(2);
+  const weightsValid = Math.abs(parseFloat(basket1Total) - 1) < 0.01 && Math.abs(parseFloat(basket2Total) - 1) < 0.01 && Math.abs(parseFloat(basket3Total) - 1) < 0.01;
   const totalQuota = quotas.policy_priority + quotas.freshmen + quotas.seniors;
   const quotaValid = Math.abs(totalQuota - 100) < 1;
 
@@ -247,87 +261,242 @@ const RegistrationSettings = () => {
               <Zap size={24} className="text-amber-600" />
             </div>
             <div className="text-left">
-              <h3 className="text-xl font-bold text-slate-900">2. Cấu hình Trọng số điểm (Weighting Factors)</h3>
-              <p className="text-sm text-slate-500 mt-1">Điều chỉnh hệ số cho công thức tính điểm (W₁ + W₂ + W₃ = 1.0)</p>
+              <h3 className="text-xl font-bold text-slate-900">2. Cấu hình Trọng số điểm theo Rổ</h3>
+              <p className="text-sm text-slate-500 mt-1">Thiết lập hệ số riêng cho từng rổ (W₁ + W₂ + W₃ = 1.0 cho mỗi rổ)</p>
             </div>
           </div>
           {expandedSection === "weights" ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
         </button>
 
         {expandedSection === "weights" && (
-          <div className="px-8 pb-8 border-t border-slate-100 space-y-6">
-            {/* Weight Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* W1 Priority */}
-              <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={weights.w1_priority}
-                    onChange={(e) => setWeights({ ...weights, w1_priority: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-50 outline-none"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.w1_priority * 100).toFixed(0)}%</span>
+          <div className="px-8 pb-8 border-t border-slate-100 space-y-8">
+            {/* Basket 1 Weights */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-bold text-rose-600 border-b border-rose-100 pb-2">Rổ 1: Chính sách ưu tiên</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket1.w1_priority}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket1: { ...weights.basket1, w1_priority: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-rose-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket1.w1_priority * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Quan trọng nhất cho rổ chính sách</p>
                 </div>
-                <p className="text-xs text-slate-500">Quyết định mức độ quan trọng của hoàn cảnh gia đình</p>
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₂: Trọng số Năm học</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket1.w2_year}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket1: { ...weights.basket1, w2_year: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-rose-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket1.w2_year * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Ít quan trọng hơn cho rổ này</p>
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket1.w3_gpa}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket1: { ...weights.basket1, w3_gpa: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-rose-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket1.w3_gpa * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Điểm trung bình quan trọng</p>
+                </div>
               </div>
-
-              {/* W2 Year */}
-              <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">W₂: Trọng số Năm học</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={weights.w2_year}
-                    onChange={(e) => setWeights({ ...weights, w2_year: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-50 outline-none"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.w2_year * 100).toFixed(0)}%</span>
-                </div>
-                <p className="text-xs text-slate-500">Quyết định mức độ ưu tiên cho các khóa mới</p>
-              </div>
-
-              {/* W3 GPA */}
-              <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={weights.w3_gpa}
-                    onChange={(e) => setWeights({ ...weights, w3_gpa: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-amber-50 outline-none"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.w3_gpa * 100).toFixed(0)}%</span>
-                </div>
-                <p className="text-xs text-slate-500">Quyết định mức độ ưu tiên cho thành tích học tập</p>
+              <div className="flex items-center justify-between bg-rose-50 p-3 rounded-lg">
+                <span className="text-sm font-medium text-rose-700">Tổng trọng số Rổ 1:</span>
+                <span className={`font-bold ${parseFloat(basket1Total) === 1 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {basket1Total} {parseFloat(basket1Total) === 1 ? '✓' : '✗'}
+                </span>
               </div>
             </div>
 
-            {/* Total Weights Display */}
-            <div className={`p-4 rounded-xl flex items-center justify-between ${weightsValid ? "bg-green-50 border border-green-200" : "bg-orange-50 border border-orange-200"}`}>
-              <div className="flex items-center gap-2">
-                <AlertCircle size={18} className={weightsValid ? "text-green-600" : "text-orange-600"} />
-                <div>
-                  <p className={`font-bold ${weightsValid ? "text-green-900" : "text-orange-900"}`}>Tổng trọng số: {totalWeights}</p>
-                  <p className={`text-xs ${weightsValid ? "text-green-700" : "text-orange-700"}`}>{weightsValid ? "✓ Hợp lệ (tổng = 1.0)" : "⚠ Phải bằng 1.0 để hợp lệ"}</p>
+            {/* Basket 2 Weights */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-bold text-blue-600 border-b border-blue-100 pb-2">Rổ 2: Tân sinh viên</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket2.w1_priority}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket2: { ...weights.basket2, w1_priority: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket2.w1_priority * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Ít quan trọng cho tân sinh viên</p>
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₂: Trọng số Năm học</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket2.w2_year}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket2: { ...weights.basket2, w2_year: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket2.w2_year * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Quan trọng nhất cho rổ tân sinh viên</p>
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket2.w3_gpa}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket2: { ...weights.basket2, w3_gpa: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket2.w3_gpa * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Điểm đầu vào quan trọng</p>
                 </div>
               </div>
+              <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                <span className="text-sm font-medium text-blue-700">Tổng trọng số Rổ 2:</span>
+                <span className={`font-bold ${parseFloat(basket2Total) === 1 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {basket2Total} {parseFloat(basket2Total) === 1 ? '✓' : '✗'}
+                </span>
+              </div>
+            </div>
+
+            {/* Basket 3 Weights */}
+            <div className="space-y-4">
+              <h4 className="text-lg font-bold text-purple-600 border-b border-purple-100 pb-2">Rổ 3: Sinh viên khóa cũ</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket3.w1_priority}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket3: { ...weights.basket3, w1_priority: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket3.w1_priority * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Ít quan trọng cho khóa cũ</p>
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₂: Trọng số Năm học</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket3.w2_year}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket3: { ...weights.basket3, w2_year: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket3.w2_year * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Ít quan trọng cho rổ này</p>
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={weights.basket3.w3_gpa}
+                      onChange={(e) => setWeights({
+                        ...weights,
+                        basket3: { ...weights.basket3, w3_gpa: parseFloat(e.target.value) || 0 }
+                      })}
+                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket3.w3_gpa * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="text-xs text-slate-500">Quan trọng nhất cho rổ khóa cũ</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg">
+                <span className="text-sm font-medium text-purple-700">Tổng trọng số Rổ 3:</span>
+                <span className={`font-bold ${parseFloat(basket3Total) === 1 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {basket3Total} {parseFloat(basket3Total) === 1 ? '✓' : '✗'}
+                </span>
+              </div>
+            </div>
+
+            {/* Overall Validation */}
+            <div className={`p-4 rounded-xl ${weightsValid ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'}`}>
+              <div className="flex items-center gap-2">
+                {weightsValid ? <CheckCircle className="text-emerald-600" size={20} /> : <AlertCircle className="text-rose-600" size={20} />}
+                <span className={`font-bold ${weightsValid ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  {weightsValid ? 'Tất cả trọng số hợp lệ' : 'Một số trọng số không hợp lệ'}
+                </span>
+              </div>
+              <p className={`text-sm mt-1 ${weightsValid ? 'text-emerald-600' : 'text-rose-600'}`}>
+                Mỗi rổ phải có tổng trọng số = 1.0 để hợp lệ
+              </p>
             </div>
 
             <div className="p-4 bg-blue-50 rounded-xl flex items-start gap-3">
               <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
               <p className="text-sm text-blue-700">
-                <strong>Gợi ý:</strong> Tăng W₃ cao cho Rổ 3 nếu muốn KTX tập trung vào sinh viên có học lực giỏi.
+                <strong>Gợi ý:</strong> Tăng W₃ cho Rổ 3 nếu muốn ưu tiên sinh viên có học lực giỏi. Tăng W₁ cho Rổ 1 nếu muốn ưu tiên hoàn cảnh khó khăn.
               </p>
             </div>
           </div>
