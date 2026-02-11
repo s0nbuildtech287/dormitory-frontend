@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
 import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle } from "lucide-react";
 import ModelimportCSV from "./ModelimportCSV.jsx";
+import { getScoringWeights } from "../../../api/apiRegistration.js";
 
 // Helper function to determine priority group
 const getGroupName = (year, priorityReasons) => {
@@ -71,6 +72,29 @@ const RegistrationList = ({
   const [filterGroup, setFilterGroup] = useState("All");
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
   const [isConfirming, setIsConfirming] = useState(null);
+  
+  // Settings state for quotas
+  const [quotas, setQuotas] = useState({
+    totalSlots: 1000,
+    policy_priority: 10,
+    freshmen: 60,
+    seniors: 30,
+  });
+  
+  // Fetch quotas from settings when component mounts
+  useEffect(() => {
+    const fetchQuotas = async () => {
+      try {
+        const data = await getScoringWeights();
+        if (data.success && data.data && data.data.value && data.data.value.quotas) {
+          setQuotas(data.data.value.quotas);
+        }
+      } catch (error) {
+        console.error('Error fetching quotas:', error);
+      }
+    };
+    fetchQuotas();
+  }, [regs]);
 
   const filteredRegs = regs
     .filter((reg) => {
@@ -102,11 +126,11 @@ const RegistrationList = ({
   const currentItems = filteredRegs.slice(startIndex, endIndex);
 
   // Calculate quota-based pending count for current filter group
-  const totalSlots = 1000; // Default total slots
+  const totalSlots = quotas.totalSlots || 1000;
   const groupQuotas = {
-    'Chính sách': Math.round(totalSlots * 0.10), // 10%
-    'Tân sinh viên': Math.round(totalSlots * 0.60), // 60%
-    'Sinh viên khoá cũ': Math.round(totalSlots * 0.30), // 30%
+    'Chính sách': Math.round((quotas.policy_priority / 100) * totalSlots),
+    'Tân sinh viên': Math.round((quotas.freshmen / 100) * totalSlots),
+    'Sinh viên khoá cũ': Math.round((quotas.seniors / 100) * totalSlots),
   };
   
   // Calculate available slots for current filter group
@@ -555,34 +579,58 @@ const RegistrationList = ({
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-2">Lý do đánh giá</p>
-                    {selectedRegDetail.ai_reasoning && typeof selectedRegDetail.ai_reasoning === "object" ? (
-                      <div className="space-y-2 text-sm">
-                        {selectedRegDetail.ai_reasoning.description && <p className="text-slate-900 font-bold">{selectedRegDetail.ai_reasoning.description}</p>}
-                        {selectedRegDetail.ai_reasoning.priority_score !== undefined && (
-                          <p className="text-slate-700">
-                            • Điểm ưu tiên: <span className="font-bold">{selectedRegDetail.ai_reasoning.priority_score}</span>
-                            {selectedRegDetail.ai_reasoning.weight_priority && ` (W: ${selectedRegDetail.ai_reasoning.weight_priority})`}
-                          </p>
-                        )}
-                        {selectedRegDetail.ai_reasoning.year_score !== undefined && (
-                          <p className="text-slate-700">
-                            • Điểm năm học: <span className="font-bold">{selectedRegDetail.ai_reasoning.year_score}</span>
-                            {selectedRegDetail.ai_reasoning.weight_year && ` (W: ${selectedRegDetail.ai_reasoning.weight_year})`}
-                          </p>
-                        )}
-                        {selectedRegDetail.ai_reasoning.gpa_score !== undefined && (
-                          <p className="text-slate-700">
-                            • Điểm GPA: <span className="font-bold">{selectedRegDetail.ai_reasoning.gpa_score}</span>
-                            {selectedRegDetail.ai_reasoning.weight_gpa && ` (W: ${selectedRegDetail.ai_reasoning.weight_gpa})`}
-                          </p>
-                        )}
-                        {selectedRegDetail.ai_reasoning.formula && <p className="text-slate-600 text-xs italic mt-2">Công thức: {selectedRegDetail.ai_reasoning.formula}</p>}
-                      </div>
-                    ) : selectedRegDetail.ai_reasoning ? (
-                      <p className="text-slate-900 text-sm">{selectedRegDetail.ai_reasoning}</p>
-                    ) : (
-                      <p className="text-slate-500 italic">Không có thông tin</p>
-                    )}
+                    {(() => {
+                      // Parse ai_reasoning if it's a string
+                      let reasoning = selectedRegDetail.ai_reasoning;
+                      if (typeof reasoning === 'string') {
+                        try {
+                          reasoning = JSON.parse(reasoning);
+                        } catch (e) {
+                          // If parse fails, keep as string
+                        }
+                      }
+                      
+                      if (reasoning && typeof reasoning === "object") {
+                        return (
+                          <div className="space-y-2 text-sm">
+                            {reasoning.description && <p className="text-slate-900 font-bold">{reasoning.description}</p>}
+                            {reasoning.basket && (
+                              <p className="text-slate-700">
+                                • Rổ: <span className="font-bold">{reasoning.basket}</span> - {reasoning.basket_name}
+                              </p>
+                            )}
+                            {reasoning.priority_score !== undefined && (
+                              <p className="text-slate-700">
+                                • Điểm ưu tiên: <span className="font-bold">{reasoning.priority_score}</span>
+                                {reasoning.basket_weights?.w1_priority && ` (W₁: ${reasoning.basket_weights.w1_priority})`}
+                              </p>
+                            )}
+                            {reasoning.year_score !== undefined && (
+                              <p className="text-slate-700">
+                                • Điểm năm học: <span className="font-bold">{reasoning.year_score}</span>
+                                {reasoning.basket_weights?.w2_year && ` (W₂: ${reasoning.basket_weights.w2_year})`}
+                              </p>
+                            )}
+                            {reasoning.gpa_score !== undefined && (
+                              <p className="text-slate-700">
+                                • Điểm GPA: <span className="font-bold">{reasoning.gpa_score}</span>
+                                {reasoning.basket_weights?.w3_gpa && ` (W₃: ${reasoning.basket_weights.w3_gpa})`}
+                              </p>
+                            )}
+                            {reasoning.final_score !== undefined && (
+                              <p className="text-slate-700">
+                                • Điểm cuối cùng: <span className="font-bold text-blue-700">{reasoning.final_score.toFixed(2)}</span>
+                              </p>
+                            )}
+                            {reasoning.formula && <p className="text-slate-600 text-xs italic mt-2 bg-blue-50 p-2 rounded">📐 {reasoning.formula}</p>}
+                          </div>
+                        );
+                      } else if (reasoning) {
+                        return <p className="text-slate-900 text-sm">{String(reasoning)}</p>;
+                      } else {
+                        return <p className="text-slate-500 italic">Không có thông tin</p>;
+                      }
+                    })()}
                   </div>
                 </div>
               </div>
