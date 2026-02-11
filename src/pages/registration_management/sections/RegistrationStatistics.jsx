@@ -210,7 +210,7 @@ const RegistrationStatistics = ({ regs }) => {
         {/* Total Approved */}
         <StatCard
           icon={UserCheck}
-          label="Tổng hồ sơ đã duyệt"
+          label="Tổng hồ sơ đã ứng tuyển"
           value={statsData.totalApproved}
           subValue="sinh viên"
           color="emerald"
@@ -219,21 +219,21 @@ const RegistrationStatistics = ({ regs }) => {
         {/* Baskets - R1, R2, R3 */}
         <StatCard
           icon={Target}
-          label="Rổ 1: Chính sách"
+          label="Nhóm 1: Chính sách"
           value={statsData.baskets[0]?.count || 0}
           subValue="sinh viên"
           color="rose"
         />
         <StatCard
           icon={School}
-          label="Rổ 2: Tân sinh viên"
+          label="Nhóm 2: Tân sinh viên"
           value={statsData.baskets[1]?.count || 0}
           subValue="sinh viên"
           color="blue"
         />
         <StatCard
           icon={GraduationCap}
-          label="Rổ 3: Khóa cũ"
+          label="Nhóm 3: Khóa cũ"
           value={statsData.baskets[2]?.count || 0}
           subValue="sinh viên"
           color="purple"

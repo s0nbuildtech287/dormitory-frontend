@@ -5,9 +5,10 @@ import { getScoringWeights, updateScoringWeights, recalculateAllScores } from ".
 const RegistrationSettings = () => {
   // Quota Settings state
   const [quotas, setQuotas] = useState({
-    policy_priority: 12,
-    freshmen: 55,
-    seniors: 28,
+    totalSlots: 1000,
+    policy_priority: 10,
+    freshmen: 60,
+    seniors: 30,
     waterfall_enabled: true,
   });
 
@@ -156,7 +157,7 @@ const RegistrationSettings = () => {
             </div>
             <div className="text-left">
               <h3 className="text-xl font-bold text-slate-900">1. Cấu hình Chỉ tiêu (Quota Settings)</h3>
-              <p className="text-sm text-slate-500 mt-1">Phân bổ tỷ lệ phần trăm chỗ ở cho các nhóm ưu tiên</p>
+              <p className="text-sm text-slate-500 mt-1">Cấu hình tổng số slot và phân bổ tỷ lệ phần trăm chỗ ở cho các nhóm ưu tiên</p>
             </div>
           </div>
           {expandedSection === "quotas" ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
@@ -164,11 +165,29 @@ const RegistrationSettings = () => {
 
         {expandedSection === "quotas" && (
           <div className="px-8 pb-8 border-t border-slate-100 space-y-6">
+            {/* Total Slots Input */}
+            <div className="space-y-3">
+              <label className="block text-sm font-bold text-slate-900">Tổng số lượng Slot</label>
+              <div className="relative max-w-xs">
+                <input
+                  type="number"
+                  value={quotas.totalSlots}
+                  onChange={(e) => setQuotas({ ...quotas, totalSlots: parseInt(e.target.value) || 0 })}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
+                  min="1"
+                  step="1"
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                <strong>Mặc định:</strong> 1000 | Tổng số chỗ ở có sẵn
+              </p>
+            </div>
+
             {/* Quota Inputs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Policy Priority */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Rổ 1: Ưu tiên chính sách (%)</label>
+                <label className="block text-sm font-bold text-slate-900">Rổ 1: Ưu tiên chính sách ({quotas.policy_priority}%) - {Math.round((quotas.policy_priority / 100) * quotas.totalSlots)} slots</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -182,13 +201,13 @@ const RegistrationSettings = () => {
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 10-15% | Dành cho hộ nghèo, khuyết tật, lưu học sinh
+                  <strong>Mặc định:</strong> 10% | Dành cho hộ nghèo, khuyết tật, lưu học sinh
                 </p>
               </div>
 
               {/* Freshmen */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Rổ 2: Tân sinh viên (%)</label>
+                <label className="block text-sm font-bold text-slate-900">Rổ 2: Tân sinh viên ({quotas.freshmen}%) - {Math.round((quotas.freshmen / 100) * quotas.totalSlots)} slots</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -202,13 +221,13 @@ const RegistrationSettings = () => {
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 50-60% | Ưu tiên sinh viên năm nhất
+                  <strong>Mặc định:</strong> 60% | Ưu tiên sinh viên năm nhất
                 </p>
               </div>
 
               {/* Seniors */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Rổ 3: Sinh viên khóa cũ (%)</label>
+                <label className="block text-sm font-bold text-slate-900">Rổ 3: Sinh viên khóa cũ ({quotas.seniors}%) - {Math.round((quotas.seniors / 100) * quotas.totalSlots)} slots</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -222,7 +241,7 @@ const RegistrationSettings = () => {
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 25-30% | Cạnh tranh bằng GPA
+                  <strong>Mặc định:</strong> 40% | Cạnh tranh bằng GPA
                 </p>
               </div>
             </div>
@@ -232,7 +251,7 @@ const RegistrationSettings = () => {
               <div className="flex items-center gap-2">
                 <AlertCircle size={18} className={quotaValid ? "text-green-600" : "text-orange-600"} />
                 <div>
-                  <p className={`font-bold ${quotaValid ? "text-green-900" : "text-orange-900"}`}>Tổng chỉ tiêu: {totalQuota.toFixed(1)}%</p>
+                  <p className={`font-bold ${quotaValid ? "text-green-900" : "text-orange-900"}`}>Tổng chỉ tiêu: {totalQuota.toFixed(1)}% ({quotas.totalSlots} slots)</p>
                   <p className={`text-xs ${quotaValid ? "text-green-700" : "text-orange-700"}`}>{quotaValid ? "✓ Hợp lệ (tổng = 100%)" : "⚠ Phải bằng 100% để hợp lệ"}</p>
                 </div>
               </div>
