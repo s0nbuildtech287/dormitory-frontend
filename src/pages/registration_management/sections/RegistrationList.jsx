@@ -294,19 +294,19 @@ const RegistrationList = ({
                     </td>
                     <td className="px-6 py-2 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Xem chi tiết">
+                        <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Xem chi tiết">
                           <Eye size={16} />
                         </button>
                         <button
                           onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.APPROVED })}
-                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                           title="Phê duyệt"
                         >
                           <CheckCircle2 size={16} />
                         </button>
                         <button
                           onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.REJECTED })}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
                           title="Từ chối"
                         >
                           <XCircle size={16} />
