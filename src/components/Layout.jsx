@@ -56,9 +56,9 @@ const Layout = ({ user, onLogout, activeTab, setActiveTab, children }) => {
         <div className="p-5 flex items-center justify-between border-b border-slate-800">
           {isSidebarOpen && (
             <div className="flex items-center">
-              <img src={`${BACKEND_URL}/uploads/logo/logo.png`} alt="Logo" className="h-10 w-10 mr-2" />
-              <span className="font-bold text-lg tracking-tight text-blue-400">
-                Dormitory <span className="text-white">Unis</span>
+              <img src={`${BACKEND_URL}/uploads/logo/logo.png`} alt="Logo" className="h-10 w-10 mr-4" />
+              <span className="font-bold text-xl tracking-tight text-blue-400">
+                Dormitory<br /><span className="text-white">Unis TLU</span>
               </span>
             </div>
           )}
