@@ -280,17 +280,24 @@ const RegistrationList = ({
                       </div>
                     </td>
                     <td className="px-6 py-2 border-r-2 border-slate-300">
-                      <span
-                        className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                          reg.status === RegistrationStatus.PENDING
-                            ? "bg-amber-100 text-amber-700"
-                            : reg.status === RegistrationStatus.APPROVED
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-rose-100 text-rose-700"
-                        }`}
-                      >
-                        {reg.status}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
+                            reg.status === RegistrationStatus.PENDING
+                              ? "bg-amber-100 text-amber-700"
+                              : reg.status === RegistrationStatus.APPROVED
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-rose-100 text-rose-700"
+                          }`}
+                        >
+                          {reg.status}
+                        </span>
+                        {reg.isFull && reg.status === RegistrationStatus.PENDING && (
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
+                            Đầy chỗ
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-2 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -561,7 +568,7 @@ const RegistrationList = ({
               {/* Status */}
               <div>
                 <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Trạng thái</h4>
-                <div className="bg-slate-50 p-4 rounded-xl">
+                <div className="bg-slate-50 p-4 rounded-xl flex flex-wrap items-center gap-2">
                   <span
                     className={`inline-block px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight ${
                       selectedRegDetail.status === RegistrationStatus.PENDING
@@ -573,6 +580,11 @@ const RegistrationList = ({
                   >
                     {selectedRegDetail.status}
                   </span>
+                  {selectedRegDetail.isFull && selectedRegDetail.status === RegistrationStatus.PENDING && (
+                    <span className="inline-block px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-300">
+                      ⚠️ Đầy chỗ - Danh sách chờ
+                    </span>
+                  )}
                 </div>
               </div>
 
