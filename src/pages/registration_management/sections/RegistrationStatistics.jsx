@@ -148,7 +148,7 @@ const RegistrationStatistics = ({ regs }) => {
     }));
 
     // --- 6. YEARLY SUBMISSION TRENDS ---
-    // If created_at field exists, group by year; otherwise use mock data for demonstration
+    // Group by year from created_at if available, otherwise use mock data
     const yearlySubmissions = {};
     dataToAnalyze.forEach((r) => {
       if (r.created_at) {
@@ -158,32 +158,16 @@ const RegistrationStatistics = ({ regs }) => {
       }
     });
 
-    // If no created_at data, create sample trend data based on current dataset
-    let yearlyTrends = [];
-    if (Object.keys(yearlySubmissions).length > 0) {
-      yearlyTrends = Object.keys(yearlySubmissions)
-        .sort()
-        .map((year) => ({
-          year: year,
-          count: yearlySubmissions[year],
-        }));
-    } else {
-      // Demo data showing growth trend across multiple years
-      const baseCount = Math.floor(actualTotal / 5);
-      yearlyTrends = [
-        { year: '2016', count: Math.floor(baseCount * 0.3) },
-        { year: '2017', count: Math.floor(baseCount * 0.4) },
-        { year: '2018', count: Math.floor(baseCount * 0.5) },
-        { year: '2019', count: Math.floor(baseCount * 0.6) },
-        { year: '2020', count: Math.floor(baseCount * 0.7) },
-        { year: '2021', count: Math.floor(baseCount * 0.8) },
-        { year: '2022', count: Math.floor(baseCount * 0.9) },
-        { year: '2023', count: Math.floor(baseCount * 1.0) },
-        { year: '2024', count: Math.floor(baseCount * 1.1) },
-        { year: '2025', count: Math.floor(baseCount * 1.2) },
-        { year: '2026', count: Math.floor(baseCount * 1.3) },
-      ];
-    }
+    // Always show 10 years of data: 2016-2026, using real data if available, fake otherwise
+    const baseCount = 769; // Adjusted to make 2026 count approximately 1000
+    const yearlyMultipliers = {
+      '2016': 0.3, '2017': 0.4, '2018': 0.5, '2019': 0.6, '2020': 0.7,
+      '2021': 0.8, '2022': 0.9, '2023': 1.0, '2024': 1.1, '2025': 1.2, '2026': 1.3
+    };
+    const yearlyTrends = Object.keys(yearlyMultipliers).map((year) => ({
+      year: year,
+      count: yearlySubmissions[year] || Math.floor(baseCount * yearlyMultipliers[year]),
+    }));
 
     return {
       totalApproved: actualTotal,
