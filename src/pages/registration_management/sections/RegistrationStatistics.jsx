@@ -387,10 +387,13 @@ const RegistrationStatistics = ({ regs }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsData.basketGender} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis />
-                <Tooltip contentStyle={{ borderRadius: '8px' }} />
-                <Legend />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }} />
+                <YAxis tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
+                <Tooltip contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
+                <Legend 
+                  wrapperStyle={{ fontWeight: 'bold', fontSize: '14px' }}
+                  formatter={(value) => <span style={{ color: '#1e293b' }}>{value}</span>}
+                />
                 <Bar dataKey="Nam" stackId="a" fill="#bfdbfe" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="Nữ" stackId="a" fill="#fbcfe8" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -417,7 +420,7 @@ const RegistrationStatistics = ({ regs }) => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={false}
                     outerRadius={90}
                     dataKey="value"
                   >
@@ -425,7 +428,15 @@ const RegistrationStatistics = ({ regs }) => {
                       <Cell key={`cell-${index}`} fill={['#fecaca', '#fed7aa', '#fde68a', '#d9f99d', '#a7f3d0', '#e0e7ff'][index % 6]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
+                  <Legend 
+                    wrapperStyle={{ fontWeight: 'bold', fontSize: '12px' }}
+                    formatter={(value, entry, index) => {
+                      const total = statsData.priorityBreakdown.reduce((sum, item) => sum + item.value, 0);
+                      const percent = total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0;
+                      return <span style={{ color: '#1e293b' }}>{`${value}: ${entry.payload.value} (${percent}%)`}</span>;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -458,10 +469,10 @@ const RegistrationStatistics = ({ regs }) => {
                   angle={-45}
                   textAnchor="end"
                   height={80}
-                  tick={{ fontSize: 11, fill: '#475569' }}
+                  tick={{ fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }}
                 />
-                <YAxis />
-                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
+                <YAxis tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
+                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
                 <defs>
                   <linearGradient id="provinceGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#fed7aa" stopOpacity={0.9} />
@@ -489,9 +500,9 @@ const RegistrationStatistics = ({ regs }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statsData.faculties} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#475569' }} />
-                  <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
+                  <XAxis type="number" tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }} />
+                  <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
                   <defs>
                     <linearGradient id="facultyGradient" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#c7d2fe" stopOpacity={0.8} />
@@ -526,9 +537,9 @@ const RegistrationStatistics = ({ regs }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsData.yearlyTrends} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#475569' }} />
-                <YAxis />
-                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px' }} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }} />
+                <YAxis tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
+                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
                 <defs>
                   <linearGradient id="yearlyGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#93c5fd" stopOpacity={0.9} />
@@ -560,7 +571,7 @@ const RegistrationStatistics = ({ regs }) => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                    label={false}
                     outerRadius={100}
                     dataKey="value"
                   >
@@ -569,8 +580,15 @@ const RegistrationStatistics = ({ regs }) => {
                     <Cell fill="#ddd6fe" />
                     <Cell fill="#fde68a" />
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
+                  <Legend 
+                    wrapperStyle={{ fontWeight: 'bold', fontSize: '14px' }}
+                    formatter={(value, entry, index) => {
+                      const total = statsData.cohorts.reduce((sum, item) => sum + item.value, 0);
+                      const percent = total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0;
+                      return <span style={{ color: '#1e293b' }}>{`${value}: ${entry.payload.value} (${percent}%)`}</span>;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
