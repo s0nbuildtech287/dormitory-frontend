@@ -3,7 +3,7 @@
  * Centralized API calls for registration-related operations
  */
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:1234/api';
 
 /**
  * Get auth token from localStorage
