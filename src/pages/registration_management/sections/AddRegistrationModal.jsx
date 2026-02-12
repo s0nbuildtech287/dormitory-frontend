@@ -8,7 +8,6 @@ import { X, Upload } from "lucide-react";
 const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
     time_register: new Date().toISOString().split('T')[0],
-    email: "",
     student_name: "",
     student_id: "",
     dob: "",
@@ -50,7 +49,6 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
     
     if (!formData.student_name.trim()) newErrors.student_name = "Tên sinh viên không được để trống";
     if (!formData.student_id.trim()) newErrors.student_id = "Mã sinh viên không được để trống";
-    if (!formData.email.trim()) newErrors.email = "Email liên hệ không được để trống";
     if (!formData.student_email.trim()) newErrors.student_email = "Email sinh viên không được để trống";
     if (!formData.phone_number.trim()) newErrors.phone_number = "Số điện thoại không được để trống";
     if (!formData.dob.trim()) newErrors.dob = "Ngày sinh không được để trống";
@@ -62,7 +60,6 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) newErrors.email = "Email không hợp lệ";
     if (formData.student_email && !emailRegex.test(formData.student_email)) newErrors.student_email = "Email sinh viên không hợp lệ";
 
     // Phone validation
@@ -88,7 +85,6 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
       // Reset form
       setFormData({
         time_register: new Date().toISOString().split('T')[0],
-        email: "",
         student_name: "",
         student_id: "",
         dob: "",
@@ -194,25 +190,8 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
             </div>
           </div>
 
-          {/* Row 2: Email Liên hệ, Email Sinh viên, Phone */}
+          {/* Row 2: Email Sinh viên, Phone, (Empty) */}
           <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email liên hệ <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="example@gmail.com"
-                className={`w-full px-3 py-2 border rounded-lg outline-none transition text-sm ${
-                  errors.email ? "border-red-500 focus:ring-red-200" : "border-slate-200 focus:ring-blue-200"
-                } focus:ring-4`}
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-            </div>
-
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Email sinh viên <span className="text-red-500">*</span>
@@ -354,24 +333,26 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
             </div>
           </div>
 
-          {/* Row 5: GPA & Address */}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Điểm GPA
-              </label>
-              <input
-                type="number"
-                name="gpa"
-                step="0.01"
-                min="0"
-                max="4"
-                value={formData.gpa}
-                onChange={handleInputChange}
-                placeholder="0"
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-4 focus:ring-blue-200 transition text-sm"
-              />
-            </div>
+          {/* Row 5: GPA & Address - GPA hidden for Year 1 */}
+          <div className={`grid gap-4 ${formData.year === "1" ? "grid-cols-2" : "grid-cols-3"}`}>
+            {formData.year !== "1" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Điểm GPA
+                </label>
+                <input
+                  type="number"
+                  name="gpa"
+                  step="0.01"
+                  min="0"
+                  max="4"
+                  value={formData.gpa}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-4 focus:ring-blue-200 transition text-sm"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -389,6 +370,12 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
               />
               {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
             </div>
+
+            {formData.year === "1" && (
+              <div className="flex items-end mb-2">
+                <p className="text-sm text-slate-500 italic">Năm 1: Chưa có điểm GPA, hệ thống sẽ dùng điểm trung bình</p>
+              </div>
+            )}
           </div>
 
           {/* Row 6: Priority, Evidence, Note */}
@@ -404,10 +391,12 @@ const AddRegistrationModal = ({ isOpen, onClose, onSubmit }) => {
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none focus:ring-4 focus:ring-blue-200 transition text-sm"
               >
                 <option value="">-- Không có --</option>
-                <option value="Hộ nghèo cận nghèo">Hộ nghèo</option>
-                <option value="Vùng sâu vùng xa">Vùng sâu</option>
-                <option value="Dân tộc thiểu số">Dân tộc</option>
-                <option value="Học sinh giỏi">Giỏi</option>
+                <option value="Hộ nghèo cận nghèo">Hộ nghèo/Cận nghèo</option>
+                <option value="Vùng sâu vùng xa">Vùng sâu/Vùng xa</option>
+                <option value="Con thương binh">Con thương binh</option>
+                <option value="Con liệt sỹ">Con liệt sỹ</option>
+                <option value="Tàn tật khuyết tật">Tàn tật/Khuyết tật</option>
+                <option value="Lưu học sinh">Lưu học sinh</option>
               </select>
             </div>
 
