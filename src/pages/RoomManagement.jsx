@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Gender } from "../utils/types.js";
-import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter, Settings, DollarSign, Home, Wifi, Car, Trash2, Info } from "lucide-react";
+import { Plus, Search, Eye, ShieldCheck, Zap, Droplet, BarChart3, LayoutGrid, ArrowLeft, Users, Building2, Filter, Settings, DollarSign, Home, Wifi, Car, Trash2, Info, X, Package } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { getRooms } from "../api/apiRoom.js";
 
 const RoomManagement = () => {
   const [rooms, setRooms] = useState([]);
@@ -23,6 +24,51 @@ const RoomManagement = () => {
     defaultArea: 25.5
   });
   const [isLoadingSettings, setIsLoadingSettings] = useState(false);
+  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  const [selectedRoomInfo, setSelectedRoomInfo] = useState(null);
+  const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
+  const [selectedRoomServices, setSelectedRoomServices] = useState(null);
+
+  // Fetch rooms from API
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setIsLoadingRooms(true);
+        const response = await getRooms();
+        if (response.success && response.data) {
+          const convertedRooms = response.data.map(room => ({
+            id: room.id,
+            room_number: room.room_number,
+            building: room.building,
+            floor: room.floor,
+            capacity: room.capacity,
+            currentOccupancy: room.current_occupancy || 0,
+            genderType: room.gender_type,
+            rent_price: room.rent_price,
+            garbage_fee: room.garbage_fee,
+            internet_fee: room.internet_fee,
+            parking_fee: room.parking_fee,
+            status: room.status,
+            area: room.area,
+            qr_code: room.qr_code,
+            equipment: room.equipment,
+            electric_meter_reading: room.electric_meter_reading,
+            water_meter_reading: room.water_meter_reading,
+            last_inspection_date: room.last_inspection_date,
+            created_at: room.created_at,
+            updated_at: room.updated_at,
+            name: room.room_number // For compatibility
+          }));
+          setRooms(convertedRooms);
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        setIsLoadingRooms(false);
+      }
+    };
+    fetchRooms();
+  }, []);
 
   const filteredRooms = rooms.filter((r) => {
     const matchesBuilding = filterBuilding === "All" || r.building === filterBuilding;
@@ -241,7 +287,8 @@ const RoomManagement = () => {
 
       {activeSubTab === "list" && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+          <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
+            <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc phòng</h3>
             <div className="grid grid-cols-6 gap-4 items-center">
               <div className="relative col-span-2">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -296,62 +343,259 @@ const RoomManagement = () => {
             </div>
           </div>
           <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b-2 border-slate-300">
+              <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">
+                Bảng thông tin phòng ({filteredRooms.length} kết quả)
+              </h3>
+            </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Số phòng</th>
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Thông tin</th>
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Số lượng</th>
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
-                    <th className="px-8 py-5 text-center">Thao tác</th>
+              <table className="w-full text-left border-collapse">
+                <thead className="border-b-2 border-slate-300">
+                  <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit">Số phòng</th>
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit text-center">Thông tin phòng</th>
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit text-center">Sinh viên phòng</th>
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit text-center">Tràng thiết bị</th>
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit text-center">Dịch vụ</th>
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit text-center">Trạng thái thanh toán</th>
+                    <th className="px-4 py-3 border-r-2 border-slate-300 flex-1 min-w-fit">Trạng thái</th>
+                    <th className="px-4 py-3 flex-1 min-w-fit text-center">Hành động</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredRooms.map((room) => {
-                    const rate = (room.currentOccupancy / room.capacity) * 100;
-                    return (
-                      <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">
-                          <span className="font-bold text-slate-900 text-lg">{room.room_number || room.name}</span>
-                        </td>
-                        <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">
-                          {room.area}m² - {room.rent_price?.toLocaleString()} VNĐ
-                        </td>
-                        <td className="px-8 py-5 text-center border-r-2 border-slate-300">
-                          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">
-                            {room.currentOccupancy}/{room.capacity}
-                          </span>
-                        </td>
-                        <td className="px-8 py-5 border-r-2 border-slate-300">
-                          <span
-                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${
-                              room.currentOccupancy >= room.capacity 
-                                ? "bg-rose-100 text-rose-700" 
+                <tbody className="divide-y divide-slate-300">
+                  {isLoadingRooms ? (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-8 text-center text-slate-500">Đang tải dữ liệu...</td>
+                    </tr>
+                  ) : filteredRooms.length === 0 ? (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-8 text-center">
+                        <div className="flex flex-col items-center justify-center text-slate-400">
+                          <Home size={48} className="mb-4 opacity-50" />
+                          <p className="text-sm font-medium">Chưa có phòng nào</p>
+                          <p className="text-xs mt-1">Hãy thêm phòng để bắt đầu</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredRooms.map((room) => {
+                      const rate = (room.currentOccupancy / room.capacity) * 100;
+                      return (
+                        <tr key={room.id} className="hover:bg-slate-50/50 transition-colors h-12">
+                          <td className="px-4 py-2 text-xs font-mono font-semibold text-blue-600 border-r-2 border-slate-300">
+                            {room.room_number || room.name}
+                          </td>
+                          <td className="px-4 py-2 text-center border-r-2 border-slate-300">
+                            <button 
+                              onClick={() => setSelectedRoomInfo(room)}
+                              className="inline-flex items-center justify-center p-2 text-blue-500 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors"
+                              title="Xem thông tin phòng"
+                            >
+                              <Info size={16} />
+                            </button>
+                          </td>
+                          <td className="px-4 py-2 text-center border-r-2 border-slate-300">
+                            <button 
+                              onClick={() => setSelectedRoomStudents(room)}
+                              className="inline-flex items-center justify-center p-2 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+                              title="Xem danh sách sinh viên"
+                            >
+                              <Users size={16} />
+                            </button>
+                          </td>
+                          <td className="px-4 py-2 text-center border-r-2 border-slate-300">
+                            <button 
+                              onClick={() => setSelectedRoomInfo(room)}
+                              className="inline-flex items-center justify-center p-2 text-amber-500 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition-colors"
+                              title="Xem tràng thiết bị"
+                            >
+                              <Package size={16} />
+                            </button>
+                          </td>
+                          <td className="px-4 py-2 text-center border-r-2 border-slate-300">
+                            <button 
+                              onClick={() => setSelectedRoomServices(room)}
+                              className="inline-flex items-center justify-center p-2 text-green-500 hover:bg-green-50 hover:text-green-700 rounded-lg transition-colors"
+                              title="Xem dịch vụ phòng"
+                            >
+                              <Zap size={16} />
+                            </button>
+                          </td>
+                          <td className="px-4 py-2 text-center border-r-2 border-slate-300">
+                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md text-[10px] font-black">
+                              Chờ
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 border-r-2 border-slate-300">
+                            <span
+                              className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${
+                                room.currentOccupancy >= room.capacity 
+                                  ? "bg-rose-100 text-rose-700" 
+                                  : room.currentOccupancy > 0 
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-emerald-100 text-emerald-700"
+                              }`}
+                            >
+                              {room.currentOccupancy >= room.capacity 
+                                ? "Đã đầy" 
                                 : room.currentOccupancy > 0 
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-emerald-100 text-emerald-700"
-                            }`}
-                          >
-                            {room.currentOccupancy >= room.capacity 
-                              ? "Đã đầy" 
-                              : room.currentOccupancy > 0 
-                                ? "Đang ở"
-                                : "Trống"
-                            }
-                          </span>
-                        </td>
-                        <td className="px-8 py-5 text-center">
-                          <button onClick={() => setSelectedRoom(room)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
-                            <Eye size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                                  ? "Đang ở"
+                                  : "Trống"
+                              }
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-center">
+                            <button onClick={() => setSelectedRoom(room)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                              <Eye size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL THÔNG TIN PHÒNG */}
+      {selectedRoomInfo && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Thông tin phòng</h3>
+              <button 
+                onClick={() => setSelectedRoomInfo(null)}
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Số phòng:</span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomInfo.room_number}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Tòa nhà:</span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomInfo.building}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Tầng:</span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomInfo.floor}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Diện tích:</span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomInfo.area} m²</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Sức chứa:</span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomInfo.capacity} giường</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Giới tính:</span>
+                <span className={`text-sm font-bold px-3 py-1 rounded-lg ${
+                  selectedRoomInfo.genderType === 'Nam' 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-rose-100 text-rose-700'
+                }`}>
+                  {selectedRoomInfo.genderType}
+                </span>
+              </div>
+            </div>
+            <button 
+              onClick={() => setSelectedRoomInfo(null)}
+              className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DANH SÁCH SINH VIÊN */}
+      {selectedRoomStudents && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Sinh viên phòng {selectedRoomStudents.room_number}</h3>
+              <button 
+                onClick={() => setSelectedRoomStudents(null)}
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="bg-slate-50 rounded-lg p-4 text-center text-slate-500">
+              <p className="text-sm">Danh sách sinh viên (Phát triển sau)</p>
+            </div>
+            <button 
+              onClick={() => setSelectedRoomStudents(null)}
+              className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DỊCH VỤ PHÒNG */}
+      {selectedRoomServices && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Dịch vụ phòng</h3>
+              <button 
+                onClick={() => setSelectedRoomServices(null)}
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                  <DollarSign size={14} /> Giá thuê:
+                </span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomServices.rent_price?.toLocaleString()} VNĐ</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600">Phí rác:</span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomServices.garbage_fee?.toLocaleString()} VNĐ</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                  <Wifi size={14} /> Internet:
+                </span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomServices.internet_fee?.toLocaleString()} VNĐ</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                  <Car size={14} /> Gửi xe:
+                </span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomServices.parking_fee?.toLocaleString()} VNĐ</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                  <Zap size={14} /> Điện:
+                </span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomServices.electric_meter_reading?.toFixed(2)} kWh</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
+                  <Droplet size={14} /> Nước:
+                </span>
+                <span className="text-sm font-bold text-slate-900">{selectedRoomServices.water_meter_reading?.toFixed(2)} m³</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => setSelectedRoomServices(null)}
+              className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
           </div>
         </div>
       )}
