@@ -310,6 +310,7 @@ const RegistrationManagement = () => {
           filterGender={filterGender}
           setFilterGender={setFilterGender}
           onImportSuccess={handleImportSuccess}
+          onRefresh={fetchRegistrations}
         />
       )}
 

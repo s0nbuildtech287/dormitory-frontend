@@ -3,7 +3,7 @@ import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
 import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle } from "lucide-react";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
-import { getScoringWeights, createRegistration } from "../../../api/apiRegistration.js";
+import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration } from "../../../api/apiRegistration.js";
 
 // Helper function to determine priority group
 const getGroupName = (year, priorityReasons) => {
@@ -66,6 +66,7 @@ const RegistrationList = ({
   filterGender,
   setFilterGender,
   onImportSuccess,
+  onRefresh,
 }) => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -295,7 +296,7 @@ const RegistrationList = ({
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b-2 border-slate-300">
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">
-            Bảng hồ sơ đăng ký ({totalItems} kết quả) - chờ duyệt {quotaBasedPendingCount} / {totalItems} hồ sơ
+            Bảng hồ sơ đăng ký ({totalItems} kết quả) - chờ duyệt {actualPendingCount} / {totalItems} hồ sơ
           </h3>
         </div>
         <div className="overflow-x-auto">
@@ -515,69 +516,69 @@ const RegistrationList = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Mã sinh viên</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.student_id || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.student_id || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Tên sinh viên</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.student_name}</p>
+                    <p className="text-slate-700">{selectedRegDetail.student_name}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Email</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.student_email || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.student_email || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Số điện thoại</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.phone_number || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.phone_number || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Giới tính</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.gender || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.gender || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Ngày sinh</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.dob || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.dob || "N/A"}</p>
                   </div>
                 </div>
               </div>
 
               {/* Academic Information */}
               <div>
-                <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Thông tin học tập</h4>
+                <h4 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Thông tin học tập</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Khoa</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.faculty || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.faculty || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Chuyên ngành</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.major || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.major || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Lớp</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.class || "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.class || "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Năm theo học</p>
-                    <p className="text-slate-900 font-bold">Năm {selectedRegDetail.year}</p>
+                    <p className="text-slate-700">Năm {selectedRegDetail.year}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">GPA</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.gpa ?? "N/A"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.gpa ?? "N/A"}</p>
                   </div>
                   <div className="bg-slate-50 p-4 rounded-xl">
                     <p className="text-slate-600 text-xs font-semibold mb-1">Khoảng cách</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.distance ?? "N/A"} km</p>
+                    <p className="text-slate-700">{selectedRegDetail.distance ?? "N/A"} km</p>
                   </div>
                 </div>
               </div>
 
               {/* Priority and Scoring */}
               <div>
-                <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Ưu tiên & Đánh giá</h4>
+                <h4 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Ưu tiên & Đánh giá</h4>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <p className="text-slate-600 text-xs font-semibold mb-2">Lý do ưu tiên</p>
-                    <p className="text-slate-900 font-bold">{selectedRegDetail.priority_reasons || "Không có"}</p>
+                    <p className="text-slate-700">{selectedRegDetail.priority_reasons || "Không có"}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
@@ -619,7 +620,7 @@ const RegistrationList = ({
                       if (reasoning && typeof reasoning === "object") {
                         return (
                           <div className="space-y-2 text-sm">
-                            {reasoning.description && <p className="text-slate-900 font-bold">{reasoning.description}</p>}
+                            {reasoning.description && <p className="text-slate-700">{reasoning.description}</p>}
                             {reasoning.basket && (
                               <p className="text-slate-700">
                                 • Rổ: <span className="font-bold">{reasoning.basket}</span> - {reasoning.basket_name}
@@ -697,7 +698,7 @@ const RegistrationList = ({
               {/* Evidence Images */}
               {selectedRegDetail.evidence_images && selectedRegDetail.evidence_images.length > 0 && (
                 <div>
-                  <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">📸 Ảnh minh chứng</h4>
+                  <h4 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">📸 Ảnh minh chứng</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {selectedRegDetail.evidence_images.map((img, idx) => (
                       <div key={idx} className="relative group overflow-hidden rounded-2xl shadow-md border border-slate-200 hover:shadow-lg transition-all">
@@ -734,6 +735,12 @@ const RegistrationList = ({
                 >
                   <XCircle size={16} /> Từ chối
                 </button>
+                <button
+                  onClick={() => setIsConfirming({ id: selectedRegDetail.id, status: 'DELETE' })}
+                  className="px-4 py-2 text-white font-semibold bg-red-600 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2"
+                >
+                  <XCircle size={16} /> Xóa
+                </button>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setSelectedRegDetail(null)} className="px-4 py-2 text-slate-700 font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
@@ -758,34 +765,61 @@ const RegistrationList = ({
       {isConfirming && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in scale-in duration-300">
-            <div
-              className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${
-                isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
-              }`}
-            >
-              {isConfirming.status === RegistrationStatus.APPROVED ? <CheckCircle2 size={32} /> : <XCircle size={32} />}
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Xác nhận quyết định?</h3>
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed">
-              Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming.status === RegistrationStatus.APPROVED ? "phê duyệt" : "từ chối"}</span> hồ sơ.
-              {selectedRegDetail && <span> Hệ thống sẽ gửi thông báo kết quả cho sinh viên.</span>}
+            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-3">
+              <div
+                className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                  isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-100 text-emerald-600" : 
+                  isConfirming.status === RegistrationStatus.REJECTED ? "bg-rose-100 text-rose-600" :
+                  "bg-red-100 text-red-600"
+                }`}
+              >
+                {isConfirming.status === RegistrationStatus.APPROVED ? <CheckCircle2 size={16} /> : 
+                 <XCircle size={16} />}
+              </div>
+              {isConfirming.status === 'DELETE' ? 'Xóa hồ sơ?' : 'Xác nhận quyết định?'}
+            </h3>
+            <p className="text-slate-500 text-sm mb-8 leading-relaxed ml-9">
+              {isConfirming.status === 'DELETE' 
+                ? 'Hồ sơ sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa hồ sơ này không?'
+                : <>
+                  Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming.status === RegistrationStatus.APPROVED ? 'phê duyệt' : 'từ chối'}</span> hồ sơ.
+                  {selectedRegDetail && <span> Hệ thống sẽ gửi thông báo kết quả cho sinh viên.</span>}
+                </>
+              }
             </p>
             <div className="flex gap-3">
               <button onClick={() => setIsConfirming(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all">
                 Hủy
               </button>
               <button
-                onClick={() => {
-                  // TODO: Call API to update registration status
-                  console.log(`Update registration ${isConfirming.id} to ${isConfirming.status}`);
-                  setIsConfirming(null);
-                  if (selectedRegDetail) setSelectedRegDetail(null);
+                onClick={async () => {
+                  try {
+                    if (isConfirming.status === 'DELETE') {
+                      // Call delete API
+                      await deleteRegistration(isConfirming.id);
+                    } else if (isConfirming.status === RegistrationStatus.APPROVED) {
+                      // Call approve API
+                      await approveRegistration(isConfirming.id);
+                    } else if (isConfirming.status === RegistrationStatus.REJECTED) {
+                      // Call reject API
+                      await rejectRegistration(isConfirming.id, 'Từ chối từ admin');
+                    }
+                    setIsConfirming(null);
+                    if (selectedRegDetail) setSelectedRegDetail(null);
+                    // Refresh data by calling parent callback
+                    if (onRefresh) onRefresh();
+                  } catch (error) {
+                    console.error('Error:', error.message);
+                    alert(error.message || 'Có lỗi xảy ra');
+                  }
                 }}
                 className={`flex-1 py-3 rounded-xl font-bold text-white transition-all ${
-                  isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+                  isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-600 hover:bg-emerald-700" : 
+                  isConfirming.status === RegistrationStatus.REJECTED ? "bg-rose-600 hover:bg-rose-700" :
+                  "bg-red-600 hover:bg-red-700"
                 }`}
               >
-                Xác nhận
+                {isConfirming.status === 'DELETE' ? 'Xóa' : 'Xác nhận'}
               </button>
             </div>
           </div>

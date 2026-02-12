@@ -230,6 +230,41 @@ export const rejectRegistration = async (id, note) => {
 };
 
 /**
+ * Delete registration
+ * @param {string} id - Registration ID
+ * @returns {Promise<Object>} Delete result
+ */
+export const deleteRegistration = async (id) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Xóa hồ sơ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
  * Import registrations from CSV/Excel file
  * @param {File} file - CSV/Excel file
  * @returns {Promise<Object>} Import result with success count and errors
