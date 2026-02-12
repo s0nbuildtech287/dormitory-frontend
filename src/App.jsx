@@ -1,19 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import { UserRole } from "./utils/types.js";
 import { getComponentByRouteId } from "./router/index.js";
+import { getCurrentUser } from "./api/apiAuth.js";
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Check for existing session on app mount
+   */
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const savedUser = getCurrentUser();
+      if (savedUser) {
+        setUser(savedUser);
+        const initialTab = savedUser.role === UserRole.ADMIN ? "dashboard" : "profile";
+        setActiveTab(initialTab);
+      }
+    }
+    setIsLoading(false);
+  }, []);
 
   /**
    * Handle user logout
    */
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
   };
 
@@ -25,6 +44,16 @@ const App = () => {
     const initialTab = userData.role === UserRole.ADMIN ? "dashboard" : "profile";
     setActiveTab(initialTab);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin">
+          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <LoginPage onLogin={handleLogin} />;

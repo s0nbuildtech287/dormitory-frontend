@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
 import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle } from "lucide-react";
 import ModelimportCSV from "./ModelimportCSV.jsx";
-import { getScoringWeights } from "../../../api/apiRegistration.js";
+import AddRegistrationModal from "./AddRegistrationModal.jsx";
+import { getScoringWeights, createRegistration } from "../../../api/apiRegistration.js";
 
 // Helper function to determine priority group
 const getGroupName = (year, priorityReasons) => {
@@ -72,6 +73,8 @@ const RegistrationList = ({
   const [filterGroup, setFilterGroup] = useState("All");
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
   const [isConfirming, setIsConfirming] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
@@ -161,6 +164,27 @@ const RegistrationList = ({
   const goToPrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
   const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
 
+  // Handle add registration form submission
+  const handleAddRegistration = async (formData) => {
+    setIsSubmittingReg(true);
+    try {
+      const response = await createRegistration(formData);
+      if (response.success) {
+        // Refresh the registrations list by calling onImportSuccess
+        if (onImportSuccess) {
+          onImportSuccess();
+        }
+        return;
+      } else {
+        throw new Error(response.message || "Có lỗi xảy ra khi thêm hồ sơ");
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsSubmittingReg(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* KHỐI CHỨC NĂNG DỮ LIỆU ĐẦU VÀO */}
@@ -187,7 +211,9 @@ const RegistrationList = ({
             <RotateCw size={14} className="mr-1 flex-shrink-0" /> Đồng bộ
           </button>
 
-          <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
             <Plus size={14} className="mr-1 flex-shrink-0" /> Thêm hồ sơ
           </button>
         </div>
@@ -765,6 +791,12 @@ const RegistrationList = ({
           </div>
         </div>
       )}
+
+      <AddRegistrationModal 
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleAddRegistration}
+      />
     </div>
   );
 };
