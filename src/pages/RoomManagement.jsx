@@ -74,9 +74,6 @@ const RoomManagement = () => {
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-slate-900">Phòng {selectedRoom.name}</h3>
-                    <p className="text-slate-500 font-medium">
-                      Tòa {selectedRoom.building} - Tầng {selectedRoom.floor}
-                    </p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -263,8 +260,10 @@ const RoomManagement = () => {
                 className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
               >
                 <option value="All">Tất cả tòa</option>
-                <option value="A1">Tòa A1</option>
-                <option value="B1">Tòa B1</option>
+                <option value="A">Tòa A</option>
+                <option value="B">Tòa B</option>
+                <option value="C">Tòa C</option>
+                <option value="D">Tòa D</option>
               </select>
 
               <select
@@ -302,8 +301,7 @@ const RoomManagement = () => {
                 <thead>
                   <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
                     <th className="px-8 py-5 border-r-2 border-slate-300">Số phòng</th>
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Tòa nhà</th>
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Tầng</th>
+                    <th className="px-8 py-5 border-r-2 border-slate-300">Thông tin</th>
                     <th className="px-8 py-5 border-r-2 border-slate-300">Số lượng</th>
                     <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
                     <th className="px-8 py-5 text-center">Thao tác</th>
@@ -317,11 +315,8 @@ const RoomManagement = () => {
                         <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">
                           <span className="font-bold text-slate-900 text-lg">{room.room_number || room.name}</span>
                         </td>
-                        <td className="px-8 py-5 font-bold text-slate-900 text-sm border-r-2 border-slate-300">
-                          Tòa {room.building}
-                        </td>
                         <td className="px-8 py-5 text-slate-500 text-xs font-medium border-r-2 border-slate-300">
-                          Tầng {room.floor}
+                          {room.area}m² - {room.rent_price?.toLocaleString()} VNĐ
                         </td>
                         <td className="px-8 py-5 text-center border-r-2 border-slate-300">
                           <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">
