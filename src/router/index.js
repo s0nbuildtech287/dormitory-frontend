@@ -2,7 +2,7 @@ import React from 'react';
 import AdminDashboard from '../pages/AdminDashboard.jsx';
 import RegistrationManagement from '../pages/registration_management/index.jsx';
 import StudentDashboard from '../pages/StudentDashboard.jsx';
-import RoomManagement from '../pages/RoomManagement.jsx';
+import RoomManagement from '../pages/room_management/index.jsx';
 import StudentManagement from '../pages/StudentManagement.jsx';
 import BillingManagement from '../pages/BillingManagement.jsx';
 import NotificationManagement from '../pages/NotificationManagement.jsx';
