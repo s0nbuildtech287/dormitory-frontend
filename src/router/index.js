@@ -37,7 +37,7 @@ export const ADMIN_ROUTES = [
   },
   {
     id: 'students',
-    label: 'Sinh viên & Hợp đồng',
+    label: 'Hợp đồng sinh viên',
     path: '/students',
     component: StudentManagement,
     icon: 'Users',
@@ -81,7 +81,7 @@ export const STUDENT_ROUTES = [
   },
   {
     id: 'contract',
-    label: 'Hợp đồng KTX',
+    label: 'Hợp đồng sinh viên',
     path: '/contract',
     component: StudentDashboard,
     icon: 'FileText',

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Gender, BillStatus } from "../utils/types.js";
-import { Search, UserPlus, ArrowLeft, Eye, Mail, Phone, FileText, BookOpen, Clock, List, Briefcase, BarChart3, Users } from "lucide-react";
+import { Search, UserPlus, ArrowLeft, Eye, Mail, Phone, FileText, BookOpen, Clock, List, Briefcase, BarChart3, Users, Edit2, Trash2 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const StudentManagement = () => {
@@ -94,17 +94,12 @@ const StudentManagement = () => {
           onClick={() => setActiveSubTab("contracts")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeSubTab === "contracts" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
         >
-          <Briefcase size={18} /> Hợp đồng & Cọc
+          <Briefcase size={18} /> Thống kê hợp đồng
         </button>
-        <button
-          onClick={() => setActiveSubTab("analysis")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeSubTab === "analysis" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-        >
-          <BarChart3 size={18} /> Phân tích nhân khẩu
-        </button>
+        
       </div>
 
-      {(activeSubTab === "list" || activeSubTab === "contracts") && (
+      {activeSubTab === "list" && (
         <div className="animate-in fade-in duration-500 space-y-6">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
             <div className="grid grid-cols-6 gap-4 items-center">
@@ -152,59 +147,86 @@ const StudentManagement = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50 text-slate-700 text-xs font-black capitalize tracking-widest">
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Sinh viên</th>
-                    <th className="px-8 py-5 border-r-2 border-slate-300">Mã số SV</th>
-                    {activeSubTab === "contracts" ? (
+                    {activeSubTab === "list" ? (
                       <>
-                        <th className="px-8 py-5 border-r-2 border-slate-300">Tiền cọc</th>
-                        <th className="px-8 py-5 border-r-2 border-slate-300">Giá thuê</th>
-                        <th className="px-8 py-5 border-r-2 border-slate-300">Thời hạn</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Mã hợp đồng</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Tên sinh viên</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Vị trí</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Tình trạng</th>
+                        <th className="px-8 py-5 text-center border-r-2 border-slate-300">Thông tin chi tiết</th>
+                        <th className="px-8 py-5 text-center">Thao tác</th>
                       </>
                     ) : (
                       <>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Sinh viên</th>
+                        <th className="px-8 py-5 border-r-2 border-slate-300">Mã số SV</th>
                         <th className="px-8 py-5 border-r-2 border-slate-300">Phòng</th>
                         <th className="px-8 py-5 border-r-2 border-slate-300">Trạng thái</th>
+                        <th className="px-8 py-5 text-center">Thao tác</th>
                       </>
                     )}
-                    <th className="px-8 py-5 text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredStudents.map((std) => (
-                    <tr key={std.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-5 border-r-2 border-slate-300">
-                        <div className="flex items-center">
-                          <img src={std.avatar} className="w-8 h-8 rounded-lg mr-3" />
-                          <div>
-                            <p className="font-bold text-slate-900 text-sm">{std.name}</p>
-                            <p className="text-[10px] text-slate-500">{std.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{std.studentId}</td>
-                      {activeSubTab === "contracts" ? (
+                    <tr key={std.id || std.studentId} className="hover:bg-slate-50/50 transition-colors">
+                      {activeSubTab === "list" ? (
                         <>
-                          <td className="px-8 py-5 text-sm font-bold text-emerald-600 border-r-2 border-slate-300">{std.deposit?.toLocaleString()}đ</td>
-                          <td className="px-8 py-5 text-sm font-bold text-blue-600 border-r-2 border-slate-300">{std.rentPrice?.toLocaleString()}đ</td>
-                          <td className="px-8 py-5 text-[10px] font-bold text-slate-500 flex items-center gap-1 border-r-2 border-slate-300">
-                            <Clock size={12} /> 12 tháng
+                          <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{std.contractCode || std.contractId || `HD-${std.studentId || std.id || 'N/A'}`}</td>
+                          <td className="px-8 py-5 border-r-2 border-slate-300">
+                            <div className="flex items-center">
+                              <img src={std.avatar} className="w-8 h-8 rounded-lg mr-3" />
+                              <div>
+                                <p className="font-bold text-slate-900 text-sm">{std.name}</p>
+                                <p className="text-[10px] text-slate-500">{std.email}</p>
+                              </div>
+                            </div>
                           </td>
+                          <td className="px-8 py-5 font-bold text-blue-700 text-sm border-r-2 border-slate-300">{(std.room ? `${std.room} (${std.building || 'N/A'})` : 'N/A')}</td>
+                          <td className="px-8 py-5 border-r-2 border-slate-300">
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${std.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
+                              {std.status === "Active" ? "Nội trú" : "Đã rời"}
+                            </span>
+                          </td>
+                            <td className="px-8 py-5 text-center border-r-2 border-slate-300">
+                              <button onClick={() => setSelectedStudent(std)} className="p-1.5 text-blue-600">
+                                <Eye size={18} />
+                              </button>
+                            </td>
+                            <td className="px-8 py-5 text-center">
+                              <button className="p-1.5 text-slate-600 mr-2">
+                                <Edit2 size={16} />
+                              </button>
+                              <button className="p-1.5 text-rose-600">
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
                         </>
                       ) : (
                         <>
+                          <td className="px-8 py-5 border-r-2 border-slate-300">
+                            <div className="flex items-center">
+                              <img src={std.avatar} className="w-8 h-8 rounded-lg mr-3" />
+                              <div>
+                                <p className="font-bold text-slate-900 text-sm">{std.name}</p>
+                                <p className="text-[10px] text-slate-500">{std.email}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-8 py-5 text-xs font-mono font-bold text-blue-600 border-r-2 border-slate-300">{std.studentId}</td>
                           <td className="px-8 py-5 font-bold text-blue-700 text-sm border-r-2 border-slate-300">{std.room || "N/A"}</td>
                           <td className="px-8 py-5 border-r-2 border-slate-300">
                             <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${std.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
                               {std.status === "Active" ? "Nội trú" : "Đã rời"}
                             </span>
                           </td>
+                          <td className="px-8 py-5 text-center">
+                            <button onClick={() => setSelectedStudent(std)} className="p-1.5 text-blue-600">
+                              <Eye size={18} />
+                            </button>
+                          </td>
                         </>
                       )}
-                      <td className="px-8 py-5 text-center">
-                        <button onClick={() => setSelectedStudent(std)} className="p-1.5 text-blue-600">
-                          <Eye size={18} />
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -214,44 +236,15 @@ const StudentManagement = () => {
         </div>
       )}
 
-      {activeSubTab === "analysis" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-300">
+      {activeSubTab === "contracts" && (
+        <div className="animate-in fade-in duration-500 space-y-6">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-            <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <BookOpen size={18} className="text-blue-600" /> Phân bổ theo Khoa
-            </h4>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analysisData.facultyStats} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#1e40af" radius={[0, 4, 4, 0]} barSize={20} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-            <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <Users size={18} className="text-rose-600" /> Giới tính nội trú
-            </h4>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={analysisData.genderDist} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                    {analysisData.genderDist.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <div className="text-slate-500 text-center py-12">Khu vực biểu đồ: thêm các biểu đồ thống kê hợp đồng ở đây.</div>
           </div>
         </div>
       )}
+
+      
     </div>
   );
 };
