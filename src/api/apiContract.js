@@ -123,3 +123,14 @@ export const getExpiringContracts = async (days = 30) => {
   });
   return handleResponse(response);
 };
+
+/**
+ * Delete a contract
+ */
+export const deleteContract = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};
