@@ -1,70 +1,70 @@
-import React from 'react';
-import AdminDashboard from '../pages/AdminDashboard.jsx';
-import RegistrationManagement from '../pages/registration_management/index.jsx';
-import StudentDashboard from '../pages/StudentDashboard.jsx';
-import RoomManagement from '../pages/room_management/index.jsx';
-import StudentManagement from '../pages/StudentManagement.jsx';
-import BillingManagement from '../pages/BillingManagement.jsx';
-import NotificationManagement from '../pages/NotificationManagement.jsx';
-import FeedbackManagement from '../pages/FeedbackManagement.jsx';
-import { UserRole } from '../utils/types.js';
+import React from "react";
+import AdminDashboard from "../pages/AdminDashboard.jsx";
+import RegistrationManagement from "../pages/registration_management/index.jsx";
+import StudentDashboard from "../pages/StudentDashboard.jsx";
+import RoomManagement from "../pages/room_management/index.jsx";
+import ContractManagement from "../pages/contract_management/index.jsx";
+import BillingManagement from "../pages/BillingManagement.jsx";
+import NotificationManagement from "../pages/NotificationManagement.jsx";
+import FeedbackManagement from "../pages/FeedbackManagement.jsx";
+import { UserRole } from "../utils/types.js";
 
 // Admin Routes
 export const ADMIN_ROUTES = [
   {
-    id: 'dashboard',
-    label: 'Tổng quan',
-    path: '/dashboard',
+    id: "dashboard",
+    label: "Tổng quan",
+    path: "/dashboard",
     component: AdminDashboard,
-    icon: 'LayoutDashboard',
+    icon: "LayoutDashboard",
     role: UserRole.ADMIN,
   },
   {
-    id: 'registrations',
-    label: 'Hồ sơ đăng ký',
-    path: '/registrations',
+    id: "registrations",
+    label: "Hồ sơ đăng ký",
+    path: "/registrations",
     component: RegistrationManagement,
-    icon: 'FileText',
+    icon: "FileText",
     role: UserRole.ADMIN,
   },
   {
-    id: 'rooms',
-    label: 'Quản lý phòng',
-    path: '/rooms',
+    id: "rooms",
+    label: "Quản lý phòng",
+    path: "/rooms",
     component: RoomManagement,
-    icon: 'Home',
+    icon: "Home",
     role: UserRole.ADMIN,
   },
   {
-    id: 'students',
-    label: 'Hợp đồng sinh viên',
-    path: '/students',
-    component: StudentManagement,
-    icon: 'Users',
+    id: "students",
+    label: "Hợp đồng sinh viên",
+    path: "/students",
+    component: ContractManagement,
+    icon: "Users",
     role: UserRole.ADMIN,
   },
   {
-    id: 'billing',
-    label: 'Hóa đơn',
-    path: '/billing',
+    id: "billing",
+    label: "Hóa đơn",
+    path: "/billing",
     component: BillingManagement,
-    icon: 'CreditCard',
+    icon: "CreditCard",
     role: UserRole.ADMIN,
   },
   {
-    id: 'notifications',
-    label: 'Thông báo',
-    path: '/notifications',
+    id: "notifications",
+    label: "Thông báo",
+    path: "/notifications",
     component: NotificationManagement,
-    icon: 'Bell',
+    icon: "Bell",
     role: UserRole.ADMIN,
   },
   {
-    id: 'feedback',
-    label: 'Phản ánh',
-    path: '/feedback',
+    id: "feedback",
+    label: "Phản ánh",
+    path: "/feedback",
     component: FeedbackManagement,
-    icon: 'MessageSquare',
+    icon: "MessageSquare",
     role: UserRole.ADMIN,
   },
 ];
@@ -72,43 +72,43 @@ export const ADMIN_ROUTES = [
 // Student Routes
 export const STUDENT_ROUTES = [
   {
-    id: 'profile',
-    label: 'Thông tin cá nhân',
-    path: '/profile',
+    id: "profile",
+    label: "Thông tin cá nhân",
+    path: "/profile",
     component: StudentDashboard,
-    icon: 'UserCircle',
+    icon: "UserCircle",
     role: UserRole.STUDENT,
   },
   {
-    id: 'contract',
-    label: 'Hợp đồng sinh viên',
-    path: '/contract',
+    id: "contract",
+    label: "Hợp đồng sinh viên",
+    path: "/contract",
     component: StudentDashboard,
-    icon: 'FileText',
+    icon: "FileText",
     role: UserRole.STUDENT,
   },
   {
-    id: 'bills',
-    label: 'Theo dõi hóa đơn',
-    path: '/bills',
+    id: "bills",
+    label: "Theo dõi hóa đơn",
+    path: "/bills",
     component: StudentDashboard,
-    icon: 'CreditCard',
+    icon: "CreditCard",
     role: UserRole.STUDENT,
   },
   {
-    id: 'notifications',
-    label: 'Thông báo',
-    path: '/notifications',
+    id: "notifications",
+    label: "Thông báo",
+    path: "/notifications",
     component: StudentDashboard,
-    icon: 'Bell',
+    icon: "Bell",
     role: UserRole.STUDENT,
   },
   {
-    id: 'feedback',
-    label: 'Gửi phản ánh',
-    path: '/feedback',
+    id: "feedback",
+    label: "Gửi phản ánh",
+    path: "/feedback",
     component: StudentDashboard,
-    icon: 'MessageSquare',
+    icon: "MessageSquare",
     role: UserRole.STUDENT,
   },
 ];
