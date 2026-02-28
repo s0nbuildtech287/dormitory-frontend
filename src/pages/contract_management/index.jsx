@@ -46,23 +46,6 @@ const ContractManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header stats row */}
-      {stats && (
-        <div className="grid grid-cols-4 gap-4">
-          {[
-            { label: "Chờ gán phòng", value: stats.pending_count, color: "amber" },
-            { label: "Đang nội trú", value: stats.active_count, color: "emerald" },
-            { label: "Hết hạn", value: stats.expired_count, color: "slate" },
-            { label: "Đã chấm dứt", value: stats.terminated_count, color: "rose" },
-          ].map((s) => (
-            <div key={s.label} className={`bg-white p-5 rounded-2xl border border-slate-100 shadow-sm`}>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
-              <p className={`text-3xl font-black text-${s.color}-600`}>{s.value ?? 0}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Tab navigation */}
       <div className="flex items-center justify-between border-b border-slate-200">
         <div className="flex items-center space-x-1">
@@ -96,7 +79,27 @@ const ContractManagement = () => {
 
       {activeSubTab === "list" && <StudentList contracts={contracts} loading={loading} onViewDetail={(id) => setSelectedContract(id)} onRefresh={fetchData} />}
 
-      {activeSubTab === "stats" && <ContractStatistics contracts={contracts} />}
+      {activeSubTab === "stats" && (
+        <div className="space-y-6">
+          {/* Stats summary cards */}
+          {stats && (
+            <div className="grid grid-cols-4 gap-4">
+              {[
+                { label: "Chờ gán phòng", value: stats.pending_count, color: "amber" },
+                { label: "Đang nội trú", value: stats.active_count, color: "emerald" },
+                { label: "Hết hạn", value: stats.expired_count, color: "slate" },
+                { label: "Đã chấm dứt", value: stats.terminated_count, color: "rose" },
+              ].map((s) => (
+                <div key={s.label} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
+                  <p className={`text-3xl font-black text-${s.color}-600`}>{s.value ?? 0}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          <ContractStatistics contracts={contracts} />
+        </div>
+      )}
     </div>
   );
 };
