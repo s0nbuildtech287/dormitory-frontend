@@ -46,18 +46,6 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     setCurrentPage(1);
   };
 
-  const getAvatar = (name) => {
-    const initials = name
-      ? name
-          .split(" ")
-          .map((w) => w[0])
-          .slice(-2)
-          .join("")
-          .toUpperCase()
-      : "?";
-    return initials;
-  };
-
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters - giống room_management */}
@@ -142,35 +130,23 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   return (
                     <tr key={c.id} className={`hover:bg-slate-50/50 transition-colors ${isPending ? "bg-amber-50/30" : ""}`}>
                       {/* Contract number */}
-                      <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300 text-center">
-                        {c.contract_number || `#${c.id?.slice(-8)}`}
-                        {isPending && <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-[9px] font-black uppercase">Cần gán phòng</span>}
-                      </td>
+                      <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300 text-center">{c.contract_number || `#${c.id?.slice(-8)}`}</td>
 
                       {/* Student info */}
-                      <td className="px-6 py-2 border-r-2 border-slate-300">
-                        <div className="flex items-center gap-3">
-                          {c.student_avatar ? (
-                            <img src={c.student_avatar} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" alt="" />
-                          ) : (
-                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black flex-shrink-0">{getAvatar(c.student_name)}</div>
-                          )}
-                          <div>
-                            <p className="font-bold text-slate-900 text-sm leading-tight">{c.student_name || "—"}</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{c.snapshot_student_id || c.student_email || "—"}</p>
-                          </div>
-                        </div>
+                      <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
+                        <p className="font-semibold text-slate-900 text-xs">{c.student_name || "—"}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{c.snapshot_student_id || c.student_email || "—"}</p>
                       </td>
 
                       {/* Room */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
                         {c.room_number ? (
-                          <span className="font-bold text-blue-700 text-sm">
+                          <span className="font-semibold text-blue-700 text-xs">
                             {c.room_number}
                             {c.building ? ` (${c.building})` : ""}
                           </span>
                         ) : (
-                          <span className="text-amber-600 text-xs font-bold italic">Chưa có phòng</span>
+                          <span className="text-amber-600 text-xs font-semibold italic">Chưa có phòng</span>
                         )}
                       </td>
 

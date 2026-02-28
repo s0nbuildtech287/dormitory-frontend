@@ -338,6 +338,10 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                   <p className="text-blue-700 font-bold">{fmt(contract.contract_number)}</p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-xl">
+                  <p className="text-slate-600 text-xs font-semibold mb-1">Thời hạn hợp đồng</p>
+                  <p className="text-slate-700 font-bold">6 tháng</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl">
                   <p className="text-slate-600 text-xs font-semibold mb-1">Ngày ký</p>
                   <p className="text-slate-700 font-bold">{fmtDate(contract.signed_at)}</p>
                 </div>
@@ -370,28 +374,57 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
               </div>
             </div>
 
-            {/* ── Thông tin phòng ── */}
+            {/* ── Thông tin phòng & dịch vụ ── */}
             <div>
               <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider flex items-center gap-2">
-                <Home size={14} className="text-blue-500" /> Thông tin phòng
+                <Home size={14} className="text-blue-500" /> Thông tin phòng & dịch vụ
               </h4>
               {contract.room_number ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 text-center">
-                    <p className="text-blue-500 text-xs font-semibold mb-1">Số phòng</p>
-                    <p className="text-2xl font-black text-blue-700">{contract.room_number}</p>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 text-center">
+                      <p className="text-blue-500 text-xs font-semibold mb-1">Số phòng</p>
+                      <p className="text-2xl font-black text-blue-700">{contract.room_number}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-xl">
+                      <p className="text-slate-600 text-xs font-semibold mb-1">Tòa nhà</p>
+                      <p className="text-slate-700 font-bold">Tòa {contract.building || "—"}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-xl">
+                      <p className="text-slate-600 text-xs font-semibold mb-1">Tầng</p>
+                      <p className="text-slate-700 font-bold">{contract.floor ? `Tầng ${contract.floor}` : "—"}</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-xl">
+                      <p className="text-slate-600 text-xs font-semibold mb-1">Giá phòng</p>
+                      <p className="text-emerald-700 font-bold">{fmtMoney(contract.room_price)}</p>
+                    </div>
                   </div>
-                  <div className="bg-slate-50 p-4 rounded-xl">
-                    <p className="text-slate-600 text-xs font-semibold mb-1">Tòa nhà</p>
-                    <p className="text-slate-700 font-bold">Tòa {contract.building || "—"}</p>
-                  </div>
-                  <div className="bg-slate-50 p-4 rounded-xl">
-                    <p className="text-slate-600 text-xs font-semibold mb-1">Tầng</p>
-                    <p className="text-slate-700 font-bold">{contract.floor ? `Tầng ${contract.floor}` : "—"}</p>
-                  </div>
-                  <div className="bg-slate-50 p-4 rounded-xl">
-                    <p className="text-slate-600 text-xs font-semibold mb-1">Giá phòng</p>
-                    <p className="text-emerald-700 font-bold">{fmtMoney(contract.room_price)}</p>
+
+                  {/* Phí dịch vụ */}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                    <p className="text-slate-600 text-xs font-semibold mb-3 uppercase tracking-wider">Phí dịch vụ đi kèm</p>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      <div className="bg-white p-3 rounded-lg border border-slate-100 text-center">
+                        <p className="text-[10px] text-slate-500 mb-1">Tiền điện</p>
+                        <p className="text-xs font-bold text-slate-700">3.500 VNĐ/kWh</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg border border-slate-100 text-center">
+                        <p className="text-[10px] text-slate-500 mb-1">Tiền nước</p>
+                        <p className="text-xs font-bold text-slate-700">15.000 VNĐ/m³</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg border border-slate-100 text-center">
+                        <p className="text-[10px] text-slate-500 mb-1">Internet</p>
+                        <p className="text-xs font-bold text-slate-700">{fmtMoney(contract.room_internet_fee || 50000)}</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg border border-slate-100 text-center">
+                        <p className="text-[10px] text-slate-500 mb-1">Gửi xe</p>
+                        <p className="text-xs font-bold text-slate-700">{fmtMoney(contract.room_parking_fee || 100000)}</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg border border-slate-100 text-center">
+                        <p className="text-[10px] text-slate-500 mb-1">Rác</p>
+                        <p className="text-xs font-bold text-slate-700">{fmtMoney(contract.room_garbage_fee || 20000)}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
