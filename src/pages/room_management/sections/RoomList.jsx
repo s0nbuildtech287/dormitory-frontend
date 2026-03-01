@@ -1,7 +1,8 @@
 ﻿import { useState } from "react";
-import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2 } from "lucide-react";
+import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle } from "lucide-react";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
+import { deleteRoom } from "../../../api/apiRoom.js";
 
 const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,6 +15,24 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
   const [selectedRoomInvoice, setSelectedRoomInvoice] = useState(null);
   const [showAddRoomModal, setShowAddRoomModal] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const handleDeleteConfirm = async () => {
+    if (!roomToDelete) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      await deleteRoom(roomToDelete.id);
+      setRoomToDelete(null);
+      onRefresh();
+    } catch (err) {
+      setDeleteError(err.message || "Xóa phòng thất bại, vui lòng thử lại.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -214,7 +233,14 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                           <button onClick={() => setSelectedRoomDetail(room)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết">
                             <Eye size={16} />
                           </button>
-                          <button onClick={() => console.log("Delete room", room.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa phòng">
+                          <button
+                            onClick={() => {
+                              setDeleteError("");
+                              setRoomToDelete(room);
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Xóa phòng"
+                          >
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -327,6 +353,50 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
       />
 
       <RoomDetailModal room={selectedRoomDetail} onClose={() => setSelectedRoomDetail(null)} />
+
+      {/* Delete Confirm Modal */}
+      {roomToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 animate-in scale-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
+                <Trash2 size={22} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Xác nhận xóa phòng</h3>
+              <p className="text-sm text-slate-500">
+                Bạn có chắc muốn xóa phòng <span className="font-bold text-slate-800">{roomToDelete.room_number}</span>?<br />
+                Hành động này không thể hoàn tác.
+              </p>
+              {deleteError && (
+                <div className="w-full flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl px-3 py-2">
+                  <AlertTriangle size={14} className="shrink-0" />
+                  {deleteError}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setRoomToDelete(null);
+                  setDeleteError("");
+                }}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deleteLoading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Trash2 size={14} />}
+                {deleteLoading ? "Đang xóa..." : "Xóa phòng"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Students Modal */}
       {selectedRoomStudents && (

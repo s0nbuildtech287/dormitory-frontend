@@ -71,14 +71,14 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
     }
   }, [form.buildingSelect]);
 
-  // Auto-suggest mã phòng
+  // Auto-suggest mã phòng — format: room-{XXX}-{tòa}-{tầng}
   useEffect(() => {
     if (!activeBuilding || !activeFloor || roomNumberManuallyEdited) return;
-    const nextSlot = roomsOnFloor.length + 1;
-    const floorPadded = String(activeFloor).padStart(2, "0");
-    const suggested = `${activeBuilding}${floorPadded}-${String(nextSlot).padStart(2, "0")}`;
+    const roomsInBuilding = rooms.filter((r) => r.building === activeBuilding);
+    const nextNum = roomsInBuilding.length + 1;
+    const suggested = `room-${String(nextNum).padStart(3, "0")}-${activeBuilding}-${activeFloor}`;
     setForm((prev) => ({ ...prev, roomNumber: suggested }));
-  }, [activeBuilding, activeFloor, roomsOnFloor.length, roomNumberManuallyEdited]);
+  }, [activeBuilding, activeFloor, rooms, roomNumberManuallyEdited]);
 
   // Kiểm tra trùng mã phòng
   const isDuplicate = useMemo(() => {
