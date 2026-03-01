@@ -1,12 +1,33 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
-import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp } from "lucide-react";
+import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp, CheckCircle2, Clock, XCircle, Gauge } from "lucide-react";
+import { RegistrationStatus } from "../../../utils/types.js";
+import { getScoringWeights } from "../../../api/apiRegistration.js";
 
 const RegistrationStatistics = ({ regs }) => {
+  const [totalQuota, setTotalQuota] = useState(1000);
+
+  useEffect(() => {
+    const fetchQuota = async () => {
+      try {
+        const data = await getScoringWeights();
+        if (data.success && data.data?.value?.quotas?.totalSlots) {
+          setTotalQuota(data.data.value.quotas.totalSlots);
+        }
+      } catch (e) {
+        // Keep default 1000
+      }
+    };
+    fetchQuota();
+  }, []);
+
   const statsData = useMemo(() => {
     if (!regs || regs.length === 0) {
       return {
         totalApproved: 0,
+        countApproved: 0,
+        countPending: 0,
+        countRejected: 0,
         baskets: [],
         genderRatio: { male: 0, female: 0 },
         provinces: [],
@@ -21,9 +42,17 @@ const RegistrationStatistics = ({ regs }) => {
     const dataToAnalyze = regs;
     const actualTotal = dataToAnalyze.length;
 
+    // Status counts
+    const countApproved = regs.filter((r) => r.status === RegistrationStatus.APPROVED).length;
+    const countPending = regs.filter((r) => r.status === RegistrationStatus.PENDING).length;
+    const countRejected = regs.filter((r) => r.status === RegistrationStatus.REJECTED).length;
+
     if (actualTotal === 0) {
       return {
         totalApproved: 0,
+        countApproved: 0,
+        countPending: 0,
+        countRejected: 0,
         baskets: [],
         genderRatio: { male: 0, female: 0 },
         provinces: [],
@@ -162,6 +191,9 @@ const RegistrationStatistics = ({ regs }) => {
 
     return {
       totalApproved: actualTotal,
+      countApproved,
+      countPending,
+      countRejected,
       baskets: [
         { name: "Rổ 1 (Chính sách)", count: basket1.length, color: "#e74c3c" },
         { name: "Rổ 2 (Tân sinh viên)", count: basket2.length, color: "#3498db" },
@@ -192,11 +224,13 @@ const RegistrationStatistics = ({ regs }) => {
     </div>
   );
 
+  const quotaDiff = statsData.countApproved - totalQuota;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* 1. SUMMARY CARDS - All in one row */}
+      {/* 1. SUMMARY CARDS - Row 1: tổng quan hồ sơ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Total Approved */}
+        {/* Total */}
         <StatCard icon={UserCheck} label="Tổng hồ sơ đã ứng tuyển" value={statsData.totalApproved} subValue="sinh viên" color="emerald" />
 
         {/* Baskets - R1, R2, R3 */}
@@ -218,6 +252,73 @@ const RegistrationStatistics = ({ regs }) => {
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-600">Nữ:</span>
               <span className="text-2xl font-bold text-pink-600">{statsData.genderRatio.female}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. STATUS CARDS - Row 2: trạng thái duyệt & chỉ tiêu */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Approved */}
+        <div className="bg-white p-5 rounded-2xl border border-emerald-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="p-3 rounded-xl bg-emerald-50">
+            <CheckCircle2 size={26} className="text-emerald-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-0.5">Đã chấp nhận</p>
+            <div className="flex items-baseline gap-2">
+              <h4 className="text-3xl font-bold text-emerald-600">{statsData.countApproved}</h4>
+              <span className="text-sm font-semibold text-slate-400">hồ sơ</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Pending */}
+        <div className="bg-white p-5 rounded-2xl border border-amber-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="p-3 rounded-xl bg-amber-50">
+            <Clock size={26} className="text-amber-500" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-0.5">Đang chờ duyệt</p>
+            <div className="flex items-baseline gap-2">
+              <h4 className="text-3xl font-bold text-amber-500">{statsData.countPending}</h4>
+              <span className="text-sm font-semibold text-slate-400">hồ sơ</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Rejected */}
+        <div className="bg-white p-5 rounded-2xl border border-rose-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="p-3 rounded-xl bg-rose-50">
+            <XCircle size={26} className="text-rose-500" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500 mb-0.5">Đã từ chối</p>
+            <div className="flex items-baseline gap-2">
+              <h4 className="text-3xl font-bold text-rose-500">{statsData.countRejected}</h4>
+              <span className="text-sm font-semibold text-slate-400">hồ sơ</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quota fulfillment */}
+        <div className={`bg-white p-5 rounded-2xl border flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow ${quotaDiff >= 0 ? "border-violet-100" : "border-orange-100"}`}>
+          <div className={`p-3 rounded-xl ${quotaDiff >= 0 ? "bg-violet-50" : "bg-orange-50"}`}>
+            <Gauge size={26} className={quotaDiff >= 0 ? "text-violet-600" : "text-orange-500"} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-slate-500 mb-0.5">So với chỉ tiêu ({totalQuota.toLocaleString()})</p>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <h4 className={`text-3xl font-bold ${quotaDiff > 0 ? "text-violet-600" : quotaDiff < 0 ? "text-orange-500" : "text-slate-900"}`}>
+                {quotaDiff > 0 ? `+${quotaDiff}` : quotaDiff === 0 ? "Đủ" : quotaDiff}
+              </h4>
+              <span
+                className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  quotaDiff > 0 ? "bg-violet-100 text-violet-700" : quotaDiff < 0 ? "bg-orange-100 text-orange-700" : "bg-emerald-100 text-emerald-700"
+                }`}
+              >
+                {quotaDiff > 0 ? "vượt chỉ tiêu" : quotaDiff < 0 ? "thiếu chỉ tiêu" : "vừa đủ"}
+              </span>
             </div>
           </div>
         </div>
