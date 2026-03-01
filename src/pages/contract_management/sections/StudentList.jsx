@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail } from "lucide-react";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -12,6 +12,10 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterGender, setFilterGender] = useState("All");
+  // Track email sent locally (chưa dùng backend)
+  const [emailSentSet, setEmailSentSet] = useState(new Set());
+
+  const markEmailSent = (id) => setEmailSentSet((prev) => new Set([...prev, id]));
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,12 +102,12 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           <table className="w-full text-left border-collapse">
             <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Số HĐ</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[22%] text-center">Sinh viên</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Phòng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Trạng thái</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[18%] text-center">Thời hạn hợp đồng</th>
-                <th className="px-6 py-3 w-[10%] text-center">Thao tác</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[11%] text-center">Số HĐ</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[18%] text-center">Sinh viên</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Phòng</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[20%] text-center">Trạng thái</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[16%] text-center">Thời hạn</th>
+                <th className="px-6 py-3 w-[12%] text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-300">
@@ -132,10 +136,11 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                       {/* Contract number */}
                       <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300 text-center">{c.contract_number || `#${c.id?.slice(-8)}`}</td>
 
-                      {/* Student info */}
+                      {/* Student info — 1 dòng */}
                       <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
-                        <p className="font-semibold text-slate-900 text-xs">{c.student_name || "—"}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{c.snapshot_student_id || c.student_email || "—"}</p>
+                        <p className="font-semibold text-slate-900 text-xs truncate max-w-[160px] mx-auto">
+                          {c.student_name ? `${c.student_name}${c.snapshot_student_id ? ` — ${c.snapshot_student_id}` : ""}` : c.snapshot_student_id || "—"}
+                        </p>
                       </td>
 
                       {/* Room */}
@@ -150,39 +155,61 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                         )}
                       </td>
 
-                      {/* Status */}
+                      {/* Status + inline badges */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold ${statusCfg.cls}`}>
-                          {statusCfg.icon}
-                          {statusCfg.label}
-                        </span>
+                        <div className="flex flex-wrap items-center justify-center gap-1">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${statusCfg.cls}`}>
+                            {statusCfg.icon} {statusCfg.label}
+                          </span>
+                          <span
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.deposit_paid ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                          >
+                            {c.deposit_paid ? "Đã cọc" : "Chưa cọc"}
+                          </span>
+                          <span
+                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.hard_copy_received ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                          >
+                            {c.hard_copy_received ? "Đã bản cứng" : "Chưa bản cứng"}
+                          </span>
+                        </div>
                       </td>
 
-                      {/* Thời hạn hợp đồng */}
+                      {/* Thời hạn — 1 dòng */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
                         {c.start_date ? (
-                          <div className="space-y-0.5">
-                            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Bắt đầu</p>
-                            <p className="text-xs font-semibold text-slate-700">{new Date(c.start_date).toLocaleDateString("vi-VN")}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mt-1">Kết thúc</p>
-                            <p className="text-xs font-semibold text-slate-700">{c.end_date ? new Date(c.end_date).toLocaleDateString("vi-VN") : "—"}</p>
-                          </div>
+                          <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">
+                            {new Date(c.start_date).toLocaleDateString("vi-VN")} → {c.end_date ? new Date(c.end_date).toLocaleDateString("vi-VN") : "—"}
+                          </span>
                         ) : (
                           <span className="text-xs text-slate-400 italic">Chưa xác định</span>
                         )}
                       </td>
 
                       {/* Thao tác */}
-                      <td className="px-6 py-2 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => onViewDetail(c.id)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={isPending ? "Gán phòng" : "Xem chi tiết"}>
-                            <Eye size={16} />
-                          </button>
-                          <button onClick={() => onDeleteContract(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa hợp đồng">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
+                      {(() => {
+                        const emailSent = emailSentSet.has(c.id) || !!c.email_sent_at;
+                        return (
+                          <td className="px-6 py-2 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button onClick={() => onViewDetail(c.id)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={isPending ? "Gán phòng" : "Xem chi tiết"}>
+                                <Eye size={15} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (!emailSent) markEmailSent(c.id);
+                                }}
+                                className={`p-1.5 rounded-lg transition-colors ${emailSent ? "text-slate-800 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
+                                title={emailSent ? `Đã gửi email${c.email_sent_at ? " " + new Date(c.email_sent_at).toLocaleDateString("vi-VN") : ""}` : "Gửi email thông báo"}
+                              >
+                                <Mail size={15} />
+                              </button>
+                              <button onClick={() => onDeleteContract(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa hợp đồng">
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        );
+                      })()}
                     </tr>
                   );
                 })
