@@ -76,7 +76,7 @@ const RegistrationList = ({
   const [isConfirming, setIsConfirming] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
-  
+
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
     totalSlots: 1000,
@@ -84,7 +84,7 @@ const RegistrationList = ({
     freshmen: 60,
     seniors: 30,
   });
-  
+
   // Fetch quotas from settings when component mounts
   useEffect(() => {
     const fetchQuotas = async () => {
@@ -94,13 +94,14 @@ const RegistrationList = ({
           setQuotas(data.data.value.quotas);
         }
       } catch (error) {
-        console.error('Error fetching quotas:', error);
+        console.error("Error fetching quotas:", error);
       }
     };
     fetchQuotas();
   }, [regs]);
 
   const filteredRegs = regs
+    .filter((reg) => reg.status !== RegistrationStatus.APPROVED) // Ẩn hồ sơ đã duyệt (đã chuyển sang hợp đồng)
     .filter((reg) => {
       const searchLower = searchTerm.toLowerCase();
       const matchesSearch = (reg.student_name?.toLowerCase().includes(searchLower) ?? false) || (reg.student_id?.toLowerCase().includes(searchLower) ?? false);
@@ -132,21 +133,21 @@ const RegistrationList = ({
   // Calculate quota-based pending count for current filter group
   const totalSlots = quotas.totalSlots || 1000;
   const groupQuotas = {
-    'Chính sách': Math.round((quotas.policy_priority / 100) * totalSlots),
-    'Tân sinh viên': Math.round((quotas.freshmen / 100) * totalSlots),
-    'Sinh viên khoá cũ': Math.round((quotas.seniors / 100) * totalSlots),
+    "Chính sách": Math.round((quotas.policy_priority / 100) * totalSlots),
+    "Tân sinh viên": Math.round((quotas.freshmen / 100) * totalSlots),
+    "Sinh viên khoá cũ": Math.round((quotas.seniors / 100) * totalSlots),
   };
-  
+
   // Calculate available slots for current filter group
   const getAvailableSlotsForGroup = (groupFilter) => {
-    if (groupFilter === 'All') {
+    if (groupFilter === "All") {
       return totalSlots;
     }
     return groupQuotas[groupFilter] || 0;
   };
-  
+
   const availableSlots = getAvailableSlotsForGroup(filterGroup);
-  const actualPendingCount = filteredRegs.filter(reg => reg.status === RegistrationStatus.PENDING).length;
+  const actualPendingCount = filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length;
   const quotaBasedPendingCount = Math.min(actualPendingCount, availableSlots);
 
   // Reset to first page when filters change
@@ -212,9 +213,10 @@ const RegistrationList = ({
             <RotateCw size={14} className="mr-1 flex-shrink-0" /> Đồng bộ
           </button>
 
-          <button 
+          <button
             onClick={() => setIsAddModalOpen(true)}
-            className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
+            className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap"
+          >
             <Plus size={14} className="mr-1 flex-shrink-0" /> Thêm hồ sơ
           </button>
         </div>
@@ -242,7 +244,6 @@ const RegistrationList = ({
           >
             <option value="All">Tất cả trạng thái</option>
             <option value={RegistrationStatus.PENDING}>Chờ duyệt</option>
-            <option value={RegistrationStatus.APPROVED}>Đã duyệt</option>
             <option value={RegistrationStatus.REJECTED}>Từ chối</option>
           </select>
 
@@ -366,9 +367,7 @@ const RegistrationList = ({
                           {reg.status}
                         </span>
                         {reg.isFull && reg.status === RegistrationStatus.PENDING && (
-                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
-                            Đầy chỗ
-                          </span>
+                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">Đầy chỗ</span>
                         )}
                       </div>
                     </td>
@@ -609,14 +608,14 @@ const RegistrationList = ({
                     {(() => {
                       // Parse ai_reasoning if it's a string
                       let reasoning = selectedRegDetail.ai_reasoning;
-                      if (typeof reasoning === 'string') {
+                      if (typeof reasoning === "string") {
                         try {
                           reasoning = JSON.parse(reasoning);
                         } catch (e) {
                           // If parse fails, keep as string
                         }
                       }
-                      
+
                       if (reasoning && typeof reasoning === "object") {
                         return (
                           <div className="space-y-2 text-sm">
@@ -678,9 +677,7 @@ const RegistrationList = ({
                     {selectedRegDetail.status}
                   </span>
                   {selectedRegDetail.isFull && selectedRegDetail.status === RegistrationStatus.PENDING && (
-                    <span className="inline-block px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">
-                      ⚠️ Đầy chỗ
-                    </span>
+                    <span className="inline-block px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">⚠️ Đầy chỗ</span>
                   )}
                 </div>
               </div>
@@ -736,7 +733,7 @@ const RegistrationList = ({
                   <XCircle size={16} /> Từ chối
                 </button>
                 <button
-                  onClick={() => setIsConfirming({ id: selectedRegDetail.id, status: 'DELETE' })}
+                  onClick={() => setIsConfirming({ id: selectedRegDetail.id, status: "DELETE" })}
                   className="px-4 py-2 text-white font-semibold bg-red-600 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2"
                 >
                   <XCircle size={16} /> Xóa
@@ -768,24 +765,26 @@ const RegistrationList = ({
             <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-3">
               <div
                 className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-100 text-emerald-600" : 
-                  isConfirming.status === RegistrationStatus.REJECTED ? "bg-rose-100 text-rose-600" :
-                  "bg-red-100 text-red-600"
+                  isConfirming.status === RegistrationStatus.APPROVED
+                    ? "bg-emerald-100 text-emerald-600"
+                    : isConfirming.status === RegistrationStatus.REJECTED
+                      ? "bg-rose-100 text-rose-600"
+                      : "bg-red-100 text-red-600"
                 }`}
               >
-                {isConfirming.status === RegistrationStatus.APPROVED ? <CheckCircle2 size={16} /> : 
-                 <XCircle size={16} />}
+                {isConfirming.status === RegistrationStatus.APPROVED ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
               </div>
-              {isConfirming.status === 'DELETE' ? 'Xóa hồ sơ?' : 'Xác nhận quyết định?'}
+              {isConfirming.status === "DELETE" ? "Xóa hồ sơ?" : "Xác nhận quyết định?"}
             </h3>
             <p className="text-slate-500 text-sm mb-8 leading-relaxed ml-9">
-              {isConfirming.status === 'DELETE' 
-                ? 'Hồ sơ sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa hồ sơ này không?'
-                : <>
-                  Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming.status === RegistrationStatus.APPROVED ? 'phê duyệt' : 'từ chối'}</span> hồ sơ.
+              {isConfirming.status === "DELETE" ? (
+                "Hồ sơ sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa hồ sơ này không?"
+              ) : (
+                <>
+                  Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming.status === RegistrationStatus.APPROVED ? "phê duyệt" : "từ chối"}</span> hồ sơ.
                   {selectedRegDetail && <span> Hệ thống sẽ gửi thông báo kết quả cho sinh viên.</span>}
                 </>
-              }
+              )}
             </p>
             <div className="flex gap-3">
               <button onClick={() => setIsConfirming(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all">
@@ -794,7 +793,7 @@ const RegistrationList = ({
               <button
                 onClick={async () => {
                   try {
-                    if (isConfirming.status === 'DELETE') {
+                    if (isConfirming.status === "DELETE") {
                       // Call delete API
                       await deleteRegistration(isConfirming.id);
                     } else if (isConfirming.status === RegistrationStatus.APPROVED) {
@@ -802,35 +801,33 @@ const RegistrationList = ({
                       await approveRegistration(isConfirming.id);
                     } else if (isConfirming.status === RegistrationStatus.REJECTED) {
                       // Call reject API
-                      await rejectRegistration(isConfirming.id, 'Từ chối từ admin');
+                      await rejectRegistration(isConfirming.id, "Từ chối từ admin");
                     }
                     setIsConfirming(null);
                     if (selectedRegDetail) setSelectedRegDetail(null);
                     // Refresh data by calling parent callback
                     if (onRefresh) onRefresh();
                   } catch (error) {
-                    console.error('Error:', error.message);
-                    alert(error.message || 'Có lỗi xảy ra');
+                    console.error("Error:", error.message);
+                    alert(error.message || "Có lỗi xảy ra");
                   }
                 }}
                 className={`flex-1 py-3 rounded-xl font-bold text-white transition-all ${
-                  isConfirming.status === RegistrationStatus.APPROVED ? "bg-emerald-600 hover:bg-emerald-700" : 
-                  isConfirming.status === RegistrationStatus.REJECTED ? "bg-rose-600 hover:bg-rose-700" :
-                  "bg-red-600 hover:bg-red-700"
+                  isConfirming.status === RegistrationStatus.APPROVED
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : isConfirming.status === RegistrationStatus.REJECTED
+                      ? "bg-rose-600 hover:bg-rose-700"
+                      : "bg-red-600 hover:bg-red-700"
                 }`}
               >
-                {isConfirming.status === 'DELETE' ? 'Xóa' : 'Xác nhận'}
+                {isConfirming.status === "DELETE" ? "Xóa" : "Xác nhận"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <AddRegistrationModal 
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSubmit={handleAddRegistration}
-      />
+      <AddRegistrationModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddRegistration} />
     </div>
   );
 };
