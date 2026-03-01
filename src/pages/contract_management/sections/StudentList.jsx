@@ -102,8 +102,8 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[22%] text-center">Sinh viên</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Phòng</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Trạng thái</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Ngày tạo</th>
-                <th className="px-6 py-3 w-[14%] text-center">Thao tác</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[18%] text-center">Thời hạn hợp đồng</th>
+                <th className="px-6 py-3 w-[10%] text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-300">
@@ -158,8 +158,19 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                         </span>
                       </td>
 
-                      {/* Created at */}
-                      <td className="px-6 py-2 text-xs text-slate-500 text-center border-r-2 border-slate-300">{c.created_at ? new Date(c.created_at).toLocaleDateString("vi-VN") : "—"}</td>
+                      {/* Thời hạn hợp đồng */}
+                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
+                        {c.start_date ? (
+                          <div className="space-y-0.5">
+                            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Bắt đầu</p>
+                            <p className="text-xs font-semibold text-slate-700">{new Date(c.start_date).toLocaleDateString("vi-VN")}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mt-1">Kết thúc</p>
+                            <p className="text-xs font-semibold text-slate-700">{c.end_date ? new Date(c.end_date).toLocaleDateString("vi-VN") : "—"}</p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">Chưa xác định</span>
+                        )}
+                      </td>
 
                       {/* Thao tác */}
                       <td className="px-6 py-2 text-center">
