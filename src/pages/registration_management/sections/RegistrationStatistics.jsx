@@ -5,17 +5,28 @@ import { RegistrationStatus } from "../../../utils/types.js";
 import { getScoringWeights } from "../../../api/apiRegistration.js";
 
 const RegistrationStatistics = ({ regs }) => {
-  const [totalQuota, setTotalQuota] = useState(1000);
+  const [quotaSettings, setQuotaSettings] = useState({
+    totalSlots: 1000,
+    policy_priority: 10,
+    freshmen: 60,
+    seniors: 30,
+  });
 
   useEffect(() => {
     const fetchQuota = async () => {
       try {
         const data = await getScoringWeights();
-        if (data.success && data.data?.value?.quotas?.totalSlots) {
-          setTotalQuota(data.data.value.quotas.totalSlots);
+        if (data.success && data.data?.value?.quotas) {
+          const q = data.data.value.quotas;
+          setQuotaSettings({
+            totalSlots: q.totalSlots || 1000,
+            policy_priority: q.policy_priority ?? 10,
+            freshmen: q.freshmen ?? 60,
+            seniors: q.seniors ?? 30,
+          });
         }
       } catch (e) {
-        // Keep default 1000
+        // Keep defaults
       }
     };
     fetchQuota();
@@ -224,7 +235,19 @@ const RegistrationStatistics = ({ regs }) => {
     </div>
   );
 
-  const quotaDiff = statsData.countApproved - totalQuota;
+  const { totalSlots, policy_priority, freshmen, seniors } = quotaSettings;
+  const quotaBasket1 = Math.round(totalSlots * (policy_priority / 100));
+  const quotaBasket2 = Math.round(totalSlots * (freshmen / 100));
+  const quotaBasket3 = Math.round(totalSlots * (seniors / 100));
+  const basket1Count = statsData.baskets[0]?.count || 0;
+  const basket2Count = statsData.baskets[1]?.count || 0;
+  const basket3Count = statsData.baskets[2]?.count || 0;
+
+  const DiffBadge = ({ diff }) => {
+    if (diff > 0) return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">+{diff} vượt</span>;
+    if (diff < 0) return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">{diff} thiếu</span>;
+    return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">vừa đủ</span>;
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -257,8 +280,8 @@ const RegistrationStatistics = ({ regs }) => {
         </div>
       </div>
 
-      {/* 2. STATUS CARDS - Row 2: trạng thái duyệt & chỉ tiêu */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. STATUS CARDS - Row 2: trạng thái duyệt */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Approved */}
         <div className="bg-white p-5 rounded-2xl border border-emerald-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
           <div className="p-3 rounded-xl bg-emerald-50">
@@ -300,27 +323,124 @@ const RegistrationStatistics = ({ regs }) => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Quota fulfillment */}
-        <div className={`bg-white p-5 rounded-2xl border flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow ${quotaDiff >= 0 ? "border-violet-100" : "border-orange-100"}`}>
-          <div className={`p-3 rounded-xl ${quotaDiff >= 0 ? "bg-violet-50" : "bg-orange-50"}`}>
-            <Gauge size={26} className={quotaDiff >= 0 ? "text-violet-600" : "text-orange-500"} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-500 mb-0.5">So với chỉ tiêu ({totalQuota.toLocaleString()})</p>
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <h4 className={`text-3xl font-bold ${quotaDiff > 0 ? "text-violet-600" : quotaDiff < 0 ? "text-orange-500" : "text-slate-900"}`}>
-                {quotaDiff > 0 ? `+${quotaDiff}` : quotaDiff === 0 ? "Đủ" : quotaDiff}
-              </h4>
-              <span
-                className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                  quotaDiff > 0 ? "bg-violet-100 text-violet-700" : quotaDiff < 0 ? "bg-orange-100 text-orange-700" : "bg-emerald-100 text-emerald-700"
-                }`}
-              >
-                {quotaDiff > 0 ? "vượt chỉ tiêu" : quotaDiff < 0 ? "thiếu chỉ tiêu" : "vừa đủ"}
-              </span>
+      {/* 3. QUOTA BREAKDOWN - full width panel per basket */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-violet-50">
+              <Gauge size={22} className="text-violet-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900">Phân bổ chỉ tiêu theo từng nhóm</h3>
+              <p className="text-xs text-slate-500">
+                Chỉ tiêu tổng: <span className="font-bold text-slate-700">{totalSlots.toLocaleString()} suất</span>
+              </p>
             </div>
           </div>
+          {/* Overall summary pill */}
+          <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600">
+            <span className="text-slate-400">Tổng nộp:</span>
+            <span className="font-bold text-slate-900">{statsData.totalApproved}</span>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-400">Chỉ tiêu:</span>
+            <span className="font-bold text-violet-700">{totalSlots}</span>
+          </div>
+        </div>
+
+        {/* Per-basket rows */}
+        <div className="divide-y divide-slate-50">
+          {/* Basket 1 */}
+          {(() => {
+            const diff = basket1Count - quotaBasket1;
+            const pct = quotaBasket1 > 0 ? Math.min((basket1Count / quotaBasket1) * 100, 150) : 0;
+            return (
+              <div className="flex items-center gap-4 px-6 py-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
+                <div className="w-40 shrink-0">
+                  <p className="text-sm font-bold text-slate-800">Rổ 1 — Chính sách</p>
+                  <p className="text-xs text-slate-400">
+                    {policy_priority}% chỉ tiêu = {quotaBasket1} suất
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                    <span>{basket1Count} hồ sơ</span>
+                    <span>{Math.round(pct)}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-rose-400" : "bg-emerald-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                  </div>
+                </div>
+                <div className="w-36 shrink-0 flex items-center justify-end gap-2">
+                  <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
+                  <DiffBadge diff={diff} />
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Basket 2 */}
+          {(() => {
+            const diff = basket2Count - quotaBasket2;
+            const pct = quotaBasket2 > 0 ? Math.min((basket2Count / quotaBasket2) * 100, 150) : 0;
+            return (
+              <div className="flex items-center gap-4 px-6 py-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
+                <div className="w-40 shrink-0">
+                  <p className="text-sm font-bold text-slate-800">Rổ 2 — Tân sinh viên</p>
+                  <p className="text-xs text-slate-400">
+                    {freshmen}% chỉ tiêu = {quotaBasket2} suất
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                    <span>{basket2Count} hồ sơ</span>
+                    <span>{Math.round(pct)}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-rose-400" : "bg-blue-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                  </div>
+                </div>
+                <div className="w-36 shrink-0 flex items-center justify-end gap-2">
+                  <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
+                  <DiffBadge diff={diff} />
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Basket 3 */}
+          {(() => {
+            const diff = basket3Count - quotaBasket3;
+            const pct = quotaBasket3 > 0 ? Math.min((basket3Count / quotaBasket3) * 100, 150) : 0;
+            return (
+              <div className="flex items-center gap-4 px-6 py-4">
+                <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0" />
+                <div className="w-40 shrink-0">
+                  <p className="text-sm font-bold text-slate-800">Rổ 3 — Khóa cũ</p>
+                  <p className="text-xs text-slate-400">
+                    {seniors}% chỉ tiêu = {quotaBasket3} suất
+                  </p>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                    <span>{basket3Count} hồ sơ</span>
+                    <span>{Math.round(pct)}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-rose-400" : "bg-purple-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                  </div>
+                </div>
+                <div className="w-36 shrink-0 flex items-center justify-end gap-2">
+                  <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
+                  <DiffBadge diff={diff} />
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
