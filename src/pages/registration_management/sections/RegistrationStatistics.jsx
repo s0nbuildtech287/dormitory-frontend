@@ -1,20 +1,5 @@
 import { useMemo } from "react";
-import { RegistrationStatus } from "../../../utils/types.js";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  LineChart,
-  Line,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
 import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp } from "lucide-react";
 
 const RegistrationStatistics = ({ regs }) => {
@@ -32,13 +17,8 @@ const RegistrationStatistics = ({ regs }) => {
       };
     }
 
-    // Filter for APPROVED registrations only
-    // If no approved registrations, show all registrations as a fallback for demo/testing
-    const approved = regs.filter((r) => r.status === RegistrationStatus.APPROVED);
-    const total = approved.length;
-
-    // Fallback: if no approved registrations, use all registrations for statistics
-    const dataToAnalyze = total > 0 ? approved : regs;
+    // Always use all registrations for statistics (reflects the full registration list)
+    const dataToAnalyze = regs;
     const actualTotal = dataToAnalyze.length;
 
     if (actualTotal === 0) {
@@ -136,12 +116,12 @@ const RegistrationStatistics = ({ regs }) => {
 
     // --- 5. COHORT BREAKDOWN (Year-based) ---
     // Count by actual year (1, 2, 3, 4) from imported data
-    const yearCounts = { 'Năm 1': 0, 'Năm 2': 0, 'Năm 3': 0, 'Năm 4': 0 };
+    const yearCounts = { "Năm 1": 0, "Năm 2": 0, "Năm 3": 0, "Năm 4": 0 };
     dataToAnalyze.forEach((r) => {
-      if (r.year === 1) yearCounts['Năm 1']++;
-      else if (r.year === 2) yearCounts['Năm 2']++;
-      else if (r.year === 3) yearCounts['Năm 3']++;
-      else if (r.year === 4) yearCounts['Năm 4']++;
+      if (r.year === 1) yearCounts["Năm 1"]++;
+      else if (r.year === 2) yearCounts["Năm 2"]++;
+      else if (r.year === 3) yearCounts["Năm 3"]++;
+      else if (r.year === 4) yearCounts["Năm 4"]++;
     });
 
     const cohorts = Object.keys(yearCounts).map((key) => ({
@@ -163,8 +143,17 @@ const RegistrationStatistics = ({ regs }) => {
     // Always show 10 years of data: 2016-2026, using real data if available, fake otherwise
     const baseCount = 769; // Adjusted to make 2026 count approximately 1000
     const yearlyMultipliers = {
-      '2016': 0.3, '2017': 0.4, '2018': 0.5, '2019': 0.6, '2020': 0.7,
-      '2021': 0.8, '2022': 0.9, '2023': 1.0, '2024': 1.1, '2025': 1.2, '2026': 1.3
+      2016: 0.3,
+      2017: 0.4,
+      2018: 0.5,
+      2019: 0.6,
+      2020: 0.7,
+      2021: 0.8,
+      2022: 0.9,
+      2023: 1.0,
+      2024: 1.1,
+      2025: 1.2,
+      2026: 1.3,
     };
     const yearlyTrends = Object.keys(yearlyMultipliers).map((year) => ({
       year: year,
@@ -189,14 +178,14 @@ const RegistrationStatistics = ({ regs }) => {
   }, [regs]);
 
   const StatCard = ({ icon: Icon, label, value, subValue, color, size = "default" }) => (
-    <div className={`bg-white ${size === 'large' ? 'p-8' : 'p-6'} rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow`}>
-      <div className={`${size === 'large' ? 'p-5' : 'p-4'} rounded-xl bg-${color}-50`}>
-        <Icon size={size === 'large' ? 32 : 28} className={`text-${color}-600`} />
+    <div className={`bg-white ${size === "large" ? "p-8" : "p-6"} rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow`}>
+      <div className={`${size === "large" ? "p-5" : "p-4"} rounded-xl bg-${color}-50`}>
+        <Icon size={size === "large" ? 32 : 28} className={`text-${color}-600`} />
       </div>
       <div>
-        <p className={`${size === 'large' ? 'text-base' : 'text-sm'} font-medium text-slate-500 mb-1`}>{label}</p>
+        <p className={`${size === "large" ? "text-base" : "text-sm"} font-medium text-slate-500 mb-1`}>{label}</p>
         <div className="flex items-baseline gap-2">
-          <h4 className={`${size === 'large' ? 'text-4xl' : 'text-3xl'} font-bold text-slate-900`}>{value}</h4>
+          <h4 className={`${size === "large" ? "text-4xl" : "text-3xl"} font-bold text-slate-900`}>{value}</h4>
           {subValue && <span className="text-sm font-semibold text-slate-400">{subValue}</span>}
         </div>
       </div>
@@ -208,36 +197,12 @@ const RegistrationStatistics = ({ regs }) => {
       {/* 1. SUMMARY CARDS - All in one row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Approved */}
-        <StatCard
-          icon={UserCheck}
-          label="Tổng hồ sơ đã ứng tuyển"
-          value={statsData.totalApproved}
-          subValue="sinh viên"
-          color="emerald"
-        />
+        <StatCard icon={UserCheck} label="Tổng hồ sơ đã ứng tuyển" value={statsData.totalApproved} subValue="sinh viên" color="emerald" />
 
         {/* Baskets - R1, R2, R3 */}
-        <StatCard
-          icon={Target}
-          label="Nhóm 1: Chính sách"
-          value={statsData.baskets[0]?.count || 0}
-          subValue="sinh viên"
-          color="rose"
-        />
-        <StatCard
-          icon={School}
-          label="Nhóm 2: Tân sinh viên"
-          value={statsData.baskets[1]?.count || 0}
-          subValue="sinh viên"
-          color="blue"
-        />
-        <StatCard
-          icon={GraduationCap}
-          label="Nhóm 3: Khóa cũ"
-          value={statsData.baskets[2]?.count || 0}
-          subValue="sinh viên"
-          color="purple"
-        />
+        <StatCard icon={Target} label="Nhóm 1: Chính sách" value={statsData.baskets[0]?.count || 0} subValue="sinh viên" color="rose" />
+        <StatCard icon={School} label="Nhóm 2: Tân sinh viên" value={statsData.baskets[1]?.count || 0} subValue="sinh viên" color="blue" />
+        <StatCard icon={GraduationCap} label="Nhóm 3: Khóa cũ" value={statsData.baskets[2]?.count || 0} subValue="sinh viên" color="purple" />
 
         {/* Gender Ratio Card */}
         <div className="bg-gradient-to-br from-indigo-50 to-white p-4 rounded-2xl border border-indigo-100 shadow-sm">
@@ -281,22 +246,22 @@ const RegistrationStatistics = ({ regs }) => {
               <li className="flex items-start gap-2">
                 <span className="text-rose-500 mt-0.5">●</span>
                 <span>
-                  Rổ 1 chiếm <strong>{statsData.totalApproved > 0 ? ((statsData.baskets[0]?.count / statsData.totalApproved) * 100).toFixed(1) : 0}%</strong> 
-                  {statsData.baskets[0]?.count > statsData.totalApproved * 0.15 ? ' (cao hơn mức khuyến nghị 12-15%)' : ' (phù hợp chính sách ưu tiên)'}
+                  Rổ 1 chiếm <strong>{statsData.totalApproved > 0 ? ((statsData.baskets[0]?.count / statsData.totalApproved) * 100).toFixed(1) : 0}%</strong>
+                  {statsData.baskets[0]?.count > statsData.totalApproved * 0.15 ? " (cao hơn mức khuyến nghị 12-15%)" : " (phù hợp chính sách ưu tiên)"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">●</span>
                 <span>
                   Rổ 2 (Tân SV) có <strong>{statsData.baskets[1]?.count}</strong> hồ sơ
-                  {statsData.baskets[1]?.count > statsData.totalApproved * 0.6 ? ', cần mở rộng chỗ ở cho năm 1' : ', phù hợp với chỉ tiêu'}
+                  {statsData.baskets[1]?.count > statsData.totalApproved * 0.6 ? ", cần mở rộng chỗ ở cho năm 1" : ", phù hợp với chỉ tiêu"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-0.5">●</span>
                 <span>
-                  Rổ 3 có <strong>{statsData.baskets[2]?.count}</strong> khóa cũ, 
-                  {statsData.baskets[2]?.count < statsData.baskets[1]?.count * 0.5 ? ' nhu cầu thấp hơn tân sinh viên' : ' cạnh tranh cao'}
+                  Rổ 3 có <strong>{statsData.baskets[2]?.count}</strong> khóa cũ,
+                  {statsData.baskets[2]?.count < statsData.baskets[1]?.count * 0.5 ? " nhu cầu thấp hơn tân sinh viên" : " cạnh tranh cao"}
                 </span>
               </li>
             </ul>
@@ -312,25 +277,25 @@ const RegistrationStatistics = ({ regs }) => {
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">●</span>
                 <span>
-                  Tỷ lệ Nam/Nữ: <strong>{statsData.totalApproved > 0 ? (statsData.genderRatio.male / statsData.genderRatio.female).toFixed(2) : 'N/A'}</strong>
-                  {statsData.genderRatio.male > statsData.genderRatio.female * 1.5 ? ' (nam nhiều hơn đáng kể)' : 
-                   statsData.genderRatio.female > statsData.genderRatio.male * 1.5 ? ' (nữ nhiều hơn đáng kể)' : 
-                   ' (tương đối cân bằng)'}
+                  Tỷ lệ Nam/Nữ: <strong>{statsData.totalApproved > 0 ? (statsData.genderRatio.male / statsData.genderRatio.female).toFixed(2) : "N/A"}</strong>
+                  {statsData.genderRatio.male > statsData.genderRatio.female * 1.5
+                    ? " (nam nhiều hơn đáng kể)"
+                    : statsData.genderRatio.female > statsData.genderRatio.male * 1.5
+                      ? " (nữ nhiều hơn đáng kể)"
+                      : " (tương đối cân bằng)"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-pink-500 mt-0.5">●</span>
                 <span>
-                  {statsData.genderRatio.male > statsData.genderRatio.female ? 
-                    `Nam chiếm ${((statsData.genderRatio.male / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nam` :
-                    `Nữ chiếm ${((statsData.genderRatio.female / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nữ`}
+                  {statsData.genderRatio.male > statsData.genderRatio.female
+                    ? `Nam chiếm ${((statsData.genderRatio.male / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nam`
+                    : `Nữ chiếm ${((statsData.genderRatio.female / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nữ`}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-indigo-500 mt-0.5">●</span>
-                <span>
-                  Phân bổ giới tính trong Rổ 2 (Tân SV) cần ưu tiên khi bố trí phòng
-                </span>
+                <span>Phân bổ giới tính trong Rổ 2 (Tân SV) cần ưu tiên khi bố trí phòng</span>
               </li>
             </ul>
           </div>
@@ -345,32 +310,27 @@ const RegistrationStatistics = ({ regs }) => {
               <li className="flex items-start gap-2">
                 <span className="text-orange-500 mt-0.5">●</span>
                 <span>
-                  Top tỉnh: <strong>{statsData.provinces[0]?.name || 'N/A'}</strong> có{' '}
-                  <strong>{statsData.provinces[0]?.count || 0}</strong> sinh viên
-                  {statsData.provinces[0]?.count > statsData.totalApproved * 0.2 ? ' (tập trung cao)' : ''}
+                  Top tỉnh: <strong>{statsData.provinces[0]?.name || "N/A"}</strong> có <strong>{statsData.provinces[0]?.count || 0}</strong> sinh viên
+                  {statsData.provinces[0]?.count > statsData.totalApproved * 0.2 ? " (tập trung cao)" : ""}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-green-500 mt-0.5">●</span>
                 <span>
-                  Khoa <strong>{statsData.faculties[0]?.name || 'N/A'}</strong> nhiều nhất với{' '}
-                  <strong>{statsData.faculties[0]?.value || 0}</strong> hồ sơ
+                  Khoa <strong>{statsData.faculties[0]?.name || "N/A"}</strong> nhiều nhất với <strong>{statsData.faculties[0]?.value || 0}</strong> hồ sơ
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-0.5">●</span>
                 <span>
-                  Năm 1 có <strong>{statsData.cohorts.find(c => c.name === 'Năm 1')?.value || 0}</strong> hồ sơ,
-                  {statsData.cohorts.find(c => c.name === 'Năm 1')?.value > statsData.totalApproved * 0.5 ? 
-                    ' cần ưu tiên hỗ trợ tân sinh viên' : 
-                    ' tỷ lệ phù hợp'}
+                  Năm 1 có <strong>{statsData.cohorts.find((c) => c.name === "Năm 1")?.value || 0}</strong> hồ sơ,
+                  {statsData.cohorts.find((c) => c.name === "Năm 1")?.value > statsData.totalApproved * 0.5 ? " cần ưu tiên hỗ trợ tân sinh viên" : " tỷ lệ phù hợp"}
                 </span>
               </li>
             </ul>
           </div>
         </div>
       </div>
-
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gender in each basket - Stacked Bar Chart */}
@@ -387,13 +347,10 @@ const RegistrationStatistics = ({ regs }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsData.basketGender} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }} />
-                <YAxis tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
-                <Tooltip contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
-                <Legend 
-                  wrapperStyle={{ fontWeight: 'bold', fontSize: '14px' }}
-                  formatter={(value) => <span style={{ color: '#1e293b' }}>{value}</span>}
-                />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: "bold", fill: "#1e293b" }} />
+                <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} />
+                <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
+                <Legend wrapperStyle={{ fontWeight: "bold", fontSize: "14px" }} formatter={(value) => <span style={{ color: "#1e293b" }}>{value}</span>} />
                 <Bar dataKey="Nam" stackId="a" fill="#bfdbfe" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="Nữ" stackId="a" fill="#fbcfe8" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -415,34 +372,24 @@ const RegistrationStatistics = ({ regs }) => {
             {statsData.priorityBreakdown.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={statsData.priorityBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={false}
-                    outerRadius={90}
-                    dataKey="value"
-                  >
+                  <Pie data={statsData.priorityBreakdown} cx="50%" cy="50%" labelLine={false} label={false} outerRadius={90} dataKey="value">
                     {statsData.priorityBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#fecaca', '#fed7aa', '#fde68a', '#d9f99d', '#a7f3d0', '#e0e7ff'][index % 6]} />
+                      <Cell key={`cell-${index}`} fill={["#fecaca", "#fed7aa", "#fde68a", "#d9f99d", "#a7f3d0", "#e0e7ff"][index % 6]} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
-                  <Legend 
-                    wrapperStyle={{ fontWeight: 'bold', fontSize: '12px' }}
+                  <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
+                  <Legend
+                    wrapperStyle={{ fontWeight: "bold", fontSize: "12px" }}
                     formatter={(value, entry, index) => {
                       const total = statsData.priorityBreakdown.reduce((sum, item) => sum + item.value, 0);
                       const percent = total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0;
-                      return <span style={{ color: '#1e293b' }}>{`${value}: ${entry.payload.value} (${percent}%)`}</span>;
+                      return <span style={{ color: "#1e293b" }}>{`${value}: ${entry.payload.value} (${percent}%)`}</span>;
                     }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-slate-400">
-                Không có dữ liệu diện ưu tiên
-              </div>
+              <div className="flex items-center justify-center h-full text-slate-400">Không có dữ liệu diện ưu tiên</div>
             )}
           </div>
         </div>
@@ -464,15 +411,9 @@ const RegistrationStatistics = ({ regs }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsData.provinces} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="name"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  tick={{ fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }}
-                />
-                <YAxis tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
-                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
+                <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 11, fontWeight: "bold", fill: "#1e293b" }} />
+                <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} />
+                <Tooltip cursor={{ fill: "#f7fafc" }} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                 <defs>
                   <linearGradient id="provinceGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#fed7aa" stopOpacity={0.9} />
@@ -500,9 +441,9 @@ const RegistrationStatistics = ({ regs }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={statsData.faculties} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontWeight: 'bold', fill: '#1e293b' }} />
-                  <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
+                  <XAxis type="number" tick={{ fontWeight: "bold", fill: "#1e293b" }} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontWeight: "bold", fill: "#1e293b" }} />
+                  <Tooltip cursor={{ fill: "#f7fafc" }} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                   <defs>
                     <linearGradient id="facultyGradient" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#c7d2fe" stopOpacity={0.8} />
@@ -513,9 +454,7 @@ const RegistrationStatistics = ({ regs }) => {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-slate-400">
-                Không có dữ liệu khoa
-              </div>
+              <div className="flex items-center justify-center h-full text-slate-400">Không có dữ liệu khoa</div>
             )}
           </div>
         </div>
@@ -537,9 +476,9 @@ const RegistrationStatistics = ({ regs }) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsData.yearlyTrends} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="year" tick={{ fontSize: 12, fontWeight: 'bold', fill: '#1e293b' }} />
-                <YAxis tick={{ fontWeight: 'bold', fill: '#1e293b' }} />
-                <Tooltip cursor={{ fill: '#f7fafc' }} contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fontWeight: "bold", fill: "#1e293b" }} />
+                <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} />
+                <Tooltip cursor={{ fill: "#f7fafc" }} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                 <defs>
                   <linearGradient id="yearlyGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#93c5fd" stopOpacity={0.9} />
@@ -566,35 +505,25 @@ const RegistrationStatistics = ({ regs }) => {
             {statsData.cohorts.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={statsData.cohorts}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={false}
-                    outerRadius={100}
-                    dataKey="value"
-                  >
+                  <Pie data={statsData.cohorts} cx="50%" cy="50%" labelLine={false} label={false} outerRadius={100} dataKey="value">
                     <Cell fill="#fecaca" />
                     <Cell fill="#bfdbfe" />
                     <Cell fill="#ddd6fe" />
                     <Cell fill="#fde68a" />
                   </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '8px', fontWeight: 'bold' }} />
-                  <Legend 
-                    wrapperStyle={{ fontWeight: 'bold', fontSize: '14px' }}
+                  <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
+                  <Legend
+                    wrapperStyle={{ fontWeight: "bold", fontSize: "14px" }}
                     formatter={(value, entry, index) => {
                       const total = statsData.cohorts.reduce((sum, item) => sum + item.value, 0);
                       const percent = total > 0 ? ((entry.payload.value / total) * 100).toFixed(0) : 0;
-                      return <span style={{ color: '#1e293b' }}>{`${value}: ${entry.payload.value} (${percent}%)`}</span>;
+                      return <span style={{ color: "#1e293b" }}>{`${value}: ${entry.payload.value} (${percent}%)`}</span>;
                     }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-slate-400">
-                Không có dữ liệu khóa
-              </div>
+              <div className="flex items-center justify-center h-full text-slate-400">Không có dữ liệu khóa</div>
             )}
           </div>
         </div>
