@@ -10,8 +10,10 @@ const STATUS_CONFIG = {
 
 const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All"); // All | Pending | Active | Expired | Terminated | deposit_paid | deposit_unpaid | hardcopy_received | hardcopy_not
   const [filterGender, setFilterGender] = useState("All");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   // Track email sent locally (chưa dùng backend)
   const [emailSentSet, setEmailSentSet] = useState(new Set());
 
@@ -24,9 +26,22 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const filtered = contracts.filter((c) => {
     const q = searchTerm.toLowerCase();
     const matchSearch = (c.student_name?.toLowerCase().includes(q) ?? false) || (c.snapshot_student_id?.toLowerCase().includes(q) ?? false) || (c.contract_number?.toLowerCase().includes(q) ?? false);
-    const matchStatus = filterStatus === "All" || c.status === filterStatus;
+    const matchStatus =
+      filterStatus === "All" ? true :
+        filterStatus === "Pending" ? c.status === "Pending" :
+          filterStatus === "Active" ? c.status === "Active" :
+            filterStatus === "Expired" ? c.status === "Expired" :
+              filterStatus === "Terminated" ? c.status === "Terminated" :
+                filterStatus === "deposit_paid" ? !!c.deposit_paid :
+                  filterStatus === "deposit_unpaid" ? !c.deposit_paid :
+                    filterStatus === "hardcopy_received" ? !!c.hard_copy_received :
+                      filterStatus === "hardcopy_not" ? !c.hard_copy_received :
+                        true;
     const matchGender = filterGender === "All" || c.snapshot_gender === filterGender;
-    return matchSearch && matchStatus && matchGender;
+    const contractDate = c.start_date ? new Date(c.start_date) : null;
+    const matchDateFrom = !dateFrom || (contractDate && contractDate >= new Date(dateFrom));
+    const matchDateTo = !dateTo || (contractDate && contractDate <= new Date(dateTo + "T23:59:59"));
+    return matchSearch && matchStatus && matchGender && matchDateFrom && matchDateTo;
   });
 
   // Pagination calculations
@@ -50,46 +65,94 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     setCurrentPage(1);
   };
 
+  const handleReset = () => {
+    setSearchTerm("");
+    setFilterStatus("All");
+    setFilterGender("All");
+    setDateFrom("");
+    setDateTo("");
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterGender !== "All" || dateFrom || dateTo;
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Filters - giống room_management */}
+      {/* Filters */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
-        <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc hợp đồng</h3>
-        <div className="grid grid-cols-6 gap-4 items-center">
-          <div className="relative col-span-2">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider">Bộ lọc hợp đồng</h3>
+          {hasActiveFilter && (
+            <button onClick={handleReset} className="text-xs font-bold text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">
+              ↺ Xóa bộ lọc
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-3 items-center">
+          {/* Tìm kiếm — rộng hơn */}
+          <div className="relative flex-[3]">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Tìm tên, mã SV, số HĐ..."
               value={searchTerm}
               onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
+              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-xs transition-all bg-slate-50/50"
             />
           </div>
 
+          {/* Trạng thái (gộp cọc + bản cứng) */}
           <select
             value={filterStatus}
             onChange={(e) => handleFilterChange(setFilterStatus, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả trạng thái</option>
-            <option value="Pending">Chờ gán phòng</option>
-            <option value="Active">Đang nội trú</option>
-            <option value="Expired">Hết hạn</option>
-            <option value="Terminated">Chấm dứt</option>
+            <optgroup label="— Trạng thái hợp đồng">
+              <option value="Pending">Chờ gán phòng</option>
+              <option value="Active">Đang nội trú</option>
+              <option value="Expired">Hết hạn</option>
+              <option value="Terminated">Chấm dứt</option>
+            </optgroup>
+            <optgroup label="— Tiền cọc">
+              <option value="deposit_paid">Đã cọc</option>
+              <option value="deposit_unpaid">Chưa cọc</option>
+            </optgroup>
+            <optgroup label="— Bản cứng hợp đồng">
+              <option value="hardcopy_received">Đã có bản cứng</option>
+              <option value="hardcopy_not">Chưa có bản cứng</option>
+            </optgroup>
           </select>
 
+          {/* Giới tính */}
           <select
             value={filterGender}
             onChange={(e) => handleFilterChange(setFilterGender, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả giới tính</option>
             <option value="Nam">Nam</option>
             <option value="Nữ">Nữ</option>
           </select>
 
-          <div className="col-span-2 text-right text-xs text-slate-400 font-bold">{totalItems} kết quả</div>
+          {/* Ngày từ */}
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+            className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            title="Ngày bắt đầu HĐ từ"
+          />
+
+          {/* Ngày đến */}
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+            className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            title="Ngày bắt đầu HĐ đến"
+          />
         </div>
       </div>
 
