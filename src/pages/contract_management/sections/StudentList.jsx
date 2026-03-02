@@ -8,7 +8,7 @@ const STATUS_CONFIG = {
   Terminated: { label: "Chấm dứt", cls: "bg-rose-100 text-rose-700", icon: <XCircle size={11} /> },
 };
 
-const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract }) => {
+const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract, onAutoAssign }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All"); // All | Pending | Active | Expired | Terminated | deposit_paid | deposit_unpaid | hardcopy_received | hardcopy_not
   const [filterGender, setFilterGender] = useState("All");
@@ -158,14 +158,19 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           </button>
         </div>
 
-        {/* Dòng 2: Áp dụng */}
-        <div className="flex justify-start mt-3">
+        {/* Dòng 2: nút hành động */}
+        <div className="flex items-center gap-2 mt-3">
           <button
             onClick={() => setCurrentPage(1)}
-            className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             Áp dụng
+          </button>
+          <button
+            onClick={onAutoAssign}
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
+          >
+            Gán tự động
           </button>
         </div>
       </div>
