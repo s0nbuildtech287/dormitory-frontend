@@ -80,14 +80,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider">Bộ lọc hợp đồng</h3>
-          {hasActiveFilter && (
-            <button onClick={handleReset} className="text-xs font-bold text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">
-              ↺ Xóa bộ lọc
-            </button>
-          )}
-        </div>
+        <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc hợp đồng</h3>
 
         <div className="flex gap-3 items-center">
           {/* Tìm kiếm — rộng hơn */}
@@ -153,8 +146,19 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
             title="Ngày bắt đầu HĐ đến"
           />
+
+          {/* Nút reset */}
+          <button
+            onClick={handleReset}
+            disabled={!hasActiveFilter}
+            className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
+            title="Xóa bộ lọc"
+          >
+            ↺ Reset
+          </button>
         </div>
       </div>
+
 
       {/* Table - giống room_management */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
