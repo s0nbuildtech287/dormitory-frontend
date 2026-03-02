@@ -140,9 +140,6 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                         ) : (
                           <span className="font-semibold text-slate-400 italic">Chưa có số</span>
                         )}
-                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono font-normal truncate">
-                          {c.id || ""}
-                        </p>
                       </td>
 
                       {/* Student info — tên + mã SV tách 2 dòng */}
