@@ -157,7 +157,19 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             ↺ Reset
           </button>
         </div>
+
+        {/* Dòng 2: Áp dụng */}
+        <div className="flex justify-start mt-3">
+          <button
+            onClick={() => setCurrentPage(1)}
+            className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            Áp dụng
+          </button>
+        </div>
       </div>
+
 
 
       {/* Table - giống room_management */}
