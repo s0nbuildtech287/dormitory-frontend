@@ -77,9 +77,8 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
               <button
                 key={room.id}
                 onClick={() => setSelected(room.id)}
-                className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
-                  selected === room.id ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                }`}
+                className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${selected === room.id ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -278,11 +277,11 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                   <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-700 text-xl font-black flex-shrink-0">
                     {contract.student_name
                       ? contract.student_name
-                          .split(" ")
-                          .map((w) => w[0])
-                          .slice(-2)
-                          .join("")
-                          .toUpperCase()
+                        .split(" ")
+                        .map((w) => w[0])
+                        .slice(-2)
+                        .join("")
+                        .toUpperCase()
                       : "SV"}
                   </div>
                 )}
@@ -389,33 +388,37 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
               <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider flex items-center gap-2">
                 <FileCheck size={14} className="text-blue-500" /> Trạng thái hành chính
               </h4>
-              <div className="flex flex-col gap-2">
-                {/* CọC */}
+              <div className="flex gap-3">
+                {/* CỌC */}
                 <button
                   onClick={() => toggleFlag("deposit_paid", contract.deposit_paid)}
                   disabled={!!flagSaving}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-left w-full"
+                  className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-left"
                 >
                   <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${contract.deposit_paid ? "bg-slate-800 border-slate-800" : "border-slate-400"}`}>
                     {contract.deposit_paid && <CheckCircle2 size={10} className="text-white" />}
                   </div>
-                  <span className="text-sm text-slate-700 font-semibold">Tiền cọc</span>
-                  <span className={`ml-auto text-xs font-bold ${contract.deposit_paid ? "text-emerald-600" : "text-slate-400"}`}>{contract.deposit_paid ? "Đã cọc" : "Chưa cọc"}</span>
-                  {flagSaving === "deposit_paid" && <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />}
+                  <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">Tiền cọc</span>
+                  <span className={`ml-auto text-xs font-bold whitespace-nowrap ${contract.deposit_paid ? "text-emerald-600" : "text-slate-400"}`}>
+                    {contract.deposit_paid ? "Đã cọc" : "Chưa cọc"}
+                  </span>
+                  {flagSaving === "deposit_paid" && <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin flex-shrink-0" />}
                 </button>
 
                 {/* BẢN CỨNG */}
                 <button
                   onClick={() => toggleFlag("hard_copy_received", contract.hard_copy_received)}
                   disabled={!!flagSaving}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-left w-full"
+                  className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-left"
                 >
                   <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${contract.hard_copy_received ? "bg-slate-800 border-slate-800" : "border-slate-400"}`}>
                     {contract.hard_copy_received && <CheckCircle2 size={10} className="text-white" />}
                   </div>
-                  <span className="text-sm text-slate-700 font-semibold">Bản cứng hợp đồng</span>
-                  <span className={`ml-auto text-xs font-bold ${contract.hard_copy_received ? "text-emerald-600" : "text-slate-400"}`}>{contract.hard_copy_received ? "Đã nhận" : "Chưa nhận"}</span>
-                  {flagSaving === "hard_copy_received" && <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />}
+                  <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">Bản cứng HĐ</span>
+                  <span className={`ml-auto text-xs font-bold whitespace-nowrap ${contract.hard_copy_received ? "text-emerald-600" : "text-slate-400"}`}>
+                    {contract.hard_copy_received ? "Đã nhận" : "Chưa nhận"}
+                  </span>
+                  {flagSaving === "hard_copy_received" && <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin flex-shrink-0" />}
                 </button>
               </div>
             </div>

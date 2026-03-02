@@ -102,7 +102,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           <table className="w-full text-left border-collapse">
             <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[11%] text-center">Số HĐ</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[11%] text-center">Số / Mã HĐ</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[18%] text-center">Sinh viên</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Phòng</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[20%] text-center">Trạng thái</th>
@@ -134,13 +134,27 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   return (
                     <tr key={c.id} className={`hover:bg-slate-50/50 transition-colors ${isPending ? "bg-amber-50/30" : ""}`}>
                       {/* Contract number */}
-                      <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300 text-center">{c.contract_number || `#${c.id?.slice(-8)}`}</td>
-
-                      {/* Student info — 1 dòng */}
-                      <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
-                        <p className="font-semibold text-slate-900 text-xs truncate max-w-[160px] mx-auto">
-                          {c.student_name ? `${c.student_name}${c.snapshot_student_id ? ` — ${c.snapshot_student_id}` : ""}` : c.snapshot_student_id || "—"}
+                      <td className="px-6 py-2 text-xs font-mono border-r-2 border-slate-300 text-center">
+                        {c.contract_number ? (
+                          <span className="font-bold text-blue-700">{c.contract_number}</span>
+                        ) : (
+                          <span className="font-semibold text-slate-400 italic">Chưa có số</span>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono font-normal truncate">
+                          {c.id || ""}
                         </p>
+                      </td>
+
+                      {/* Student info — tên + mã SV tách 2 dòng */}
+                      <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
+                        <p className="font-semibold text-slate-900 text-xs truncate max-w-[150px] mx-auto">
+                          {c.student_name || "—"}
+                        </p>
+                        {c.snapshot_student_id && (
+                          <p className="text-[10px] text-slate-400 mt-0.5 font-mono truncate max-w-[150px] mx-auto">
+                            {c.snapshot_student_id}
+                          </p>
+                        )}
                       </td>
 
                       {/* Room */}
