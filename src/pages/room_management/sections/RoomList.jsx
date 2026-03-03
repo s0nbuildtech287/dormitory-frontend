@@ -182,17 +182,29 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
                       {/* Students */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-xs font-semibold text-slate-700">
-                            {room.currentOccupancy || 0}/{room.capacity}
-                          </span>
-                          <button
-                            onClick={() => setSelectedRoomStudents(room)}
-                            className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
-                            title="Xem danh sách sinh viên"
-                          >
-                            <Users size={14} />
-                          </button>
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-semibold text-slate-700">
+                              {room.currentOccupancy || 0}/{room.capacity}
+                            </span>
+                            <button
+                              onClick={() => setSelectedRoomStudents(room)}
+                              className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+                              title="Xem danh sách sinh viên"
+                            >
+                              <Users size={14} />
+                            </button>
+                          </div>
+                          {room.students && room.students.length > 0 && (
+                            <div className="text-[10px] text-slate-500 leading-tight max-w-[140px]">
+                              {room.students.slice(0, 2).map((s, i) => (
+                                <p key={i} className="truncate">{s.student_name}</p>
+                              ))}
+                              {room.students.length > 2 && (
+                                <p className="text-purple-500 font-semibold">+{room.students.length - 2} khác</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </td>
 
@@ -215,13 +227,12 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                       {/* Room Status */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
                         <span
-                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
-                            (room.currentOccupancy || 0) >= room.capacity
+                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${(room.currentOccupancy || 0) >= room.capacity
                               ? "bg-rose-100 text-rose-700"
                               : (room.currentOccupancy || 0) > 0
                                 ? "bg-amber-100 text-amber-700"
                                 : "bg-emerald-100 text-emerald-700"
-                          }`}
+                            }`}
                         >
                           {(room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
                         </span>
@@ -409,10 +420,26 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               </button>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-slate-600">
-                Đang có {selectedRoomStudents.currentOccupancy}/{selectedRoomStudents.capacity} sinh viên
+              <p className="text-sm text-slate-600 mb-3">
+                Đang có <strong>{selectedRoomStudents.currentOccupancy || 0}</strong>/{selectedRoomStudents.capacity} sinh viên
               </p>
-              <p className="text-xs text-slate-500 italic">Danh sách sinh viên sẽ hiển thị ở đây...</p>
+              {selectedRoomStudents.students && selectedRoomStudents.students.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedRoomStudents.students.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{s.student_name || '—'}</p>
+                        {s.student_id && <p className="text-xs text-slate-500 font-mono mt-0.5">{s.student_id}</p>}
+                      </div>
+                      {s.contract_number && (
+                        <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">{s.contract_number}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic text-center py-4">Chưa có sinh viên nào trong phòng này</p>
+              )}
             </div>
             <button onClick={() => setSelectedRoomStudents(null)} className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm">
               Đóng

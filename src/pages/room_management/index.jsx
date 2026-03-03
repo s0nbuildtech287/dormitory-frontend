@@ -18,7 +18,11 @@ const RoomManagement = () => {
         setIsLoadingRooms(true);
         const data = await getRooms();
         // Handle nested response structure - API might return { data: [...] }
-        setRooms(Array.isArray(data) ? data : data.data || []);
+        setRooms((Array.isArray(data) ? data : data.data || []).map(r => ({
+          ...r,
+          currentOccupancy: r.currentOccupancy ?? r.current_occupancy ?? 0,
+          students: r.students || [],
+        })));
       } catch (error) {
         console.error("Error fetching rooms:", error);
         setRooms([]); // Set to empty array on error
@@ -34,7 +38,11 @@ const RoomManagement = () => {
       setIsLoadingRooms(true);
       const data = await getRooms();
       // Handle nested response structure - API might return { data: [...] }
-      setRooms(Array.isArray(data) ? data : data.data || []);
+      setRooms((Array.isArray(data) ? data : data.data || []).map(r => ({
+        ...r,
+        currentOccupancy: r.currentOccupancy ?? r.current_occupancy ?? 0,
+        students: r.students || [],
+      })));
     } catch (error) {
       console.error("Error refreshing rooms:", error);
       setRooms([]); // Set to empty array on error
