@@ -4,7 +4,7 @@ import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import { deleteRoom } from "../../../api/apiRoom.js";
 
-const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom }) => {
+const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom, onNavigateToContract }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBuilding, setFilterBuilding] = useState("All");
   const [filterFloor, setFilterFloor] = useState("All");
@@ -182,29 +182,17 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
                       {/* Students */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <div className="flex flex-col items-center gap-0.5">
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs font-semibold text-slate-700">
-                              {room.currentOccupancy || 0}/{room.capacity}
-                            </span>
-                            <button
-                              onClick={() => setSelectedRoomStudents(room)}
-                              className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
-                              title="Xem danh sách sinh viên"
-                            >
-                              <Users size={14} />
-                            </button>
-                          </div>
-                          {room.students && room.students.length > 0 && (
-                            <div className="text-[10px] text-slate-500 leading-tight max-w-[140px]">
-                              {room.students.slice(0, 2).map((s, i) => (
-                                <p key={i} className="truncate">{s.student_name}</p>
-                              ))}
-                              {room.students.length > 2 && (
-                                <p className="text-purple-500 font-semibold">+{room.students.length - 2} khác</p>
-                              )}
-                            </div>
-                          )}
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="text-xs font-semibold text-slate-700">
+                            {room.currentOccupancy || 0}/{room.capacity}
+                          </span>
+                          <button
+                            onClick={() => setSelectedRoomStudents(room)}
+                            className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+                            title="Xem danh sách sinh viên"
+                          >
+                            <Users size={14} />
+                          </button>
                         </div>
                       </td>
 
@@ -432,7 +420,18 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                         {s.student_id && <p className="text-xs text-slate-500 font-mono mt-0.5">{s.student_id}</p>}
                       </div>
                       {s.contract_number && (
-                        <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">{s.contract_number}</span>
+                        <button
+                          onClick={() => {
+                            setSelectedRoomStudents(null);
+                            if (onNavigateToContract) {
+                              onNavigateToContract(s.contract_number);
+                            }
+                          }}
+                          className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer"
+                          title="Xem hợp đồng"
+                        >
+                          {s.contract_number}
+                        </button>
                       )}
                     </div>
                   ))}

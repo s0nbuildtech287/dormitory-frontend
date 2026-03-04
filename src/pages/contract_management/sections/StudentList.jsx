@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail } from "lucide-react";
 
 const STATUS_CONFIG = {
@@ -8,14 +8,25 @@ const STATUS_CONFIG = {
   Terminated: { label: "Chấm dứt", cls: "bg-rose-100 text-rose-700", icon: <XCircle size={11} /> },
 };
 
-const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract, onAutoAssign }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All"); // All | Pending | Active | Expired | Terminated | deposit_paid | deposit_unpaid | hardcopy_received | hardcopy_not
-  const [filterGender, setFilterGender] = useState("All");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract, onAutoAssign, initialFilter }) => {
+  const [searchTerm, setSearchTerm] = useState(initialFilter?.searchTerm || "");
+  const [filterStatus, setFilterStatus] = useState(initialFilter?.filterStatus || "All");
+  const [filterGender, setFilterGender] = useState(initialFilter?.filterGender || "All");
+  const [dateFrom, setDateFrom] = useState(initialFilter?.dateFrom || "");
+  const [dateTo, setDateTo] = useState(initialFilter?.dateTo || "");
   // Track email sent locally (chưa dùng backend)
   const [emailSentSet, setEmailSentSet] = useState(new Set());
+
+  // Apply initial filter when it changes
+  useEffect(() => {
+    if (initialFilter) {
+      if (initialFilter.searchTerm !== undefined) setSearchTerm(initialFilter.searchTerm);
+      if (initialFilter.filterStatus !== undefined) setFilterStatus(initialFilter.filterStatus);
+      if (initialFilter.filterGender !== undefined) setFilterGender(initialFilter.filterGender);
+      if (initialFilter.dateFrom !== undefined) setDateFrom(initialFilter.dateFrom);
+      if (initialFilter.dateTo !== undefined) setDateTo(initialFilter.dateTo);
+    }
+  }, [initialFilter]);
 
   const markEmailSent = (id) => setEmailSentSet((prev) => new Set([...prev, id]));
 

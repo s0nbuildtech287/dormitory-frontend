@@ -10,6 +10,15 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoading, setIsLoading] = useState(true);
+  const [contractFilter, setContractFilter] = useState(null);
+
+  /**
+   * Handle navigation to contract page with filter
+   */
+  const handleNavigateToContract = (contractNumber) => {
+    setContractFilter({ searchTerm: contractNumber });
+    setActiveTab("students");
+  };
 
   /**
    * Check for existing session on app mount
@@ -66,7 +75,17 @@ const App = () => {
       const DefaultComponent = getComponentByRouteId(defaultTab, user.role);
       return DefaultComponent ? <DefaultComponent user={user} tab={activeTab} /> : <div className="text-center py-10">Trang không tìm thấy</div>;
     }
-    return <Component user={user} tab={activeTab} />;
+    
+    // Pass special props based on tab
+    const props = { user, tab: activeTab };
+    if (activeTab === "students") {
+      props.initialFilter = contractFilter;
+    }
+    if (activeTab === "rooms") {
+      props.onNavigateToContract = handleNavigateToContract;
+    }
+    
+    return <Component {...props} />;
   };
 
   return (

@@ -5,7 +5,7 @@ import RoomList from "./sections/RoomList.jsx";
 import RoomAnalytics from "./sections/RoomAnalytics.jsx";
 import RoomSettings from "./sections/RoomSettings.jsx";
 
-const RoomManagement = () => {
+const RoomManagement = ({ onNavigateToContract }) => {
   const [rooms, setRooms] = useState([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(true);
   const [activeSubTab, setActiveSubTab] = useState("list");
@@ -76,7 +76,7 @@ const RoomManagement = () => {
       </div>
 
       {/* Tab Content */}
-      {activeSubTab === "list" && <RoomList rooms={rooms} isLoadingRooms={isLoadingRooms} onRefresh={handleRefresh} selectedRoom={selectedRoom} setSelectedRoom={setSelectedRoom} />}
+      {activeSubTab === "list" && <RoomList rooms={rooms} isLoadingRooms={isLoadingRooms} onRefresh={handleRefresh} selectedRoom={selectedRoom} setSelectedRoom={setSelectedRoom} onNavigateToContract={onNavigateToContract} />}
       {activeSubTab === "analytics" && <RoomAnalytics rooms={rooms} />}
       {activeSubTab === "settings" && <RoomSettings rooms={rooms} onRefresh={handleRefresh} />}
     </div>

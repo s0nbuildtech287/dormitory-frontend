@@ -5,7 +5,7 @@ import ContractDetailModal from "./sections/ContractDetailModal.jsx";
 import ContractStatistics from "./sections/ContractStatistics.jsx";
 import { getContracts, getContractStats, deleteContract } from "../../api/apiContract.js";
 
-const ContractManagement = () => {
+const ContractManagement = ({ initialFilter }) => {
   const [contracts, setContracts] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,14 @@ const ContractManagement = () => {
       </div>
 
       {activeSubTab === "list" && (
-        <StudentList contracts={contracts} loading={loading} onViewDetail={(id) => setSelectedContractId(id)} onRefresh={fetchData} onDeleteContract={(id) => setConfirmDelete(id)} />
+        <StudentList 
+          contracts={contracts} 
+          loading={loading} 
+          onViewDetail={(id) => setSelectedContractId(id)} 
+          onRefresh={fetchData} 
+          onDeleteContract={(id) => setConfirmDelete(id)}
+          initialFilter={initialFilter}
+        />
       )}
 
       {activeSubTab === "stats" && (
