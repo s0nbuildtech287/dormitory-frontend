@@ -16,6 +16,9 @@ const CHART_COLORS = {
 const ContractStatistics = ({ contracts = [] }) => {
   const [expiryDays, setExpiryDays] = useState(30);
   const [expiredDays, setExpiredDays] = useState(30);
+  const [expandedCard, setExpandedCard] = useState(null); // 'expiring15', 'expiring30', 'expired15', 'expired30'
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const analysisData = useMemo(() => {
     const safe = Array.isArray(contracts) ? contracts : [];
@@ -119,9 +122,130 @@ const ContractStatistics = ({ contracts = [] }) => {
     };
   }, [contracts, expiryDays, expiredDays]);
 
+  // Hàm render bảng đầy đủ
+  const renderFullTable = (contracts, type) => {
+    const totalPages = Math.ceil(contracts.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentContracts = contracts.slice(startIndex, endIndex);
+
+    return (
+      <div className="mt-4">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-bold text-slate-800">
+            Danh sách đầy đủ ({contracts.length} hợp đồng)
+          </h4>
+          <button
+            onClick={() => {
+              setExpandedCard(null);
+              setCurrentPage(1);
+            }}
+            className="text-sm text-slate-600 hover:text-slate-900 font-semibold"
+          >
+            ✕ Thu gọn
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 border-b-2 border-slate-200">
+              <tr>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">STT</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">Sinh viên</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">Mã HĐ</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">Khoa</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">Năm</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">Ngày hết hạn</th>
+                <th className="px-4 py-3 text-left font-bold text-slate-700">
+                  {type.includes('expired') ? 'Đã hết hạn' : 'Còn lại'}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {currentContracts.map((contract, index) => {
+                const days = type.includes('expired')
+                  ? Math.ceil((new Date() - new Date(contract.end_date)) / (1000 * 60 * 60 * 24))
+                  : Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <tr key={contract.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 text-slate-600">{startIndex + index + 1}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-800">
+                      {contract.student_name || contract.snapshot_name || 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600 font-mono text-xs">
+                      {contract.contract_number}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {contract.snapshot_faculty || 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      Năm {contract.snapshot_year || 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">
+                      {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className={`px-4 py-3 font-bold ${
+                      type === 'expiring15' ? 'text-red-600' :
+                      type === 'expiring30' ? 'text-amber-600' :
+                      type === 'expired15' ? 'text-slate-600' :
+                      'text-slate-700'
+                    }`}>
+                      {days} ngày
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Phân trang */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+            <div className="text-sm text-slate-600">
+              Hiển thị {startIndex + 1}-{Math.min(endIndex, contracts.length)} trong tổng số {contracts.length}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-slate-300 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              >
+                ← Trước
+              </button>
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                      currentPage === page
+                        ? 'bg-blue-600 text-white'
+                        : 'border border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-slate-300 rounded-lg text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              >
+                Sau →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid gap-6 ${expandedCard ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         {/* Cảnh báo hợp đồng sắp hết hạn */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -178,20 +302,20 @@ const ContractStatistics = ({ contracts = [] }) => {
                         </div>
                       );
                     })}
-                    {analysisData.expiring15Days.length > 3 && (
+                    {analysisData.expiring15Days.length > 3 && !expandedCard && (
                       <button 
-                        onClick={() => alert(`Danh sách ${analysisData.expiring15Days.length} hợp đồng khẩn cấp:\n\n` + 
-                          analysisData.expiring15Days.map((c, i) => {
-                            const days = Math.ceil((new Date(c.end_date) - new Date()) / (1000 * 60 * 60 * 24));
-                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Còn ${days} ngày`;
-                          }).join('\n')
-                        )}
+                        onClick={() => {
+                          setExpandedCard('expiring15');
+                          setCurrentPage(1);
+                        }}
                         className="text-xs text-red-600 font-semibold text-center w-full hover:text-red-800 hover:underline cursor-pointer py-1"
                       >
                         Xem tất cả {analysisData.expiring15Days.length} hợp đồng
                       </button>
                     )}
                   </div>
+                  
+                  {expandedCard === 'expiring15' && renderFullTable(analysisData.expiring15Days, 'expiring15')}
                 </div>
               )}
 
@@ -217,20 +341,20 @@ const ContractStatistics = ({ contracts = [] }) => {
                         </div>
                       );
                     })}
-                    {analysisData.expiring30Days.length > 3 && (
+                    {analysisData.expiring30Days.length > 3 && !expandedCard && (
                       <button 
-                        onClick={() => alert(`Danh sách ${analysisData.expiring30Days.length} hợp đồng cần chú ý:\n\n` + 
-                          analysisData.expiring30Days.map((c, i) => {
-                            const days = Math.ceil((new Date(c.end_date) - new Date()) / (1000 * 60 * 60 * 24));
-                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Còn ${days} ngày`;
-                          }).join('\n')
-                        )}
+                        onClick={() => {
+                          setExpandedCard('expiring30');
+                          setCurrentPage(1);
+                        }}
                         className="text-xs text-amber-600 font-semibold text-center w-full hover:text-amber-800 hover:underline cursor-pointer py-1"
                       >
                         Xem tất cả {analysisData.expiring30Days.length} hợp đồng
                       </button>
                     )}
                   </div>
+                  
+                  {expandedCard === 'expiring30' && renderFullTable(analysisData.expiring30Days, 'expiring30')}
                 </div>
               )}
             </div>
@@ -293,20 +417,20 @@ const ContractStatistics = ({ contracts = [] }) => {
                         </div>
                       );
                     })}
-                    {analysisData.expired15Days.length > 3 && (
+                    {analysisData.expired15Days.length > 3 && !expandedCard && (
                       <button 
-                        onClick={() => alert(`Danh sách ${analysisData.expired15Days.length} hợp đồng mới hết hạn:\n\n` + 
-                          analysisData.expired15Days.map((c, i) => {
-                            const days = Math.ceil((new Date() - new Date(c.end_date)) / (1000 * 60 * 60 * 24));
-                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Hết hạn ${days} ngày trước`;
-                          }).join('\n')
-                        )}
+                        onClick={() => {
+                          setExpandedCard('expired15');
+                          setCurrentPage(1);
+                        }}
                         className="text-xs text-slate-600 font-semibold text-center w-full hover:text-slate-800 hover:underline cursor-pointer py-1"
                       >
                         Xem tất cả {analysisData.expired15Days.length} hợp đồng
                       </button>
                     )}
                   </div>
+                  
+                  {expandedCard === 'expired15' && renderFullTable(analysisData.expired15Days, 'expired15')}
                 </div>
               )}
 
@@ -332,20 +456,20 @@ const ContractStatistics = ({ contracts = [] }) => {
                         </div>
                       );
                     })}
-                    {analysisData.expired30Days.length > 3 && (
+                    {analysisData.expired30Days.length > 3 && !expandedCard && (
                       <button 
-                        onClick={() => alert(`Danh sách ${analysisData.expired30Days.length} hợp đồng đã lâu:\n\n` + 
-                          analysisData.expired30Days.map((c, i) => {
-                            const days = Math.ceil((new Date() - new Date(c.end_date)) / (1000 * 60 * 60 * 24));
-                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Hết hạn ${days} ngày trước`;
-                          }).join('\n')
-                        )}
+                        onClick={() => {
+                          setExpandedCard('expired30');
+                          setCurrentPage(1);
+                        }}
                         className="text-xs text-slate-700 font-semibold text-center w-full hover:text-slate-900 hover:underline cursor-pointer py-1"
                       >
                         Xem tất cả {analysisData.expired30Days.length} hợp đồng
                       </button>
                     )}
                   </div>
+                  
+                  {expandedCard === 'expired30' && renderFullTable(analysisData.expired30Days, 'expired30')}
                 </div>
               )}
             </div>
