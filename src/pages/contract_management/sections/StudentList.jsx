@@ -32,7 +32,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filtered = contracts.filter((c) => {
     const q = searchTerm.toLowerCase();
