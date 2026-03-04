@@ -14,7 +14,7 @@ const CHART_COLORS = {
 };
 
 const ContractStatistics = ({ contracts = [] }) => {
-  const [expiryDays, setExpiryDays] = useState(30);
+  const [expiryDays, setExpiryDays] = useState(45);
   const [expiredDays, setExpiredDays] = useState(30);
   const [expandedCard, setExpandedCard] = useState(null); // 'expiring15', 'expiring30', 'expired15', 'expired30'
   const [currentPage, setCurrentPage] = useState(1);
@@ -278,21 +278,32 @@ const ContractStatistics = ({ contracts = [] }) => {
                   Tổng: {analysisData.expiringContracts.length} hợp đồng cần xử lý
                 </p>
               </div>
+              
+              {/* Dropdown chọn số ngày */}
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-sm text-slate-600">Trong:</span>
+                <select
+                  value={expiryDays}
+                  onChange={(e) => setExpiryDays(Number(e.target.value))}
+                  className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                >
+                  <option value={15}>15 ngày</option>
+                  <option value={30}>30 ngày</option>
+                  <option value={45}>45 ngày</option>
+                </select>
+              </div>
             </div>
             
-            {/* Dropdown chọn số ngày */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">Trong:</span>
-              <select
-                value={expiryDays}
-                onChange={(e) => setExpiryDays(Number(e.target.value))}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            {/* Nút gửi thông báo */}
+            {!expandedCard && analysisData.expiringContracts.length > 0 && (
+              <button
+                onClick={() => handleSendNotification(analysisData.expiringContracts, 'expiring')}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
               >
-                <option value={15}>15 ngày</option>
-                <option value={30}>30 ngày</option>
-                <option value={45}>45 ngày</option>
-              </select>
-            </div>
+                <Send size={16} />
+                Gửi thông báo
+              </button>
+            )}
           </div>
 
           {analysisData.expiringContracts.length === 0 ? (
@@ -393,21 +404,32 @@ const ContractStatistics = ({ contracts = [] }) => {
                   Tổng: {analysisData.recentlyExpired.length} hợp đồng cần xử lý
                 </p>
               </div>
+              
+              {/* Dropdown chọn số ngày */}
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-sm text-slate-600">Trong:</span>
+                <select
+                  value={expiredDays}
+                  onChange={(e) => setExpiredDays(Number(e.target.value))}
+                  className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                >
+                  <option value={15}>15 ngày</option>
+                  <option value={30}>30 ngày</option>
+                  <option value={45}>45 ngày</option>
+                </select>
+              </div>
             </div>
             
-            {/* Dropdown chọn số ngày */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">Trong:</span>
-              <select
-                value={expiredDays}
-                onChange={(e) => setExpiredDays(Number(e.target.value))}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            {/* Nút gửi thông báo */}
+            {!expandedCard && analysisData.recentlyExpired.length > 0 && (
+              <button
+                onClick={() => handleSendNotification(analysisData.recentlyExpired, 'expired')}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
               >
-                <option value={15}>15 ngày</option>
-                <option value={30}>30 ngày</option>
-                <option value={45}>45 ngày</option>
-              </select>
-            </div>
+                <Send size={16} />
+                Gửi thông báo
+              </button>
+            )}
           </div>
 
           {analysisData.recentlyExpired.length === 0 ? (
