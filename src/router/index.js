@@ -1,12 +1,12 @@
 import React from "react";
-import AdminDashboard from "../pages/AdminDashboard.jsx";
+import AdminDashboard from "../pages/admin_dashboard/index.jsx";
 import RegistrationManagement from "../pages/registration_management/index.jsx";
-import StudentDashboard from "../pages/StudentDashboard.jsx";
+import StudentDashboard from "../pages/student/index.jsx";
 import RoomManagement from "../pages/room_management/index.jsx";
 import ContractManagement from "../pages/contract_management/index.jsx";
 import BillingManagement from "../pages/billing_management/index.jsx";
-import NotificationManagement from "../pages/NotificationManagement.jsx";
-import FeedbackManagement from "../pages/FeedbackManagement.jsx";
+import NotificationManagement from "../pages/notification_management/index.jsx";
+import FeedbackManagement from "../pages/feedback_management/index.jsx";
 import { UserRole } from "../utils/types.js";
 
 // Admin Routes
