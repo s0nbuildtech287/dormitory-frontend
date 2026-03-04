@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { AlertTriangle, Clock, Calendar } from "lucide-react";
+import { Clock, Calendar } from "lucide-react";
 
 // Tông màu xanh từ đậm đến nhạt
 const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
@@ -186,8 +186,8 @@ const ContractStatistics = ({ contracts = [] }) => {
                       {new Date(contract.end_date).toLocaleDateString('vi-VN')}
                     </td>
                     <td className={`px-4 py-3 font-bold ${
-                      type === 'expiring15' ? 'text-red-600' :
-                      type === 'expiring30' ? 'text-amber-600' :
+                      type === 'expiring15' ? 'text-slate-600' :
+                      type === 'expiring30' ? 'text-slate-700' :
                       type === 'expired15' ? 'text-slate-600' :
                       'text-slate-700'
                     }`}>
@@ -250,7 +250,7 @@ const ContractStatistics = ({ contracts = [] }) => {
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="text-amber-500" size={24} />
+              <Clock className="text-slate-500" size={24} />
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Hợp đồng sắp hết hạn</h3>
                 <p className="text-sm text-slate-500">
@@ -282,23 +282,23 @@ const ContractStatistics = ({ contracts = [] }) => {
             <div className="space-y-3">
               {/* Khẩn cấp - 15 ngày */}
               {analysisData.expiring15Days.length > 0 && (
-                <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Clock className="text-red-600" size={18} />
-                      <h4 className="font-bold text-red-900 text-sm">Khẩn cấp (≤ 15 ngày)</h4>
+                      <Clock className="text-slate-600" size={18} />
+                      <h4 className="font-bold text-slate-900 text-sm">Khẩn cấp (≤ 15 ngày)</h4>
                     </div>
-                    <span className="text-2xl font-black text-red-600">{analysisData.expiring15Days.length}</span>
+                    <span className="text-2xl font-black text-slate-600">{analysisData.expiring15Days.length}</span>
                   </div>
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {analysisData.expiring15Days.slice(0, 3).map((contract) => {
                       const daysLeft = Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-red-100">
+                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-slate-100">
                           <div className="font-semibold text-slate-800">
                             {contract.student_name || contract.snapshot_name || `Hợp đồng ${contract.contract_number}`}
                           </div>
-                          <div className="text-red-600">Còn {daysLeft} ngày</div>
+                          <div className="text-slate-600">Còn {daysLeft} ngày</div>
                         </div>
                       );
                     })}
@@ -308,7 +308,7 @@ const ContractStatistics = ({ contracts = [] }) => {
                           setExpandedCard('expiring15');
                           setCurrentPage(1);
                         }}
-                        className="text-xs text-red-600 font-semibold text-center w-full hover:text-red-800 hover:underline cursor-pointer py-1"
+                        className="text-xs text-slate-600 font-semibold text-center w-full hover:text-slate-800 hover:underline cursor-pointer py-1"
                       >
                         Xem tất cả {analysisData.expiring15Days.length} hợp đồng
                       </button>
@@ -321,23 +321,23 @@ const ContractStatistics = ({ contracts = [] }) => {
 
               {/* Cần chú ý - 16-30/45 ngày */}
               {analysisData.expiring30Days.length > 0 && (
-                <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                <div className="bg-slate-100 p-4 rounded-xl border border-slate-300">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Calendar className="text-amber-600" size={18} />
-                      <h4 className="font-bold text-amber-900 text-sm">Cần chú ý (16-{expiryDays} ngày)</h4>
+                      <Calendar className="text-slate-700" size={18} />
+                      <h4 className="font-bold text-slate-900 text-sm">Cần chú ý (16-{expiryDays} ngày)</h4>
                     </div>
-                    <span className="text-2xl font-black text-amber-600">{analysisData.expiring30Days.length}</span>
+                    <span className="text-2xl font-black text-slate-700">{analysisData.expiring30Days.length}</span>
                   </div>
                   <div className="space-y-1.5 max-h-32 overflow-y-auto">
                     {analysisData.expiring30Days.slice(0, 3).map((contract) => {
                       const daysLeft = Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-amber-100">
+                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-slate-200">
                           <div className="font-semibold text-slate-800">
                             {contract.student_name || contract.snapshot_name || `Hợp đồng ${contract.contract_number}`}
                           </div>
-                          <div className="text-amber-600">Còn {daysLeft} ngày</div>
+                          <div className="text-slate-700">Còn {daysLeft} ngày</div>
                         </div>
                       );
                     })}
@@ -347,7 +347,7 @@ const ContractStatistics = ({ contracts = [] }) => {
                           setExpandedCard('expiring30');
                           setCurrentPage(1);
                         }}
-                        className="text-xs text-amber-600 font-semibold text-center w-full hover:text-amber-800 hover:underline cursor-pointer py-1"
+                        className="text-xs text-slate-700 font-semibold text-center w-full hover:text-slate-900 hover:underline cursor-pointer py-1"
                       >
                         Xem tất cả {analysisData.expiring30Days.length} hợp đồng
                       </button>
