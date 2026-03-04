@@ -1,23 +1,53 @@
-import React, { useState } from "react";
-import { BillStatus } from "../../../utils/types.js";
-import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye } from "lucide-react";
+import { getInvoices } from "../../../api/apiInvoice.js";
 
-const BillList = ({ bills, setBills, loading }) => {
+const BillList = ({ bills, setBills }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterMonth, setFilterMonth] = useState("All");
+  const [loading, setLoading] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Fetch invoices from API
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true);
+      console.log("Fetching invoices...");
+      const response = await getInvoices();
+      console.log("Invoice response:", response);
+      if (response.success) {
+        console.log("Invoices data:", response.data);
+        setBills(response.data || []);
+      } else {
+        console.error("Response not successful:", response);
+        setBills([]);
+      }
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      setBills([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Ensure bills is always an array
   const safeBills = Array.isArray(bills) ? bills : [];
 
   const filteredBills = safeBills.filter((bill) => {
-    const matchesSearch = bill.studentId?.toLowerCase().includes(searchTerm.toLowerCase()) || bill.studentName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = 
+      bill.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      bill.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
-    const matchesMonth = filterMonth === "All" || bill.month === filterMonth;
+    const matchesMonth = filterMonth === "All" || bill.billing_month?.startsWith(filterMonth);
     return matchesSearch && matchesStatus && matchesMonth;
   });
 
@@ -63,7 +93,7 @@ const BillList = ({ bills, setBills, loading }) => {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Tìm mã SV, tên sinh viên..."
+              placeholder="Tìm số phòng, mã hóa đơn, tên sinh viên..."
               value={searchTerm}
               onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-xs transition-all bg-slate-50/50"
@@ -77,8 +107,9 @@ const BillList = ({ bills, setBills, loading }) => {
             className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
             <option value="All">Tất cả trạng thái</option>
-            <option value={BillStatus.PAID}>Đã thanh toán</option>
-            <option value={BillStatus.UNPAID}>Chưa thanh toán</option>
+            <option value="Đã thanh toán">Đã thanh toán</option>
+            <option value="Chưa thanh toán">Chưa thanh toán</option>
+            <option value="Quá hạn">Quá hạn</option>
           </select>
 
           {/* Month Filter */}
@@ -87,19 +118,19 @@ const BillList = ({ bills, setBills, loading }) => {
             onChange={(e) => handleFilterChange(setFilterMonth, e.target.value)}
             className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
           >
-            <option value="All">Tất cả kỳ</option>
-            <option value="T01/2024">T01/2024</option>
-            <option value="T02/2024">T02/2024</option>
-            <option value="T03/2024">T03/2024</option>
-            <option value="T04/2024">T04/2024</option>
-            <option value="T05/2024">T05/2024</option>
-            <option value="T06/2024">T06/2024</option>
-            <option value="T07/2024">T07/2024</option>
-            <option value="T08/2024">T08/2024</option>
-            <option value="T09/2024">T09/2024</option>
-            <option value="T10/2024">T10/2024</option>
-            <option value="T11/2024">T11/2024</option>
-            <option value="T12/2024">T12/2024</option>
+            <option value="All">Tất cả tháng</option>
+            <option value="2026-01">Tháng 1/2026</option>
+            <option value="2026-02">Tháng 2/2026</option>
+            <option value="2026-03">Tháng 3/2026</option>
+            <option value="2026-04">Tháng 4/2026</option>
+            <option value="2026-05">Tháng 5/2026</option>
+            <option value="2026-06">Tháng 6/2026</option>
+            <option value="2026-07">Tháng 7/2026</option>
+            <option value="2026-08">Tháng 8/2026</option>
+            <option value="2026-09">Tháng 9/2026</option>
+            <option value="2026-10">Tháng 10/2026</option>
+            <option value="2026-11">Tháng 11/2026</option>
+            <option value="2026-12">Tháng 12/2026</option>
           </select>
 
           {/* Reset Button */}
@@ -133,24 +164,26 @@ const BillList = ({ bills, setBills, loading }) => {
           <table className="w-full text-left border-collapse">
             <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Mã sinh viên</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Kỳ tháng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Tổng tiền</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Hạn đóng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Trạng thái</th>
-                <th className="px-6 py-3 w-[12%] text-center">Hành động</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Mã HĐ</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Phòng</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Sinh viên</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Tháng</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Tổng tiền</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Hạn đóng</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Trạng thái</th>
+                <th className="px-6 py-3 w-[10%] text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-300">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan="8" className="px-6 py-8 text-center text-slate-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center">
+                  <td colSpan="8" className="px-6 py-8 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
                       <CreditCard size={48} className="mb-4 opacity-50" />
                       <p className="text-sm font-medium">Không có hóa đơn nào</p>
@@ -159,31 +192,71 @@ const BillList = ({ bills, setBills, loading }) => {
                   </td>
                 </tr>
               ) : (
-                currentItems.map((bill) => (
-                  <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-2 font-bold text-slate-900 text-xs border-r-2 border-slate-300 text-center font-mono">{bill.studentId}</td>
-                    <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center font-semibold">{bill.month}</td>
-                    <td className="px-6 py-2 font-bold text-blue-700 text-xs border-r-2 border-slate-300 text-center">{(bill.total || 0).toLocaleString()}đ</td>
-                    <td className="px-6 py-2 text-slate-500 font-semibold text-xs border-r-2 border-slate-300 text-center">{bill.dueDate}</td>
-                    <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${bill.status === BillStatus.PAID ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
-                        {bill.status === BillStatus.PAID ? "Đã thanh toán" : "Chưa thanh toán"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-2 text-center">
-                      <div className="flex justify-center gap-1.5">
-                        <button className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="In hóa đơn">
-                          <Printer size={15} />
-                        </button>
-                        {bill.status === BillStatus.UNPAID && (
-                          <button className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Gửi nhắc nhở">
-                            <Send size={15} />
+                currentItems.map((bill) => {
+                  const billingDate = new Date(bill.billing_month);
+                  const dueDate = new Date(bill.due_date);
+                  
+                  return (
+                    <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-2 font-bold text-slate-900 text-xs border-r-2 border-slate-300 text-center font-mono">
+                        {bill.invoice_number}
+                      </td>
+                      <td className="px-6 py-2 text-slate-700 text-xs border-r-2 border-slate-300 text-center font-bold">
+                        {bill.building}-{bill.room_number}
+                      </td>
+                      <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-left">
+                        <div className="max-w-[200px] truncate" title={bill.student_names}>
+                          {bill.student_names || 'N/A'}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {bill.occupancy} người
+                        </div>
+                      </td>
+                      <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center font-semibold">
+                        {billingDate.toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-2 font-bold text-blue-700 text-xs border-r-2 border-slate-300 text-center">
+                        {(bill.total_amount || 0).toLocaleString('vi-VN')}đ
+                      </td>
+                      <td className="px-6 py-2 text-slate-500 font-semibold text-xs border-r-2 border-slate-300 text-center">
+                        {dueDate.toLocaleDateString('vi-VN')}
+                      </td>
+                      <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                          bill.status === "Đã thanh toán" ? "bg-emerald-100 text-emerald-700" : 
+                          bill.status === "Quá hạn" ? "bg-rose-100 text-rose-700" :
+                          "bg-amber-100 text-amber-700"
+                        }`}>
+                          {bill.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-2 text-center">
+                        <div className="flex justify-center gap-1.5">
+                          <button 
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                            title="Xem chi tiết"
+                          >
+                            <Eye size={15} />
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          <button 
+                            className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" 
+                            title="In hóa đơn"
+                          >
+                            <Printer size={15} />
+                          </button>
+                          {bill.status !== "Đã thanh toán" && (
+                            <button 
+                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" 
+                              title="Gửi nhắc nhở"
+                            >
+                              <Send size={15} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
