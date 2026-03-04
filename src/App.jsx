@@ -90,7 +90,7 @@ const App = () => {
     if (activeTab === "students") {
       props.initialFilter = contractFilter;
     }
-    if (activeTab === "rooms") {
+    if (activeTab === "rooms" || activeTab === "billing") {
       props.onNavigateToContract = handleNavigateToContract;
     }
     

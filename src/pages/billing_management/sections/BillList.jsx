@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users } from "lucide-react";
+import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight } from "lucide-react";
 import { getInvoices } from "../../../api/apiInvoice.js";
+import { getRoomById } from "../../../api/apiRoom.js";
 
-const BillList = ({ bills, setBills }) => {
+const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterMonth, setFilterMonth] = useState("All");
   const [loading, setLoading] = useState(false);
+  const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,6 +40,21 @@ const BillList = ({ bills, setBills }) => {
     }
   };
 
+  const handleShowStudents = async (bill) => {
+    try {
+      const response = await getRoomById(bill.room_id);
+      if (response.success) {
+        setSelectedRoomStudents({
+          ...response.data,
+          room_number: bill.room_number,
+          building: bill.building
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching room students:", error);
+    }
+  };
+
   // Ensure bills is always an array
   const safeBills = Array.isArray(bills) ? bills : [];
 
@@ -47,7 +64,12 @@ const BillList = ({ bills, setBills }) => {
       bill.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
-    const matchesMonth = filterMonth === "All" || bill.billing_month?.startsWith(filterMonth);
+    // billing_month comes as ISO timestamp from pg; parse with local time to get correct month
+    const matchesMonth = filterMonth === "All" || (() => {
+      const bd = new Date(bill.billing_month);
+      const formatted = `${bd.getFullYear()}-${(bd.getMonth() + 1).toString().padStart(2, '0')}`;
+      return formatted === filterMonth;
+    })();
     return matchesSearch && matchesStatus && matchesMonth;
   });
 
@@ -193,10 +215,12 @@ const BillList = ({ bills, setBills }) => {
                 </tr>
               ) : (
                 currentItems.map((bill) => {
-                  // Parse dates correctly
-                  const billingMonth = bill.billing_month; // Format: YYYY-MM-DD
-                  const [year, month] = billingMonth.split('-');
-                  const dueDate = new Date(bill.due_date + 'T00:00:00');
+                  // billing_month & due_date come from pg as ISO timestamp strings (local midnight → UTC)
+                  // e.g. "2026-01-31T17:00:00.000Z" represents Feb 1 in UTC+7
+                  const billingDate = new Date(bill.billing_month);
+                  const year = billingDate.getFullYear();   // local year
+                  const month = billingDate.getMonth() + 1; // local month (1-based)
+                  const dueDate = bill.due_date ? new Date(bill.due_date) : null;
                   
                   return (
                     <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
@@ -211,17 +235,23 @@ const BillList = ({ bills, setBills }) => {
                           <span className="text-xs font-semibold text-slate-700">
                             {bill.occupancy || 0}/{bill.current_occupancy || 5}
                           </span>
-                          <Users size={14} className="text-purple-500" />
+                          <button
+                            onClick={() => handleShowStudents(bill)}
+                            className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+                            title="Xem danh sách sinh viên"
+                          >
+                            <Users size={14} />
+                          </button>
                         </div>
                       </td>
                       <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center font-semibold">
-                        Tháng {parseInt(month)}/{year}
+                        Tháng {month}/{year}
                       </td>
                       <td className="px-6 py-2 font-bold text-blue-700 text-xs border-r-2 border-slate-300 text-center">
                         {(bill.total_amount || 0).toLocaleString('vi-VN')}đ
                       </td>
                       <td className="px-6 py-2 text-slate-500 font-semibold text-xs border-r-2 border-slate-300 text-center">
-                        {dueDate.toLocaleDateString('vi-VN')}
+                        {dueDate ? dueDate.toLocaleDateString('vi-VN') : '—'}
                       </td>
                       <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
@@ -345,6 +375,65 @@ const BillList = ({ bills, setBills }) => {
                 <ChevronsRight size={16} />
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Students Modal */}
+      {selectedRoomStudents && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-slate-900">
+                Sinh viên phòng {selectedRoomStudents.building}-{selectedRoomStudents.room_number}
+              </h3>
+              <button 
+                onClick={() => setSelectedRoomStudents(null)} 
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600 mb-3">
+                Đang có <strong>{selectedRoomStudents.current_occupancy || 0}</strong>/{selectedRoomStudents.capacity} sinh viên
+              </p>
+              {selectedRoomStudents.students && selectedRoomStudents.students.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedRoomStudents.students.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{s.name || '—'}</p>
+                        {s.id && <p className="text-xs text-slate-500 font-mono mt-0.5">{s.id}</p>}
+                      </div>
+                      {s.contract_number && (
+                        <button
+                          onClick={() => {
+                            setSelectedRoomStudents(null);
+                            if (onNavigateToContract) {
+                              onNavigateToContract(s.contract_number);
+                            }
+                          }}
+                          className="flex items-center gap-1.5 text-xs font-mono text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer group"
+                          title="Xem hợp đồng"
+                        >
+                          <span>{s.contract_number}</span>
+                          <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic text-center py-4">Chưa có sinh viên nào trong phòng này</p>
+              )}
+            </div>
+            <button 
+              onClick={() => setSelectedRoomStudents(null)} 
+              className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
           </div>
         </div>
       )}

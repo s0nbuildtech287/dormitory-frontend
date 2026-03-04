@@ -3,7 +3,7 @@ import { List, TrendingUp } from "lucide-react";
 import BillList from "./sections/BillList.jsx";
 import RevenueReport from "./sections/RevenueReport.jsx";
 
-const BillingManagement = () => {
+const BillingManagement = ({ onNavigateToContract }) => {
   const [bills, setBills] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("list");
 
@@ -26,7 +26,7 @@ const BillingManagement = () => {
       </div>
 
       {/* Tab Content */}
-      {activeSubTab === "list" && <BillList bills={bills} setBills={setBills} />}
+      {activeSubTab === "list" && <BillList bills={bills} setBills={setBills} onNavigateToContract={onNavigateToContract} />}
       {activeSubTab === "revenue" && <RevenueReport bills={bills} />}
     </div>
   );
