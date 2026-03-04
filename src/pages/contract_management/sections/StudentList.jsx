@@ -49,9 +49,12 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                       filterStatus === "hardcopy_not" ? !c.hard_copy_received :
                         true;
     const matchGender = filterGender === "All" || c.snapshot_gender === filterGender;
-    const contractDate = c.start_date ? new Date(c.start_date) : null;
+    
+    // Lọc theo ngày đăng ký hợp đồng (created_at)
+    const contractDate = c.created_at ? new Date(c.created_at) : null;
     const matchDateFrom = !dateFrom || (contractDate && contractDate >= new Date(dateFrom));
     const matchDateTo = !dateTo || (contractDate && contractDate <= new Date(dateTo + "T23:59:59"));
+    
     return matchSearch && matchStatus && matchGender && matchDateFrom && matchDateTo;
   });
 
@@ -146,7 +149,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
             className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-            title="Ngày bắt đầu HĐ từ"
+            title="Ngày đăng ký HĐ từ"
           />
 
           {/* Ngày đến */}
@@ -155,7 +158,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
             className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-            title="Ngày bắt đầu HĐ đến"
+            title="Ngày đăng ký HĐ đến"
           />
 
           {/* Nút reset */}
