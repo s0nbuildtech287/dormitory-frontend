@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye } from "lucide-react";
+import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users } from "lucide-react";
 import { getInvoices } from "../../../api/apiInvoice.js";
 
 const BillList = ({ bills, setBills }) => {
@@ -193,8 +193,10 @@ const BillList = ({ bills, setBills }) => {
                 </tr>
               ) : (
                 currentItems.map((bill) => {
-                  const billingDate = new Date(bill.billing_month);
-                  const dueDate = new Date(bill.due_date);
+                  // Parse dates correctly
+                  const billingMonth = bill.billing_month; // Format: YYYY-MM-DD
+                  const [year, month] = billingMonth.split('-');
+                  const dueDate = new Date(bill.due_date + 'T00:00:00');
                   
                   return (
                     <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
@@ -204,16 +206,16 @@ const BillList = ({ bills, setBills }) => {
                       <td className="px-6 py-2 text-slate-700 text-xs border-r-2 border-slate-300 text-center font-bold">
                         {bill.building}-{bill.room_number}
                       </td>
-                      <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-left">
-                        <div className="max-w-[200px] truncate" title={bill.student_names}>
-                          {bill.student_names || 'N/A'}
-                        </div>
-                        <div className="text-[10px] text-slate-400">
-                          {bill.occupancy} người
+                      <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="text-xs font-semibold text-slate-700">
+                            {bill.occupancy || 0}/{bill.current_occupancy || 5}
+                          </span>
+                          <Users size={14} className="text-purple-500" />
                         </div>
                       </td>
                       <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center font-semibold">
-                        {billingDate.toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })}
+                        Tháng {parseInt(month)}/{year}
                       </td>
                       <td className="px-6 py-2 font-bold text-blue-700 text-xs border-r-2 border-slate-300 text-center">
                         {(bill.total_amount || 0).toLocaleString('vi-VN')}đ
@@ -244,14 +246,12 @@ const BillList = ({ bills, setBills }) => {
                           >
                             <Printer size={15} />
                           </button>
-                          {bill.status !== "Đã thanh toán" && (
-                            <button 
-                              className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" 
-                              title="Gửi nhắc nhở"
-                            >
-                              <Send size={15} />
-                            </button>
-                          )}
+                          <button 
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" 
+                            title="Gửi nhắc nhở"
+                          >
+                            <Send size={15} />
+                          </button>
                         </div>
                       </td>
                     </tr>
