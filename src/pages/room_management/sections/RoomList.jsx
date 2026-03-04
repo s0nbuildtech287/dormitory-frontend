@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight } from "lucide-react";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import { deleteRoom } from "../../../api/apiRoom.js";
@@ -427,10 +427,11 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                               onNavigateToContract(s.contract_number);
                             }
                           }}
-                          className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer"
+                          className="flex items-center gap-1.5 text-xs font-mono text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer group"
                           title="Xem hợp đồng"
                         >
-                          {s.contract_number}
+                          <span>{s.contract_number}</span>
+                          <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                         </button>
                       )}
                     </div>
