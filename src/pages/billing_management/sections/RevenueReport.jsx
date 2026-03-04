@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
 import { DollarSign, CreditCard } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import { BillStatus } from "../../../utils/types.js";
 
-const RevenueReport = () => {
+const RevenueReport = ({ bills }) => {
   const revenueData = useMemo(() => {
     return [
       { month: "T08", amount: 45000000, collected: 40000000 },
@@ -12,8 +13,34 @@ const RevenueReport = () => {
     ];
   }, []);
 
+  // Calculate stats from bills
+  const safeBills = Array.isArray(bills) ? bills : [];
+  const stats = useMemo(() => {
+    const total = safeBills.reduce((sum, b) => sum + (b.total || 0), 0);
+    const unpaid = safeBills.filter((b) => b.status === BillStatus.UNPAID).reduce((sum, b) => sum + (b.total || 0), 0);
+    const paid = safeBills.filter((b) => b.status === BillStatus.PAID).reduce((sum, b) => sum + (b.total || 0), 0);
+    return { total, unpaid, paid };
+  }, [safeBills]);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Tổng phải thu</p>
+          <p className="text-2xl font-black text-slate-900">{stats.total.toLocaleString()}đ</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Đã thu</p>
+          <p className="text-2xl font-black text-emerald-600">{stats.paid.toLocaleString()}đ</p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Còn nợ</p>
+          <p className="text-2xl font-black text-rose-600">{stats.unpaid.toLocaleString()}đ</p>
+        </div>
+      </div>
+
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
           <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">

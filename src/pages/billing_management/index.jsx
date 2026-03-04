@@ -27,7 +27,7 @@ const BillingManagement = () => {
 
       {/* Tab Content */}
       {activeSubTab === "list" && <BillList bills={bills} setBills={setBills} />}
-      {activeSubTab === "revenue" && <RevenueReport />}
+      {activeSubTab === "revenue" && <RevenueReport bills={bills} />}
     </div>
   );
 };
