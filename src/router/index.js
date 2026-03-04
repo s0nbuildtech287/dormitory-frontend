@@ -4,7 +4,7 @@ import RegistrationManagement from "../pages/registration_management/index.jsx";
 import StudentDashboard from "../pages/StudentDashboard.jsx";
 import RoomManagement from "../pages/room_management/index.jsx";
 import ContractManagement from "../pages/contract_management/index.jsx";
-import BillingManagement from "../pages/BillingManagement.jsx";
+import BillingManagement from "../pages/billing_management/index.jsx";
 import NotificationManagement from "../pages/NotificationManagement.jsx";
 import FeedbackManagement from "../pages/FeedbackManagement.jsx";
 import { UserRole } from "../utils/types.js";
