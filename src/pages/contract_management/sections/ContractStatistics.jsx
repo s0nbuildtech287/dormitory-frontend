@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AlertTriangle, Clock, Calendar } from "lucide-react";
 
 // Tông màu xanh từ đậm đến nhạt
 const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
@@ -15,6 +16,7 @@ const CHART_COLORS = {
 const ContractStatistics = ({ contracts = [] }) => {
   const analysisData = useMemo(() => {
     const safe = Array.isArray(contracts) ? contracts : [];
+    const now = new Date();
 
     const facultyCounts = safe.reduce((acc, c) => {
       const f = c.snapshot_faculty || c.rf_faculty || "Khác";
@@ -36,6 +38,36 @@ const ContractStatistics = ({ contracts = [] }) => {
       { name: "Chấm dứt", value: safe.filter((c) => c.status === "Terminated").length, color: "#f43f5e" },
     ].filter((s) => s.value > 0);
 
+    // Tính toán hợp đồng sắp hết hạn - chỉ lấy Active contracts
+    const activeContracts = safe.filter((c) => c.status === "Active" && c.end_date);
+    
+    const expiringContracts = activeContracts.filter((c) => {
+      const endDate = new Date(c.end_date);
+      const daysUntilExpiry = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+      return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+    });
+
+    const expiring15Days = expiringContracts.filter((c) => {
+      const endDate = new Date(c.end_date);
+      const daysUntilExpiry = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+      return daysUntilExpiry > 0 && daysUntilExpiry <= 15;
+    });
+
+    const expiring30Days = expiringContracts.filter((c) => {
+      const endDate = new Date(c.end_date);
+      const daysUntilExpiry = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+      return daysUntilExpiry > 15 && daysUntilExpiry <= 30;
+    });
+
+    // Debug log
+    console.log("Contract expiry analysis:", {
+      totalContracts: safe.length,
+      activeContracts: activeContracts.length,
+      expiringIn30Days: expiringContracts.length,
+      expiringIn15Days: expiring15Days.length,
+      expiringIn16to30Days: expiring30Days.length,
+    });
+
     return {
       facultyStats: Object.keys(facultyCounts).map((name, i) => ({
         name,
@@ -52,11 +84,93 @@ const ContractStatistics = ({ contracts = [] }) => {
         { name: "Nữ", value: safe.filter((c) => c.snapshot_gender === "Nữ").length, color: CHART_COLORS.info },
       ],
       statusCounts,
+      expiringContracts,
+      expiring15Days,
+      expiring30Days,
     };
   }, [contracts]);
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
+      {/* Cảnh báo hợp đồng sắp hết hạn */}
+      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="text-amber-500" size={24} />
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Hợp đồng sắp hết hạn</h3>
+            <p className="text-sm text-slate-500">
+              Tổng: {analysisData.expiringContracts.length} hợp đồng cần xử lý trong 30 ngày
+            </p>
+          </div>
+        </div>
+
+        {analysisData.expiringContracts.length === 0 ? (
+          <div className="text-center py-8 text-slate-400">
+            <p>✓ Không có hợp đồng nào sắp hết hạn</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Khẩn cấp - 15 ngày */}
+            {analysisData.expiring15Days.length > 0 && (
+              <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="text-red-600" size={18} />
+                    <h4 className="font-bold text-red-900 text-sm">Khẩn cấp (≤ 15 ngày)</h4>
+                  </div>
+                  <span className="text-2xl font-black text-red-600">{analysisData.expiring15Days.length}</span>
+                </div>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {analysisData.expiring15Days.slice(0, 3).map((contract) => {
+                    const daysLeft = Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <div key={contract.contract_id} className="text-xs bg-white p-2 rounded border border-red-100">
+                        <div className="font-semibold text-slate-800">{contract.snapshot_name || "N/A"}</div>
+                        <div className="text-red-600">Còn {daysLeft} ngày</div>
+                      </div>
+                    );
+                  })}
+                  {analysisData.expiring15Days.length > 3 && (
+                    <div className="text-xs text-red-600 font-semibold text-center">
+                      +{analysisData.expiring15Days.length - 3} hợp đồng khác
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Cần chú ý - 16-30 ngày */}
+            {analysisData.expiring30Days.length > 0 && (
+              <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="text-amber-600" size={18} />
+                    <h4 className="font-bold text-amber-900 text-sm">Cần chú ý (16-30 ngày)</h4>
+                  </div>
+                  <span className="text-2xl font-black text-amber-600">{analysisData.expiring30Days.length}</span>
+                </div>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {analysisData.expiring30Days.slice(0, 3).map((contract) => {
+                    const daysLeft = Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <div key={contract.contract_id} className="text-xs bg-white p-2 rounded border border-amber-100">
+                        <div className="font-semibold text-slate-800">{contract.snapshot_name || "N/A"}</div>
+                        <div className="text-amber-600">Còn {daysLeft} ngày</div>
+                      </div>
+                    );
+                  })}
+                  {analysisData.expiring30Days.length > 3 && (
+                    <div className="text-xs text-amber-600 font-semibold text-center">
+                      +{analysisData.expiring30Days.length - 3} hợp đồng khác
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status distribution */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
