@@ -1,7 +1,16 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
-const COLORS = ["#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
+// Tông màu xanh từ đậm đến nhạt
+const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
+const CHART_COLORS = {
+  primary: "#1e40af",    // Xanh đậm
+  secondary: "#3b82f6",  // Xanh vừa
+  success: "#2563eb",    // Xanh đậm vừa
+  warning: "#60a5fa",    // Xanh nhạt vừa
+  danger: "#1e3a8a",     // Xanh đậm nhất
+  info: "#93c5fd",       // Xanh nhạt
+};
 
 const ContractStatistics = ({ contracts = [] }) => {
   const analysisData = useMemo(() => {
@@ -39,8 +48,8 @@ const ContractStatistics = ({ contracts = [] }) => {
         color: COLORS[i % COLORS.length],
       })),
       genderDist: [
-        { name: "Nam", value: safe.filter((c) => c.snapshot_gender === "Nam").length, color: "#3b82f6" },
-        { name: "Nữ", value: safe.filter((c) => c.snapshot_gender === "Nữ").length, color: "#f43f5e" },
+        { name: "Nam", value: safe.filter((c) => c.snapshot_gender === "Nam").length, color: CHART_COLORS.primary },
+        { name: "Nữ", value: safe.filter((c) => c.snapshot_gender === "Nữ").length, color: CHART_COLORS.info },
       ],
       statusCounts,
     };
@@ -50,49 +59,58 @@ const ContractStatistics = ({ contracts = [] }) => {
     <div className="animate-in fade-in duration-500 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Status distribution */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <h4 className="font-bold text-slate-900 mb-4 uppercase tracking-widest text-xs">Trạng thái hợp đồng</h4>
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-6 rounded-2xl shadow-md border-2 border-slate-200">
+          <h4 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-900 rounded"></span>
+            Trạng thái hợp đồng
+          </h4>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie data={analysisData.statusCounts} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4} dataKey="value">
-                {analysisData.statusCounts.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {analysisData.statusCounts.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
+              <Legend wrapperStyle={{ fontSize: "13px", fontWeight: "500" }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         {/* Gender distribution */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <h4 className="font-bold text-slate-900 mb-4 uppercase tracking-widest text-xs">Phân bố giới tính</h4>
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-6 rounded-2xl shadow-md border-2 border-slate-200">
+          <h4 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-900 rounded"></span>
+            Phân bố giới tính
+          </h4>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie data={analysisData.genderDist} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4} dataKey="value">
-                {analysisData.genderDist.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                {analysisData.genderDist.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
+              <Legend wrapperStyle={{ fontSize: "13px", fontWeight: "500" }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
 
         {/* Faculty distribution */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <h4 className="font-bold text-slate-900 mb-4 uppercase tracking-widest text-xs">Phân bố theo khoa</h4>
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-6 rounded-2xl shadow-md border-2 border-slate-200">
+          <h4 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-900 rounded"></span>
+            Phân bố theo khoa
+          </h4>
           {analysisData.facultyStats.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={analysisData.facultyStats}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#475569" }} />
+                <YAxis tick={{ fontSize: 10, fill: "#475569" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
                 <Bar dataKey="value" name="Sinh viên" radius={[5, 5, 0, 0]}>
-                  {analysisData.facultyStats.map((entry, index) => (
+                  {analysisData.facultyStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
@@ -104,17 +122,20 @@ const ContractStatistics = ({ contracts = [] }) => {
         </div>
 
         {/* Year distribution */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <h4 className="font-bold text-slate-900 mb-4 uppercase tracking-widest text-xs">Phân bố theo năm học</h4>
+        <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-6 rounded-2xl shadow-md border-2 border-slate-200">
+          <h4 className="font-bold text-slate-800 mb-4 uppercase tracking-wider text-sm flex items-center gap-2">
+            <span className="w-1 h-5 bg-blue-900 rounded"></span>
+            Phân bố theo năm học
+          </h4>
           {analysisData.yearStats.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={analysisData.yearStats}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
+                <YAxis tick={{ fontSize: 11, fill: "#475569" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "none", borderRadius: "8px", color: "#fff" }} />
                 <Bar dataKey="value" name="Sinh viên" radius={[5, 5, 0, 0]}>
-                  {analysisData.yearStats.map((entry, index) => (
+                  {analysisData.yearStats.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Bar>
