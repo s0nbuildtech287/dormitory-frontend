@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, Calendar, X, Send } from "lucide-react";
 
 // Tông màu xanh từ đậm đến nhạt
 const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
@@ -122,6 +122,17 @@ const ContractStatistics = ({ contracts = [] }) => {
     };
   }, [contracts, expiryDays, expiredDays]);
 
+  // Hàm gửi thông báo
+  const handleSendNotification = (contracts, type) => {
+    const typeText = type.includes('expired') ? 'đã hết hạn' : 'sắp hết hạn';
+    const message = `Bạn có chắc muốn gửi thông báo đến ${contracts.length} sinh viên có hợp đồng ${typeText}?`;
+    
+    if (confirm(message)) {
+      // TODO: Gọi API gửi thông báo
+      alert(`Đã gửi thông báo đến ${contracts.length} sinh viên thành công!`);
+    }
+  };
+
   // Hàm render bảng đầy đủ
   const renderFullTable = (contracts, type) => {
     const totalPages = Math.ceil(contracts.length / itemsPerPage);
@@ -135,15 +146,25 @@ const ContractStatistics = ({ contracts = [] }) => {
           <h4 className="font-bold text-slate-800">
             Danh sách đầy đủ ({contracts.length} hợp đồng)
           </h4>
-          <button
-            onClick={() => {
-              setExpandedCard(null);
-              setCurrentPage(1);
-            }}
-            className="text-sm text-slate-600 hover:text-slate-900 font-semibold"
-          >
-            ✕ Thu gọn
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleSendNotification(contracts, type)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+            >
+              <Send size={16} />
+              Gửi thông báo
+            </button>
+            <button
+              onClick={() => {
+                setExpandedCard(null);
+                setCurrentPage(1);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors"
+            >
+              <X size={16} />
+              Thu gọn
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
