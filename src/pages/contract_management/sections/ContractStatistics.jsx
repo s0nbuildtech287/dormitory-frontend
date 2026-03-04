@@ -170,16 +170,26 @@ const ContractStatistics = ({ contracts = [] }) => {
                     {analysisData.expiring15Days.slice(0, 3).map((contract) => {
                       const daysLeft = Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={contract.contract_id} className="text-xs bg-white p-2 rounded border border-red-100">
-                          <div className="font-semibold text-slate-800">{contract.snapshot_name || "N/A"}</div>
+                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-red-100">
+                          <div className="font-semibold text-slate-800">
+                            {contract.student_name || contract.snapshot_name || `Hợp đồng ${contract.contract_number}`}
+                          </div>
                           <div className="text-red-600">Còn {daysLeft} ngày</div>
                         </div>
                       );
                     })}
                     {analysisData.expiring15Days.length > 3 && (
-                      <div className="text-xs text-red-600 font-semibold text-center">
-                        +{analysisData.expiring15Days.length - 3} hợp đồng khác
-                      </div>
+                      <button 
+                        onClick={() => alert(`Danh sách ${analysisData.expiring15Days.length} hợp đồng khẩn cấp:\n\n` + 
+                          analysisData.expiring15Days.map((c, i) => {
+                            const days = Math.ceil((new Date(c.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Còn ${days} ngày`;
+                          }).join('\n')
+                        )}
+                        className="text-xs text-red-600 font-semibold text-center w-full hover:text-red-800 hover:underline cursor-pointer py-1"
+                      >
+                        Xem tất cả {analysisData.expiring15Days.length} hợp đồng
+                      </button>
                     )}
                   </div>
                 </div>
@@ -199,16 +209,26 @@ const ContractStatistics = ({ contracts = [] }) => {
                     {analysisData.expiring30Days.slice(0, 3).map((contract) => {
                       const daysLeft = Math.ceil((new Date(contract.end_date) - new Date()) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={contract.contract_id} className="text-xs bg-white p-2 rounded border border-amber-100">
-                          <div className="font-semibold text-slate-800">{contract.snapshot_name || "N/A"}</div>
+                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-amber-100">
+                          <div className="font-semibold text-slate-800">
+                            {contract.student_name || contract.snapshot_name || `Hợp đồng ${contract.contract_number}`}
+                          </div>
                           <div className="text-amber-600">Còn {daysLeft} ngày</div>
                         </div>
                       );
                     })}
                     {analysisData.expiring30Days.length > 3 && (
-                      <div className="text-xs text-amber-600 font-semibold text-center">
-                        +{analysisData.expiring30Days.length - 3} hợp đồng khác
-                      </div>
+                      <button 
+                        onClick={() => alert(`Danh sách ${analysisData.expiring30Days.length} hợp đồng cần chú ý:\n\n` + 
+                          analysisData.expiring30Days.map((c, i) => {
+                            const days = Math.ceil((new Date(c.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Còn ${days} ngày`;
+                          }).join('\n')
+                        )}
+                        className="text-xs text-amber-600 font-semibold text-center w-full hover:text-amber-800 hover:underline cursor-pointer py-1"
+                      >
+                        Xem tất cả {analysisData.expiring30Days.length} hợp đồng
+                      </button>
                     )}
                   </div>
                 </div>
@@ -265,16 +285,26 @@ const ContractStatistics = ({ contracts = [] }) => {
                     {analysisData.expired15Days.slice(0, 3).map((contract) => {
                       const daysSince = Math.ceil((new Date() - new Date(contract.end_date)) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={contract.contract_id} className="text-xs bg-white p-2 rounded border border-slate-100">
-                          <div className="font-semibold text-slate-800">{contract.snapshot_name || "N/A"}</div>
+                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-slate-100">
+                          <div className="font-semibold text-slate-800">
+                            {contract.student_name || contract.snapshot_name || `Hợp đồng ${contract.contract_number}`}
+                          </div>
                           <div className="text-slate-600">Hết hạn {daysSince} ngày trước</div>
                         </div>
                       );
                     })}
                     {analysisData.expired15Days.length > 3 && (
-                      <div className="text-xs text-slate-600 font-semibold text-center">
-                        +{analysisData.expired15Days.length - 3} hợp đồng khác
-                      </div>
+                      <button 
+                        onClick={() => alert(`Danh sách ${analysisData.expired15Days.length} hợp đồng mới hết hạn:\n\n` + 
+                          analysisData.expired15Days.map((c, i) => {
+                            const days = Math.ceil((new Date() - new Date(c.end_date)) / (1000 * 60 * 60 * 24));
+                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Hết hạn ${days} ngày trước`;
+                          }).join('\n')
+                        )}
+                        className="text-xs text-slate-600 font-semibold text-center w-full hover:text-slate-800 hover:underline cursor-pointer py-1"
+                      >
+                        Xem tất cả {analysisData.expired15Days.length} hợp đồng
+                      </button>
                     )}
                   </div>
                 </div>
@@ -294,16 +324,26 @@ const ContractStatistics = ({ contracts = [] }) => {
                     {analysisData.expired30Days.slice(0, 3).map((contract) => {
                       const daysSince = Math.ceil((new Date() - new Date(contract.end_date)) / (1000 * 60 * 60 * 24));
                       return (
-                        <div key={contract.contract_id} className="text-xs bg-white p-2 rounded border border-slate-200">
-                          <div className="font-semibold text-slate-800">{contract.snapshot_name || "N/A"}</div>
+                        <div key={contract.id} className="text-xs bg-white p-2 rounded border border-slate-200">
+                          <div className="font-semibold text-slate-800">
+                            {contract.student_name || contract.snapshot_name || `Hợp đồng ${contract.contract_number}`}
+                          </div>
                           <div className="text-slate-700">Hết hạn {daysSince} ngày trước</div>
                         </div>
                       );
                     })}
                     {analysisData.expired30Days.length > 3 && (
-                      <div className="text-xs text-slate-700 font-semibold text-center">
-                        +{analysisData.expired30Days.length - 3} hợp đồng khác
-                      </div>
+                      <button 
+                        onClick={() => alert(`Danh sách ${analysisData.expired30Days.length} hợp đồng đã lâu:\n\n` + 
+                          analysisData.expired30Days.map((c, i) => {
+                            const days = Math.ceil((new Date() - new Date(c.end_date)) / (1000 * 60 * 60 * 24));
+                            return `${i+1}. ${c.student_name || c.snapshot_name || c.contract_number} - Hết hạn ${days} ngày trước`;
+                          }).join('\n')
+                        )}
+                        className="text-xs text-slate-700 font-semibold text-center w-full hover:text-slate-900 hover:underline cursor-pointer py-1"
+                      >
+                        Xem tất cả {analysisData.expired30Days.length} hợp đồng
+                      </button>
                     )}
                   </div>
                 </div>
