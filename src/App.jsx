@@ -21,6 +21,15 @@ const App = () => {
   };
 
   /**
+   * Reset contract filter when changing tabs
+   */
+  useEffect(() => {
+    if (activeTab !== "students") {
+      setContractFilter(null);
+    }
+  }, [activeTab]);
+
+  /**
    * Check for existing session on app mount
    */
   useEffect(() => {
