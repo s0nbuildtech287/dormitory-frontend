@@ -88,90 +88,109 @@ const InvoiceStatistics = ({ bills }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Overview Block - Tổng quan hóa đơn */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h4 className="font-bold text-slate-900 mb-6">Tổng quan hóa đơn</h4>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <FileText size={24} className="text-blue-600" />
+      {/* Two Blocks Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Overview Block - Tổng quan hóa đơn */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h4 className="font-bold text-slate-900 mb-6">Tổng quan hóa đơn</h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <FileText size={24} className="text-blue-600" />
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Tổng hóa đơn</p>
+                  <p className="text-xs text-slate-400 mt-0.5">Tất cả hóa đơn</p>
+                </div>
+              </div>
+              <p className="text-2xl font-black text-slate-900">{stats.total_invoices}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Tổng hóa đơn</p>
-            <p className="text-2xl font-black text-slate-900">{stats.total_invoices}</p>
-            <p className="text-xs text-slate-500 mt-1">Tất cả hóa đơn</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <CheckCircle size={24} className="text-emerald-600" />
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <CheckCircle size={24} className="text-emerald-600" />
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Đã thanh toán</p>
+                  <p className="text-xs text-emerald-600 mt-0.5 font-semibold">{formatCurrency(stats.paid_amount)}</p>
+                </div>
+              </div>
+              <p className="text-2xl font-black text-emerald-600">{stats.paid_count}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Đã thanh toán</p>
-            <p className="text-2xl font-black text-emerald-600">{stats.paid_count}</p>
-            <p className="text-xs text-slate-500 mt-1">{formatCurrency(stats.paid_amount)}</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <Clock size={24} className="text-amber-600" />
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <Clock size={24} className="text-amber-600" />
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Chưa thanh toán</p>
+                  <p className="text-xs text-amber-600 mt-0.5 font-semibold">{formatCurrency(stats.unpaid_amount)}</p>
+                </div>
+              </div>
+              <p className="text-2xl font-black text-amber-600">{stats.unpaid_count}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Chưa thanh toán</p>
-            <p className="text-2xl font-black text-amber-600">{stats.unpaid_count}</p>
-            <p className="text-xs text-slate-500 mt-1">{formatCurrency(stats.unpaid_amount)}</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <AlertCircle size={24} className="text-rose-600" />
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <AlertCircle size={24} className="text-rose-600" />
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Quá hạn</p>
+                  <p className="text-xs text-rose-600 mt-0.5 font-semibold">{formatCurrency(stats.overdue_amount)}</p>
+                </div>
+              </div>
+              <p className="text-2xl font-black text-rose-600">{stats.overdue_count}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Quá hạn</p>
-            <p className="text-2xl font-black text-rose-600">{stats.overdue_count}</p>
-            <p className="text-xs text-slate-500 mt-1">{formatCurrency(stats.overdue_amount)}</p>
           </div>
         </div>
-      </div>
 
-      {/* Financial Summary Block - Tổng quan tài chính */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h4 className="font-bold text-slate-900 mb-6">Tổng quan tài chính</h4>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <DollarSign size={20} className="text-white" />
+        {/* Financial Summary Block - Tổng quan tài chính */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h4 className="font-bold text-slate-900 mb-6">Tổng quan tài chính</h4>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-600 rounded-lg">
+                  <DollarSign size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Tổng phải thu</p>
+                </div>
               </div>
+              <p className="text-xl font-black text-blue-900">{formatCurrency(stats.total_amount)}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Tổng phải thu</p>
-            <p className="text-xl font-black text-blue-900">{formatCurrency(stats.total_amount)}</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <div className="p-2 bg-rose-600 rounded-lg">
-                <Wallet size={20} className="text-white" />
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-rose-600 rounded-lg">
+                  <Wallet size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Cần phải thu</p>
+                </div>
               </div>
+              <p className="text-xl font-black text-rose-900">{formatCurrency(remainingAmount)}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Cần phải thu</p>
-            <p className="text-xl font-black text-rose-900">{formatCurrency(remainingAmount)}</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <div className="p-2 bg-emerald-600 rounded-lg">
-                <TrendingUp size={20} className="text-white" />
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-600 rounded-lg">
+                  <TrendingUp size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Tỷ lệ thu</p>
+                </div>
               </div>
+              <p className="text-2xl font-black text-emerald-900">{collectionRate}%</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Tỷ lệ thu</p>
-            <p className="text-2xl font-black text-emerald-900">{collectionRate}%</p>
-          </div>
 
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-3">
-              <div className="p-2 bg-purple-600 rounded-lg">
-                <FileText size={20} className="text-white" />
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-600 rounded-lg">
+                  <FileText size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Trung bình/HĐ</p>
+                </div>
               </div>
+              <p className="text-xl font-black text-purple-900">{formatCurrency(stats.average_amount)}</p>
             </div>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Trung bình/HĐ</p>
-            <p className="text-xl font-black text-purple-900">{formatCurrency(stats.average_amount)}</p>
           </div>
         </div>
       </div>
