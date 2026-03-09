@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight } from "lucide-react";
 import { getInvoices } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
+import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 
 const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -9,6 +10,7 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [filterMonth, setFilterMonth] = useState("All");
   const [loading, setLoading] = useState(false);
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,9 +66,9 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
       bill.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
-    // billing_month comes as ISO timestamp from pg; parse with local time to get correct month
+    // Parse billing_month with local timezone to match correctly
     const matchesMonth = filterMonth === "All" || (() => {
-      const bd = new Date(bill.billing_month);
+      const bd = new Date(bill.billing_month + 'T00:00:00');
       const formatted = `${bd.getFullYear()}-${(bd.getMonth() + 1).toString().padStart(2, '0')}`;
       return formatted === filterMonth;
     })();
@@ -215,12 +217,28 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
                 </tr>
               ) : (
                 currentItems.map((bill) => {
-                  // billing_month & due_date come from pg as ISO timestamp strings (local midnight → UTC)
-                  // e.g. "2026-01-31T17:00:00.000Z" represents Feb 1 in UTC+7
-                  const billingDate = new Date(bill.billing_month);
-                  const year = billingDate.getFullYear();   // local year
-                  const month = billingDate.getMonth() + 1; // local month (1-based)
-                  const dueDate = bill.due_date ? new Date(bill.due_date) : null;
+                  // Safe parsing for billing_month (handle both string and timestamp)
+                  let year, month;
+                  if (typeof bill.billing_month === 'string') {
+                    if (bill.billing_month.includes('T')) {
+                      // ISO timestamp format
+                      const billingDate = new Date(bill.billing_month);
+                      year = billingDate.getFullYear();
+                      month = billingDate.getMonth() + 1;
+                    } else {
+                      // YYYY-MM-DD format
+                      const [y, m] = bill.billing_month.split('-');
+                      year = parseInt(y);
+                      month = parseInt(m);
+                    }
+                  } else {
+                    // Fallback
+                    const billingDate = new Date(bill.billing_month);
+                    year = billingDate.getFullYear();
+                    month = billingDate.getMonth() + 1;
+                  }
+                  
+                  const dueDate = bill.due_date ? new Date(bill.due_date.includes('T') ? bill.due_date : bill.due_date + 'T00:00:00') : null;
                   
                   return (
                     <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
@@ -265,6 +283,7 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
                       <td className="px-6 py-2 text-center">
                         <div className="flex justify-center gap-1.5">
                           <button 
+                            onClick={() => setSelectedInvoice(bill)}
                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
                             title="Xem chi tiết"
                           >
@@ -437,8 +456,14 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
           </div>
         </div>
       )}
+
+      {/* Invoice Detail Modal */}
+      <InvoiceDetailModal 
+        invoice={selectedInvoice} 
+        onClose={() => setSelectedInvoice(null)} 
+      />
     </div>
   );
 };
 
-export default BillList;
+export default BillList
