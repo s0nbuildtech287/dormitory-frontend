@@ -112,7 +112,18 @@ export const deleteInvoice = async (id) => {
 };
 
 /**
- * Get revenue statistics
+ * Get invoice statistics
+ * @returns {Promise<Object>} Response with statistics
+ */
+export const getInvoiceStatistics = async () => {
+  const response = await fetch(`${API_BASE_URL}/invoices/statistics`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Get revenue statistics (deprecated - use getInvoiceStatistics instead)
  * @param {string} startDate - YYYY-MM-DD
  * @param {string} endDate - YYYY-MM-DD
  */

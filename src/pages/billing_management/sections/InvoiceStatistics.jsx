@@ -1,0 +1,197 @@
+import React, { useMemo, useEffect, useState } from "react";
+import { FileText, CheckCircle, Clock, AlertCircle, DollarSign, TrendingUp } from "lucide-react";
+import { getInvoiceStatistics } from "../../../api/apiInvoice.js";
+import { BillStatus } from "../../../utils/types.js";
+
+const InvoiceStatistics = ({ bills }) => {
+  const [statistics, setStatistics] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const response = await getInvoiceStatistics();
+        if (response.success) {
+          setStatistics(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching invoice statistics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatistics();
+  }, []);
+
+  // Calculate stats from bills (fallback if API fails)
+  const safeBills = Array.isArray(bills) ? bills : [];
+  const billStats = useMemo(() => {
+    const total = safeBills.reduce((sum, b) => sum + (b.total || 0), 0);
+    const unpaid = safeBills.filter((b) => b.status === BillStatus.UNPAID).reduce((sum, b) => sum + (b.total || 0), 0);
+    const paid = safeBills.filter((b) => b.status === BillStatus.PAID).reduce((sum, b) => sum + (b.total || 0), 0);
+    const overdue = safeBills.filter((b) => b.status === BillStatus.OVERDUE).reduce((sum, b) => sum + (b.total || 0), 0);
+    return { total, unpaid, paid, overdue };
+  }, [safeBills]);
+
+  // Use API statistics if available, otherwise use calculated stats
+  const stats = statistics || {
+    total_invoices: safeBills.length,
+    paid_count: safeBills.filter((b) => b.status === BillStatus.PAID).length,
+    unpaid_count: safeBills.filter((b) => b.status === BillStatus.UNPAID).length,
+    overdue_count: safeBills.filter((b) => b.status === BillStatus.OVERDUE).length,
+    total_amount: billStats.total,
+    paid_amount: billStats.paid,
+    unpaid_amount: billStats.unpaid,
+    overdue_amount: billStats.overdue,
+    average_amount: safeBills.length > 0 ? Math.round(billStats.total / safeBills.length) : 0,
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount || 0);
+  };
+
+  const collectionRate = stats.total_amount > 0 ? ((stats.paid_amount / stats.total_amount) * 100).toFixed(1) : 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Tổng hóa đơn</p>
+            <FileText size={20} className="text-blue-600" />
+          </div>
+          <p className="text-3xl font-black text-slate-900">{stats.total_invoices}</p>
+          <p className="text-xs text-slate-500 mt-2">Tất cả hóa đơn</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Đã thanh toán</p>
+            <CheckCircle size={20} className="text-emerald-600" />
+          </div>
+          <p className="text-3xl font-black text-emerald-600">{stats.paid_count}</p>
+          <p className="text-xs text-slate-500 mt-2">{formatCurrency(stats.paid_amount)}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Chưa thanh toán</p>
+            <Clock size={20} className="text-amber-600" />
+          </div>
+          <p className="text-3xl font-black text-amber-600">{stats.unpaid_count}</p>
+          <p className="text-xs text-slate-500 mt-2">{formatCurrency(stats.unpaid_amount)}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Quá hạn</p>
+            <AlertCircle size={20} className="text-rose-600" />
+          </div>
+          <p className="text-3xl font-black text-rose-600">{stats.overdue_count}</p>
+          <p className="text-xs text-slate-500 mt-2">{formatCurrency(stats.overdue_amount)}</p>
+        </div>
+      </div>
+
+      {/* Financial Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl shadow-sm border border-blue-200">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-blue-600 rounded-lg">
+              <DollarSign size={20} className="text-white" />
+            </div>
+            <p className="text-slate-700 text-sm font-bold">Tổng phải thu</p>
+          </div>
+          <p className="text-3xl font-black text-blue-900">{formatCurrency(stats.total_amount)}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-2xl shadow-sm border border-emerald-200">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-emerald-600 rounded-lg">
+              <TrendingUp size={20} className="text-white" />
+            </div>
+            <p className="text-slate-700 text-sm font-bold">Tỷ lệ thu</p>
+          </div>
+          <p className="text-3xl font-black text-emerald-900">{collectionRate}%</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl shadow-sm border border-purple-200">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-purple-600 rounded-lg">
+              <FileText size={20} className="text-white" />
+            </div>
+            <p className="text-slate-700 text-sm font-bold">Trung bình/HĐ</p>
+          </div>
+          <p className="text-3xl font-black text-purple-900">{formatCurrency(stats.average_amount)}</p>
+        </div>
+      </div>
+
+      {/* Status Breakdown */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <h4 className="font-bold text-slate-900 mb-6">Phân bổ theo trạng thái</h4>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <span className="text-sm text-slate-700">Đã thanh toán</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold text-slate-900">{stats.paid_count} hóa đơn</span>
+              <span className="text-sm text-emerald-600 font-bold">{formatCurrency(stats.paid_amount)}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+              <span className="text-sm text-slate-700">Chưa thanh toán</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold text-slate-900">{stats.unpaid_count} hóa đơn</span>
+              <span className="text-sm text-amber-600 font-bold">{formatCurrency(stats.unpaid_amount)}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-rose-500"></div>
+              <span className="text-sm text-slate-700">Quá hạn</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-bold text-slate-900">{stats.overdue_count} hóa đơn</span>
+              <span className="text-sm text-rose-600 font-bold">{formatCurrency(stats.overdue_amount)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between text-xs text-slate-600 mb-2">
+            <span>Tiến độ thu</span>
+            <span>{collectionRate}%</span>
+          </div>
+          <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-full transition-all duration-500"
+              style={{ width: `${collectionRate}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InvoiceStatistics;
