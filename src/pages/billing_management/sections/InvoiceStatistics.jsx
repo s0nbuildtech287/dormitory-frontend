@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState } from "react";
-import { FileText, CheckCircle, Clock, AlertCircle, DollarSign, TrendingUp } from "lucide-react";
+import { FileText, CheckCircle, Clock, AlertCircle, DollarSign, TrendingUp, Wallet, Zap, Droplet } from "lucide-react";
+import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar } from "recharts";
 import { getInvoiceStatistics } from "../../../api/apiInvoice.js";
 import { BillStatus } from "../../../utils/types.js";
 
@@ -55,6 +56,27 @@ const InvoiceStatistics = ({ bills }) => {
   };
 
   const collectionRate = stats.total_amount > 0 ? ((stats.paid_amount / stats.total_amount) * 100).toFixed(1) : 0;
+  const remainingAmount = (Number(stats.unpaid_amount) || 0) + (Number(stats.overdue_amount) || 0);
+
+  // Fake data for utility costs by month (last 6 months)
+  const utilityChartData = [
+    { month: "T09/2025", electric: 12500000, water: 4200000 },
+    { month: "T10/2025", electric: 13200000, water: 4500000 },
+    { month: "T11/2025", electric: 14100000, water: 4800000 },
+    { month: "T12/2025", electric: 15300000, water: 5100000 },
+    { month: "T01/2026", electric: 16800000, water: 5400000 },
+    { month: "T02/2026", electric: 14500000, water: 4900000 },
+  ];
+
+  // Fake data for total invoice amount by month (last 6 months)
+  const monthlyRevenueData = [
+    { month: "T09/2025", total: 85000000, paid: 78000000, unpaid: 7000000 },
+    { month: "T10/2025", total: 92000000, paid: 85000000, unpaid: 7000000 },
+    { month: "T11/2025", total: 98000000, paid: 91000000, unpaid: 7000000 },
+    { month: "T12/2025", total: 105000000, paid: 98000000, unpaid: 7000000 },
+    { month: "T01/2026", total: 112000000, paid: 105000000, unpaid: 7000000 },
+    { month: "T02/2026", total: 108000000, paid: 95000000, unpaid: 13000000 },
+  ];
 
   if (loading) {
     return (
@@ -106,7 +128,7 @@ const InvoiceStatistics = ({ bills }) => {
       </div>
 
       {/* Financial Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl shadow-sm border border-blue-200">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 bg-blue-600 rounded-lg">
@@ -115,6 +137,16 @@ const InvoiceStatistics = ({ bills }) => {
             <p className="text-slate-700 text-sm font-bold">Tổng phải thu</p>
           </div>
           <p className="text-3xl font-black text-blue-900">{formatCurrency(stats.total_amount)}</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-6 rounded-2xl shadow-sm border border-rose-200">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-rose-600 rounded-lg">
+              <Wallet size={20} className="text-white" />
+            </div>
+            <p className="text-slate-700 text-sm font-bold">Cần phải thu</p>
+          </div>
+          <p className="text-3xl font-black text-rose-900">{formatCurrency(remainingAmount)}</p>
         </div>
 
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-2xl shadow-sm border border-emerald-200">
@@ -187,6 +219,58 @@ const InvoiceStatistics = ({ bills }) => {
               className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-full rounded-full transition-all duration-500"
               style={{ width: `${collectionRate}%` }}
             ></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Line Chart - Tiền điện và nước theo tháng */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <Zap size={18} className="text-amber-500" />
+            <Droplet size={18} className="text-blue-500" />
+            Tiền điện & nước theo tháng
+          </h4>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={utilityChartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} style={{ fontSize: "12px" }} />
+                <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} style={{ fontSize: "12px" }} />
+                <Tooltip
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="electric" name="Tiền điện" stroke="#f59e0b" strokeWidth={3} dot={{ fill: "#f59e0b", r: 4 }} />
+                <Line type="monotone" dataKey="water" name="Tiền nước" stroke="#3b82f6" strokeWidth={3} dot={{ fill: "#3b82f6", r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Bar Chart - Tổng tiền hóa đơn theo tháng */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <DollarSign size={18} className="text-emerald-600" />
+            Tổng tiền hóa đơn theo tháng
+          </h4>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyRevenueData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} style={{ fontSize: "12px" }} />
+                <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`} style={{ fontSize: "12px" }} />
+                <Tooltip
+                  formatter={(value) => formatCurrency(value)}
+                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
+                />
+                <Legend />
+                <Bar dataKey="paid" name="Đã thu" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="unpaid" name="Chưa thu" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
