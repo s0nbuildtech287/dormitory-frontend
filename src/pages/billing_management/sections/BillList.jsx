@@ -8,6 +8,7 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterMonth, setFilterMonth] = useState("All");
+  const [filterBuilding, setFilterBuilding] = useState("All");
   const [loading, setLoading] = useState(false);
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -66,13 +67,14 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
       bill.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
+    const matchesBuilding = filterBuilding === "All" || bill.building === filterBuilding;
     // Parse billing_month with local timezone to match correctly
     const matchesMonth = filterMonth === "All" || (() => {
       const bd = new Date(bill.billing_month + 'T00:00:00');
       const formatted = `${bd.getFullYear()}-${(bd.getMonth() + 1).toString().padStart(2, '0')}`;
       return formatted === filterMonth;
     })();
-    return matchesSearch && matchesStatus && matchesMonth;
+    return matchesSearch && matchesStatus && matchesBuilding && matchesMonth;
   });
 
   // Pagination calculations
@@ -100,10 +102,11 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
     setSearchTerm("");
     setFilterStatus("All");
     setFilterMonth("All");
+    setFilterBuilding("All");
     setCurrentPage(1);
   };
 
-  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All";
+  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All";
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -123,6 +126,19 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
               className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-xs transition-all bg-slate-50/50"
             />
           </div>
+
+          {/* Building Filter */}
+          <select
+            value={filterBuilding}
+            onChange={(e) => handleFilterChange(setFilterBuilding, e.target.value)}
+            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+          >
+            <option value="All">Tất cả tòa</option>
+            <option value="A">Tòa A</option>
+            <option value="B">Tòa B</option>
+            <option value="C">Tòa C</option>
+            <option value="D">Tòa D</option>
+          </select>
 
           {/* Status Filter */}
           <select
