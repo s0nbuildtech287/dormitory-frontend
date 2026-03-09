@@ -11,6 +11,7 @@ const App = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoading, setIsLoading] = useState(true);
   const [contractFilter, setContractFilter] = useState(null);
+  const [invoiceFilter, setInvoiceFilter] = useState(null);
 
   /**
    * Handle navigation to contract page with filter
@@ -21,11 +22,22 @@ const App = () => {
   };
 
   /**
-   * Reset contract filter when changing tabs
+   * Handle navigation to billing page with invoice filter
+   */
+  const handleNavigateToInvoice = (invoiceNumber) => {
+    setInvoiceFilter({ searchTerm: invoiceNumber });
+    setActiveTab("billing");
+  };
+
+  /**
+   * Reset filters when changing tabs
    */
   useEffect(() => {
     if (activeTab !== "students") {
       setContractFilter(null);
+    }
+    if (activeTab !== "billing") {
+      setInvoiceFilter(null);
     }
   }, [activeTab]);
 
@@ -90,8 +102,13 @@ const App = () => {
     if (activeTab === "students") {
       props.initialFilter = contractFilter;
     }
-    if (activeTab === "rooms" || activeTab === "billing") {
+    if (activeTab === "rooms") {
       props.onNavigateToContract = handleNavigateToContract;
+      props.onNavigateToInvoice = handleNavigateToInvoice;
+    }
+    if (activeTab === "billing") {
+      props.onNavigateToContract = handleNavigateToContract;
+      props.initialInvoiceFilter = invoiceFilter;
     }
     
     return <Component {...props} />;

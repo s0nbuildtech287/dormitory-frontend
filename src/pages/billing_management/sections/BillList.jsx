@@ -5,7 +5,7 @@ import { getRoomById } from "../../../api/apiRoom.js";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 
-const BillList = ({ bills, setBills, onNavigateToContract }) => {
+const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterMonth, setFilterMonth] = useState("All");
@@ -14,6 +14,7 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [highlightedInvoice, setHighlightedInvoice] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,6 +24,26 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
   useEffect(() => {
     fetchInvoices();
   }, []);
+
+  // Apply initial filter when provided
+  useEffect(() => {
+    if (initialInvoiceFilter?.searchTerm) {
+      setSearchTerm(initialInvoiceFilter.searchTerm);
+      setHighlightedInvoice(initialInvoiceFilter.searchTerm);
+      setCurrentPage(1); // Reset to first page
+      
+      // Scroll to highlighted row after a short delay
+      setTimeout(() => {
+        const highlightedRow = document.querySelector('.bg-yellow-100');
+        if (highlightedRow) {
+          highlightedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      
+      // Clear highlight after 3 seconds
+      setTimeout(() => setHighlightedInvoice(null), 3000);
+    }
+  }, [initialInvoiceFilter]);
 
   const fetchInvoices = async () => {
     try {
@@ -260,9 +281,10 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
                   }
                   
                   const dueDate = bill.due_date ? new Date(bill.due_date.includes('T') ? bill.due_date : bill.due_date + 'T00:00:00') : null;
+                  const isHighlighted = highlightedInvoice && bill.invoice_number === highlightedInvoice;
                   
                   return (
-                    <tr key={bill.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={bill.id} className={`transition-colors ${isHighlighted ? 'bg-yellow-100 animate-pulse' : 'hover:bg-slate-50/50'}`}>
                       <td className="px-6 py-2 font-bold text-slate-900 text-xs border-r-2 border-slate-300 text-center font-mono">
                         {bill.invoice_number}
                       </td>

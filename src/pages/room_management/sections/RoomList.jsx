@@ -2,9 +2,11 @@
 import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight } from "lucide-react";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
+import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
 import { deleteRoom } from "../../../api/apiRoom.js";
+import { getInvoices } from "../../../api/apiInvoice.js";
 
-const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom, onNavigateToContract }) => {
+const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom, onNavigateToContract, onNavigateToInvoice }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBuilding, setFilterBuilding] = useState("All");
   const [filterFloor, setFilterFloor] = useState("All");
@@ -14,10 +16,74 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [selectedRoomDetail, setSelectedRoomDetail] = useState(null);
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
   const [selectedRoomInvoice, setSelectedRoomInvoice] = useState(null);
+  const [loadingInvoice, setLoadingInvoice] = useState(false);
   const [showAddRoomModal, setShowAddRoomModal] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  const handleShowInvoice = async (room) => {
+    try {
+      setLoadingInvoice(true);
+      // Fetch latest invoice for this room
+      const response = await getInvoices({ search: room.room_number, limit: 1 });
+      
+      if (response.success && response.data && response.data.length > 0) {
+        // Found real invoice
+        setSelectedRoomInvoice(response.data[0]);
+      } else {
+        // No invoice found - create temporary one
+        const rentPrice = Number(room.rent_price) || 500000;
+        const occupancy = Number(room.currentOccupancy) || 0;
+        const electricReading = Number(room.electric_meter_reading) || 0;
+        const waterReading = Number(room.water_meter_reading) || 0;
+        const garbageFee = Number(room.garbage_fee) || 70000;
+        const internetFee = Number(room.internet_fee) || 300000;
+        const parkingFee = Number(room.parking_fee) || 0;
+        
+        const rentAmount = rentPrice * occupancy;
+        const electricAmount = electricReading * 3500;
+        const waterAmount = waterReading * 15000;
+        const serviceFees = garbageFee + internetFee + parkingFee;
+        const totalAmount = rentAmount + electricAmount + waterAmount + serviceFees;
+        
+        setSelectedRoomInvoice({
+          invoice_number: null, // No real invoice number
+          room_number: room.room_number,
+          building: room.building,
+          occupancy: occupancy,
+          billing_month: new Date().toISOString().split('T')[0],
+          due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          rent_per_person: rentPrice,
+          rent_amount: rentAmount,
+          electric_start: 0,
+          electric_end: electricReading,
+          electric_rate: 3500,
+          electric_amount: electricAmount,
+          water_start: 0,
+          water_end: waterReading,
+          water_rate: 15000,
+          water_amount: waterAmount,
+          garbage_fee: garbageFee,
+          internet_fee: internetFee,
+          parking_fee: parkingFee,
+          parking_count: 0,
+          service_fees: serviceFees,
+          discount_amount: 0,
+          penalty_amount: 0,
+          total_amount: totalAmount,
+          status: "Chưa có hóa đơn",
+          note: "Chưa có hóa đơn chính thức cho phòng này. Đây là ước tính từ thông tin phòng."
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching invoice:", error);
+      // Show error or temporary invoice
+      alert("Không thể tải hóa đơn. Vui lòng thử lại.");
+    } finally {
+      setLoadingInvoice(false);
+    }
+  };
 
   const handleDeleteConfirm = async () => {
     if (!roomToDelete) return;
@@ -199,8 +265,9 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                       {/* Invoice */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
                         <button
-                          onClick={() => setSelectedRoomInvoice(room)}
-                          className="inline-flex items-center justify-center p-1.5 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
+                          onClick={() => handleShowInvoice(room)}
+                          disabled={loadingInvoice}
+                          className="inline-flex items-center justify-center p-1.5 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors disabled:opacity-50"
                           title="Xem hóa đơn"
                         >
                           <FileText size={16} />
@@ -448,74 +515,16 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
         </div>
       )}
 
-      {/* Invoice Modal */}
-      {selectedRoomInvoice && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Hóa đơn phòng {selectedRoomInvoice.room_number}</h3>
-              <button onClick={() => setSelectedRoomInvoice(null)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                  <Home size={14} /> Tiền phòng:
-                </span>
-                <span className="text-sm font-bold text-slate-900">{selectedRoomInvoice.rent_price?.toLocaleString()} VNĐ</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                  <Zap size={14} /> Tiền điện:
-                </span>
-                <span className="text-sm font-bold text-slate-900">{(selectedRoomInvoice.electric_meter_reading * 3000 || 0).toLocaleString()} VNĐ</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                  <Droplet size={14} /> Tiền nước:
-                </span>
-                <span className="text-sm font-bold text-slate-900">{(selectedRoomInvoice.water_meter_reading * 10000 || 0).toLocaleString()} VNĐ</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-600">Phí rác:</span>
-                <span className="text-sm font-bold text-slate-900">{selectedRoomInvoice.garbage_fee?.toLocaleString()} VNĐ</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                  <Wifi size={14} /> Internet:
-                </span>
-                <span className="text-sm font-bold text-slate-900">{selectedRoomInvoice.internet_fee?.toLocaleString()} VNĐ</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-semibold text-slate-600 flex items-center gap-2">
-                  <Car size={14} /> Gửi xe:
-                </span>
-                <span className="text-sm font-bold text-slate-900">{selectedRoomInvoice.parking_fee?.toLocaleString()} VNĐ</span>
-              </div>
-              <div className="border-t-2 border-slate-200 pt-3 mt-3">
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="text-base font-bold text-slate-900">Tổng cộng:</span>
-                  <span className="text-lg font-black text-blue-700">
-                    {(
-                      (Number(selectedRoomInvoice.rent_price) || 0) +
-                      (Number(selectedRoomInvoice.electric_meter_reading) || 0) * 3000 +
-                      (Number(selectedRoomInvoice.water_meter_reading) || 0) * 10000 +
-                      (Number(selectedRoomInvoice.garbage_fee) || 0) +
-                      (Number(selectedRoomInvoice.internet_fee) || 0) +
-                      (Number(selectedRoomInvoice.parking_fee) || 0)
-                    ).toLocaleString()}{" "}
-                    VNĐ
-                  </span>
-                </div>
-              </div>
-            </div>
-            <button onClick={() => setSelectedRoomInvoice(null)} className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm">
-              Đóng
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Invoice Modal - Using InvoiceDetailModal */}
+      <InvoiceDetailModal 
+        invoice={selectedRoomInvoice}
+        onClose={() => setSelectedRoomInvoice(null)}
+        onNavigateToInvoice={onNavigateToInvoice && selectedRoomInvoice?.invoice_number ? () => {
+          const invoiceNumber = selectedRoomInvoice.invoice_number;
+          setSelectedRoomInvoice(null);
+          onNavigateToInvoice(invoiceNumber);
+        } : null}
+      />
     </div>
   );
 };

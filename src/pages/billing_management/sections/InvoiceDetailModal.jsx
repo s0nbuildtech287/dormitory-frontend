@@ -1,6 +1,6 @@
-import { X, Receipt, Home, Zap, Droplet, Wifi, Car, Trash2, Printer } from "lucide-react";
+import { X, Receipt, Home, Zap, Droplet, Wifi, Car, Trash2, Printer, ArrowRight } from "lucide-react";
 
-const InvoiceDetailModal = ({ invoice, onClose }) => {
+const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
   if (!invoice) return null;
 
   return (
@@ -13,9 +13,15 @@ const InvoiceDetailModal = ({ invoice, onClose }) => {
               <Receipt size={24} className="text-blue-600" />
               <h3 className="text-xl font-bold text-slate-900">Chi tiết hóa đơn</h3>
             </div>
-            <p className="text-sm text-slate-500">
-              Mã HĐ: <span className="font-mono font-semibold text-slate-700">{invoice.invoice_number}</span>
-            </p>
+            {invoice.invoice_number ? (
+              <p className="text-sm text-slate-500">
+                Mã HĐ: <span className="font-mono font-semibold text-slate-700">{invoice.invoice_number}</span>
+              </p>
+            ) : (
+              <p className="text-sm text-amber-600 font-semibold">
+                Chưa có hóa đơn chính thức
+              </p>
+            )}
           </div>
           <button 
             onClick={onClose} 
@@ -241,12 +247,23 @@ const InvoiceDetailModal = ({ invoice, onClose }) => {
           >
             Đóng
           </button>
-          <button 
-            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
-          >
-            <Printer size={16} />
-            In hóa đơn
-          </button>
+          {onNavigateToInvoice && invoice.invoice_number && (
+            <button 
+              onClick={onNavigateToInvoice}
+              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
+            >
+              <ArrowRight size={16} />
+              Xem trang hóa đơn
+            </button>
+          )}
+          {invoice.invoice_number && (
+            <button 
+              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
+            >
+              <Printer size={16} />
+              In hóa đơn
+            </button>
+          )}
         </div>
       </div>
     </div>
