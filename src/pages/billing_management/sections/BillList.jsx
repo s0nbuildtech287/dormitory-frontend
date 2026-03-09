@@ -3,6 +3,7 @@ import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, Chevron
 import { getInvoices } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
+import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 
 const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,6 +13,7 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
   const [loading, setLoading] = useState(false);
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -186,7 +188,10 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 mt-3">
-          <button className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-2">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-2"
+          >
             <Plus size={14} /> Hóa đơn mới
           </button>
           <button className="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2">
@@ -477,6 +482,13 @@ const BillList = ({ bills, setBills, onNavigateToContract }) => {
       <InvoiceDetailModal 
         invoice={selectedInvoice} 
         onClose={() => setSelectedInvoice(null)} 
+      />
+
+      {/* Create Invoice Modal */}
+      <CreateInvoiceModal 
+        isOpen={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+        onSuccess={fetchInvoices} 
       />
     </div>
   );
