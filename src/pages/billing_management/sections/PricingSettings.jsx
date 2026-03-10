@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Zap, Droplet, Trash2, Wifi, Car, Save, RotateCcw, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { DollarSign, Zap, Droplet, Trash2, Wifi, Car, Save, RotateCcw, CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { getPricingSettings, updatePricingSettings } from "../../../api/apiSettings";
 
 // ─── Section accordion wrapper ────────────────────────────────────────────────
@@ -18,7 +18,7 @@ const Section = ({ id, expanded, onToggle, icon: Icon, iconBg, iconColor, title,
           <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
         </div>
       </div>
-      <span className="text-slate-400">{expanded ? "▲" : "▼"}</span>
+      {expanded ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
     </button>
     {expanded && (
       <div className="px-8 pb-8 border-t border-slate-100">

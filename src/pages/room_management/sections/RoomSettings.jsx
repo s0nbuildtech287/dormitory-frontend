@@ -44,7 +44,7 @@ const StatusBadge = ({ room }) => {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 const RoomSettings = ({ rooms = [], onRefresh }) => {
-  const [expandedSection, setExpandedSection] = useState("maintenance");
+  const [expandedSection, setExpandedSection] = useState("buildings");
   const [saveStatus, setSaveStatus] = useState(null); // null | "saving" | "success" | "error"
 
   // ── Section 1: Tổng quan Tòa (read-only + editable display names) ─────────
