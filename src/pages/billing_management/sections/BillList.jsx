@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight } from "lucide-react";
-import { getInvoices } from "../../../api/apiInvoice.js";
+import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle } from "lucide-react";
+import { getInvoices, deleteInvoice } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
@@ -15,6 +15,9 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [highlightedInvoice, setHighlightedInvoice] = useState(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,7 +34,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
       setSearchTerm(initialInvoiceFilter.searchTerm);
       setHighlightedInvoice(initialInvoiceFilter.searchTerm);
       setCurrentPage(1); // Reset to first page
-      
+
       // Scroll to highlighted row after a short delay
       setTimeout(() => {
         const highlightedRow = document.querySelector('.bg-yellow-100');
@@ -39,7 +42,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
           highlightedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
-      
+
       // Clear highlight after 3 seconds
       setTimeout(() => setHighlightedInvoice(null), 3000);
     }
@@ -81,12 +84,27 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!invoiceToDelete) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      await deleteInvoice(invoiceToDelete.id);
+      setInvoiceToDelete(null);
+      fetchInvoices(); // Refresh list
+    } catch (err) {
+      setDeleteError(err.message || "Xóa hóa đơn thất bại, vui lòng thử lại.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   // Ensure bills is always an array
   const safeBills = Array.isArray(bills) ? bills : [];
 
   const filteredBills = safeBills.filter((bill) => {
-    const matchesSearch = 
-      bill.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch =
+      bill.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
@@ -209,7 +227,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 mt-3">
-          <button 
+          <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-2"
           >
@@ -231,13 +249,13 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
             <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Mã HĐ</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Phòng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Sinh viên</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[13%] text-center">Phòng</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[9%] text-center">Sinh viên</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Tháng</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Tổng tiền</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Hạn đóng</th>
+                <th className="px-6 py-3 border-r-2 border-slate-300 w-[11%] text-center">Hạn đóng</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Trạng thái</th>
-                <th className="px-6 py-3 w-[10%] text-center">Hành động</th>
+                <th className="px-6 py-3 w-[11%] text-center">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-300">
@@ -279,10 +297,10 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
                     year = billingDate.getFullYear();
                     month = billingDate.getMonth() + 1;
                   }
-                  
+
                   const dueDate = bill.due_date ? new Date(bill.due_date.includes('T') ? bill.due_date : bill.due_date + 'T00:00:00') : null;
                   const isHighlighted = highlightedInvoice && bill.invoice_number === highlightedInvoice;
-                  
+
                   return (
                     <tr key={bill.id} className={`transition-colors ${isHighlighted ? 'bg-yellow-100 animate-pulse' : 'hover:bg-slate-50/50'}`}>
                       <td className="px-6 py-2 font-bold text-slate-900 text-xs border-r-2 border-slate-300 text-center font-mono">
@@ -315,34 +333,43 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
                         {dueDate ? dueDate.toLocaleDateString('vi-VN') : '—'}
                       </td>
                       <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
-                          bill.status === "Đã thanh toán" ? "bg-emerald-100 text-emerald-700" : 
-                          bill.status === "Quá hạn" ? "bg-rose-100 text-rose-700" :
-                          "bg-amber-100 text-amber-700"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${bill.status === "Đã thanh toán" ? "bg-emerald-100 text-emerald-700" :
+                            bill.status === "Quá hạn" ? "bg-rose-100 text-rose-700" :
+                              "bg-amber-100 text-amber-700"
+                          }`}>
                           {bill.status}
                         </span>
                       </td>
                       <td className="px-6 py-2 text-center">
                         <div className="flex justify-center gap-1.5">
-                          <button 
+                          <button
                             onClick={() => setSelectedInvoice(bill)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                             title="Xem chi tiết"
                           >
                             <Eye size={15} />
                           </button>
-                          <button 
-                            className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" 
+                          <button
+                            className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
                             title="In hóa đơn"
                           >
                             <Printer size={15} />
                           </button>
-                          <button 
-                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" 
+                          <button
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                             title="Gửi nhắc nhở"
                           >
                             <Send size={15} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteError("");
+                              setInvoiceToDelete(bill);
+                            }}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Xóa hóa đơn"
+                          >
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -449,8 +476,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
               <h3 className="text-xl font-bold text-slate-900">
                 Sinh viên phòng {selectedRoomStudents.building}-{selectedRoomStudents.room_number}
               </h3>
-              <button 
-                onClick={() => setSelectedRoomStudents(null)} 
+              <button
+                onClick={() => setSelectedRoomStudents(null)}
                 className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 <X size={20} />
@@ -490,8 +517,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
                 <p className="text-xs text-slate-400 italic text-center py-4">Chưa có sinh viên nào trong phòng này</p>
               )}
             </div>
-            <button 
-              onClick={() => setSelectedRoomStudents(null)} 
+            <button
+              onClick={() => setSelectedRoomStudents(null)}
               className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
             >
               Đóng
@@ -500,17 +527,61 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
         </div>
       )}
 
+      {/* Delete Confirm Modal */}
+      {invoiceToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 animate-in scale-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
+                <Trash2 size={22} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Xác nhận xóa hóa đơn</h3>
+              <p className="text-sm text-slate-500">
+                Bạn có chắc muốn xóa hóa đơn <span className="font-bold text-slate-800">{invoiceToDelete.invoice_number}</span>?<br />
+                Hành động này không thể hoàn tác.
+              </p>
+              {deleteError && (
+                <div className="w-full flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl px-3 py-2">
+                  <AlertTriangle size={14} className="shrink-0" />
+                  {deleteError}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setInvoiceToDelete(null);
+                  setDeleteError("");
+                }}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deleteLoading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Trash2 size={14} />}
+                {deleteLoading ? "Đang xóa..." : "Xóa hóa đơn"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Invoice Detail Modal */}
-      <InvoiceDetailModal 
-        invoice={selectedInvoice} 
-        onClose={() => setSelectedInvoice(null)} 
+      <InvoiceDetailModal
+        invoice={selectedInvoice}
+        onClose={() => setSelectedInvoice(null)}
       />
 
       {/* Create Invoice Modal */}
-      <CreateInvoiceModal 
-        isOpen={showCreateModal} 
-        onClose={() => setShowCreateModal(false)} 
-        onSuccess={fetchInvoices} 
+      <CreateInvoiceModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={fetchInvoices}
       />
     </div>
   );
