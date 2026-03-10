@@ -226,10 +226,10 @@ const RegistrationStatistics = ({ regs }) => {
         <Icon size={size === "large" ? 32 : 28} className={`text-${color}-600`} />
       </div>
       <div>
-        <p className={`${size === "large" ? "text-base" : "text-sm"} font-medium text-slate-500 mb-1`}>{label}</p>
+        <p className={`${size === "large" ? "text-xs" : "text-xs"} font-medium text-slate-500 mb-1 uppercase tracking-wide`}>{label}</p>
         <div className="flex items-baseline gap-2">
-          <h4 className={`${size === "large" ? "text-4xl" : "text-3xl"} font-bold text-slate-900`}>{value}</h4>
-          {subValue && <span className="text-sm font-semibold text-slate-400">{subValue}</span>}
+          <h4 className={`${size === "large" ? "text-3xl" : "text-2xl"} font-bold text-slate-900`}>{value}</h4>
+          {subValue && <span className="text-[11px] font-semibold text-slate-400">{subValue}</span>}
         </div>
       </div>
     </div>
@@ -270,11 +270,11 @@ const RegistrationStatistics = ({ regs }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-600">Nam:</span>
-              <span className="text-2xl font-bold text-blue-600">{statsData.genderRatio.male}</span>
+              <span className="text-xl font-bold text-blue-600">{statsData.genderRatio.male}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-600">Nữ:</span>
-              <span className="text-2xl font-bold text-pink-600">{statsData.genderRatio.female}</span>
+              <span className="text-xl font-bold text-pink-600">{statsData.genderRatio.female}</span>
             </div>
           </div>
         </div>
@@ -288,10 +288,10 @@ const RegistrationStatistics = ({ regs }) => {
             <CheckCircle2 size={26} className="text-emerald-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 mb-0.5">Đã chấp nhận</p>
+            <p className="text-xs font-medium text-slate-500 mb-0.5">Đã chấp nhận</p>
             <div className="flex items-baseline gap-2">
-              <h4 className="text-3xl font-bold text-emerald-600">{statsData.countApproved}</h4>
-              <span className="text-sm font-semibold text-slate-400">hồ sơ</span>
+              <h4 className="text-2xl font-bold text-emerald-600">{statsData.countApproved}</h4>
+              <span className="text-[11px] font-semibold text-slate-400">hồ sơ</span>
             </div>
           </div>
         </div>
@@ -302,10 +302,10 @@ const RegistrationStatistics = ({ regs }) => {
             <Clock size={26} className="text-amber-500" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 mb-0.5">Đang chờ duyệt</p>
+            <p className="text-xs font-medium text-slate-500 mb-0.5">Đang chờ duyệt</p>
             <div className="flex items-baseline gap-2">
-              <h4 className="text-3xl font-bold text-amber-500">{statsData.countPending}</h4>
-              <span className="text-sm font-semibold text-slate-400">hồ sơ</span>
+              <h4 className="text-2xl font-bold text-amber-500">{statsData.countPending}</h4>
+              <span className="text-[11px] font-semibold text-slate-400">hồ sơ</span>
             </div>
           </div>
         </div>
@@ -316,10 +316,10 @@ const RegistrationStatistics = ({ regs }) => {
             <XCircle size={26} className="text-rose-500" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 mb-0.5">Đã từ chối</p>
+            <p className="text-xs font-medium text-slate-500 mb-0.5">Đã từ chối</p>
             <div className="flex items-baseline gap-2">
-              <h4 className="text-3xl font-bold text-rose-500">{statsData.countRejected}</h4>
-              <span className="text-sm font-semibold text-slate-400">hồ sơ</span>
+              <h4 className="text-2xl font-bold text-rose-500">{statsData.countRejected}</h4>
+              <span className="text-[11px] font-semibold text-slate-400">hồ sơ</span>
             </div>
           </div>
         </div>
