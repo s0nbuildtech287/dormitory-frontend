@@ -19,6 +19,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [deleteWarning, setDeleteWarning] = useState(null);
+  // Ẩn hóa đơn tháng trước đã thanh toán (mặc định bật)
+  const [hidePastPaid, setHidePastPaid] = useState(true);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -103,6 +105,14 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
   // Ensure bills is always an array
   const safeBills = Array.isArray(bills) ? bills : [];
 
+  // Tháng trước YYYY-MM: hóa đơn từ tháng này trở đi vẫn hiện (dù đã TT)
+  // Ví dụ: đang tháng 3 → prevYearMonth = "2026-02" → tháng 2 vẫn hiện, tháng 1 trở về ẩn
+  const prevYearMonth = (() => {
+    const now = new Date();
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return `${prev.getFullYear()}-${(prev.getMonth() + 1).toString().padStart(2, '0')}`;
+  })();
+
   const filteredBills = safeBills.filter((bill) => {
     const matchesSearch =
       bill.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -110,13 +120,28 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
       bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
     const matchesBuilding = filterBuilding === "All" || bill.building === filterBuilding;
-    // Parse billing_month with local timezone to match correctly
     const matchesMonth = filterMonth === "All" || (() => {
       const bd = new Date(bill.billing_month + 'T00:00:00');
       const formatted = `${bd.getFullYear()}-${(bd.getMonth() + 1).toString().padStart(2, '0')}`;
       return formatted === filterMonth;
     })();
-    return matchesSearch && matchesStatus && matchesBuilding && matchesMonth;
+    // Ẩn hóa đơn tháng trước & đã thanh toán nếu toggle bật
+    // billing_month từ PG có thể là "YYYY-MM-DD" hoặc UTC ISO "2026-01-31T17:00:00.000Z"
+    // (pg driver serialize DATE -> Date object -> UTC ISO, cần dùng local getMonth để đúng timezone)
+    const matchesHidePastPaid = !hidePastPaid || (() => {
+      const bm = bill.billing_month || '';
+      let billYearMonth;
+      if (bm.includes('T')) {
+        // UTC ISO timestamp → dùng local Date methods để ra đúng tháng theo múi giờ browser
+        const d = new Date(bm);
+        billYearMonth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      } else {
+        // Date string "YYYY-MM-DD" → lấy trực tiếp không qua Date() để tránh TZ shift
+        billYearMonth = bm.substring(0, 7);
+      }
+      return billYearMonth >= prevYearMonth || bill.status !== "Đã thanh toán";
+    })();
+    return matchesSearch && matchesStatus && matchesBuilding && matchesMonth && matchesHidePastPaid;
   });
 
   // Pagination calculations
@@ -145,10 +170,11 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
     setFilterStatus("All");
     setFilterMonth("All");
     setFilterBuilding("All");
+    setHidePastPaid(true);
     setCurrentPage(1);
   };
 
-  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All";
+  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All" || !hidePastPaid;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -227,7 +253,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 mt-3">
+        <div className="flex items-center gap-3 mt-3 flex-wrap">
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-2"
@@ -237,6 +263,16 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
           <button className="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2">
             <Download size={14} /> Export
           </button>
+          {/* Toggle ẩn hóa đơn tháng trước đã TT */}
+          <label className="flex items-center gap-2 cursor-pointer ml-auto select-none">
+            <div
+              onClick={() => { setHidePastPaid(v => !v); setCurrentPage(1); }}
+              className={`relative w-9 h-5 rounded-full transition-colors ${hidePastPaid ? 'bg-blue-500' : 'bg-slate-300'}`}
+            >
+              <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${hidePastPaid ? 'translate-x-4' : 'translate-x-0'}`} />
+            </div>
+            <span className="text-xs font-semibold text-slate-600">Ẩn đã TT tháng trước</span>
+          </label>
         </div>
       </div>
 
