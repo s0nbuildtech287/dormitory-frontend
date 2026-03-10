@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Bell } from "lucide-react";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "../router/index.js";
 import { UserRole } from "../utils/types.js";
 import { BACKEND_URL } from "../utils/constants.jsx";
@@ -12,6 +12,10 @@ import * as LucideIcons from "lucide-react";
  */
 const Layout = ({ user, onLogout, children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const notificationsRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,6 +29,17 @@ const Layout = ({ user, onLogout, children }) => {
   // Current active route from URL
   const activePath = location.pathname;
   const activeItem = menuItems.find((item) => item.path === activePath) || menuItems[0];
+
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="min-h-screen flex text-slate-800 bg-slate-50">
@@ -93,6 +108,57 @@ const Layout = ({ user, onLogout, children }) => {
             {activeItem?.label || ""}
           </h2>
           <div className="flex items-center space-x-4">
+            {/* Notification Bell */}
+            <div className="relative" ref={notificationsRef}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+                title="Thông báo"
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown */}
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                  <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
+                    <h3 className="font-bold text-slate-800 text-sm">Thông báo</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">{unreadCount} thông báo mới</p>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                        <Bell size={32} className="opacity-30 mb-2" />
+                        <p className="text-sm">Không có thông báo mới</p>
+                      </div>
+                    ) : (
+                      notifications.map((notif, idx) => (
+                        <div
+                          key={idx}
+                          className="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer last:border-0"
+                        >
+                          <p className="text-sm font-semibold text-slate-800 line-clamp-2">
+                            {notif.title}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                            {notif.content}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-1.5">
+                            {new Date(notif.created_at).toLocaleString("vi-VN")}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-slate-900">{user.name}</p>
               <p className="text-xs text-slate-500 font-medium">
