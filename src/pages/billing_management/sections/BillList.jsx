@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle } from "lucide-react";
+import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle, Ban } from "lucide-react";
 import { getInvoices, deleteInvoice } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
@@ -18,6 +18,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [deleteWarning, setDeleteWarning] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -334,8 +335,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
                       </td>
                       <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${bill.status === "Đã thanh toán" ? "bg-emerald-100 text-emerald-700" :
-                            bill.status === "Quá hạn" ? "bg-rose-100 text-rose-700" :
-                              "bg-amber-100 text-amber-700"
+                          bill.status === "Quá hạn" ? "bg-rose-100 text-rose-700" :
+                            "bg-amber-100 text-amber-700"
                           }`}>
                           {bill.status}
                         </span>
@@ -363,8 +364,12 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
                           </button>
                           <button
                             onClick={() => {
-                              setDeleteError("");
-                              setInvoiceToDelete(bill);
+                              if (bill.status === "Chưa thanh toán" || bill.status === "Quá hạn") {
+                                setDeleteWarning(bill);
+                              } else {
+                                setDeleteError("");
+                                setInvoiceToDelete(bill);
+                              }
                             }}
                             className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Xóa hóa đơn"
@@ -520,6 +525,33 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
             <button
               onClick={() => setSelectedRoomStudents(null)}
               className="w-full mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Warning Modal (unpaid / overdue) */}
+      {deleteWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 animate-in scale-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
+                <Ban size={22} className="text-amber-500" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Không thể xóa hóa đơn</h3>
+              <p className="text-sm text-slate-500">
+                Hóa đơn <span className="font-bold text-slate-800">{deleteWarning.invoice_number}</span> đang ở trạng thái{" "}
+                <span className={`font-bold ${deleteWarning.status === "Quá hạn" ? "text-rose-600" : "text-amber-600"}`}>
+                  {deleteWarning.status}
+                </span>.<br />
+                Chỉ được xóa hóa đơn đã thanh toán.
+              </p>
+            </div>
+            <button
+              onClick={() => setDeleteWarning(null)}
+              className="w-full mt-6 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
             >
               Đóng
             </button>
