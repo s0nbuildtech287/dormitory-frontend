@@ -53,10 +53,19 @@ const RegistrationStatistics = ({ regs }) => {
     const pendingRegs = regs.filter((r) => r.status === RegistrationStatus.PENDING);
     const actualTotal = pendingRegs.length;
 
-    // Status counts - from ALL registrations
-    const countApproved = regs.filter((r) => r.status === RegistrationStatus.APPROVED).length;
+    // Status counts - from ALL registrations, but only recent ones (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const recentRegs = regs.filter((r) => {
+      if (!r.updated_at) return false;
+      const updatedDate = new Date(r.updated_at);
+      return updatedDate >= thirtyDaysAgo;
+    });
+
+    const countApproved = recentRegs.filter((r) => r.status === RegistrationStatus.APPROVED).length;
     const countPending = regs.filter((r) => r.status === RegistrationStatus.PENDING).length;
-    const countRejected = regs.filter((r) => r.status === RegistrationStatus.REJECTED).length;
+    const countRejected = recentRegs.filter((r) => r.status === RegistrationStatus.REJECTED).length;
 
     if (actualTotal === 0) {
       return {
