@@ -175,7 +175,7 @@ const Layout = ({ user, onLogout, children }) => {
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="relative hover:opacity-80 transition-opacity"
+                className="relative p-1.5 bg-white rounded-full hover:opacity-80 transition-opacity shadow-sm"
                 title="Hồ sơ"
               >
                 <img

@@ -98,7 +98,7 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg">
+      <div className="bg-white rounded-2xl p-8 text-slate-900 shadow-lg border border-slate-100">
         <div className="flex items-end gap-6">
           <div className="relative">
             <img
@@ -107,21 +107,21 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
                 `https://ui-avatars.com/api/?name=${formData.name}&background=1e293b&color=fff&size=120`
               }
               alt="Avatar"
-              className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg object-cover"
+              className="w-32 h-32 rounded-2xl border-4 border-blue-200 shadow-lg object-cover"
             />
             {isEditing && (
-              <button className="absolute bottom-2 right-2 p-2 bg-white text-blue-600 rounded-full shadow-lg hover:bg-slate-100 transition-all">
+              <button className="absolute bottom-2 right-2 p-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all">
                 <Camera size={18} />
               </button>
             )}
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-1">{formData.name}</h1>
-            <p className="text-blue-100 flex items-center gap-2 mb-3">
+            <h1 className="text-3xl font-bold mb-1 text-slate-900">{formData.name}</h1>
+            <p className="text-slate-600 flex items-center gap-2 mb-3">
               <Shield size={16} />
               Ban Quản Lý Ký Túc Xá
             </p>
-            <div className="flex items-center gap-4 text-sm text-blue-100">
+            <div className="flex items-center gap-4 text-sm text-slate-500">
               <span className="flex items-center gap-1">
                 <Clock size={14} />
                 Tham gia từ {new Date(user?.createdAt || Date.now()).toLocaleDateString("vi-VN")}
@@ -132,15 +132,6 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
               </span>
             </div>
           </div>
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-6 py-2.5 bg-white text-blue-600 rounded-xl font-bold hover:bg-slate-100 transition-all flex items-center gap-2 shadow-lg"
-            >
-              <Edit2 size={16} />
-              Chỉnh sửa
-            </button>
-          )}
         </div>
       </div>
 
@@ -272,42 +263,52 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
             </div>
 
             {/* Action Buttons */}
-            {isEditing && (
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setFormData({
+                        name: user?.name || "",
+                        email: user?.email || "",
+                        phone: user?.phone || "",
+                        address: user?.address || "",
+                        avatar: user?.avatar || "",
+                      });
+                    }}
+                    className="px-6 py-2.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl font-bold text-sm transition-all"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
                 <button
-                  onClick={() => {
-                    setIsEditing(false);
-                    setFormData({
-                      name: user?.name || "",
-                      email: user?.email || "",
-                      phone: user?.phone || "",
-                      address: user?.address || "",
-                      avatar: user?.avatar || "",
-                    });
-                  }}
-                  className="px-6 py-2.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl font-bold text-sm transition-all"
+                  onClick={() => setIsEditing(true)}
+                  className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg"
                 >
-                  Hủy
+                  <Edit2 size={16} />
+                  Chỉnh sửa
                 </button>
-                <button
-                  onClick={handleSaveProfile}
-                  disabled={isSaving}
-                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Đang lưu...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={16} />
-                      Lưu thay đổi
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
