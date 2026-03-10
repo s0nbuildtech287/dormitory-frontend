@@ -80,6 +80,8 @@ const RegistrationManagement = () => {
     setSelectedReg(null);
     setIsConfirming(null);
     setNote("");
+    // Refresh statistics after status change
+    fetchRegistrations();
   };
 
   if (selectedReg) {

@@ -49,11 +49,11 @@ const RegistrationStatistics = ({ regs }) => {
       };
     }
 
-    // Always use all registrations for statistics (reflects the full registration list)
-    const dataToAnalyze = regs;
-    const actualTotal = dataToAnalyze.length;
+    // Analyze PENDING registrations for baskets, but show ALL statuses
+    const pendingRegs = regs.filter((r) => r.status === RegistrationStatus.PENDING);
+    const actualTotal = pendingRegs.length;
 
-    // Status counts
+    // Status counts - from ALL registrations
     const countApproved = regs.filter((r) => r.status === RegistrationStatus.APPROVED).length;
     const countPending = regs.filter((r) => r.status === RegistrationStatus.PENDING).length;
     const countRejected = regs.filter((r) => r.status === RegistrationStatus.REJECTED).length;
@@ -61,9 +61,9 @@ const RegistrationStatistics = ({ regs }) => {
     if (actualTotal === 0) {
       return {
         totalApproved: 0,
-        countApproved: 0,
-        countPending: 0,
-        countRejected: 0,
+        countApproved,
+        countPending,
+        countRejected,
         baskets: [],
         genderRatio: { male: 0, female: 0 },
         provinces: [],
@@ -74,19 +74,18 @@ const RegistrationStatistics = ({ regs }) => {
       };
     }
 
-    // --- 1. BASKET COUNTS & GENDER RATIO ---
-    const basket1 = dataToAnalyze.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
-    const basket2 = dataToAnalyze.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
-    const basket3 = dataToAnalyze.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
+    // --- 1. BASKET COUNTS & GENDER RATIO (from PENDING only) ---
+    const basket1 = pendingRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
+    const basket2 = pendingRegs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
+    const basket3 = pendingRegs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
 
-    const maleCount = dataToAnalyze.filter((r) => r.gender === "Nam").length;
-    const femaleCount = dataToAnalyze.filter((r) => r.gender === "Nữ").length;
+    const maleCount = pendingRegs.filter((r) => r.gender === "Nam").length;
+    const femaleCount = pendingRegs.filter((r) => r.gender === "Nữ").length;
 
-    // --- 2. GEOGRAPHIC INSIGHTS (Top 5 Provinces) ---
+    // --- 2. GEOGRAPHIC INSIGHTS (Top 5 Provinces - from PENDING only) ---
     const provinceCounts = {};
-    dataToAnalyze.forEach((r) => {
+    pendingRegs.forEach((r) => {
       if (!r.address) return;
-      // Simple province extraction: look for common province names or last part after comma
       const addressParts = r.address.split(",");
       const province = addressParts[addressParts.length - 1]?.trim() || "Không rõ";
       if (!provinceCounts[province]) provinceCounts[province] = 0;
@@ -98,8 +97,7 @@ const RegistrationStatistics = ({ regs }) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // --- 3. BASKET ANALYTICS ---
-    // 3a. Gender within each basket (for stacked bar chart)
+    // --- 3. BASKET ANALYTICS (from PENDING only) ---
     const basketGender = [
       {
         name: "Rổ 1 (Chính sách)",
@@ -118,11 +116,10 @@ const RegistrationStatistics = ({ regs }) => {
       },
     ];
 
-    // 3b. Priority Reasons Breakdown (Rổ 1 only)
+    // --- 3b. Priority Reasons Breakdown (Rổ 1 only - from PENDING) ---
     const priorityCounts = {};
     basket1.forEach((r) => {
       const reasons = r.priority_reasons || "Khác";
-      // Categorize into common groups
       let category = "Khác";
       const lower = reasons.toLowerCase();
       if (lower.includes("hộ nghèo") || lower.includes("cận nghèo")) category = "Hộ nghèo/Cận nghèo";
@@ -141,9 +138,9 @@ const RegistrationStatistics = ({ regs }) => {
       color: ["#f8a5a5", "#fbbf77", "#fcd34d", "#bef264", "#67e8f9", "#c4b5fd"][idx % 6],
     }));
 
-    // --- 4. ACADEMIC DISTRIBUTION (Top 5 Faculties) ---
+    // --- 4. ACADEMIC DISTRIBUTION (from PENDING only) ---
     const facultyCounts = {};
-    dataToAnalyze.forEach((r) => {
+    pendingRegs.forEach((r) => {
       const key = r.faculty || r.major || "Khác";
       if (!facultyCounts[key]) facultyCounts[key] = 0;
       facultyCounts[key]++;
@@ -154,10 +151,9 @@ const RegistrationStatistics = ({ regs }) => {
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
 
-    // --- 5. COHORT BREAKDOWN (Year-based) ---
-    // Count by actual year (1, 2, 3, 4) from imported data
+    // --- 5. COHORT BREAKDOWN (from PENDING only) ---
     const yearCounts = { "Năm 1": 0, "Năm 2": 0, "Năm 3": 0, "Năm 4": 0 };
-    dataToAnalyze.forEach((r) => {
+    pendingRegs.forEach((r) => {
       if (r.year === 1) yearCounts["Năm 1"]++;
       else if (r.year === 2) yearCounts["Năm 2"]++;
       else if (r.year === 3) yearCounts["Năm 3"]++;
@@ -169,10 +165,9 @@ const RegistrationStatistics = ({ regs }) => {
       value: yearCounts[key],
     }));
 
-    // --- 6. YEARLY SUBMISSION TRENDS ---
-    // Group by year from created_at if available, otherwise use mock data
+    // --- 6. YEARLY SUBMISSION TRENDS (from PENDING only) ---
     const yearlySubmissions = {};
-    dataToAnalyze.forEach((r) => {
+    pendingRegs.forEach((r) => {
       if (r.created_at) {
         const year = new Date(r.created_at).getFullYear();
         if (!yearlySubmissions[year]) yearlySubmissions[year] = 0;
@@ -180,8 +175,7 @@ const RegistrationStatistics = ({ regs }) => {
       }
     });
 
-    // Always show 10 years of data: 2016-2026, using real data if available, fake otherwise
-    const baseCount = 769; // Adjusted to make 2026 count approximately 1000
+    const baseCount = 769;
     const yearlyMultipliers = {
       2016: 0.3,
       2017: 0.4,
