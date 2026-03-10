@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, LogOut, Bell } from "lucide-react";
+import { Menu, LogOut, Bell, User, Lock } from "lucide-react";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "../router/index.js";
 import { UserRole } from "../utils/types.js";
 import { BACKEND_URL } from "../utils/constants.jsx";
@@ -15,7 +15,9 @@ const Layout = ({ user, onLogout, children }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const notificationsRef = useRef(null);
+  const profileRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,6 +37,9 @@ const Layout = ({ user, onLogout, children }) => {
     const handleClickOutside = (event) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
         setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -165,14 +170,66 @@ const Layout = ({ user, onLogout, children }) => {
                 {user.role === UserRole.ADMIN ? "Ban Quản Lý" : "Sinh Viên"}
               </p>
             </div>
-            <img
-              src={
-                user.avatar ||
-                `https://ui-avatars.com/api/?name=${user.name}&background=1e293b&color=fff`
-              }
-              alt="Avatar"
-              className="w-10 h-10 rounded-full border-2 border-slate-100 shadow-sm"
-            />
+            
+            {/* Avatar with Profile Menu */}
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="relative hover:opacity-80 transition-opacity"
+                title="Hồ sơ"
+              >
+                <img
+                  src={
+                    user.avatar ||
+                    `https://ui-avatars.com/api/?name=${user.name}&background=1e293b&color=fff`
+                  }
+                  alt="Avatar"
+                  className="w-10 h-10 rounded-full border-2 border-slate-100 shadow-sm cursor-pointer"
+                />
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {showProfileMenu && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-sm font-bold text-slate-800">{user.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {user.role === UserRole.ADMIN ? "Ban Quản Lý" : "Sinh Viên"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigate("/profile-admin");
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 flex items-center gap-2"
+                  >
+                    <User size={16} />
+                    Hồ sơ cá nhân
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate("/profile-admin?tab=security");
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 flex items-center gap-2 border-t border-slate-100"
+                  >
+                    <Lock size={16} />
+                    Tài khoản
+                  </button>
+                  <button
+                    onClick={() => {
+                      onLogout();
+                      setShowProfileMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-red-50 transition-colors text-sm font-medium text-red-600 flex items-center gap-2 border-t border-slate-100"
+                  >
+                    <LogOut size={16} />
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

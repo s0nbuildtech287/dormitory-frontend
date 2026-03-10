@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
+import ProfileAdmin from "./pages/profile_admin/index.jsx";
 import { UserRole } from "./utils/types.js";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "./router/index.js";
 import { getCurrentUser } from "./api/apiAuth.js";
@@ -107,6 +108,11 @@ const App = () => {
                 element={<route.component {...getProps(route.id)} />}
               />
             ))}
+            {/* Profile Admin Route */}
+            <Route
+              path="/profile-admin"
+              element={<ProfileAdmin user={user} onLogout={handleLogout} />}
+            />
             {/* Default redirect */}
             <Route path="/" element={<Navigate to={defaultPath} replace />} />
             <Route path="*" element={<Navigate to={defaultPath} replace />} />
