@@ -47,43 +47,43 @@ const FeedbackStatistics = ({ feedbacks }) => {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* Total Feedbacks */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-            <p className="text-sm font-semibold text-blue-800 mb-2">Tổng phản ánh</p>
-            <p className="text-3xl font-bold text-blue-600">{totalFeedbacks}</p>
-            <p className="text-xs text-blue-700 mt-2">Tất cả phản ánh</p>
+            <p className="text-xs font-semibold text-blue-800 mb-2 uppercase tracking-wide">Tổng phản ánh</p>
+            <p className="text-2xl font-bold text-blue-600">{totalFeedbacks}</p>
+            <p className="text-[11px] text-blue-700 mt-1">Tất cả phản ánh</p>
           </div>
 
           {/* Pending */}
           <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border border-yellow-200">
-            <p className="text-sm font-semibold text-yellow-800 mb-2">Chờ xử lý</p>
-            <p className="text-3xl font-bold text-yellow-600">{statusStats.pending}</p>
-            <p className="text-xs text-yellow-700 mt-2">
-              {totalFeedbacks > 0 ? Math.round((statusStats.pending / totalFeedbacks) * 100) : 0}% tổng số
+            <p className="text-xs font-semibold text-yellow-800 mb-2 uppercase tracking-wide">Chờ xử lý</p>
+            <p className="text-2xl font-bold text-yellow-600">{statusStats.pending}</p>
+            <p className="text-[11px] text-yellow-700 mt-1">
+              {totalFeedbacks > 0 ? Math.round((statusStats.pending / totalFeedbacks) * 100) : 0}%
             </p>
           </div>
 
           {/* In Progress */}
           <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
-            <p className="text-sm font-semibold text-indigo-800 mb-2">Đang xử lý</p>
-            <p className="text-3xl font-bold text-indigo-600">{statusStats.in_progress}</p>
-            <p className="text-xs text-indigo-700 mt-2">
-              {totalFeedbacks > 0 ? Math.round((statusStats.in_progress / totalFeedbacks) * 100) : 0}% tổng số
+            <p className="text-xs font-semibold text-indigo-800 mb-2 uppercase tracking-wide">Đang xử lý</p>
+            <p className="text-2xl font-bold text-indigo-600">{statusStats.in_progress}</p>
+            <p className="text-[11px] text-indigo-700 mt-1">
+              {totalFeedbacks > 0 ? Math.round((statusStats.in_progress / totalFeedbacks) * 100) : 0}%
             </p>
           </div>
 
           {/* Resolved */}
           <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
-            <p className="text-sm font-semibold text-emerald-800 mb-2">Đã giải quyết</p>
-            <p className="text-3xl font-bold text-emerald-600">{statusStats.resolved}</p>
-            <p className="text-xs text-emerald-700 mt-2">
-              {totalFeedbacks > 0 ? Math.round((statusStats.resolved / totalFeedbacks) * 100) : 0}% tổng số
+            <p className="text-xs font-semibold text-emerald-800 mb-2 uppercase tracking-wide">Đã giải quyết</p>
+            <p className="text-2xl font-bold text-emerald-600">{statusStats.resolved}</p>
+            <p className="text-[11px] text-emerald-700 mt-1">
+              {totalFeedbacks > 0 ? Math.round((statusStats.resolved / totalFeedbacks) * 100) : 0}%
             </p>
           </div>
 
           {/* Average Rating */}
           <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
-            <p className="text-sm font-semibold text-amber-800 mb-2">Đánh giá TB</p>
-            <p className="text-3xl font-bold text-amber-600">{averageRating}</p>
-            <p className="text-xs text-amber-700 mt-2">Trên 5 sao</p>
+            <p className="text-xs font-semibold text-amber-800 mb-2 uppercase tracking-wide">Đánh giá TB</p>
+            <p className="text-2xl font-bold text-amber-600">{averageRating}</p>
+            <p className="text-[11px] text-amber-700 mt-1">Trên 5 sao</p>
           </div>
         </div>
       </div>
