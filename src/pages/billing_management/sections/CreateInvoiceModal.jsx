@@ -218,6 +218,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setRentPerPerson(parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-50 outline-none text-sm"
                 />
+                <p className="text-xs text-slate-500 mt-0.5">{Math.round(rentPerPerson).toLocaleString('vi-VN')} VNĐ</p>
               </div>
 
               <div>
@@ -232,6 +233,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setElectricRate(parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-50 outline-none text-sm"
                 />
+                <p className="text-xs text-slate-500 mt-0.5">{Math.round(electricRate).toLocaleString('vi-VN')} VNĐ</p>
               </div>
 
               <div>
@@ -246,6 +248,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setWaterRate(parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-50 outline-none text-sm"
                 />
+                <p className="text-xs text-slate-500 mt-0.5">{Math.round(waterRate).toLocaleString('vi-VN')} VNĐ</p>
               </div>
 
               <div>
@@ -260,6 +263,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setGarbageFee(parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-50 outline-none text-sm"
                 />
+                <p className="text-xs text-slate-500 mt-0.5">{Math.round(garbageFee).toLocaleString('vi-VN')} VNĐ</p>
               </div>
 
               <div>
@@ -274,6 +278,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setInternetFee(parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-50 outline-none text-sm"
                 />
+                <p className="text-xs text-slate-500 mt-0.5">{Math.round(internetFee).toLocaleString('vi-VN')} VNĐ</p>
               </div>
 
               <div>
@@ -288,6 +293,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={(e) => setParkingFeePerVehicle(parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-50 outline-none text-sm"
                 />
+                <p className="text-xs text-slate-500 mt-0.5">{Math.round(parkingFeePerVehicle).toLocaleString('vi-VN')} VNĐ</p>
               </div>
             </div>
           </div>
@@ -298,32 +304,32 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
               <h4 className="text-sm font-bold text-slate-700 mb-3">Dự tính chi phí</h4>
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Tiền phòng ({selectedRoom.currentOccupancy} người × {rentPerPerson.toLocaleString('vi-VN')}đ)</span>
-                  <span className="font-semibold text-slate-900">{rentAmount.toLocaleString('vi-VN')}đ</span>
+                  <span className="text-slate-600">Tiền phòng ({selectedRoom.currentOccupancy} người × {Math.round(rentPerPerson).toLocaleString('vi-VN')}đ)</span>
+                  <span className="font-semibold text-slate-900">{Math.round(rentAmount).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Tiền điện ({electricEnd} kWh × {electricRate.toLocaleString('vi-VN')}đ)</span>
-                  <span className="font-semibold text-slate-900">{electricAmount.toLocaleString('vi-VN')}đ</span>
+                  <span className="text-slate-600">Tiền điện ({electricEnd} kWh × {Math.round(electricRate).toLocaleString('vi-VN')}đ)</span>
+                  <span className="font-semibold text-slate-900">{Math.round(electricAmount).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Tiền nước ({waterEnd} m³ × {waterRate.toLocaleString('vi-VN')}đ)</span>
-                  <span className="font-semibold text-slate-900">{waterAmount.toLocaleString('vi-VN')}đ</span>
+                  <span className="text-slate-600">Tiền nước ({waterEnd} m³ × {Math.round(waterRate).toLocaleString('vi-VN')}đ)</span>
+                  <span className="font-semibold text-slate-900">{Math.round(waterAmount).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Phí rác</span>
-                  <span className="font-semibold text-slate-900">{garbageFee.toLocaleString('vi-VN')}đ</span>
+                  <span className="font-semibold text-slate-900">{Math.round(garbageFee).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-600">Phí mạng</span>
-                  <span className="font-semibold text-slate-900">{internetFee.toLocaleString('vi-VN')}đ</span>
+                  <span className="font-semibold text-slate-900">{Math.round(internetFee).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Phí xe ({selectedRoom.currentOccupancy} người × {parkingFeePerVehicle.toLocaleString('vi-VN')}đ)</span>
-                  <span className="font-semibold text-slate-900">{(selectedRoom.currentOccupancy * parkingFeePerVehicle).toLocaleString('vi-VN')}đ</span>
+                  <span className="text-slate-600">Phí xe ({selectedRoom.currentOccupancy} người × {Math.round(parkingFeePerVehicle).toLocaleString('vi-VN')}đ)</span>
+                  <span className="font-semibold text-slate-900">{Math.round(selectedRoom.currentOccupancy * parkingFeePerVehicle).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="border-t border-blue-300 pt-2 mt-2 flex justify-between">
                   <span className="font-bold text-slate-900">Tổng cộng</span>
-                  <span className="font-bold text-blue-700 text-base">{totalAmount.toLocaleString('vi-VN')}đ</span>
+                  <span className="font-bold text-blue-700 text-base">{Math.round(totalAmount).toLocaleString('vi-VN')}đ</span>
                 </div>
               </div>
             </div>

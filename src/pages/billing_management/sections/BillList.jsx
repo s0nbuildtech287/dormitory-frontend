@@ -309,7 +309,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter 
                         Tháng {month}/{year}
                       </td>
                       <td className="px-6 py-2 font-bold text-blue-700 text-xs border-r-2 border-slate-300 text-center">
-                        {(bill.total_amount || 0).toLocaleString('vi-VN')}đ
+                        {Math.round(bill.total_amount || 0).toLocaleString('vi-VN')}đ
                       </td>
                       <td className="px-6 py-2 text-slate-500 font-semibold text-xs border-r-2 border-slate-300 text-center">
                         {dueDate ? dueDate.toLocaleDateString('vi-VN') : '—'}
