@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight } from "lucide-react";
+import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info } from "lucide-react";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
@@ -21,6 +21,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [maintenanceReasonModal, setMaintenanceReasonModal] = useState(null); // { room, reason }
 
   const handleShowInvoice = async (room) => {
     try {
@@ -114,7 +115,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const matchesSearch = r.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || r.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesStatus = true;
-    if (filterStatus === "Full") matchesStatus = r.currentOccupancy >= r.capacity;
+    if (filterStatus === "Maintenance") matchesStatus = r.status === "Maintenance";
+    else if (filterStatus === "Full") matchesStatus = r.currentOccupancy >= r.capacity;
     else if (filterStatus === "Occupied") matchesStatus = r.currentOccupancy > 0 && r.currentOccupancy < r.capacity;
     else if (filterStatus === "Empty") matchesStatus = r.currentOccupancy === 0;
 
@@ -188,6 +190,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             <option value="Empty">Trống</option>
             <option value="Occupied">Đang ở</option>
             <option value="Full">Đã đầy</option>
+            <option value="Maintenance">Bảo trì</option>
           </select>
 
           <button
@@ -281,16 +284,30 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
                       {/* Room Status */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <span
-                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${(room.currentOccupancy || 0) >= room.capacity
-                              ? "bg-rose-100 text-rose-700"
-                              : (room.currentOccupancy || 0) > 0
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-emerald-100 text-emerald-700"
-                            }`}
-                        >
-                          {(room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
-                        </span>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span
+                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
+                              room.status === "Maintenance"
+                                ? "bg-orange-100 text-orange-700"
+                                : (room.currentOccupancy || 0) >= room.capacity
+                                ? "bg-rose-100 text-rose-700"
+                                : (room.currentOccupancy || 0) > 0
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-emerald-100 text-emerald-700"
+                              }`}
+                          >
+                            {room.status === "Maintenance" ? "Bảo trì" : (room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
+                          </span>
+                          {room.status === "Maintenance" && room.maintenance_reason && (
+                            <button
+                              onClick={() => setMaintenanceReasonModal({ room, reason: room.maintenance_reason })}
+                              className="p-1 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                              title="Xem lý do bảo trì"
+                            >
+                              <Info size={14} />
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       {/* Actions */}
@@ -525,6 +542,50 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
           onNavigateToInvoice(invoiceNumber);
         } : null}
       />
+
+      {/* Maintenance Reason Modal */}
+      {maintenanceReasonModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-slate-900">Lý do bảo trì</h3>
+              <button 
+                onClick={() => setMaintenanceReasonModal(null)} 
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle size={18} className="text-orange-600" />
+                  <span className="text-sm font-bold text-orange-900">Phòng đang bảo trì</span>
+                </div>
+                <div className="text-xs text-orange-700 space-y-1">
+                  <p><strong>Phòng:</strong> {maintenanceReasonModal.room.room_number}</p>
+                  <p><strong>Tòa:</strong> {maintenanceReasonModal.room.building} - Tầng {maintenanceReasonModal.room.floor}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Lý do:</label>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-800">
+                  {maintenanceReasonModal.reason || "Không có lý do cụ thể"}
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setMaintenanceReasonModal(null)} 
+              className="w-full mt-6 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
