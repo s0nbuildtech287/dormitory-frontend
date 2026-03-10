@@ -1,86 +1,75 @@
 import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import { UserRole } from "./utils/types.js";
-import { getComponentByRouteId } from "./router/index.js";
+import { ADMIN_ROUTES, STUDENT_ROUTES } from "./router/index.js";
 import { getCurrentUser } from "./api/apiAuth.js";
 
 const App = () => {
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoading, setIsLoading] = useState(true);
   const [contractFilter, setContractFilter] = useState(null);
   const [invoiceFilter, setInvoiceFilter] = useState(null);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Current active tab derived from URL path
+  const currentPath = location.pathname.replace("/", "") || "dashboard";
 
   /**
    * Handle navigation to contract page with filter
    */
   const handleNavigateToContract = (contractNumber) => {
     setContractFilter({ searchTerm: contractNumber });
-    setActiveTab("students");
+    navigate("/students");
   };
 
   /**
-   * Handle navigation to billing page with invoice filter
+   * Handle navigation to billing page with filter
    */
   const handleNavigateToInvoice = (invoiceNumber) => {
     setInvoiceFilter({ searchTerm: invoiceNumber });
-    setActiveTab("billing");
+    navigate("/billing");
   };
 
-  /**
-   * Reset filters when changing tabs
-   */
+  /** Reset filters when leaving their pages */
   useEffect(() => {
-    if (activeTab !== "students") {
-      setContractFilter(null);
-    }
-    if (activeTab !== "billing") {
-      setInvoiceFilter(null);
-    }
-  }, [activeTab]);
+    if (currentPath !== "students") setContractFilter(null);
+    if (currentPath !== "billing") setInvoiceFilter(null);
+  }, [currentPath]);
 
-  /**
-   * Check for existing session on app mount
-   */
+  /** Check for existing session on app mount */
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       const savedUser = getCurrentUser();
       if (savedUser) {
         setUser(savedUser);
-        const initialTab = savedUser.role === UserRole.ADMIN ? "dashboard" : "profile";
-        setActiveTab(initialTab);
       }
     }
     setIsLoading(false);
   }, []);
 
-  /**
-   * Handle user logout
-   */
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
+    navigate("/");
   };
 
-  /**
-   * Handle login and set initial active tab
-   */
   const handleLogin = (userData) => {
     setUser(userData);
-    const initialTab = userData.role === UserRole.ADMIN ? "dashboard" : "profile";
-    setActiveTab(initialTab);
+    const initialPath = userData.role === UserRole.ADMIN ? "/dashboard" : "/profile";
+    navigate(initialPath);
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin">
-          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full"></div>
-        </div>
+        <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
@@ -89,35 +78,40 @@ const App = () => {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  const renderContent = () => {
-    const Component = getComponentByRouteId(activeTab, user.role);
-    if (!Component) {
-      const defaultTab = user.role === UserRole.ADMIN ? "dashboard" : "profile";
-      const DefaultComponent = getComponentByRouteId(defaultTab, user.role);
-      return DefaultComponent ? <DefaultComponent user={user} tab={activeTab} /> : <div className="text-center py-10">Trang không tìm thấy</div>;
-    }
-    
-    // Pass special props based on tab
-    const props = { user, tab: activeTab };
-    if (activeTab === "students") {
-      props.initialFilter = contractFilter;
-    }
-    if (activeTab === "rooms") {
+  const routes = user.role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
+  const defaultPath = user.role === UserRole.ADMIN ? "/dashboard" : "/profile";
+
+  const getProps = (routeId) => {
+    const props = { user, tab: routeId };
+    if (routeId === "students") props.initialFilter = contractFilter;
+    if (routeId === "rooms") {
       props.onNavigateToContract = handleNavigateToContract;
       props.onNavigateToInvoice = handleNavigateToInvoice;
     }
-    if (activeTab === "billing") {
+    if (routeId === "billing") {
       props.onNavigateToContract = handleNavigateToContract;
       props.initialInvoiceFilter = invoiceFilter;
     }
-    
-    return <Component {...props} />;
+    return props;
   };
 
   return (
     <>
-      <Layout user={user} onLogout={handleLogout} activeTab={activeTab} setActiveTab={setActiveTab}>
-        <div className="animate-in fade-in duration-500">{renderContent()}</div>
+      <Layout user={user} onLogout={handleLogout}>
+        <div className="animate-in fade-in duration-500">
+          <Routes>
+            {routes.map((route) => (
+              <Route
+                key={route.id}
+                path={route.path}
+                element={<route.component {...getProps(route.id)} />}
+              />
+            ))}
+            {/* Default redirect */}
+            <Route path="/" element={<Navigate to={defaultPath} replace />} />
+            <Route path="*" element={<Navigate to={defaultPath} replace />} />
+          </Routes>
+        </div>
       </Layout>
       <AIChatBot />
     </>
