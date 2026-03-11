@@ -9,7 +9,14 @@ const ContractManagement = ({ initialFilter }) => {
   const [contracts, setContracts] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState("list");
+  const [activeSubTab, setActiveSubTab] = useState(() => {
+    const targetTab = localStorage.getItem('targetTab');
+    if (targetTab === 'stats') {
+      localStorage.removeItem('targetTab');
+      return 'stats';
+    }
+    return 'list';
+  });
   const [selectedContractId, setSelectedContractId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);

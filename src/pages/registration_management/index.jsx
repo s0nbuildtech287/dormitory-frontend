@@ -40,7 +40,14 @@ import RegistrationSettings from "./sections/RegistrationSettings.jsx";
 
 const RegistrationManagement = () => {
   const [regs, setRegs] = useState([]);
-  const [activeSubTab, setActiveSubTab] = useState("list");
+  const [activeSubTab, setActiveSubTab] = useState(() => {
+    const targetTab = localStorage.getItem('targetTab');
+    if (targetTab === 'stats') {
+      localStorage.removeItem('targetTab');
+      return 'stats';
+    }
+    return 'list';
+  });
   const [selectedReg, setSelectedReg] = useState(null);
   const [note, setNote] = useState("");
   const [isConfirming, setIsConfirming] = useState(null);

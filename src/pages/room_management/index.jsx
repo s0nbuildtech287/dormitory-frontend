@@ -8,7 +8,14 @@ import RoomSettings from "./sections/RoomSettings.jsx";
 const RoomManagement = ({ onNavigateToContract, onNavigateToInvoice }) => {
   const [rooms, setRooms] = useState([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(true);
-  const [activeSubTab, setActiveSubTab] = useState("list");
+  const [activeSubTab, setActiveSubTab] = useState(() => {
+    const targetTab = localStorage.getItem('targetTab');
+    if (targetTab === 'stats') {
+      localStorage.removeItem('targetTab');
+      return 'analytics';
+    }
+    return 'list';
+  });
   const [selectedRoom, setSelectedRoom] = useState(null);
 
   // Fetch rooms data
