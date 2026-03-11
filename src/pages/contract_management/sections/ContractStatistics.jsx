@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Clock, Calendar, X, Send } from "lucide-react";
+import { getContractStats } from "../../../api/apiContract.js";
 
 // Tông màu xanh từ đậm đến nhạt
 const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
@@ -19,6 +20,27 @@ const ContractStatistics = ({ contracts = [] }) => {
   const [expandedCard, setExpandedCard] = useState(null); // 'expiring15', 'expiring30', 'expired15', 'expired30'
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  // Fetch stats from API
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoadingStats(true);
+      try {
+        const statsRes = await getContractStats();
+        if (statsRes.success) {
+          setStats(statsRes.data);
+        }
+      } catch (err) {
+        console.error("Error fetching contract stats:", err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchStats();
+  }, [contracts]);
 
   const analysisData = useMemo(() => {
     const safe = Array.isArray(contracts) ? contracts : [];
@@ -266,6 +288,32 @@ const ContractStatistics = ({ contracts = [] }) => {
 
   return (
     <div className="animate-in fade-in duration-500 space-y-6">
+      {/* Status Cards - 4 cards hiển thị trạng thái */}
+      {loadingStats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm animate-pulse">
+              <div className="h-3 bg-slate-200 rounded w-24 mb-3"></div>
+              <div className="h-8 bg-slate-200 rounded w-16"></div>
+            </div>
+          ))}
+        </div>
+      ) : stats ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Chờ gán phòng", value: stats.pending_count ?? 0, color: "amber" },
+            { label: "Đang nội trú", value: stats.active_count ?? 0, color: "emerald" },
+            { label: "Hết hạn", value: stats.expired_count ?? 0, color: "slate" },
+            { label: "Đã chấm dứt", value: stats.terminated_count ?? 0, color: "rose" },
+          ].map((s) => (
+            <div key={s.label} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
+              <p className={`text-3xl font-black text-${s.color}-600`}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <div className={`grid gap-6 ${expandedCard ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
         {/* Cảnh báo hợp đồng sắp hết hạn */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
