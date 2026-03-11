@@ -4,14 +4,7 @@ import FeedbackList from "./sections/FeedbackList.jsx";
 import FeedbackStatistics from "./sections/FeedbackStatistics.jsx";
 
 const FeedbackManagement = () => {
-  const [activeSubTab, setActiveSubTab] = useState(() => {
-    const targetTab = localStorage.getItem('targetTab');
-    if (targetTab === 'stats') {
-      localStorage.removeItem('targetTab');
-      return 'statistics';
-    }
-    return 'list';
-  });
+  const [activeSubTab, setActiveSubTab] = useState("list");
   const [feedbacks, setFeedbacks] = useState([]);
 
   return (

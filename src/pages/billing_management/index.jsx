@@ -6,14 +6,7 @@ import PricingSettings from "./sections/PricingSettings.jsx";
 
 const BillingManagement = ({ onNavigateToContract, initialInvoiceFilter }) => {
   const [bills, setBills] = useState([]);
-  const [activeSubTab, setActiveSubTab] = useState(() => {
-    const targetTab = localStorage.getItem('targetTab');
-    if (targetTab === 'stats') {
-      localStorage.removeItem('targetTab');
-      return 'statistics';
-    }
-    return 'list';
-  });
+  const [activeSubTab, setActiveSubTab] = useState("list");
 
   return (
     <div className="space-y-6">

@@ -2,22 +2,27 @@
 
 ## Cấu trúc
 
-Trang Dashboard có các tab con:
+Trang Dashboard có các tab con hiển thị trực tiếp các trang thống kê:
 
-1. **Trang chủ** - Hiển thị tổng quan hệ thống
-2. **Thống kê & Phân tích** - Chuyển đến trang Hồ sơ đăng ký (tab thống kê)
-3. **Thống kê mật độ** - Chuyển đến trang Quản lý phòng (tab analytics)
-4. **Thống kê hợp đồng** - Chuyển đến trang Hợp đồng sinh viên (tab stats)
-5. **Thống kê hóa đơn** - Chuyển đến trang Hóa đơn (tab statistics)
-6. **Thống kê phản ánh** - Chuyển đến trang Phản ánh (tab statistics)
+1. **Trang chủ** - Hiển thị tổng quan hệ thống với các card và cảnh báo
+2. **Thống kê & Phân tích** - Hiển thị component RegistrationStatistics
+3. **Thống kê mật độ** - Hiển thị component RoomAnalytics
+4. **Thống kê hợp đồng** - Hiển thị component ContractStatistics
+5. **Thống kê hóa đơn** - Hiển thị component InvoiceStatistics
+6. **Thống kê phản ánh** - Hiển thị component FeedbackStatistics
 
 ## Cách hoạt động
 
-Khi người dùng click vào các tab thống kê (2-6), hệ thống sẽ:
-1. Lưu `targetTab: 'stats'` vào localStorage
-2. Navigate đến trang tương ứng
-3. Trang đích sẽ đọc localStorage và tự động chuyển sang tab thống kê
-4. Xóa flag trong localStorage sau khi đã sử dụng
+- Tất cả các trang thống kê được hiển thị trực tiếp trong Dashboard
+- Khi chuyển tab, component tương ứng sẽ fetch data từ API
+- Có loading spinner khi đang fetch data
+- User có thể xem thống kê ngay tại Dashboard hoặc vào từng trang riêng
+
+## Ưu điểm
+
+- Tiện lợi: Xem tất cả thống kê tại một nơi
+- Linh hoạt: Vẫn có thể vào từng trang riêng để xem chi tiết và thao tác
+- Hiệu quả: Chỉ fetch data khi cần (lazy loading)
 
 ## Trang chủ Dashboard
 
@@ -29,7 +34,8 @@ Hiển thị:
 
 ## TODO
 
-- [ ] Kết nối API thực tế thay vì mock data
+- [ ] Kết nối API thực tế cho DashboardHome (hiện đang dùng mock data)
+- [ ] Tạo API getFeedbacks cho feedback statistics
 - [ ] Thêm real-time updates
-- [ ] Thêm charts/graphs cho metrics
-- [ ] Thêm export reports
+- [ ] Thêm refresh button cho từng tab thống kê
+- [ ] Cache data để tránh fetch lại khi switch tabs
