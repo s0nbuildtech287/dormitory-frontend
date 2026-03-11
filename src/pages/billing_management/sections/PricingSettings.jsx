@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DollarSign, Zap, Droplet, Trash2, Wifi, Car, Save, RotateCcw, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { DollarSign, Zap, Droplet, Trash2, Wifi, Car, Save, RotateCcw, CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { getPricingSettings, updatePricingSettings } from "../../../api/apiSettings";
 
 // ─── Section accordion wrapper ────────────────────────────────────────────────
@@ -18,7 +18,7 @@ const Section = ({ id, expanded, onToggle, icon: Icon, iconBg, iconColor, title,
           <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
         </div>
       </div>
-      <span className="text-slate-400">{expanded ? "▲" : "▼"}</span>
+      {expanded ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
     </button>
     {expanded && (
       <div className="px-8 pb-8 border-t border-slate-100">
@@ -259,7 +259,10 @@ const PricingSettings = () => {
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ</span>
               </div>
               <p className="text-xs text-slate-500">
-                Ví dụ: Phòng 3 người = {(pricing.rentPerPerson * 3).toLocaleString('vi-VN')}đ/tháng
+                = {Math.round(pricing.rentPerPerson).toLocaleString('vi-VN')} VNĐ
+              </p>
+              <p className="text-xs text-slate-500">
+                Ví dụ: Phòng 3 người = {Math.round(pricing.rentPerPerson * 3).toLocaleString('vi-VN')}đ/tháng
               </p>
             </div>
           </div>
@@ -309,6 +312,7 @@ const PricingSettings = () => {
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ/kWh</span>
               </div>
+              <p className="text-xs text-slate-500">= {Math.round(pricing.electricRate).toLocaleString('vi-VN')} VNĐ/kWh</p>
             </div>
 
             <div className="space-y-2">
@@ -351,6 +355,7 @@ const PricingSettings = () => {
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ/m³</span>
               </div>
+              <p className="text-xs text-slate-500">= {Math.round(pricing.waterRate).toLocaleString('vi-VN')} VNĐ/m³</p>
             </div>
 
             <div className="space-y-2">
@@ -415,6 +420,7 @@ const PricingSettings = () => {
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ</span>
             </div>
+            <p className="text-xs text-slate-500">= {Math.round(pricing.garbageFee).toLocaleString('vi-VN')} VNĐ</p>
             <p className="text-xs text-slate-500">Tính theo phòng, không phụ thuộc số người</p>
           </div>
 
@@ -435,6 +441,7 @@ const PricingSettings = () => {
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ</span>
             </div>
+            <p className="text-xs text-slate-500">= {Math.round(pricing.internetFee).toLocaleString('vi-VN')} VNĐ</p>
             <p className="text-xs text-slate-500">Tính theo phòng, không phụ thuộc số người</p>
           </div>
 
@@ -455,6 +462,7 @@ const PricingSettings = () => {
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">VNĐ</span>
             </div>
+            <p className="text-xs text-slate-500">= {Math.round(pricing.parkingFeePerVehicle).toLocaleString('vi-VN')} VNĐ</p>
             <p className="text-xs text-slate-500">Tính theo số người trong phòng</p>
           </div>
         </div>

@@ -36,7 +36,7 @@ const Section = ({ id, expanded, onToggle, icon: Icon, iconBg, iconColor, title,
 
 // ─── Status badge helper ───────────────────────────────────────────────────────
 const StatusBadge = ({ room }) => {
-  if (room.status === "maintenance") return <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black uppercase">Bảo trì</span>;
+  if (room.status === "Maintenance") return <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black uppercase">Bảo trì</span>;
   if ((room.currentOccupancy || 0) >= room.capacity) return <span className="px-2 py-1 bg-rose-100 text-rose-700 rounded-lg text-[10px] font-black uppercase">Đã đầy</span>;
   if ((room.currentOccupancy || 0) > 0) return <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black uppercase">Đang ở</span>;
   return <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase">Trống</span>;
@@ -44,7 +44,7 @@ const StatusBadge = ({ room }) => {
 
 // ═══════════════════════════════════════════════════════════════════════════════
 const RoomSettings = ({ rooms = [], onRefresh }) => {
-  const [expandedSection, setExpandedSection] = useState("maintenance");
+  const [expandedSection, setExpandedSection] = useState("buildings");
   const [saveStatus, setSaveStatus] = useState(null); // null | "saving" | "success" | "error"
 
   // ── Section 1: Tổng quan Tòa (read-only + editable display names) ─────────
@@ -67,6 +67,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
   const [maintSearch, setMaintSearch] = useState("");
   const [maintBuilding, setMaintBuilding] = useState("All");
   const [maintChanges, setMaintChanges] = useState({}); // roomId → true/false
+  const [maintReasons, setMaintReasons] = useState({}); // roomId → reason text
   const [isSavingMaint, setIsSavingMaint] = useState(false);
   const [maintStatus, setMaintStatus] = useState(null);
 
@@ -83,7 +84,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
 
   const isMaintenance = (room) => {
     if (maintChanges[room.id] !== undefined) return maintChanges[room.id];
-    return room.status === "maintenance";
+    return room.status === "Maintenance";
   };
 
   const toggleMaintenance = (room) => {
@@ -96,8 +97,15 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
     setIsSavingMaint(true);
     setMaintStatus("saving");
     try {
-      await Promise.all(Object.entries(maintChanges).map(([id, isMaint]) => updateRoom(id, { status: isMaint ? "maintenance" : "available" })));
+      await Promise.all(Object.entries(maintChanges).map(([id, isMaint]) => {
+        const updateData = { 
+          status: isMaint ? "Maintenance" : "Active",
+          maintenance_reason: isMaint ? (maintReasons[id] || null) : null
+        };
+        return updateRoom(id, updateData);
+      }));
       setMaintChanges({});
+      setMaintReasons({});
       setMaintStatus("success");
       if (onRefresh) await onRefresh();
       setTimeout(() => setMaintStatus(null), 4000);
@@ -303,22 +311,43 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
             {maintRooms.map((room) => {
               const maint = isMaintenance(room);
               const changed = maintChanges[room.id] !== undefined;
+              // Load existing maintenance reason from room data
+              const currentReason = maintReasons[room.id] !== undefined ? maintReasons[room.id] : (room.maintenance_reason || "");
+              
               return (
-                <div key={room.id} className={`flex items-center justify-between px-6 py-3.5 hover:bg-slate-50/50 transition-colors ${changed ? "bg-amber-50/40" : ""}`}>
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <p className="font-bold text-slate-900 text-sm">{room.room_number || room.name}</p>
-                      <p className="text-xs text-slate-500">
-                        Tòa {room.building} — Tầng {room.floor} — Sức chứa {room.capacity}
-                      </p>
+                <div key={room.id} className={`px-6 py-3.5 hover:bg-slate-50/50 transition-colors ${changed ? "bg-amber-50/40" : ""}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className="font-bold text-slate-900 text-sm">{room.room_number || room.name}</p>
+                        <p className="text-xs text-slate-500">
+                          Tòa {room.building} — Tầng {room.floor} — Sức chứa {room.capacity}
+                        </p>
+                      </div>
+                      <StatusBadge room={{ ...room, status: maint ? "Maintenance" : room.status }} />
+                      {changed && <span className="text-[10px] text-amber-600 font-bold bg-amber-100 px-1.5 py-0.5 rounded">Chưa lưu</span>}
                     </div>
-                    <StatusBadge room={{ ...room, status: maint ? "maintenance" : room.status }} />
-                    {changed && <span className="text-[10px] text-amber-600 font-bold bg-amber-100 px-1.5 py-0.5 rounded">Chưa lưu</span>}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-500 font-semibold">{maint ? "Đang bảo trì" : "Hoạt động"}</span>
+                      <Toggle checked={maint} onChange={() => toggleMaintenance(room)} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-500 font-semibold">{maint ? "Đang bảo trì" : "Hoạt động"}</span>
-                    <Toggle checked={maint} onChange={() => toggleMaintenance(room)} />
-                  </div>
+                  
+                  {/* Maintenance reason input - show when maintenance is enabled */}
+                  {maint && (
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Lý do bảo trì
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ví dụ: Sửa điều hòa, thay ống nước..."
+                        value={currentReason}
+                        onChange={(e) => setMaintReasons(prev => ({ ...prev, [room.id]: e.target.value }))}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-amber-50 outline-none bg-white"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}

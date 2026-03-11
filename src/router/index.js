@@ -7,6 +7,7 @@ import ContractManagement from "../pages/contract_management/index.jsx";
 import BillingManagement from "../pages/billing_management/index.jsx";
 import NotificationManagement from "../pages/notification_management/index.jsx";
 import FeedbackManagement from "../pages/feedback_management/index.jsx";
+import ProfileAdmin from "../pages/profile_admin/index.jsx";
 import { UserRole } from "../utils/types.js";
 
 // Admin Routes

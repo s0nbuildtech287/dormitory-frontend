@@ -85,12 +85,12 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
               <div>
                 <span className="text-sm font-semibold text-slate-700">Tiền phòng</span>
                 <p className="text-xs text-slate-500">
-                  {(invoice.rent_per_person || 500000).toLocaleString()} đ/người × {invoice.occupancy}
+                  {Math.round(invoice.rent_per_person || 500000).toLocaleString('vi-VN')} đ/người × {invoice.occupancy}
                 </p>
               </div>
             </div>
             <span className="text-sm font-bold text-slate-900">
-              {(invoice.rent_amount || 0).toLocaleString()} đ
+              {Math.round(invoice.rent_amount || 0).toLocaleString('vi-VN')} đ
             </span>
           </div>
 
@@ -102,12 +102,12 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                 <span className="text-sm font-semibold text-slate-700">Tiền điện</span>
                 <p className="text-xs text-slate-500">
                   {invoice.electric_start} → {invoice.electric_end} kWh 
-                  ({invoice.electric_end - invoice.electric_start} kWh × {(invoice.electric_rate || 3500).toLocaleString()} đ)
+                  ({invoice.electric_end - invoice.electric_start} kWh × {Math.round(invoice.electric_rate || 3500).toLocaleString('vi-VN')} đ)
                 </p>
               </div>
             </div>
             <span className="text-sm font-bold text-slate-900">
-              {(invoice.electric_amount || 0).toLocaleString()} đ
+              {Math.round(invoice.electric_amount || 0).toLocaleString('vi-VN')} đ
             </span>
           </div>
 
@@ -119,12 +119,12 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                 <span className="text-sm font-semibold text-slate-700">Tiền nước</span>
                 <p className="text-xs text-slate-500">
                   {invoice.water_start} → {invoice.water_end} m³
-                  ({invoice.water_end - invoice.water_start} m³ × {(invoice.water_rate || 15000).toLocaleString()} đ)
+                  ({invoice.water_end - invoice.water_start} m³ × {Math.round(invoice.water_rate || 15000).toLocaleString('vi-VN')} đ)
                 </p>
               </div>
             </div>
             <span className="text-sm font-bold text-slate-900">
-              {(invoice.water_amount || 0).toLocaleString()} đ
+              {Math.round(invoice.water_amount || 0).toLocaleString('vi-VN')} đ
             </span>
           </div>
 
@@ -133,7 +133,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-semibold text-slate-700">Phí dịch vụ</span>
               <span className="text-sm font-bold text-slate-900">
-                {(invoice.service_fees || 0).toLocaleString()} đ
+                {Math.round(invoice.service_fees || 0).toLocaleString('vi-VN')} đ
               </span>
             </div>
             <div className="space-y-1.5 pl-4 border-l-2 border-slate-200">
@@ -143,7 +143,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                   <span>Rác</span>
                 </div>
                 <span className="font-semibold text-slate-700">
-                  {(invoice.garbage_fee || 70000).toLocaleString()} đ
+                  {Math.round(invoice.garbage_fee || 70000).toLocaleString('vi-VN')} đ
                 </span>
               </div>
               <div className="flex justify-between items-center text-xs">
@@ -152,7 +152,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                   <span>Internet</span>
                 </div>
                 <span className="font-semibold text-slate-700">
-                  {(invoice.internet_fee || 300000).toLocaleString()} đ
+                  {Math.round(invoice.internet_fee || 300000).toLocaleString('vi-VN')} đ
                 </span>
               </div>
               <div className="flex justify-between items-center text-xs">
@@ -161,7 +161,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                   <span>Gửi xe ({invoice.parking_count || 0} xe)</span>
                 </div>
                 <span className="font-semibold text-slate-700">
-                  {(invoice.parking_fee || 0).toLocaleString()} đ
+                  {Math.round(invoice.parking_fee || 0).toLocaleString('vi-VN')} đ
                 </span>
               </div>
             </div>
@@ -174,7 +174,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                 <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-100">
                   <span className="text-sm font-semibold text-green-700">Giảm giá</span>
                   <span className="text-sm font-bold text-green-700">
-                    -{(invoice.discount_amount || 0).toLocaleString()} đ
+                    -{Math.round(invoice.discount_amount || 0).toLocaleString('vi-VN')} đ
                   </span>
                 </div>
               )}
@@ -182,7 +182,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
                 <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-100">
                   <span className="text-sm font-semibold text-red-700">Phí phạt</span>
                   <span className="text-sm font-bold text-red-700">
-                    +{(invoice.penalty_amount || 0).toLocaleString()} đ
+                    +{Math.round(invoice.penalty_amount || 0).toLocaleString('vi-VN')} đ
                   </span>
                 </div>
               )}
@@ -195,7 +195,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice }) => {
           <div className="flex justify-between items-center p-4 bg-blue-600 rounded-xl">
             <span className="text-base font-bold text-white">Tổng cộng</span>
             <span className="text-2xl font-black text-white">
-              {(invoice.total_amount || 0).toLocaleString()} đ
+              {Math.round(invoice.total_amount || 0).toLocaleString('vi-VN')} đ
             </span>
           </div>
         </div>

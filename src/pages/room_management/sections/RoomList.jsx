@@ -1,5 +1,5 @@
 ﻿import { useState } from "react";
-import { Plus, Search, Eye, Users, FileText, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight } from "lucide-react";
+import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info } from "lucide-react";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
@@ -21,13 +21,18 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [maintenanceReasonModal, setMaintenanceReasonModal] = useState(null); // { room, reason }
+  const [chartRoom, setChartRoom] = useState(null);       // room được chọn xem biểu đồ
+  const [chartData, setChartData] = useState([]);         // mảng { month, total_amount, ... }
+  const [chartLoading, setChartLoading] = useState(false);
+  const [hoveredBar, setHoveredBar] = useState(null);
 
   const handleShowInvoice = async (room) => {
     try {
       setLoadingInvoice(true);
       // Fetch latest invoice for this room
       const response = await getInvoices({ search: room.room_number, limit: 1 });
-      
+
       if (response.success && response.data && response.data.length > 0) {
         // Found real invoice
         setSelectedRoomInvoice(response.data[0]);
@@ -40,13 +45,13 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
         const garbageFee = Number(room.garbage_fee) || 70000;
         const internetFee = Number(room.internet_fee) || 300000;
         const parkingFee = Number(room.parking_fee) || 0;
-        
+
         const rentAmount = rentPrice * occupancy;
         const electricAmount = electricReading * 3500;
         const waterAmount = waterReading * 15000;
         const serviceFees = garbageFee + internetFee + parkingFee;
         const totalAmount = rentAmount + electricAmount + waterAmount + serviceFees;
-        
+
         setSelectedRoomInvoice({
           invoice_number: null, // No real invoice number
           room_number: room.room_number,
@@ -100,7 +105,50 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     }
   };
 
-  // Pagination state
+  const handleShowChart = async (room) => {
+    setChartRoom(room);
+    setChartData([]);
+    setHoveredBar(null);
+    setChartLoading(true);
+    try {
+      // Lọc chính xác theo room_id (không dùng text search để tránh nhầm phòng)
+      // Backend trả về sorted theo billing_month ASC phù hợp cho chart
+      const response = await getInvoices({ room_id: room.id });
+      if (response.success && response.data) {
+        // Nhóm theo tháng (mỗi tháng 1 hóa đơn, nhưng phòng hợp lệ nếu sau này có nhiều)
+        const byMonth = {};
+        response.data.forEach((inv) => {
+          const d = new Date(inv.billing_month + (inv.billing_month.includes("T") ? "" : "T00:00:00"));
+          const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
+          if (!byMonth[key]) {
+            byMonth[key] = {
+              month: key,
+              total_amount: 0,
+              electric_amount: 0,
+              water_amount: 0,
+              rent_amount: 0,
+              service_fees: 0,
+              status: inv.status,
+            };
+          }
+          byMonth[key].total_amount += Number(inv.total_amount) || 0;
+          byMonth[key].electric_amount += Number(inv.electric_amount) || 0;
+          byMonth[key].water_amount += Number(inv.water_amount) || 0;
+          byMonth[key].rent_amount += Number(inv.rent_amount) || 0;
+          byMonth[key].service_fees += Number(inv.service_fees) || 0;
+          // Lấy status của hóa đơn mới nhất trong tháng (nếu nhiều)
+          byMonth[key].status = inv.status;
+        });
+        // Backend đã sort ASC, Object.values giữ thứ tự chèn → đúng thứ tự tháng
+        setChartData(Object.values(byMonth));
+      }
+    } catch (e) {
+      console.error("Error loading chart data:", e);
+    } finally {
+      setChartLoading(false);
+    }
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -114,7 +162,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const matchesSearch = r.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || r.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesStatus = true;
-    if (filterStatus === "Full") matchesStatus = r.currentOccupancy >= r.capacity;
+    if (filterStatus === "Maintenance") matchesStatus = r.status === "Maintenance";
+    else if (filterStatus === "Full") matchesStatus = r.currentOccupancy >= r.capacity;
     else if (filterStatus === "Occupied") matchesStatus = r.currentOccupancy > 0 && r.currentOccupancy < r.capacity;
     else if (filterStatus === "Empty") matchesStatus = r.currentOccupancy === 0;
 
@@ -188,6 +237,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             <option value="Empty">Trống</option>
             <option value="Occupied">Đang ở</option>
             <option value="Full">Đã đầy</option>
+            <option value="Maintenance">Bảo trì</option>
           </select>
 
           <button
@@ -264,14 +314,25 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
                       {/* Invoice */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <button
-                          onClick={() => handleShowInvoice(room)}
-                          disabled={loadingInvoice}
-                          className="inline-flex items-center justify-center p-1.5 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors disabled:opacity-50"
-                          title="Xem hóa đơn"
-                        >
-                          <FileText size={16} />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleShowInvoice(room)}
+                            disabled={loadingInvoice}
+                            className="inline-flex items-center justify-center p-1.5 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                            title="Xem hóa đơn mới nhất"
+                          >
+                            <FileText size={16} />
+                          </button>
+                          {onNavigateToInvoice && (
+                            <button
+                              onClick={() => handleShowChart(room)}
+                              className="inline-flex items-center justify-center p-1.5 text-teal-500 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-colors"
+                              title="Biểu đồ hóa đơn theo tháng"
+                            >
+                              <BarChart2 size={16} />
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       {/* Payment Status */}
@@ -281,16 +342,29 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
                       {/* Room Status */}
                       <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <span
-                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${(room.currentOccupancy || 0) >= room.capacity
-                              ? "bg-rose-100 text-rose-700"
-                              : (room.currentOccupancy || 0) > 0
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-emerald-100 text-emerald-700"
-                            }`}
-                        >
-                          {(room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
-                        </span>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span
+                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${room.status === "Maintenance"
+                              ? "bg-orange-100 text-orange-700"
+                              : (room.currentOccupancy || 0) >= room.capacity
+                                ? "bg-rose-100 text-rose-700"
+                                : (room.currentOccupancy || 0) > 0
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-emerald-100 text-emerald-700"
+                              }`}
+                          >
+                            {room.status === "Maintenance" ? "Bảo trì" : (room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
+                          </span>
+                          {room.status === "Maintenance" && room.maintenance_reason && (
+                            <button
+                              onClick={() => setMaintenanceReasonModal({ room, reason: room.maintenance_reason })}
+                              className="p-1 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                              title="Xem lý do bảo trì"
+                            >
+                              <Info size={14} />
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       {/* Actions */}
@@ -516,7 +590,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
       )}
 
       {/* Invoice Modal - Using InvoiceDetailModal */}
-      <InvoiceDetailModal 
+      <InvoiceDetailModal
         invoice={selectedRoomInvoice}
         onClose={() => setSelectedRoomInvoice(null)}
         onNavigateToInvoice={onNavigateToInvoice && selectedRoomInvoice?.invoice_number ? () => {
@@ -525,6 +599,206 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
           onNavigateToInvoice(invoiceNumber);
         } : null}
       />
+
+      {/* Chart Modal */}
+      {chartRoom && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-5">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Biểu đồ hóa đơn — Phòng {chartRoom.building}-{chartRoom.room_number}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">Tổng tiền theo từng tháng</p>
+              </div>
+              <button onClick={() => { setChartRoom(null); setChartData([]); }} className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors">
+                <X size={18} />
+              </button>
+            </div>
+
+            {chartLoading ? (
+              <div className="flex items-center justify-center h-48 text-slate-400">
+                <div className="w-8 h-8 border-4 border-slate-200 border-t-teal-500 rounded-full animate-spin" />
+              </div>
+            ) : chartData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+                <BarChart2 size={40} className="mb-2 opacity-30" />
+                <p className="text-sm">Chưa có dữ liệu hóa đơn</p>
+              </div>
+            ) : (() => {
+              const maxAmt = Math.max(...chartData.map(d => d.total_amount), 1);
+              const chartH = 180;
+              const topPad = 22; // space for value labels above tallest bar
+              const barW = Math.min(60, Math.floor(560 / chartData.length) - 12);
+              const gap = Math.floor(560 / chartData.length);
+
+              const statusColor = (status) => {
+                if (status === "Đã thanh toán") return { fill: "#10b981", text: "text-emerald-600" };
+                if (status === "Quá hạn") return { fill: "#f43f5e", text: "text-rose-600" };
+                return { fill: "#f59e0b", text: "text-amber-600" };
+              };
+
+              return (
+                <>
+                  {/* SVG Bar Chart */}
+                  <div className="overflow-x-auto">
+                    <svg width={Math.max(560, chartData.length * gap)} height={topPad + chartH + 60} className="block mx-auto">
+                      {/* Grid lines */}
+                      {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => (
+                        <g key={idx}>
+                          <line
+                            x1={30} y1={topPad + chartH * (1 - ratio)}
+                            x2={Math.max(560, chartData.length * gap)} y2={topPad + chartH * (1 - ratio)}
+                            stroke="#e2e8f0" strokeWidth={1} strokeDasharray={ratio === 0 ? "0" : "4,4"}
+                          />
+                          <text x={24} y={topPad + chartH * (1 - ratio) + 4} textAnchor="end" fontSize={9} fill="#94a3b8">
+                            {ratio === 0 ? "0" : `${Math.round(maxAmt * ratio / 1000000 * 10) / 10}M`}
+                          </text>
+                        </g>
+                      ))}
+
+                      {/* Bars */}
+                      {chartData.map((d, i) => {
+                        const barH = Math.max(4, (d.total_amount / maxAmt) * chartH);
+                        const x = 36 + i * gap + (gap - barW) / 2;
+                        const y = topPad + chartH - barH;
+                        const col = statusColor(d.status);
+                        const [yr, mo] = d.month.split("-");
+                        const isSelected = hoveredBar === i;
+
+                        return (
+                          <g key={i}
+                            onClick={() => setHoveredBar(isSelected ? null : i)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            {/* Bar */}
+                            <rect
+                              x={x} y={y} width={barW} height={barH}
+                              fill={col.fill}
+                              rx={6}
+                              opacity={isSelected ? 1 : 0.75}
+                              stroke={isSelected ? col.fill : "none"}
+                              strokeWidth={2}
+                            />
+                            {/* Value on top - always visible, now has topPad so never clips */}
+                            <text x={x + barW / 2} y={y - 4} textAnchor="middle" fontSize={9} fill={col.fill} fontWeight="bold">
+                              {Math.round(d.total_amount / 1000)}k
+                            </text>
+                            {/* Month label */}
+                            <text x={x + barW / 2} y={topPad + chartH + 16} textAnchor="middle" fontSize={10} fill={isSelected ? "#1e293b" : "#475569"} fontWeight={isSelected ? "800" : "600"}>
+                              T{mo}
+                            </text>
+                            <text x={x + barW / 2} y={topPad + chartH + 28} textAnchor="middle" fontSize={9} fill="#94a3b8">
+                              {yr}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* Detail panel - chỉ hiện khi click vào cột */}
+                  {hoveredBar !== null && chartData[hoveredBar] && (() => {
+                    const d = chartData[hoveredBar];
+                    const col = statusColor(d.status);
+                    return (
+                      <div className="mt-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 animate-in fade-in duration-150">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-bold text-slate-700">
+                            Chi tiết — Tháng {d.month.split("-").reverse().join("/")}
+                          </p>
+                          <button
+                            onClick={() => setHoveredBar(null)}
+                            className="text-slate-400 hover:text-slate-600 text-xs px-1.5 py-0.5 rounded hover:bg-slate-200 transition-colors"
+                          >
+                            × Đóng
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                          <span className="text-slate-500">Tiền phòng</span>
+                          <span className="font-semibold text-slate-800 text-right">{Math.round(d.rent_amount).toLocaleString("vi-VN")}đ</span>
+                          <span className="text-slate-500">Điện</span>
+                          <span className="font-semibold text-slate-800 text-right">{Math.round(d.electric_amount).toLocaleString("vi-VN")}đ</span>
+                          <span className="text-slate-500">Nước</span>
+                          <span className="font-semibold text-slate-800 text-right">{Math.round(d.water_amount).toLocaleString("vi-VN")}đ</span>
+                          <span className="text-slate-500">Dịch vụ</span>
+                          <span className="font-semibold text-slate-800 text-right">{Math.round(d.service_fees).toLocaleString("vi-VN")}đ</span>
+                          <div className="col-span-2 border-t border-slate-200 my-1" />
+                          <span className="font-bold text-slate-700">Tổng cộng</span>
+                          <span className={`font-black text-right ${col.text}`}>{Math.round(d.total_amount).toLocaleString("vi-VN")}đ</span>
+                          <span className="text-slate-500">Trạng thái</span>
+                          <span className={`font-bold text-right ${col.text}`}>{d.status}</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 mt-3 justify-center flex-wrap">
+                    {[["#10b981", "Đã thanh toán"], ["#f59e0b", "Chưa thanh toán"], ["#f43f5e", "Quá hạn"]].map(([color, label]) => (
+                      <div key={label} className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
+                        <span className="text-xs text-slate-500">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+
+            <button onClick={() => { setChartRoom(null); setChartData([]); }}
+              className="w-full mt-5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Maintenance Reason Modal */}
+      {maintenanceReasonModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-slate-900">Lý do bảo trì</h3>
+              <button
+                onClick={() => setMaintenanceReasonModal(null)}
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle size={18} className="text-orange-600" />
+                  <span className="text-sm font-bold text-orange-900">Phòng đang bảo trì</span>
+                </div>
+                <div className="text-xs text-orange-700 space-y-1">
+                  <p><strong>Phòng:</strong> {maintenanceReasonModal.room.room_number}</p>
+                  <p><strong>Tòa:</strong> {maintenanceReasonModal.room.building} - Tầng {maintenanceReasonModal.room.floor}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Lý do:</label>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-sm text-slate-800">
+                  {maintenanceReasonModal.reason || "Không có lý do cụ thể"}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setMaintenanceReasonModal(null)}
+              className="w-full mt-6 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

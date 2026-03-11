@@ -29,6 +29,7 @@ export const getInvoices = async (filters = {}) => {
   if (filters.status) params.append("status", filters.status);
   if (filters.month) params.append("month", filters.month);
   if (filters.search) params.append("search", filters.search);
+  if (filters.room_id) params.append("room_id", filters.room_id);
   if (filters.limit) params.append("limit", filters.limit);
 
   const response = await fetch(`${API_BASE_URL}/invoices?${params}`, {
@@ -139,10 +140,10 @@ export const getRevenueStatistics = async (startDate, endDate) => {
  * Get invoices by user (for student view)
  */
 export const getInvoicesByUser = async (userId = null) => {
-  const url = userId 
+  const url = userId
     ? `${API_BASE_URL}/invoices/user/${userId}`
     : `${API_BASE_URL}/invoices/user`;
-  
+
   const response = await fetch(url, {
     headers: authHeaders(),
   });
