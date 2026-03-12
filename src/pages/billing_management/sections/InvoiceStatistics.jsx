@@ -7,11 +7,34 @@ import { BillStatus } from "../../../utils/types.js";
 const InvoiceStatistics = ({ bills }) => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+
+  // Generate list of last 6 months (current month + 5 previous months)
+  // Current: Feb 2026 → History: Jan 2026, Dec 2025, Nov 2025, Oct 2025, Sep 2025
+  const getLastSixMonths = () => {
+    const months = [];
+    // Start from Feb 2026 (current billing month)
+    const currentBillingDate = new Date(2026, 1, 1); // Feb 2026 (month index 1)
+    
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(currentBillingDate.getFullYear(), currentBillingDate.getMonth() - i, 1);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const value = `${year}-${String(month).padStart(2, '0')}-01`;
+      const label = `Tháng ${month}/${year}`;
+      months.push({ value, label });
+    }
+    
+    return months;
+  };
+
+  const availableMonths = getLastSixMonths();
 
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const response = await getInvoiceStatistics();
+        setLoading(true);
+        const response = await getInvoiceStatistics(selectedMonth);
         if (response.success) {
           setStatistics(response.data);
         }
@@ -23,7 +46,7 @@ const InvoiceStatistics = ({ bills }) => {
     };
 
     fetchStatistics();
-  }, []);
+  }, [selectedMonth]);
 
   // Calculate stats from bills (fallback if API fails)
   const safeBills = Array.isArray(bills) ? bills : [];
@@ -92,7 +115,20 @@ const InvoiceStatistics = ({ bills }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Overview Block - Tổng quan hóa đơn */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h4 className="font-bold text-slate-900 mb-6">Tổng quan hóa đơn</h4>
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="font-bold text-slate-900">Tổng quan hóa đơn</h4>
+            <select
+              value={selectedMonth || ""}
+              onChange={(e) => setSelectedMonth(e.target.value || null)}
+              className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {availableMonths.map((month, index) => (
+                <option key={month.value} value={index === 0 ? "" : month.value}>
+                  {month.label} {index === 0 ? "(Hiện tại)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
               <div className="flex items-center gap-3">

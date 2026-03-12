@@ -114,10 +114,14 @@ export const deleteInvoice = async (id) => {
 
 /**
  * Get invoice statistics
+ * @param {string} month - Optional billing month in YYYY-MM-DD format
  * @returns {Promise<Object>} Response with statistics
  */
-export const getInvoiceStatistics = async () => {
-  const response = await fetch(`${API_BASE_URL}/invoices/statistics`, {
+export const getInvoiceStatistics = async (month = null) => {
+  const url = month 
+    ? `${API_BASE_URL}/invoices/statistics?month=${month}`
+    : `${API_BASE_URL}/invoices/statistics`;
+  const response = await fetch(url, {
     headers: authHeaders(),
   });
   return handleResponse(response);
