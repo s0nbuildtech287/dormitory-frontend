@@ -178,7 +178,20 @@ const InvoiceStatistics = ({ bills }) => {
 
         {/* Financial Summary Block - Tổng quan tài chính */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h4 className="font-bold text-slate-900 mb-6">Tổng quan tài chính</h4>
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="font-bold text-slate-900">Tổng quan tài chính</h4>
+            <select
+              value={selectedMonth || ""}
+              onChange={(e) => setSelectedMonth(e.target.value || null)}
+              className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {availableMonths.map((month, index) => (
+                <option key={month.value} value={index === 0 ? "" : month.value}>
+                  {month.label} {index === 0 ? "(Hiện tại)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
               <div className="flex items-center gap-3">
