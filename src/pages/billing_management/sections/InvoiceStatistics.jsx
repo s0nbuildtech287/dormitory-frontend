@@ -1,13 +1,15 @@
 import React, { useMemo, useEffect, useState } from "react";
-import { FileText, CheckCircle, Clock, AlertCircle, DollarSign, TrendingUp, Wallet, Zap, Droplet } from "lucide-react";
+import { FileText, CheckCircle, Clock, AlertCircle, DollarSign, TrendingUp, Wallet, Zap, Droplet, X, ArrowRight } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar } from "recharts";
-import { getInvoiceStatistics } from "../../../api/apiInvoice.js";
+import { getInvoiceStatistics, getInvoices } from "../../../api/apiInvoice.js";
 import { BillStatus } from "../../../utils/types.js";
 
-const InvoiceStatistics = ({ bills }) => {
+const InvoiceStatistics = ({ bills, onNavigateToInvoice }) => {
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [unpaidInvoicesModal, setUnpaidInvoicesModal] = useState(null); // { type: 'unpaid' | 'overdue', invoices: [] }
+  const [loadingModal, setLoadingModal] = useState(false);
 
   // Generate list of last 6 months (current billing month + 5 previous months)
   // Current billing month = last month (e.g., if now is March 2026 → billing month is Feb 2026)
@@ -37,6 +39,35 @@ const InvoiceStatistics = ({ bills }) => {
   };
 
   const availableMonths = getLastSixMonths();
+
+  // Fetch unpaid or overdue invoices
+  const handleShowInvoices = async (type) => {
+    try {
+      setLoadingModal(true);
+      const status = type === 'unpaid' ? 'Chưa thanh toán' : 'Quá hạn';
+      const filters = { status };
+      
+      // If a specific month is selected, filter by that month
+      if (selectedMonth) {
+        filters.month = selectedMonth;
+      }
+      
+      const response = await getInvoices(filters);
+      
+      if (response.success && response.data) {
+        setUnpaidInvoicesModal({
+          type,
+          invoices: response.data,
+          title: type === 'unpaid' ? 'Hóa đơn chưa thanh toán' : 'Hóa đơn quá hạn'
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      alert("Không thể tải danh sách hóa đơn. Vui lòng thử lại.");
+    } finally {
+      setLoadingModal(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -160,23 +191,25 @@ const InvoiceStatistics = ({ bills }) => {
               <p className="text-2xl font-black text-emerald-600">{stats.paid_count}</p>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-amber-50 transition-colors cursor-pointer" onClick={() => handleShowInvoices('unpaid')}>
               <div className="flex items-center gap-3">
                 <Clock size={24} className="text-amber-600" />
                 <div>
                   <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Chưa thanh toán</p>
                   <p className="text-xs text-amber-600 mt-0.5 font-semibold">{formatCurrency(stats.unpaid_amount)}</p>
+                  <p className="text-[10px] text-slate-400 mt-1 italic">Ấn để xem chi tiết</p>
                 </div>
               </div>
               <p className="text-2xl font-black text-amber-600">{stats.unpaid_count}</p>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-rose-50 transition-colors cursor-pointer" onClick={() => handleShowInvoices('overdue')}>
               <div className="flex items-center gap-3">
                 <AlertCircle size={24} className="text-rose-600" />
                 <div>
                   <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Quá hạn</p>
                   <p className="text-xs text-rose-600 mt-0.5 font-semibold">{formatCurrency(stats.overdue_amount)}</p>
+                  <p className="text-[10px] text-slate-400 mt-1 italic">Ấn để xem chi tiết</p>
                 </div>
               </div>
               <p className="text-2xl font-black text-rose-600">{stats.overdue_count}</p>
@@ -356,6 +389,94 @@ const InvoiceStatistics = ({ bills }) => {
           </div>
         </div>
       </div>
+
+      {/* Unpaid/Overdue Invoices Modal */}
+      {unpaidInvoicesModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-3xl max-h-[80vh] flex flex-col animate-in scale-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-slate-200">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">{unpaidInvoicesModal.title}</h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  Tổng: <strong>{unpaidInvoicesModal.invoices.length}</strong> hóa đơn
+                </p>
+              </div>
+              <button 
+                onClick={() => setUnpaidInvoicesModal(null)} 
+                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6">
+              {loadingModal ? (
+                <div className="flex items-center justify-center h-48">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : unpaidInvoicesModal.invoices.length > 0 ? (
+                <div className="space-y-2">
+                  {unpaidInvoicesModal.invoices.map((invoice) => (
+                    <div 
+                      key={invoice.id} 
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <p className="text-sm font-bold text-slate-900">
+                            Phòng {invoice.building}-{invoice.room_number}
+                          </p>
+                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                            invoice.status === 'Quá hạn' 
+                              ? 'bg-rose-100 text-rose-700' 
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {invoice.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-slate-600">
+                          <span>Tháng: {new Date(invoice.billing_month).toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })}</span>
+                          <span>Hạn: {new Date(invoice.due_date).toLocaleDateString('vi-VN')}</span>
+                          <span className="font-semibold text-slate-900">{formatCurrency(invoice.total_amount)}</span>
+                        </div>
+                        {invoice.student_names && (
+                          <p className="text-xs text-slate-500 mt-1">SV: {invoice.student_names}</p>
+                        )}
+                      </div>
+                      {invoice.invoice_number && onNavigateToInvoice && (
+                        <button
+                          onClick={() => {
+                            setUnpaidInvoicesModal(null);
+                            onNavigateToInvoice(invoice.invoice_number);
+                          }}
+                          className="flex items-center gap-1.5 text-xs font-mono text-blue-600 bg-blue-50 px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer group ml-4"
+                          title="Xem chi tiết hóa đơn"
+                        >
+                          <span>{invoice.invoice_number}</span>
+                          <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400 italic text-center py-8">
+                  Không có hóa đơn {unpaidInvoicesModal.type === 'unpaid' ? 'chưa thanh toán' : 'quá hạn'}
+                </p>
+              )}
+            </div>
+            
+            <div className="p-6 border-t border-slate-200">
+              <button 
+                onClick={() => setUnpaidInvoicesModal(null)} 
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-bold text-sm"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
