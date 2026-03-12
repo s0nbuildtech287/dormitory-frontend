@@ -9,15 +9,23 @@ const InvoiceStatistics = ({ bills }) => {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(null);
 
-  // Generate list of last 6 months (current month + 5 previous months)
-  // Current: Feb 2026 → History: Jan 2026, Dec 2025, Nov 2025, Oct 2025, Sep 2025
+  // Generate list of last 6 months (current billing month + 5 previous months)
+  // Current billing month = last month (e.g., if now is March 2026 → billing month is Feb 2026)
   const getLastSixMonths = () => {
     const months = [];
-    // Start from Feb 2026 (current billing month)
-    const currentBillingDate = new Date(2026, 1, 1); // Feb 2026 (month index 1)
+    const now = new Date();
+    
+    // Calculate current billing month (last month)
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-indexed
+    const billingMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const billingYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    
+    // Start from current billing month and go back 5 more months
+    const startDate = new Date(billingYear, billingMonth, 1);
     
     for (let i = 0; i < 6; i++) {
-      const date = new Date(currentBillingDate.getFullYear(), currentBillingDate.getMonth() - i, 1);
+      const date = new Date(startDate.getFullYear(), startDate.getMonth() - i, 1);
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const value = `${year}-${String(month).padStart(2, '0')}-01`;
