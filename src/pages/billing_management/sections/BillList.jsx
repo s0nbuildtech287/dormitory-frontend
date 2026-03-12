@@ -29,7 +29,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Fetch invoices from API
   useEffect(() => {
