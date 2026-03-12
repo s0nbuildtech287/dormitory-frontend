@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { List, BarChart3, RefreshCw, Clock, AlertTriangle, XCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { List, BarChart3, RefreshCw, Clock, AlertTriangle } from "lucide-react";
 import StudentList from "./sections/StudentList.jsx";
 import ContractDetailModal from "./sections/ContractDetailModal.jsx";
 import ContractStatistics from "./sections/ContractStatistics.jsx";
@@ -96,25 +96,7 @@ const ContractManagement = ({ initialFilter }) => {
       )}
 
       {activeSubTab === "stats" && (
-        <div className="space-y-6">
-          {/* Stats summary cards */}
-          {stats && (
-            <div className="grid grid-cols-4 gap-4">
-              {[
-                { label: "Chờ gán phòng", value: stats.pending_count, color: "amber" },
-                { label: "Đang nội trú", value: stats.active_count, color: "emerald" },
-                { label: "Hết hạn", value: stats.expired_count, color: "slate" },
-                { label: "Đã chấm dứt", value: stats.terminated_count, color: "rose" },
-              ].map((s) => (
-                <div key={s.label} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{s.label}</p>
-                  <p className={`text-3xl font-black text-${s.color}-600`}>{s.value ?? 0}</p>
-                </div>
-              ))}
-            </div>
-          )}
-          <ContractStatistics contracts={contracts} />
-        </div>
+        <ContractStatistics contracts={contracts} />
       )}
 
       {/* Contract Detail Modal */}

@@ -16,7 +16,7 @@ const CHART_COLORS = {
 
 const ContractStatistics = ({ contracts = [] }) => {
   const [expiryDays, setExpiryDays] = useState(45);
-  const [expiredDays, setExpiredDays] = useState(30);
+  const [expiredDays, setExpiredDays] = useState(45);
   const [expandedCard, setExpandedCard] = useState(null); // 'expiring15', 'expiring30', 'expired15', 'expired30'
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -568,31 +568,7 @@ const ContractStatistics = ({ contracts = [] }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status distribution */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Trạng thái hợp đồng</h3>
-              <p className="text-sm text-slate-500">Phân bổ theo trạng thái hiện tại</p>
-            </div>
-          </div>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={analysisData.statusCounts} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4} dataKey="value">
-                  {analysisData.statusCounts.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
-                <Legend wrapperStyle={{ fontSize: "13px", fontWeight: "bold" }} formatter={(value) => <span style={{ color: "#1e293b" }}>{value}</span>} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gender distribution */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
