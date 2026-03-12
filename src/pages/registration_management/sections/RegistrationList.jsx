@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
 import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send } from "lucide-react";
+import { usePagination } from "../../../hooks/usePagination.js";
+import { useSelection } from "../../../hooks/useSelection.js";
+import Pagination from "../../../components/common/Pagination.jsx";
+import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
 import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration } from "../../../api/apiRegistration.js";
@@ -68,19 +72,12 @@ const RegistrationList = ({
   onImportSuccess,
   onRefresh,
 }) => {
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterGroup, setFilterGroup] = useState("All");
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
   const [isConfirming, setIsConfirming] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
-
-  // Bulk selection states
-  const [selectedRegs, setSelectedRegs] = useState(new Set());
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
-  const [showCheckboxColumn, setShowCheckboxColumn] = useState(false);
 
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
@@ -128,12 +125,17 @@ const RegistrationList = ({
     })
     .sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0));
 
-  // Pagination calculations
-  const totalItems = filteredRegs.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredRegs.slice(startIndex, endIndex);
+  // Custom Hooks
+  const pagination = usePagination(filteredRegs, 10);
+  const { currentItems, totalItems } = pagination;
+  const { 
+    selectedItems: selectedRegs, 
+    showCheckboxColumn, 
+    toggleSelectionMode: handleToggleCheckbox, 
+    handleSelectItem: handleSelectReg, 
+    handleSelectAll, 
+    clearSelection 
+  } = useSelection(filteredRegs.map(r => r.id));
 
   // Calculate quota-based pending count for current filter group
   const totalSlots = quotas.totalSlots || 1000;
@@ -158,18 +160,8 @@ const RegistrationList = ({
   // Reset to first page when filters change
   const handleFilterChange = (filterSetter, value) => {
     filterSetter(value);
-    setCurrentPage(1);
+    pagination.goToPage(1);
   };
-
-  // Pagination handlers
-  const goToPage = (page) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
-
-  const goToFirstPage = () => setCurrentPage(1);
-  const goToLastPage = () => setCurrentPage(totalPages);
-  const goToPrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
-  const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
 
   // Handle add registration form submission
   const handleAddRegistration = async (formData) => {
@@ -192,33 +184,7 @@ const RegistrationList = ({
     }
   };
 
-  // Handle checkbox selection
-  const handleSelectReg = (regId) => {
-    setSelectedRegs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(regId)) {
-        newSet.delete(regId);
-      } else {
-        newSet.add(regId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedRegs.size === filteredRegs.length) {
-      setSelectedRegs(new Set());
-    } else {
-      setSelectedRegs(new Set(filteredRegs.map(r => r.id)));
-    }
-  };
-
-  const handleToggleCheckbox = () => {
-    setShowCheckboxColumn(!showCheckboxColumn);
-    if (showCheckboxColumn) {
-      setSelectedRegs(new Set());
-    }
-  };
+  // Handlers deleted in favor of useSelection Hook
 
   const handleBulkEmail = () => {
     if (selectedRegs.size === 0) {
@@ -233,7 +199,7 @@ const RegistrationList = ({
     const emails = [...new Set(selected.map(r => r.student_email || r.email).filter(Boolean))];
     
     setShowBulkEmailModal(false);
-    setSelectedRegs(new Set());
+    clearSelection();
     
     alert(`Đã mô phỏng gửi email cho ${selected.length} hồ sơ.\nTổng số email: ${emails.length}\n${emails.join(', ')}`);
   };
@@ -503,102 +469,7 @@ const RegistrationList = ({
         </div>
       </div>
 
-      {/* PAGINATION CONTROLS */}
-      {totalItems > 0 && (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mt-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Items per page selector */}
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <span>Hiển thị</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="px-2 py-1 border border-slate-200 rounded text-xs font-medium"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span>mục mỗi trang</span>
-            </div>
-
-            {/* Pagination info */}
-            <div className="text-sm text-slate-600">
-              Hiển thị {startIndex + 1}-{Math.min(endIndex, totalItems)} của {totalItems} mục
-            </div>
-
-            {/* Pagination controls */}
-            <div className="flex items-center gap-1">
-              {/* First page */}
-              <button
-                onClick={goToFirstPage}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronsLeft size={16} />
-              </button>
-
-              {/* Previous page */}
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              {/* Page numbers */}
-              <div className="flex items-center gap-1 mx-2">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => goToPage(pageNum)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"}`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Next page */}
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
-
-              {/* Last page */}
-              <button
-                onClick={goToLastPage}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronsRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Pagination pagination={pagination} />
 
       {/* DETAIL MODAL */}
       {selectedRegDetail && (
@@ -862,118 +733,88 @@ const RegistrationList = ({
       )}
 
       {/* CONFIRMATION DIALOG */}
-      {isConfirming && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in scale-in duration-300">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-3">
-              <div
-                className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  isConfirming.status === RegistrationStatus.APPROVED
-                    ? "bg-emerald-100 text-emerald-600"
-                    : isConfirming.status === RegistrationStatus.REJECTED
-                      ? "bg-rose-100 text-rose-600"
-                      : "bg-red-100 text-red-600"
-                }`}
-              >
-                {isConfirming.status === RegistrationStatus.APPROVED ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-              </div>
-              {isConfirming.status === "DELETE" ? "Xóa hồ sơ?" : "Xác nhận quyết định?"}
-            </h3>
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed ml-9">
-              {isConfirming.status === "DELETE" ? (
-                "Hồ sơ sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa hồ sơ này không?"
-              ) : (
-                <>
-                  Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming.status === RegistrationStatus.APPROVED ? "phê duyệt" : "từ chối"}</span> hồ sơ.
-                  {selectedRegDetail && <span> Hệ thống sẽ gửi thông báo kết quả cho sinh viên.</span>}
-                </>
-              )}
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setIsConfirming(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all">
-                Hủy
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    if (isConfirming.status === "DELETE") {
-                      // Call delete API
-                      await deleteRegistration(isConfirming.id);
-                    } else if (isConfirming.status === RegistrationStatus.APPROVED) {
-                      // Call approve API
-                      await approveRegistration(isConfirming.id);
-                    } else if (isConfirming.status === RegistrationStatus.REJECTED) {
-                      // Call reject API
-                      await rejectRegistration(isConfirming.id, "Từ chối từ admin");
-                    }
-                    setIsConfirming(null);
-                    if (selectedRegDetail) setSelectedRegDetail(null);
-                    // Refresh data by calling parent callback
-                    if (onRefresh) onRefresh();
-                  } catch (error) {
-                    console.error("Error:", error.message);
-                    alert(error.message || "Có lỗi xảy ra");
-                  }
-                }}
-                className={`flex-1 py-3 rounded-xl font-bold text-white transition-all ${
-                  isConfirming.status === RegistrationStatus.APPROVED
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : isConfirming.status === RegistrationStatus.REJECTED
-                      ? "bg-rose-600 hover:bg-rose-700"
-                      : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {isConfirming.status === "DELETE" ? "Xóa" : "Xác nhận"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={!!isConfirming}
+        onClose={() => setIsConfirming(null)}
+        onConfirm={async () => {
+          try {
+            if (isConfirming.status === "DELETE") {
+              await deleteRegistration(isConfirming.id);
+            } else if (isConfirming.status === RegistrationStatus.APPROVED) {
+              await approveRegistration(isConfirming.id);
+            } else if (isConfirming.status === RegistrationStatus.REJECTED) {
+              await rejectRegistration(isConfirming.id, "Từ chối từ admin");
+            }
+            setIsConfirming(null);
+            if (selectedRegDetail) setSelectedRegDetail(null);
+            if (onRefresh) onRefresh();
+          } catch (error) {
+            console.error("Error:", error.message);
+            alert(error.message || "Có lỗi xảy ra");
+          }
+        }}
+        title={isConfirming?.status === "DELETE" ? "Xóa hồ sơ?" : "Xác nhận quyết định?"}
+        message={isConfirming?.status === "DELETE" ? (
+          "Hồ sơ sẽ bị xóa vĩnh viễn. Bạn có chắc chắn muốn xóa hồ sơ này không?"
+        ) : (
+          <span>
+            Bạn đang chuẩn bị <span className="font-bold text-slate-900">{isConfirming?.status === RegistrationStatus.APPROVED ? "phê duyệt" : "từ chối"}</span> hồ sơ.
+            {selectedRegDetail && <span> Hệ thống sẽ gửi thông báo kết quả cho sinh viên.</span>}
+          </span>
+        )}
+        confirmText={isConfirming?.status === "DELETE" ? "Xóa" : "Xác nhận"}
+        icon={isConfirming?.status === RegistrationStatus.APPROVED ? CheckCircle2 : XCircle}
+        iconBgColor={
+          isConfirming?.status === RegistrationStatus.APPROVED
+            ? "bg-emerald-100"
+            : isConfirming?.status === "DELETE"
+              ? "bg-red-100"
+              : "bg-rose-100"
+        }
+        iconColor={
+          isConfirming?.status === RegistrationStatus.APPROVED
+            ? "text-emerald-600"
+            : isConfirming?.status === "DELETE"
+              ? "text-red-600"
+              : "text-rose-600"
+        }
+        confirmColor={
+          isConfirming?.status === RegistrationStatus.APPROVED
+            ? "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-200"
+            : isConfirming?.status === "DELETE"
+              ? "bg-red-600 hover:bg-red-700 focus:ring-red-200"
+              : "bg-rose-600 hover:bg-rose-700 focus:ring-rose-200"
+        }
+      />
 
       <AddRegistrationModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddRegistration} />
 
       {/* BULK EMAIL CONFIRMATION */}
-      {showBulkEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-lg p-6 animate-in scale-in-95 duration-200">
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
-                <Send size={26} className="text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Xác nhận gửi email hàng loạt</h3>
-              <div className="w-full text-left bg-slate-50 rounded-xl p-4 space-y-2">
-                <p className="text-sm text-slate-600">
-                  Số hồ sơ được chọn: <span className="font-bold text-slate-900">{selectedRegs.size}</span>
-                </p>
-                <p className="text-sm text-slate-600">
-                  Số email sẽ gửi: <span className="font-bold text-slate-900">
-                    {[...new Set(
-                      regs
-                        .filter(r => selectedRegs.has(r.id))
-                        .map(r => r.student_email || r.email)
-                        .filter(Boolean)
-                    )].length} email
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowBulkEmailModal(false)}
-                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleConfirmBulkEmail}
-                className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
-              >
-                <Send size={16} /> Gửi email
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showBulkEmailModal}
+        onClose={() => setShowBulkEmailModal(false)}
+        onConfirm={handleConfirmBulkEmail}
+        title="Xác nhận gửi email hàng loạt"
+        confirmText="Gửi email"
+        icon={Send}
+        iconBgColor="bg-amber-50"
+        iconColor="text-amber-600"
+        confirmColor="bg-amber-600 hover:bg-amber-700 focus:ring-amber-200"
+      >
+        <p className="text-sm text-slate-600">
+          Số hồ sơ được chọn: <span className="font-bold text-slate-900">{selectedRegs.size}</span>
+        </p>
+        <p className="text-sm text-slate-600 mt-1">
+          Số email sẽ gửi: <span className="font-bold text-slate-900">
+            {[...new Set(
+              regs
+                .filter(r => selectedRegs.has(r.id))
+                .map(r => r.student_email || r.email)
+                .filter(Boolean)
+            )].length} email
+          </span>
+        </p>
+      </ConfirmModal>
     </div>
   );
 };

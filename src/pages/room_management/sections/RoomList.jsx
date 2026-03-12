@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send } from "lucide-react";
+import { usePagination } from "../../../hooks/usePagination.js";
+import { useSelection } from "../../../hooks/useSelection.js";
+import Pagination from "../../../components/common/Pagination.jsx";
+import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
@@ -26,11 +30,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [chartData, setChartData] = useState([]);         // mảng { month, total_amount, ... }
   const [chartLoading, setChartLoading] = useState(false);
   const [hoveredBar, setHoveredBar] = useState(null);
-
-  // Bulk selection states
-  const [selectedRooms, setSelectedRooms] = useState(new Set());
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
-  const [showCheckboxColumn, setShowCheckboxColumn] = useState(false);
 
   const handleShowInvoice = async (room) => {
     try {
@@ -154,33 +154,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     }
   };
 
-  // Handle checkbox selection
-  const handleSelectRoom = (roomId) => {
-    setSelectedRooms(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(roomId)) {
-        newSet.delete(roomId);
-      } else {
-        newSet.add(roomId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedRooms.size === filteredRooms.length) {
-      setSelectedRooms(new Set());
-    } else {
-      setSelectedRooms(new Set(filteredRooms.map(r => r.id)));
-    }
-  };
-
-  const handleToggleCheckbox = () => {
-    setShowCheckboxColumn(!showCheckboxColumn);
-    if (showCheckboxColumn) {
-      setSelectedRooms(new Set());
-    }
-  };
+  // Handlers deleted in favor of useSelection hook
 
   const handleBulkEmail = () => {
     if (selectedRooms.size === 0) {
@@ -208,13 +182,10 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const uniqueEmails = [...new Set(emails)];
     
     setShowBulkEmailModal(false);
-    setSelectedRooms(new Set());
+    clearSelection();
     
     alert(`Đã mô phỏng gửi email cho các sinh viên trong ${selected.length} phòng.\nTổng số email khả dụng: ${uniqueEmails.length}\n${uniqueEmails.join(', ')}`);
   };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Ensure rooms is always an array
   const safeRooms = Array.isArray(rooms) ? rooms : [];
@@ -234,20 +205,17 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     return matchesBuilding && matchesFloor && matchesSearch && matchesStatus;
   });
 
-  // Pagination calculations
-  const totalItems = filteredRooms.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredRooms.slice(startIndex, endIndex);
-
-  // Pagination handlers
-  const goToPage = (page) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
-  const goToFirstPage = () => setCurrentPage(1);
-  const goToLastPage = () => setCurrentPage(totalPages);
-  const goToPrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
+  // Hooks
+  const pagination = usePagination(filteredRooms, 10);
+  const { currentItems, totalItems } = pagination;
+  const { 
+    selectedItems: selectedRooms, 
+    showCheckboxColumn, 
+    toggleSelectionMode: handleToggleCheckbox, 
+    handleSelectItem: handleSelectRoom, 
+    handleSelectAll, 
+    clearSelection 
+  } = useSelection(filteredRooms.map(r => r.id));
   const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
 
   return (
@@ -511,91 +479,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
       </div>
 
       {/* Pagination */}
-      {totalItems > 0 && (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <span>Hiển thị</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="px-2 py-1 border border-slate-200 rounded text-xs font-medium"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span>mục mỗi trang</span>
-            </div>
-
-            <div className="text-sm text-slate-600">
-              Hiển thị {startIndex + 1}-{Math.min(endIndex, totalItems)} của {totalItems} mục
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={goToFirstPage}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronsLeft size={16} />
-              </button>
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              <div className="flex items-center gap-1 mx-2">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => goToPage(pageNum)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"}`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
-              <button
-                onClick={goToLastPage}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronsRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Pagination pagination={pagination} />
 
       {/* MODALS */}
       <AddRoomModal
@@ -917,40 +801,45 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
       )}
 
       {/* Bulk Email Confirmation Modal */}
-      {showBulkEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-lg p-6 animate-in scale-in-95 duration-200">
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
-                <Send size={26} className="text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Xác nhận nhắc nhở phòng</h3>
-              <div className="w-full text-left bg-slate-50 rounded-xl p-4 space-y-2">
-                <p className="text-sm text-slate-600">
-                  Số phòng được chọn: <span className="font-bold text-slate-900">{selectedRooms.size}</span>
-                </p>
-                <p className="text-sm text-slate-600">
-                  Mail sẽ được gửi tới tất cả sinh viên trong phòng.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowBulkEmailModal(false)}
-                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleConfirmBulkEmail}
-                className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
-              >
-                <Send size={16} /> Gửi email
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showBulkEmailModal}
+        onClose={() => setShowBulkEmailModal(false)}
+        onConfirm={handleConfirmBulkEmail}
+        title="Xác nhận nhắc nhở phòng"
+        confirmText="Gửi email"
+        icon={Send}
+        iconBgColor="bg-amber-50"
+        iconColor="text-amber-600"
+        confirmColor="bg-amber-600 hover:bg-amber-700 focus:ring-amber-200"
+      >
+        <p className="text-sm text-slate-600">
+          Số phòng được chọn: <span className="font-bold text-slate-900">{selectedRooms.size}</span>
+        </p>
+        <p className="text-sm text-slate-600 mt-1">
+          Mail sẽ được gửi tới tất cả sinh viên trong phòng.
+        </p>
+      </ConfirmModal>
+
+      {/* Delete Room Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!roomToDelete}
+        onClose={() => setRoomToDelete(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Xóa phòng"
+        message={`Bạn có chắc chắn muốn xóa phòng ${roomToDelete?.room_number}? Mọi dữ liệu liên quan sẽ bị xóa và không thể khôi phục.`}
+        confirmText="Xóa phòng"
+        icon={Trash2}
+        iconBgColor="bg-red-50"
+        iconColor="text-red-600"
+        confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
+        isLoading={deleteLoading}
+      >
+        {deleteError && (
+          <p className="text-sm text-red-600 bg-red-50 p-2 rounded mt-2 border border-red-200">
+            {deleteError}
+          </p>
+        )}
+      </ConfirmModal>
     </div>
   );
 };

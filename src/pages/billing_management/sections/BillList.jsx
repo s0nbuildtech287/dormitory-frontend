@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle, Ban } from "lucide-react";
 import { getInvoices, deleteInvoice } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
+import { usePagination } from "../../../hooks/usePagination.js";
+import { useSelection } from "../../../hooks/useSelection.js";
+import Pagination from "../../../components/common/Pagination.jsx";
+import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 
@@ -22,14 +26,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   // Ẩn hóa đơn tháng trước đã thanh toán (mặc định bật)
   const [hidePastPaid, setHidePastPaid] = useState(true);
   
-  // Bulk selection states
-  const [selectedInvoices, setSelectedInvoices] = useState(new Set());
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
-  const [showCheckboxColumn, setShowCheckboxColumn] = useState(false);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Fetch invoices from API
   useEffect(() => {
@@ -41,7 +38,6 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     if (initialInvoiceFilter?.searchTerm) {
       setSearchTerm(initialInvoiceFilter.searchTerm);
       setHighlightedInvoice(initialInvoiceFilter.searchTerm);
-      setCurrentPage(1); // Reset to first page
 
       // Scroll to highlighted row after a short delay
       setTimeout(() => {
@@ -107,38 +103,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     }
   };
 
-  // Handle checkbox selection
-  const handleSelectInvoice = (invoiceId) => {
-    setSelectedInvoices(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(invoiceId)) {
-        newSet.delete(invoiceId);
-      } else {
-        newSet.add(invoiceId);
-      }
-      return newSet;
-    });
-  };
-
-  // Handle select all - now works across all filtered items, not just current page
-  const handleSelectAll = () => {
-    if (selectedInvoices.size === filteredBills.length) {
-      // Unselect all
-      setSelectedInvoices(new Set());
-    } else {
-      // Select all filtered bills (across all pages)
-      setSelectedInvoices(new Set(filteredBills.map(bill => bill.id)));
-    }
-  };
-
-  // Toggle checkbox column
-  const handleToggleCheckbox = () => {
-    setShowCheckboxColumn(!showCheckboxColumn);
-    if (showCheckboxColumn) {
-      // Clear selections when hiding
-      setSelectedInvoices(new Set());
-    }
-  };
+  // Handlers deleted in favor of useSelection hook
 
   // Handle bulk email
   const handleBulkEmail = () => {
@@ -159,7 +124,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     )];
     
     setShowBulkEmailModal(false);
-    setSelectedInvoices(new Set());
+    clearSelection();
     
     console.log('Navigating to notification with:', { recipients: studentEmails, invoices: selectedBills });
     
@@ -219,25 +184,21 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     return matchesSearch && matchesStatus && matchesBuilding && matchesMonth && matchesHidePastPaid;
   });
 
-  // Pagination calculations
-  const totalItems = filteredBills.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredBills.slice(startIndex, endIndex);
-
-  // Pagination handlers
-  const goToPage = (page) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-  };
-  const goToFirstPage = () => setCurrentPage(1);
-  const goToLastPage = () => setCurrentPage(totalPages);
-  const goToPrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
-  const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  // Hooks
+  const pagination = usePagination(filteredBills, 10);
+  const { currentItems, totalItems } = pagination;
+  const { 
+    selectedItems: selectedInvoices, 
+    showCheckboxColumn, 
+    toggleSelectionMode: handleToggleCheckbox, 
+    handleSelectItem: handleSelectInvoice, 
+    handleSelectAll, 
+    clearSelection 
+  } = useSelection(filteredBills.map(b => b.id));
 
   const handleFilterChange = (setter, value) => {
     setter(value);
-    setCurrentPage(1);
+    pagination.goToPage(1);
   };
 
   const handleReset = () => {
@@ -246,7 +207,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     setFilterMonth("All");
     setFilterBuilding("All");
     setHidePastPaid(true);
-    setCurrentPage(1);
+    pagination.goToPage(1);
   };
 
   const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All" || !hidePastPaid;
@@ -545,90 +506,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       </div>
 
       {/* Pagination */}
-      {totalItems > 0 && (
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <span>Hiển thị</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => {
-                  setItemsPerPage(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="px-2 py-1 border border-slate-200 rounded text-xs font-medium"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span>mục mỗi trang</span>
-            </div>
-
-            <div className="text-sm text-slate-600">
-              Hiển thị {startIndex + 1}-{Math.min(endIndex, totalItems)} của {totalItems} mục
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={goToFirstPage}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronsLeft size={16} />
-              </button>
-              <button
-                onClick={goToPrevPage}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              <div className="flex items-center gap-1 mx-2">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => goToPage(pageNum)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum ? "bg-blue-600 text-white" : "border border-slate-200 hover:bg-slate-50"}`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
-              <button
-                onClick={goToLastPage}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronsRight size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Pagination pagination={pagination} />
 
       {/* Students Modal */}
       {selectedRoomStudents && (
@@ -717,48 +595,31 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       )}
 
       {/* Delete Confirm Modal */}
-      {invoiceToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 animate-in scale-in-95 duration-200">
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
-                <Trash2 size={22} className="text-red-500" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900">Xác nhận xóa hóa đơn</h3>
-              <p className="text-sm text-slate-500">
-                Bạn có chắc muốn xóa hóa đơn <span className="font-bold text-slate-800">{invoiceToDelete.invoice_number}</span>?<br />
-                Hành động này không thể hoàn tác.
-              </p>
-              {deleteError && (
-                <div className="w-full flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl px-3 py-2">
-                  <AlertTriangle size={14} className="shrink-0" />
-                  {deleteError}
-                </div>
-              )}
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setInvoiceToDelete(null);
-                  setDeleteError("");
-                }}
-                disabled={deleteLoading}
-                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleDeleteConfirm}
-                disabled={deleteLoading}
-                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {deleteLoading ? <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Trash2 size={14} />}
-                {deleteLoading ? "Đang xóa..." : "Xóa hóa đơn"}
-              </button>
-            </div>
+      <ConfirmModal
+        isOpen={!!invoiceToDelete}
+        onClose={() => { setInvoiceToDelete(null); setDeleteError(""); }}
+        onConfirm={handleDeleteConfirm}
+        title="Xác nhận xóa hóa đơn"
+        message={
+          <>
+            Bạn có chắc muốn xóa hóa đơn <span className="font-bold text-slate-800">{invoiceToDelete?.invoice_number}</span>?<br />
+            Hành động này không thể hoàn tác.
+          </>
+        }
+        confirmText="Xóa hóa đơn"
+        icon={Trash2}
+        iconBgColor="bg-red-50"
+        iconColor="text-red-500"
+        confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
+        isLoading={deleteLoading}
+      >
+        {deleteError && (
+          <div className="w-full flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl px-3 py-2 mt-2">
+            <AlertTriangle size={14} className="shrink-0" />
+            {deleteError}
           </div>
-        </div>
-      )}
+        )}
+      </ConfirmModal>
 
       {/* Invoice Detail Modal */}
       <InvoiceDetailModal
@@ -774,52 +635,35 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       />
 
       {/* Bulk Email Confirmation Modal */}
-      {showBulkEmailModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-lg p-6 animate-in scale-in-95 duration-200">
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
-                <Send size={26} className="text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900">Xác nhận gửi email nhắc nhở</h3>
-              <div className="w-full text-left bg-slate-50 rounded-xl p-4 space-y-2">
-                <p className="text-sm text-slate-600">
-                  Số hóa đơn được chọn: <span className="font-bold text-slate-900">{selectedInvoices.size}</span>
-                </p>
-                <p className="text-sm text-slate-600">
-                  Số email sẽ gửi: <span className="font-bold text-slate-900">
-                    {[...new Set(
-                      safeBills
-                        .filter(bill => selectedInvoices.has(bill.id))
-                        .map(bill => bill.student_emails)
-                        .filter(Boolean)
-                        .flatMap(emails => emails.split(',').map(e => e.trim()))
-                    )].length} email
-                  </span>
-                </p>
-              </div>
-              <p className="text-sm text-slate-500">
-                Bạn sẽ được chuyển đến trang soạn thảo thông báo để hoàn tất nội dung email.
-              </p>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setShowBulkEmailModal(false)}
-                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleConfirmBulkEmail}
-                className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
-              >
-                <Send size={14} />
-                Tiếp tục
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showBulkEmailModal}
+        onClose={() => setShowBulkEmailModal(false)}
+        onConfirm={handleConfirmBulkEmail}
+        title="Xác nhận gửi email nhắc nhở"
+        confirmText="Tiếp tục"
+        icon={Send}
+        iconBgColor="bg-amber-50"
+        iconColor="text-amber-600"
+        confirmColor="bg-amber-600 hover:bg-amber-700 focus:ring-amber-200"
+      >
+        <p className="text-sm text-slate-600">
+          Số hóa đơn được chọn: <span className="font-bold text-slate-900">{selectedInvoices.size}</span>
+        </p>
+        <p className="text-sm text-slate-600 mt-1">
+          Số email sẽ gửi: <span className="font-bold text-slate-900">
+            {[...new Set(
+              safeBills
+                .filter(bill => selectedInvoices.has(bill.id))
+                .map(bill => bill.student_emails)
+                .filter(Boolean)
+                .flatMap(emails => emails.split(',').map(e => e.trim()))
+            )].length} email
+          </span>
+        </p>
+        <p className="text-sm text-slate-500 mt-2">
+          Bạn sẽ được chuyển đến trang soạn thảo thông báo để hoàn tất nội dung email.
+        </p>
+      </ConfirmModal>
     </div>
   );
 };
