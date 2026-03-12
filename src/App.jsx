@@ -13,6 +13,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [contractFilter, setContractFilter] = useState(null);
   const [invoiceFilter, setInvoiceFilter] = useState(null);
+  const [notificationData, setNotificationData] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,10 +37,19 @@ const App = () => {
     navigate("/billing");
   };
 
+  /**
+   * Handle navigation to notification page with pre-filled data
+   */
+  const handleNavigateToNotification = (data) => {
+    setNotificationData(data);
+    navigate("/notifications");
+  };
+
   /** Reset filters when leaving their pages */
   useEffect(() => {
     if (currentPath !== "students") setContractFilter(null);
     if (currentPath !== "billing") setInvoiceFilter(null);
+    if (currentPath !== "notifications") setNotificationData(null);
   }, [currentPath]);
 
   /** Check for existing session on app mount */
@@ -92,6 +102,10 @@ const App = () => {
     if (routeId === "billing") {
       props.onNavigateToContract = handleNavigateToContract;
       props.initialInvoiceFilter = invoiceFilter;
+      props.onNavigateToNotification = handleNavigateToNotification;
+    }
+    if (routeId === "notifications") {
+      props.initialNotificationData = notificationData;
     }
     return props;
   };

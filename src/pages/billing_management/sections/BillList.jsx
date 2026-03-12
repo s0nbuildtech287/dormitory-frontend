@@ -120,12 +120,14 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     });
   };
 
-  // Handle select all
+  // Handle select all - now works across all filtered items, not just current page
   const handleSelectAll = () => {
-    if (selectedInvoices.size === currentItems.length) {
+    if (selectedInvoices.size === filteredBills.length) {
+      // Unselect all
       setSelectedInvoices(new Set());
     } else {
-      setSelectedInvoices(new Set(currentItems.map(bill => bill.id)));
+      // Select all filtered bills (across all pages)
+      setSelectedInvoices(new Set(filteredBills.map(bill => bill.id)));
     }
   };
 
@@ -159,6 +161,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     setShowBulkEmailModal(false);
     setSelectedInvoices(new Set());
     
+    console.log('Navigating to notification with:', { recipients: studentEmails, invoices: selectedBills });
+    
     // Navigate to notification page with pre-filled data
     if (onNavigateToNotification) {
       onNavigateToNotification({
@@ -166,6 +170,10 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
         subject: `Nhắc nhở thanh toán hóa đơn`,
         invoices: selectedBills
       });
+    } else {
+      // Fallback: show alert with email list
+      alert(`Chức năng chuyển đến trang thông báo chưa được kết nối.\n\nDanh sách email (${studentEmails.length}):\n${studentEmails.join('\n')}`);
+      console.warn('onNavigateToNotification prop is not provided');
     }
   };
 
@@ -381,10 +389,10 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
                   <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
                     <input
                       type="checkbox"
-                      checked={currentItems.length > 0 && selectedInvoices.size === currentItems.length}
+                      checked={filteredBills.length > 0 && selectedInvoices.size === filteredBills.length}
                       onChange={handleSelectAll}
                       className="w-4 h-4 cursor-pointer"
-                      title="Chọn tất cả"
+                      title="Chọn tất cả (tất cả trang)"
                     />
                   </th>
                 )}
@@ -779,7 +787,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
                   Số hóa đơn được chọn: <span className="font-bold text-slate-900">{selectedInvoices.size}</span>
                 </p>
                 <p className="text-sm text-slate-600">
-                  Sinh viên sẽ nhận được: <span className="font-bold text-slate-900">
+                  Số email sẽ gửi: <span className="font-bold text-slate-900">
                     {[...new Set(
                       safeBills
                         .filter(bill => selectedInvoices.has(bill.id))
