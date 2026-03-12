@@ -1,5 +1,5 @@
-﻿import { useState } from "react";
-import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info } from "lucide-react";
+import { useState } from "react";
+import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send } from "lucide-react";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
@@ -26,6 +26,11 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [chartData, setChartData] = useState([]);         // mảng { month, total_amount, ... }
   const [chartLoading, setChartLoading] = useState(false);
   const [hoveredBar, setHoveredBar] = useState(null);
+
+  // Bulk selection states
+  const [selectedRooms, setSelectedRooms] = useState(new Set());
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [showCheckboxColumn, setShowCheckboxColumn] = useState(false);
 
   const handleShowInvoice = async (room) => {
     try {
@@ -149,6 +154,65 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     }
   };
 
+  // Handle checkbox selection
+  const handleSelectRoom = (roomId) => {
+    setSelectedRooms(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(roomId)) {
+        newSet.delete(roomId);
+      } else {
+        newSet.add(roomId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedRooms.size === filteredRooms.length) {
+      setSelectedRooms(new Set());
+    } else {
+      setSelectedRooms(new Set(filteredRooms.map(r => r.id)));
+    }
+  };
+
+  const handleToggleCheckbox = () => {
+    setShowCheckboxColumn(!showCheckboxColumn);
+    if (showCheckboxColumn) {
+      setSelectedRooms(new Set());
+    }
+  };
+
+  const handleBulkEmail = () => {
+    if (selectedRooms.size === 0) {
+      alert("Vui lòng chọn ít nhất một phòng");
+      return;
+    }
+    setShowBulkEmailModal(true);
+  };
+
+  const handleConfirmBulkEmail = () => {
+    const selected = safeRooms.filter(r => selectedRooms.has(r.id));
+    
+    // Gathers emails using the students array for each room
+    const emails = [];
+    selected.forEach(room => {
+      if (room.students && Array.isArray(room.students)) {
+        room.students.forEach(s => {
+          if (s.email || s.student_email) {
+             emails.push(s.email || s.student_email);
+          }
+        });
+      }
+    });
+    
+    const uniqueEmails = [...new Set(emails)];
+    
+    setShowBulkEmailModal(false);
+    setSelectedRooms(new Set());
+    
+    alert(`Đã mô phỏng gửi email cho các sinh viên trong ${selected.length} phòng.\nTổng số email khả dụng: ${uniqueEmails.length}\n${uniqueEmails.join(', ')}`);
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -251,14 +315,49 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
       {/* Table */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b-2 border-slate-300">
+        <div className="px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between">
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">Bảng thông tin phòng ({totalItems} kết quả)</h3>
+          
+          <div className="flex items-center gap-2">
+            {/* Toggle Checkbox Column Button */}
+            <button
+              onClick={handleToggleCheckbox}
+              className={`px-3 py-2 border text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5 ${
+                showCheckboxColumn 
+                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100' 
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <Send size={13} /> {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
+            </button>
+            
+            {/* Bulk Email Button */}
+            {showCheckboxColumn && selectedRooms.size > 0 && (
+              <button
+                onClick={handleBulkEmail}
+                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
+              >
+                <Send size={13} /> Gửi email ({selectedRooms.size})
+              </button>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[12%] text-center">Số phòng</th>
+                {showCheckboxColumn && (
+                  <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
+                    <input
+                      type="checkbox"
+                      checked={filteredRooms.length > 0 && selectedRooms.size === filteredRooms.length}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 cursor-pointer"
+                      title="Chọn tất cả (tất cả trang)"
+                    />
+                  </th>
+                )}
+                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[11%]' : 'w-[12%]'} text-center`}>Số phòng</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Vị trí</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Sinh viên</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Hóa đơn</th>
@@ -270,13 +369,13 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             <tbody className="divide-y divide-slate-300">
               {isLoadingRooms ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={showCheckboxColumn ? "8" : "7"} className="px-6 py-8 text-center text-slate-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-8 text-center">
+                  <td colSpan={showCheckboxColumn ? "8" : "7"} className="px-6 py-8 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
                       <Home size={48} className="mb-4 opacity-50" />
                       <p className="text-sm font-medium">Chưa có phòng nào</p>
@@ -288,6 +387,16 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                 currentItems.map((room) => {
                   return (
                     <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
+                      {showCheckboxColumn && (
+                        <td className="px-4 py-2 border-r-2 border-slate-300 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedRooms.has(room.id)}
+                            onChange={() => handleSelectRoom(room.id)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        </td>
+                      )}
                       {/* Room Number */}
                       <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300 text-center">{room.room_number || room.name}</td>
 
@@ -372,6 +481,13 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                         <div className="flex items-center justify-center gap-2">
                           <button onClick={() => setSelectedRoomDetail(room)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết">
                             <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => alert(`Đã mô phỏng gửi email nhắc nhở cho tất cả sinh viên phòng ${room.room_number}`)}
+                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                            title="Gửi email nhắc nhở"
+                          >
+                            <Send size={16} />
                           </button>
                           <button
                             onClick={() => {
@@ -796,6 +912,42 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             >
               Đóng
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Email Confirmation Modal */}
+      {showBulkEmailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-lg p-6 animate-in scale-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
+                <Send size={26} className="text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Xác nhận nhắc nhở phòng</h3>
+              <div className="w-full text-left bg-slate-50 rounded-xl p-4 space-y-2">
+                <p className="text-sm text-slate-600">
+                  Số phòng được chọn: <span className="font-bold text-slate-900">{selectedRooms.size}</span>
+                </p>
+                <p className="text-sm text-slate-600">
+                  Mail sẽ được gửi tới tất cả sinh viên trong phòng.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowBulkEmailModal(false)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirmBulkEmail}
+                className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <Send size={16} /> Gửi email
+              </button>
+            </div>
           </div>
         </div>
       )}

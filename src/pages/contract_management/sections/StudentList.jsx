@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail } from "lucide-react";
+import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send } from "lucide-react";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -30,6 +30,11 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 
   const markEmailSent = (id) => setEmailSentSet((prev) => new Set([...prev, id]));
 
+  // Bulk selection states
+  const [selectedContracts, setSelectedContracts] = useState(new Set());
+  const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [showCheckboxColumn, setShowCheckboxColumn] = useState(false);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -57,6 +62,55 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     
     return matchSearch && matchStatus && matchGender && matchDateFrom && matchDateTo;
   });
+
+  // Handle checkbox selection
+  const handleSelectContract = (contractId) => {
+    setSelectedContracts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(contractId)) {
+        newSet.delete(contractId);
+      } else {
+        newSet.add(contractId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedContracts.size === filtered.length) {
+      setSelectedContracts(new Set());
+    } else {
+      setSelectedContracts(new Set(filtered.map(c => c.id)));
+    }
+  };
+
+  const handleToggleCheckbox = () => {
+    setShowCheckboxColumn(!showCheckboxColumn);
+    if (showCheckboxColumn) {
+      setSelectedContracts(new Set());
+    }
+  };
+
+  const handleBulkEmail = () => {
+    if (selectedContracts.size === 0) {
+      alert("Vui lòng chọn ít nhất một hợp đồng");
+      return;
+    }
+    setShowBulkEmailModal(true);
+  };
+
+  const handleConfirmBulkEmail = () => {
+    const selected = contracts.filter(c => selectedContracts.has(c.id));
+    const studentEmails = [...new Set(selected.map(c => c.student_email || c.email).filter(Boolean))];
+    
+    // Simulate sending email since we don't have backend integration here
+    selected.forEach(c => markEmailSent(c.id));
+    
+    setShowBulkEmailModal(false);
+    setSelectedContracts(new Set());
+    
+    alert(`Đã mô phỏng gửi email cho ${selected.length} sinh viên.\nEmail: ${studentEmails.join(', ')}`);
+  };
 
   // Pagination calculations
   const totalItems = filtered.length;
@@ -193,14 +247,49 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 
       {/* Table - giống room_management */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 border-b-2 border-slate-300">
+        <div className="px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between">
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">Bảng hợp đồng sinh viên ({totalItems} kết quả)</h3>
+          
+          <div className="flex items-center gap-2">
+            {/* Toggle Checkbox Column Button */}
+            <button
+              onClick={handleToggleCheckbox}
+              className={`px-3 py-2 border text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5 ${
+                showCheckboxColumn 
+                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100' 
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              <Send size={13} /> {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
+            </button>
+            
+            {/* Bulk Email Button */}
+            {showCheckboxColumn && selectedContracts.size > 0 && (
+              <button
+                onClick={handleBulkEmail}
+                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
+              >
+                <Send size={13} /> Gửi email ({selectedContracts.size})
+              </button>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="border-b-2 border-slate-300">
               <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[11%] text-center">Số / Mã HĐ</th>
+                {showCheckboxColumn && (
+                  <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && selectedContracts.size === filtered.length}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 cursor-pointer"
+                      title="Chọn tất cả (tất cả trang)"
+                    />
+                  </th>
+                )}
+                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[10%]' : 'w-[11%]'} text-center`}>Số / Mã HĐ</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[18%] text-center">Sinh viên</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Phòng</th>
                 <th className="px-6 py-3 border-r-2 border-slate-300 w-[20%] text-center">Trạng thái</th>
@@ -211,13 +300,13 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             <tbody className="divide-y divide-slate-300">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={showCheckboxColumn ? "7" : "6"} className="px-6 py-8 text-center text-slate-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center">
+                  <td colSpan={showCheckboxColumn ? "7" : "6"} className="px-6 py-8 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400">
                       <FileText size={48} className="mb-4 opacity-50" />
                       <p className="text-sm font-medium">Không có hợp đồng nào</p>
@@ -231,6 +320,16 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   const isPending = c.status === "Pending";
                   return (
                     <tr key={c.id} className={`hover:bg-slate-50/50 transition-colors ${isPending ? "bg-amber-50/30" : ""}`}>
+                      {showCheckboxColumn && (
+                        <td className="px-4 py-2 border-r-2 border-slate-300 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedContracts.has(c.id)}
+                            onChange={() => handleSelectContract(c.id)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        </td>
+                      )}
                       {/* Contract number */}
                       <td className="px-6 py-2 text-xs font-mono border-r-2 border-slate-300 text-center">
                         {c.contract_number ? (
@@ -310,7 +409,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                                 className={`p-1.5 rounded-lg transition-colors ${emailSent ? "text-slate-800 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
                                 title={emailSent ? `Đã gửi email${c.email_sent_at ? " " + new Date(c.email_sent_at).toLocaleDateString("vi-VN") : ""}` : "Gửi email thông báo"}
                               >
-                                <Mail size={15} />
+                                <Send size={15} />
                               </button>
                               <button onClick={() => onDeleteContract(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa hợp đồng">
                                 <Trash2 size={15} />
@@ -408,6 +507,49 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                 className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronsRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Email Confirmation Modal */}
+      {showBulkEmailModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-lg p-6 animate-in scale-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center">
+                <Send size={26} className="text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900">Xác nhận gửi email hàng loạt</h3>
+              <div className="w-full text-left bg-slate-50 rounded-xl p-4 space-y-2">
+                <p className="text-sm text-slate-600">
+                  Số hợp đồng được chọn: <span className="font-bold text-slate-900">{selectedContracts.size}</span>
+                </p>
+                <p className="text-sm text-slate-600">
+                  Số email sẽ gửi: <span className="font-bold text-slate-900">
+                    {[...new Set(
+                      contracts
+                        .filter(c => selectedContracts.has(c.id))
+                        .map(c => c.student_email || c.email)
+                        .filter(Boolean)
+                    )].length} email
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowBulkEmailModal(false)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-bold text-sm"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirmBulkEmail}
+                className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <Send size={16} /> Gửi email
               </button>
             </div>
           </div>
