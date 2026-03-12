@@ -4,7 +4,7 @@ import BillList from "./sections/BillList.jsx";
 import InvoiceStatistics from "./sections/InvoiceStatistics.jsx";
 import PricingSettings from "./sections/PricingSettings.jsx";
 
-const BillingManagement = ({ onNavigateToContract, initialInvoiceFilter }) => {
+const BillingManagement = ({ onNavigateToContract, initialInvoiceFilter, onNavigateToNotification }) => {
   const [bills, setBills] = useState([]);
   const [activeSubTab, setActiveSubTab] = useState("list");
   const [invoiceFilter, setInvoiceFilter] = useState(initialInvoiceFilter || null);
@@ -48,7 +48,7 @@ const BillingManagement = ({ onNavigateToContract, initialInvoiceFilter }) => {
       </div>
 
       {/* Tab Content */}
-      {activeSubTab === "list" && <BillList bills={bills} setBills={setBills} onNavigateToContract={onNavigateToContract} initialInvoiceFilter={invoiceFilter} />}
+      {activeSubTab === "list" && <BillList bills={bills} setBills={setBills} onNavigateToContract={onNavigateToContract} initialInvoiceFilter={invoiceFilter} onNavigateToNotification={onNavigateToNotification} />}
       {activeSubTab === "statistics" && <InvoiceStatistics bills={bills} onNavigateToInvoice={handleNavigateToInvoice} />}
       {activeSubTab === "settings" && <PricingSettings />}
     </div>
