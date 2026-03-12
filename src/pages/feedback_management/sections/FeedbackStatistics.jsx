@@ -180,30 +180,5 @@ const FeedbackStatistics = ({ feedbacks }) => {
   );
 };
 
-const StatCard = ({ icon, label, value, color }) => {
-  const colors = {
-    blue: "from-blue-500 to-blue-600",
-    yellow: "from-yellow-500 to-yellow-600",
-    red: "from-red-500 to-red-600",
-    emerald: "from-emerald-500 to-emerald-600",
-  };
-  const lightColors = {
-    blue: "bg-blue-50 text-blue-600",
-    yellow: "bg-yellow-50 text-yellow-600",
-    red: "bg-red-50 text-red-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-  };
-  return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center gap-4">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${lightColors[color]}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
-        <p className="text-xs text-slate-500 font-medium mt-0.5">{label}</p>
-      </div>
-    </div>
-  );
-};
 
 export default FeedbackStatistics;

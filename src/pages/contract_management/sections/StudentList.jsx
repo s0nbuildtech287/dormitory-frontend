@@ -4,6 +4,8 @@ import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import DataTable from "../../../components/common/DataTable.jsx";
+import FilterBar from "../../../components/common/FilterBar.jsx";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -112,101 +114,87 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
-        <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc hợp đồng</h3>
+      <FilterBar
+        title="Bộ lọc hợp đồng"
+        search={{
+          placeholder: "Tìm tên, mã SV, số HĐ...",
+          value: searchTerm,
+          onChange: (val) => handleFilterChange(setSearchTerm, val)
+        }}
+        customFilters={
+          <>
+            {/* Trạng thái (gộp cọc + bản cứng) */}
+            <select
+              value={filterStatus}
+              onChange={(e) => handleFilterChange(setFilterStatus, e.target.value)}
+              className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            >
+              <option value="All">Tất cả trạng thái</option>
+              <optgroup label="— Trạng thái hợp đồng">
+                <option value="Pending">Chờ gán phòng</option>
+                <option value="Active">Đang nội trú</option>
+                <option value="Expired">Hết hạn</option>
+                <option value="Terminated">Chấm dứt</option>
+              </optgroup>
+              <optgroup label="— Tiền cọc">
+                <option value="deposit_paid">Đã cọc</option>
+                <option value="deposit_unpaid">Chưa cọc</option>
+              </optgroup>
+              <optgroup label="— Bản cứng hợp đồng">
+                <option value="hardcopy_received">Đã có bản cứng</option>
+                <option value="hardcopy_not">Chưa có bản cứng</option>
+              </optgroup>
+            </select>
 
-        <div className="flex gap-3 items-center">
-          {/* Tìm kiếm — rộng hơn */}
-          <div className="relative flex-[3]">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            {/* Giới tính */}
+            <select
+              value={filterGender}
+              onChange={(e) => handleFilterChange(setFilterGender, e.target.value)}
+              className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            >
+              <option value="All">Tất cả giới tính</option>
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+            </select>
+
+            {/* Ngày từ */}
             <input
-              type="text"
-              placeholder="Tìm tên, mã SV, số HĐ..."
-              value={searchTerm}
-              onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-xs transition-all bg-slate-50/50"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+              className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              title="Ngày đăng ký HĐ từ"
             />
-          </div>
 
-          {/* Trạng thái (gộp cọc + bản cứng) */}
-          <select
-            value={filterStatus}
-            onChange={(e) => handleFilterChange(setFilterStatus, e.target.value)}
-            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả trạng thái</option>
-            <optgroup label="— Trạng thái hợp đồng">
-              <option value="Pending">Chờ gán phòng</option>
-              <option value="Active">Đang nội trú</option>
-              <option value="Expired">Hết hạn</option>
-              <option value="Terminated">Chấm dứt</option>
-            </optgroup>
-            <optgroup label="— Tiền cọc">
-              <option value="deposit_paid">Đã cọc</option>
-              <option value="deposit_unpaid">Chưa cọc</option>
-            </optgroup>
-            <optgroup label="— Bản cứng hợp đồng">
-              <option value="hardcopy_received">Đã có bản cứng</option>
-              <option value="hardcopy_not">Chưa có bản cứng</option>
-            </optgroup>
-          </select>
-
-          {/* Giới tính */}
-          <select
-            value={filterGender}
-            onChange={(e) => handleFilterChange(setFilterGender, e.target.value)}
-            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả giới tính</option>
-            <option value="Nam">Nam</option>
-            <option value="Nữ">Nữ</option>
-          </select>
-
-          {/* Ngày từ */}
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
-            className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-            title="Ngày đăng ký HĐ từ"
-          />
-
-          {/* Ngày đến */}
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
-            className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-            title="Ngày đăng ký HĐ đến"
-          />
-
-          {/* Nút reset */}
-          <button
-            onClick={handleReset}
-            disabled={!hasActiveFilter}
-            className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
-            title="Xóa bộ lọc"
-          >
-            ↺ Reset
-          </button>
-        </div>
-
-        {/* Dòng 2: nút hành động */}
-        <div className="flex items-center gap-2 mt-3">
-          <button
-            onClick={() => setCurrentPage(1)}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
-          >
-            Áp dụng
-          </button>
-          <button
-            onClick={onAutoAssign}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
-          >
-            Gán tự động
-          </button>
-        </div>
-      </div>
+            {/* Ngày đến */}
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+              className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              title="Ngày đăng ký HĐ đến"
+            />
+          </>
+        }
+        hasActiveFilter={hasActiveFilter}
+        onReset={handleReset}
+        actionButtons={
+          <>
+            <button
+              onClick={() => setCurrentPage(1)}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
+            >
+              Áp dụng
+            </button>
+            <button
+              onClick={onAutoAssign}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
+            >
+              Gán tự động
+            </button>
+          </>
+        }
+      />
 
 
 
@@ -239,157 +227,129 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             )}
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="border-b-2 border-slate-300">
-              <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                {showCheckboxColumn && (
-                  <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
-                    <input
-                      type="checkbox"
-                      checked={filtered.length > 0 && selectedContracts.size === filtered.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 cursor-pointer"
-                      title="Chọn tất cả (tất cả trang)"
-                    />
-                  </th>
-                )}
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[10%]' : 'w-[11%]'} text-center`}>Số / Mã HĐ</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[18%] text-center">Sinh viên</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[10%] text-center">Phòng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[20%] text-center">Trạng thái</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[16%] text-center">Thời hạn</th>
-                <th className="px-6 py-3 w-[12%] text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-300">
-              {loading ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "7" : "6"} className="px-6 py-8 text-center text-slate-500">
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
-              ) : currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "7" : "6"} className="px-6 py-8 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <FileText size={48} className="mb-4 opacity-50" />
-                      <p className="text-sm font-medium">Không có hợp đồng nào</p>
-                      <p className="text-xs mt-1">Thử thay đổi bộ lọc để tìm kiếm</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((c) => {
-                  const statusCfg = STATUS_CONFIG[c.status] || STATUS_CONFIG.Active;
-                  const isPending = c.status === "Pending";
-                  return (
-                    <tr key={c.id} className={`hover:bg-slate-50/50 transition-colors ${isPending ? "bg-amber-50/30" : ""}`}>
-                      {showCheckboxColumn && (
-                        <td className="px-4 py-2 border-r-2 border-slate-300 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedContracts.has(c.id)}
-                            onChange={() => handleSelectContract(c.id)}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                        </td>
-                      )}
-                      {/* Contract number */}
-                      <td className="px-6 py-2 text-xs font-mono border-r-2 border-slate-300 text-center">
-                        {c.contract_number ? (
-                          <span className="font-bold text-blue-700">{c.contract_number}</span>
-                        ) : (
-                          <span className="font-semibold text-slate-400 italic">Chưa có số</span>
-                        )}
-                      </td>
-
-                      {/* Student info — tên + mã SV tách 2 dòng */}
-                      <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
-                        <p className="font-semibold text-slate-900 text-xs truncate max-w-[150px] mx-auto">
-                          {c.student_name || "—"}
-                        </p>
-                        {c.snapshot_student_id && (
-                          <p className="text-[10px] text-slate-400 mt-0.5 font-mono truncate max-w-[150px] mx-auto">
-                            {c.snapshot_student_id}
-                          </p>
-                        )}
-                      </td>
-
-                      {/* Room */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        {c.room_number ? (
-                          <span className="font-semibold text-blue-700 text-xs">
-                            {c.room_number}
-                            {c.building ? ` (${c.building})` : ""}
-                          </span>
-                        ) : (
-                          <span className="text-amber-600 text-xs font-semibold italic">Chưa có phòng</span>
-                        )}
-                      </td>
-
-                      {/* Status + inline badges */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <div className="flex flex-wrap items-center justify-center gap-1">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${statusCfg.cls}`}>
-                            {statusCfg.icon} {statusCfg.label}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.deposit_paid ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                          >
-                            {c.deposit_paid ? "Đã cọc" : "Chưa cọc"}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.hard_copy_received ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                          >
-                            {c.hard_copy_received ? "Đã bản cứng" : "Chưa bản cứng"}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Thời hạn — 1 dòng */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        {c.start_date ? (
-                          <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">
-                            {new Date(c.start_date).toLocaleDateString("vi-VN")} → {c.end_date ? new Date(c.end_date).toLocaleDateString("vi-VN") : "—"}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-slate-400 italic">Chưa xác định</span>
-                        )}
-                      </td>
-
-                      {/* Thao tác */}
-                      {(() => {
-                        const emailSent = emailSentSet.has(c.id) || !!c.email_sent_at;
-                        return (
-                          <td className="px-6 py-2 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button onClick={() => onViewDetail(c.id)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={isPending ? "Gán phòng" : "Xem chi tiết"}>
-                                <Eye size={15} />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  if (!emailSent) markEmailSent(c.id);
-                                }}
-                                className={`p-1.5 rounded-lg transition-colors ${emailSent ? "text-slate-800 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
-                                title={emailSent ? `Đã gửi email${c.email_sent_at ? " " + new Date(c.email_sent_at).toLocaleDateString("vi-VN") : ""}` : "Gửi email thông báo"}
-                              >
-                                <Send size={15} />
-                              </button>
-                              <button onClick={() => onDeleteContract(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa hợp đồng">
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </td>
-                        );
-                      })()}
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={[
+            {
+              header: "Số / Mã HĐ",
+              align: "center",
+              width: showCheckboxColumn ? "w-[10%]" : "w-[11%]",
+              accessor: (c) =>
+                c.contract_number ? (
+                  <span className="font-bold text-blue-700 text-xs font-mono">{c.contract_number}</span>
+                ) : (
+                  <span className="font-semibold text-slate-400 italic text-xs">Chưa có số</span>
+                ),
+            },
+            {
+              header: "Sinh viên",
+              align: "center",
+              width: "w-[18%]",
+              accessor: (c) => (
+                <>
+                  <p className="font-semibold text-slate-900 text-xs truncate max-w-[150px] mx-auto">
+                    {c.student_name || "—"}
+                  </p>
+                  {c.snapshot_student_id && (
+                    <p className="text-[10px] text-slate-400 mt-0.5 font-mono truncate max-w-[150px] mx-auto">
+                      {c.snapshot_student_id}
+                    </p>
+                  )}
+                </>
+              ),
+            },
+            {
+              header: "Phòng",
+              align: "center",
+              width: "w-[10%]",
+              accessor: (c) =>
+                c.room_number ? (
+                  <span className="font-semibold text-blue-700 text-xs">
+                    {c.room_number}
+                    {c.building ? ` (${c.building})` : ""}
+                  </span>
+                ) : (
+                  <span className="text-amber-600 text-xs font-semibold italic">Chưa có phòng</span>
+                ),
+            },
+            {
+              header: "Trạng thái",
+              align: "center",
+              width: "w-[20%]",
+              accessor: (c) => {
+                const statusCfg = STATUS_CONFIG[c.status] || STATUS_CONFIG.Active;
+                return (
+                  <div className="flex flex-wrap items-center justify-center gap-1">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${statusCfg.cls}`}>
+                      {statusCfg.icon} {statusCfg.label}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.deposit_paid ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                    >
+                      {c.deposit_paid ? "Đã cọc" : "Chưa cọc"}
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.hard_copy_received ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                    >
+                      {c.hard_copy_received ? "Đã bản cứng" : "Chưa bản cứng"}
+                    </span>
+                  </div>
+                );
+              },
+            },
+            {
+              header: "Thời hạn",
+              align: "center",
+              width: "w-[16%]",
+              accessor: (c) =>
+                c.start_date ? (
+                  <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">
+                    {new Date(c.start_date).toLocaleDateString("vi-VN")} → {c.end_date ? new Date(c.end_date).toLocaleDateString("vi-VN") : "—"}
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">Chưa xác định</span>
+                ),
+            },
+            {
+              header: "Thao tác",
+              align: "center",
+              width: "w-[12%]",
+              accessor: (c) => {
+                const emailSent = emailSentSet.has(c.id) || !!c.email_sent_at;
+                const isPending = c.status === "Pending";
+                return (
+                  <div className="flex items-center justify-center gap-1.5">
+                    <button onClick={() => onViewDetail(c.id)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={isPending ? "Gán phòng" : "Xem chi tiết"}>
+                      <Eye size={15} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!emailSent) markEmailSent(c.id);
+                      }}
+                      className={`p-1.5 rounded-lg transition-colors ${emailSent ? "text-slate-800 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
+                      title={emailSent ? `Đã gửi email${c.email_sent_at ? " " + new Date(c.email_sent_at).toLocaleDateString("vi-VN") : ""}` : "Gửi email thông báo"}
+                    >
+                      <Send size={15} />
+                    </button>
+                    <button onClick={() => onDeleteContract(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa hợp đồng">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                );
+              },
+            },
+          ]}
+          data={currentItems}
+          keyExtractor={(c) => c.id}
+          loading={loading}
+          emptyState={{ icon: FileText, title: "Không có hợp đồng nào", description: "Thử thay đổi bộ lọc để tìm kiếm" }}
+          selection={{
+            selectedItems: selectedContracts,
+            showCheckboxColumn,
+            onSelectAll: handleSelectAll,
+            onSelectRow: handleSelectContract,
+          }}
+          rowClassName={(c) => c.status === "Pending" ? "bg-amber-50/30" : ""}
+        />
       </div>
 
       {/* Pagination */}

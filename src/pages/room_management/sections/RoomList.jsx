@@ -4,6 +4,8 @@ import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import DataTable from "../../../components/common/DataTable.jsx";
+import FilterBar from "../../../components/common/FilterBar.jsx";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
@@ -221,65 +223,70 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
-        <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc phòng</h3>
-        <div className="grid grid-cols-6 gap-4 items-center">
-          <div className="relative col-span-2">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo số phòng..."
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <select
-            value={filterBuilding}
-            onChange={(e) => setFilterBuilding(e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả tòa</option>
-            <option value="A">Tòa A</option>
-            <option value="B">Tòa B</option>
-            <option value="C">Tòa C</option>
-            <option value="D">Tòa D</option>
-          </select>
-
-          <select
-            value={filterFloor}
-            onChange={(e) => setFilterFloor(e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả tầng</option>
-            <option value="1">Tầng 1</option>
-            <option value="2">Tầng 2</option>
-            <option value="3">Tầng 3</option>
-            <option value="4">Tầng 4</option>
-            <option value="5">Tầng 5</option>
-          </select>
-
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả trạng thái</option>
-            <option value="Empty">Trống</option>
-            <option value="Occupied">Đang ở</option>
-            <option value="Full">Đã đầy</option>
-            <option value="Maintenance">Bảo trì</option>
-          </select>
-
+      <FilterBar
+        title="Bộ lọc phòng"
+        filterContainerClass="grid grid-cols-7 gap-4 items-center"
+        search={{
+          placeholder: "Tìm theo số phòng...",
+          value: searchTerm,
+          onChange: setSearchTerm,
+          className: "col-span-2 relative"
+        }}
+        filters={[
+          {
+            value: filterBuilding,
+            onChange: setFilterBuilding,
+            className: "col-span-1",
+            options: [
+              { value: "All", label: "Tất cả tòa" },
+              { value: "A", label: "Tòa A" },
+              { value: "B", label: "Tòa B" },
+              { value: "C", label: "Tòa C" },
+              { value: "D", label: "Tòa D" },
+            ]
+          },
+          {
+            value: filterFloor,
+            onChange: setFilterFloor,
+            className: "col-span-1",
+            options: [
+              { value: "All", label: "Tất cả tầng" },
+              { value: "1", label: "Tầng 1" },
+              { value: "2", label: "Tầng 2" },
+              { value: "3", label: "Tầng 3" },
+              { value: "4", label: "Tầng 4" },
+              { value: "5", label: "Tầng 5" },
+            ]
+          },
+          {
+            value: filterStatus,
+            onChange: setFilterStatus,
+            className: "col-span-1",
+            options: [
+              { value: "All", label: "Tất cả trạng thái" },
+              { value: "Empty", label: "Trống" },
+              { value: "Occupied", label: "Đang ở" },
+              { value: "Full", label: "Đã đầy" },
+              { value: "Maintenance", label: "Bảo trì" },
+            ]
+          }
+        ]}
+        hasActiveFilter={searchTerm !== "" || filterBuilding !== "All" || filterFloor !== "All" || filterStatus !== "All"} 
+        onReset={() => {
+          setSearchTerm("");
+          setFilterBuilding("All");
+          setFilterFloor("All");
+          setFilterStatus("All");
+        }}
+        customFilters={
           <button
             onClick={() => setShowAddRoomModal(true)}
-            className="w-full flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-sm"
+            className="flex items-center justify-center col-span-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
           >
-            <Plus size={14} className="mr-2 flex-shrink-0" /> Thêm phòng
+            <Plus size={16} className="mr-1 flex-shrink-0" /> Thêm mới
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Table */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
@@ -310,172 +317,148 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             )}
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="border-b-2 border-slate-300">
-              <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                {showCheckboxColumn && (
-                  <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
-                    <input
-                      type="checkbox"
-                      checked={filteredRooms.length > 0 && selectedRooms.size === filteredRooms.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 cursor-pointer"
-                      title="Chọn tất cả (tất cả trang)"
-                    />
-                  </th>
-                )}
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[11%]' : 'w-[12%]'} text-center`}>Số phòng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Vị trí</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Sinh viên</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[14%] text-center">Hóa đơn</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">TT thanh toán</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[15%] text-center">Trạng thái</th>
-                <th className="px-6 py-3 w-[15%] text-center">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-300">
-              {isLoadingRooms ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "8" : "7"} className="px-6 py-8 text-center text-slate-500">
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
-              ) : currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "8" : "7"} className="px-6 py-8 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <Home size={48} className="mb-4 opacity-50" />
-                      <p className="text-sm font-medium">Chưa có phòng nào</p>
-                      <p className="text-xs mt-1">Hãy thêm phòng để bắt đầu</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((room) => {
-                  return (
-                    <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
-                      {showCheckboxColumn && (
-                        <td className="px-4 py-2 border-r-2 border-slate-300 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedRooms.has(room.id)}
-                            onChange={() => handleSelectRoom(room.id)}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                        </td>
-                      )}
-                      {/* Room Number */}
-                      <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300 text-center">{room.room_number || room.name}</td>
-
-                      {/* Location */}
-                      <td className="px-6 py-2 text-xs font-semibold text-slate-900 border-r-2 border-slate-300 text-center">
-                        Tòa {room.building} - Tầng {room.floor}
-                      </td>
-
-                      {/* Students */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-xs font-semibold text-slate-700">
-                            {room.currentOccupancy || 0}/{room.capacity}
-                          </span>
-                          <button
-                            onClick={() => setSelectedRoomStudents(room)}
-                            className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
-                            title="Xem danh sách sinh viên"
-                          >
-                            <Users size={14} />
-                          </button>
-                        </div>
-                      </td>
-
-                      {/* Invoice */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={() => handleShowInvoice(room)}
-                            disabled={loadingInvoice}
-                            className="inline-flex items-center justify-center p-1.5 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors disabled:opacity-50"
-                            title="Xem hóa đơn mới nhất"
-                          >
-                            <FileText size={16} />
-                          </button>
-                          {onNavigateToInvoice && (
-                            <button
-                              onClick={() => handleShowChart(room)}
-                              className="inline-flex items-center justify-center p-1.5 text-teal-500 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-colors"
-                              title="Biểu đồ hóa đơn theo tháng"
-                            >
-                              <BarChart2 size={16} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Payment Status */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs font-black">Chờ</span>
-                      </td>
-
-                      {/* Room Status */}
-                      <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <span
-                            className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${room.status === "Maintenance"
-                              ? "bg-orange-100 text-orange-700"
-                              : (room.currentOccupancy || 0) >= room.capacity
-                                ? "bg-rose-100 text-rose-700"
-                                : (room.currentOccupancy || 0) > 0
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-emerald-100 text-emerald-700"
-                              }`}
-                          >
-                            {room.status === "Maintenance" ? "Bảo trì" : (room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
-                          </span>
-                          {room.status === "Maintenance" && room.maintenance_reason && (
-                            <button
-                              onClick={() => setMaintenanceReasonModal({ room, reason: room.maintenance_reason })}
-                              className="p-1 text-orange-600 hover:bg-orange-50 rounded transition-colors"
-                              title="Xem lý do bảo trì"
-                            >
-                              <Info size={14} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="px-6 py-2 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => setSelectedRoomDetail(room)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết">
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => alert(`Đã mô phỏng gửi email nhắc nhở cho tất cả sinh viên phòng ${room.room_number}`)}
-                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                            title="Gửi email nhắc nhở"
-                          >
-                            <Send size={16} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setDeleteError("");
-                              setRoomToDelete(room);
-                            }}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Xóa phòng"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={[
+            {
+              header: "Số phòng",
+              align: "center",
+              width: showCheckboxColumn ? "w-[11%]" : "w-[12%]",
+              accessor: (room) => <span className="text-xs font-mono font-semibold text-slate-900">{room.room_number || room.name}</span>,
+            },
+            {
+              header: "Vị trí",
+              align: "center",
+              width: "w-[15%]",
+              accessor: (room) => (
+                <span className="text-xs font-semibold text-slate-900">
+                  Tòa {room.building} - Tầng {room.floor}
+                </span>
+              ),
+            },
+            {
+              header: "Sinh viên",
+              align: "center",
+              width: "w-[14%]",
+              accessor: (room) => (
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-xs font-semibold text-slate-700">
+                    {room.currentOccupancy || 0}/{room.capacity}
+                  </span>
+                  <button
+                    onClick={() => setSelectedRoomStudents(room)}
+                    className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+                    title="Xem danh sách sinh viên"
+                  >
+                    <Users size={14} />
+                  </button>
+                </div>
+              ),
+            },
+            {
+              header: "Hóa đơn",
+              align: "center",
+              width: "w-[14%]",
+              accessor: (room) => (
+                <div className="flex items-center justify-center gap-1">
+                  <button
+                    onClick={() => handleShowInvoice(room)}
+                    disabled={loadingInvoice}
+                    className="inline-flex items-center justify-center p-1.5 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                    title="Xem hóa đơn mới nhất"
+                  >
+                    <FileText size={16} />
+                  </button>
+                  {onNavigateToInvoice && (
+                    <button
+                      onClick={() => handleShowChart(room)}
+                      className="inline-flex items-center justify-center p-1.5 text-teal-500 hover:bg-teal-50 hover:text-teal-700 rounded-lg transition-colors"
+                      title="Biểu đồ hóa đơn theo tháng"
+                    >
+                      <BarChart2 size={16} />
+                    </button>
+                  )}
+                </div>
+              ),
+            },
+            {
+              header: "TT thanh toán",
+              align: "center",
+              width: "w-[15%]",
+              accessor: (room) => (
+                <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs font-black">Chờ</span>
+              ),
+            },
+            {
+              header: "Trạng thái",
+              align: "center",
+              width: "w-[15%]",
+              accessor: (room) => (
+                <div className="flex items-center justify-center gap-1.5">
+                  <span
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${room.status === "Maintenance"
+                      ? "bg-orange-100 text-orange-700"
+                      : (room.currentOccupancy || 0) >= room.capacity
+                        ? "bg-rose-100 text-rose-700"
+                        : (room.currentOccupancy || 0) > 0
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                      }`}
+                  >
+                    {room.status === "Maintenance" ? "Bảo trì" : (room.currentOccupancy || 0) >= room.capacity ? "Đã đầy" : (room.currentOccupancy || 0) > 0 ? "Đang ở" : "Trống"}
+                  </span>
+                  {room.status === "Maintenance" && room.maintenance_reason && (
+                    <button
+                      onClick={() => setMaintenanceReasonModal({ room, reason: room.maintenance_reason })}
+                      className="p-1 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                      title="Xem lý do bảo trì"
+                    >
+                      <Info size={14} />
+                    </button>
+                  )}
+                </div>
+              ),
+            },
+            {
+              header: "Hành động",
+              align: "center",
+              width: "w-[15%]",
+              accessor: (room) => (
+                <div className="flex items-center justify-center gap-2">
+                  <button onClick={() => setSelectedRoomDetail(room)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết">
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => alert(`Đã mô phỏng gửi email nhắc nhở cho tất cả sinh viên phòng ${room.room_number}`)}
+                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    title="Gửi email nhắc nhở"
+                  >
+                    <Send size={16} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDeleteError("");
+                      setRoomToDelete(room);
+                    }}
+                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Xóa phòng"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          data={currentItems}
+          keyExtractor={(room) => room.id}
+          loading={isLoadingRooms}
+          emptyState={{ icon: Home, title: "Chưa có phòng nào", description: "Hãy thêm phòng để bắt đầu" }}
+          selection={{
+            selectedItems: selectedRooms,
+            showCheckboxColumn,
+            onSelectAll: handleSelectAll,
+            onSelectRow: handleSelectRoom,
+          }}
+        />
       </div>
 
       {/* Pagination */}

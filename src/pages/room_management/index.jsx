@@ -4,6 +4,7 @@ import { getRooms } from "../../api/apiRoom.js";
 import RoomList from "./sections/RoomList.jsx";
 import RoomAnalytics from "./sections/RoomAnalytics.jsx";
 import RoomSettings from "./sections/RoomSettings.jsx";
+import PageTabs from "../../components/common/PageTabs.jsx";
 
 const RoomManagement = ({ onNavigateToContract, onNavigateToInvoice }) => {
   const [rooms, setRooms] = useState([]);
@@ -54,26 +55,15 @@ const RoomManagement = ({ onNavigateToContract, onNavigateToInvoice }) => {
   return (
     <div className="space-y-6">
       {/* Tabs Navigation */}
-      <div className="flex items-center space-x-1 border-b border-slate-200 overflow-x-auto scrollbar-hide">
-        <button
-          onClick={() => setActiveSubTab("list")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${activeSubTab === "list" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-        >
-          <LayoutGrid size={18} /> Danh sách phòng
-        </button>
-        <button
-          onClick={() => setActiveSubTab("analytics")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${activeSubTab === "analytics" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-        >
-          <BarChart3 size={18} /> Thống kê mật độ
-        </button>
-        <button
-          onClick={() => setActiveSubTab("settings")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${activeSubTab === "settings" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-        >
-          <Settings size={18} /> Điều chỉnh
-        </button>
-      </div>
+      <PageTabs
+        tabs={[
+          { id: "list", label: "Danh sách phòng", icon: LayoutGrid },
+          { id: "analytics", label: "Thống kê mật độ", icon: BarChart3 },
+          { id: "settings", label: "Điều chỉnh", icon: Settings },
+        ]}
+        activeTab={activeSubTab}
+        onTabChange={setActiveSubTab}
+      />
 
       {/* Tab Content */}
       {activeSubTab === "list" && <RoomList rooms={rooms} isLoadingRooms={isLoadingRooms} onRefresh={handleRefresh} selectedRoom={selectedRoom} setSelectedRoom={setSelectedRoom} onNavigateToContract={onNavigateToContract} onNavigateToInvoice={onNavigateToInvoice} />}

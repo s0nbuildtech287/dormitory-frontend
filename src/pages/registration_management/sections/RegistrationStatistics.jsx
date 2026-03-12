@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp, CheckCircle2, Clock, XCircle, Gauge } from "lucide-react";
 import { RegistrationStatus } from "../../../utils/types.js";
 import { getScoringWeights } from "../../../api/apiRegistration.js";
+import StatCard from "../../../components/common/StatCard.jsx";
 
 const RegistrationStatistics = ({ regs }) => {
   const [quotaSettings, setQuotaSettings] = useState({
@@ -223,21 +224,6 @@ const RegistrationStatistics = ({ regs }) => {
     };
   }, [regs]);
 
-  const StatCard = ({ icon: Icon, label, value, subValue, color, size = "default" }) => (
-    <div className={`bg-white ${size === "large" ? "p-8" : "p-6"} rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow`}>
-      <div className={`${size === "large" ? "p-5" : "p-4"} rounded-xl bg-${color}-50`}>
-        <Icon size={size === "large" ? 32 : 28} className={`text-${color}-600`} />
-      </div>
-      <div>
-        <p className={`${size === "large" ? "text-xs" : "text-xs"} font-medium text-slate-500 mb-1 uppercase tracking-wide`}>{label}</p>
-        <div className="flex items-baseline gap-2">
-          <h4 className={`${size === "large" ? "text-3xl" : "text-2xl"} font-bold text-slate-900`}>{value}</h4>
-          {subValue && <span className="text-[11px] font-semibold text-slate-400">{subValue}</span>}
-        </div>
-      </div>
-    </div>
-  );
-
   const { totalSlots, policy_priority, freshmen, seniors } = quotaSettings;
   const quotaBasket1 = Math.round(totalSlots * (policy_priority / 100));
   const quotaBasket2 = Math.round(totalSlots * (freshmen / 100));
@@ -286,46 +272,31 @@ const RegistrationStatistics = ({ regs }) => {
       {/* 2. STATUS CARDS - Row 2: trạng thái duyệt */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Approved */}
-        <div className="bg-white p-5 rounded-2xl border border-emerald-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-          <div className="p-3 rounded-xl bg-emerald-50">
-            <CheckCircle2 size={26} className="text-emerald-600" />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 mb-0.5">Đã chấp nhận</p>
-            <div className="flex items-baseline gap-2">
-              <h4 className="text-2xl font-bold text-emerald-600">{statsData.countApproved}</h4>
-              <span className="text-[11px] font-semibold text-slate-400">hồ sơ</span>
-            </div>
-          </div>
-        </div>
+        <StatCard 
+          icon={CheckCircle2} 
+          label="Đã chấp nhận" 
+          value={statsData.countApproved} 
+          subValue="hồ sơ" 
+          color="emerald" 
+        />
 
         {/* Pending */}
-        <div className="bg-white p-5 rounded-2xl border border-amber-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-          <div className="p-3 rounded-xl bg-amber-50">
-            <Clock size={26} className="text-amber-500" />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 mb-0.5">Đang chờ duyệt</p>
-            <div className="flex items-baseline gap-2">
-              <h4 className="text-2xl font-bold text-amber-500">{statsData.countPending}</h4>
-              <span className="text-[11px] font-semibold text-slate-400">hồ sơ</span>
-            </div>
-          </div>
-        </div>
+        <StatCard 
+          icon={Clock} 
+          label="Đang chờ duyệt" 
+          value={statsData.countPending} 
+          subValue="hồ sơ" 
+          color="amber" 
+        />
 
         {/* Rejected */}
-        <div className="bg-white p-5 rounded-2xl border border-rose-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-          <div className="p-3 rounded-xl bg-rose-50">
-            <XCircle size={26} className="text-rose-500" />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-slate-500 mb-0.5">Đã từ chối</p>
-            <div className="flex items-baseline gap-2">
-              <h4 className="text-2xl font-bold text-rose-500">{statsData.countRejected}</h4>
-              <span className="text-[11px] font-semibold text-slate-400">hồ sơ</span>
-            </div>
-          </div>
-        </div>
+        <StatCard 
+          icon={XCircle} 
+          label="Đã từ chối" 
+          value={statsData.countRejected} 
+          subValue="hồ sơ" 
+          color="rose" 
+        />
       </div>
 
       {/* 3. QUOTA BREAKDOWN - full width panel per basket */}

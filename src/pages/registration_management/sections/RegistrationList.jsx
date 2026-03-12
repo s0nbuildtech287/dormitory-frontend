@@ -5,6 +5,8 @@ import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import DataTable from "../../../components/common/DataTable.jsx";
+import FilterBar from "../../../components/common/FilterBar.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
 import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration } from "../../../api/apiRegistration.js";
@@ -240,75 +242,72 @@ const RegistrationList = ({
       </div>
 
       {/* THANH TÌM KIẾM VÀ LỌC */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
-        <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc dữ liệu đăng ký</h3>
-        <div className="grid grid-cols-7 gap-4 items-center">
-          <div className="relative col-span-2">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm tên hoặc mã SV..."
-              value={searchTerm}
-              onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
-            />
-          </div>
-
-          <select
-            value={filterStatus}
-            onChange={(e) => handleFilterChange(setFilterStatus, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả trạng thái</option>
-            <option value={RegistrationStatus.PENDING}>Chờ duyệt</option>
-            <option value={RegistrationStatus.REJECTED}>Từ chối</option>
-          </select>
-
-          <select
-            value={filterYear}
-            onChange={(e) => handleFilterChange(setFilterYear, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả năm</option>
-            <option value="1">Năm 1</option>
-            <option value="2">Năm 2</option>
-            <option value="3">Năm 3</option>
-            <option value="4">Năm 4</option>
-          </select>
-
-          <select
-            value={filterScore}
-            onChange={(e) => handleFilterChange(setFilterScore, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả điểm</option>
-            <option value="High">Cao (≥80)</option>
-            <option value="Medium">Trung bình (60-79)</option>
-            <option value="Low">Thấp (&lt;60)</option>
-          </select>
-
-          <select
-            value={filterGender}
-            onChange={(e) => handleFilterChange(setFilterGender, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả giới tính</option>
-            <option value="Nam">Nam</option>
-            <option value="Nữ">Nữ</option>
-          </select>
-
-          <select
-            value={filterGroup}
-            onChange={(e) => handleFilterChange(setFilterGroup, e.target.value)}
-            className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả nhóm</option>
-            <option value="Tân sinh viên">Tân sinh viên</option>
-            <option value="Chính sách">Chính sách</option>
-            <option value="Sinh viên khoá cũ">Sinh viên khoá cũ</option>
-          </select>
-        </div>
-      </div>
+      <FilterBar
+        title="Bộ lọc dữ liệu đăng ký"
+        filterContainerClass="grid grid-cols-7 gap-4 items-center"
+        search={{
+          placeholder: "Tìm tên hoặc mã SV...",
+          value: searchTerm,
+          onChange: (val) => handleFilterChange(setSearchTerm, val),
+          className: "col-span-2 relative"
+        }}
+        filters={[
+          {
+            value: filterStatus,
+            onChange: (val) => handleFilterChange(setFilterStatus, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả trạng thái" },
+              { value: RegistrationStatus.PENDING, label: "Chờ duyệt" },
+              { value: RegistrationStatus.REJECTED, label: "Từ chối" },
+            ]
+          },
+          {
+            value: filterYear,
+            onChange: (val) => handleFilterChange(setFilterYear, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả năm" },
+              { value: "1", label: "Năm 1" },
+              { value: "2", label: "Năm 2" },
+              { value: "3", label: "Năm 3" },
+              { value: "4", label: "Năm 4" },
+            ]
+          },
+          {
+            value: filterScore,
+            onChange: (val) => handleFilterChange(setFilterScore, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả điểm" },
+              { value: "High", label: "Cao (≥80)" },
+              { value: "Medium", label: "Trung bình (60-79)" },
+              { value: "Low", label: "Thấp (<60)" },
+            ]
+          },
+          {
+            value: filterGender,
+            onChange: (val) => handleFilterChange(setFilterGender, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả giới tính" },
+              { value: "Nam", label: "Nam" },
+              { value: "Nữ", label: "Nữ" },
+            ]
+          },
+          {
+            value: filterGroup,
+            onChange: (val) => handleFilterChange(setFilterGroup, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả nhóm" },
+              { value: "Tân sinh viên", label: "Tân sinh viên" },
+              { value: "Chính sách", label: "Chính sách" },
+              { value: "Sinh viên khoá cũ", label: "Sinh viên khoá cũ" },
+            ]
+          }
+        ]}
+      />
 
       {/* BẢNG HỒ SƠ ĐĂNG KÝ */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
@@ -341,132 +340,123 @@ const RegistrationList = ({
             )}
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="border-b-2 border-slate-300">
-              <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                {showCheckboxColumn && (
-                  <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
-                    <input
-                      type="checkbox"
-                      checked={filteredRegs.length > 0 && selectedRegs.size === filteredRegs.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 cursor-pointer"
-                      title="Chọn tất cả (tất cả trang)"
-                    />
-                  </th>
-                )}
-                <th className="px-6 py-3 border-r-2 border-slate-300">Mã sinh viên</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300">Tên sinh viên</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300">Nhóm</th>
-                <th className="px-6 py-3 text-center border-r-2 border-slate-300">Điểm</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300">Đề xuất</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300">Trạng thái</th>
-                <th className="px-6 py-3 text-center">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-300">
-              {currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "8" : "7"} className="px-6 py-8 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <List size={48} className="mb-4 opacity-50" />
-                      <p className="text-sm font-medium">Chưa có hồ sơ đăng ký nào</p>
-                      <p className="text-xs mt-1">Hãy thử import CSV để thêm dữ liệu</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((reg) => (
-                  <tr key={reg.id} className="hover:bg-slate-50/50 transition-colors h-12">
-                    {showCheckboxColumn && (
-                      <td className="px-4 py-2 border-r-2 border-slate-300 text-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedRegs.has(reg.id)}
-                          onChange={() => handleSelectReg(reg.id)}
-                          className="w-4 h-4 cursor-pointer"
-                        />
-                      </td>
-                    )}
-                    <td className="px-6 py-2 text-xs font-mono font-semibold text-slate-900 border-r-2 border-slate-300">{reg.student_id || "N/A"}</td>
-                    <td className="px-6 py-2 font-semibold text-slate-900 text-sm border-r-2 border-slate-300">{reg.student_name}</td>
-                    <td className="px-6 py-2 border-r-2 border-slate-300">
-                      <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-black">{getGroupName(reg.year, reg.priority_reasons)}</span>
-                    </td>
-                    <td className="px-6 py-2 text-center border-r-2 border-slate-300">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.ai_score ?? 0}</span>
-                    </td>
-                    <td className="px-6 py-2 border-r-2 border-slate-300">
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                          reg.ai_suggestion === AISuggestionType.RECOMMENDED
-                            ? "bg-emerald-50 text-emerald-600"
-                            : reg.ai_suggestion === AISuggestionType.CONSIDER
-                              ? "bg-amber-50 text-amber-600"
-                              : "bg-rose-50 text-rose-600"
-                        }`}
-                      >
-                        <div
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
-                          }`}
-                        ></div>
-                        {reg.ai_suggestion}
-                      </div>
-                    </td>
-                    <td className="px-6 py-2 border-r-2 border-slate-300">
-                      <div className="flex items-center gap-1">
-                        <span
-                          className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
-                            reg.status === RegistrationStatus.PENDING
-                              ? "bg-amber-100 text-amber-700"
-                              : reg.status === RegistrationStatus.APPROVED
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-rose-100 text-rose-700"
-                          }`}
-                        >
-                          {reg.status}
-                        </span>
-                        {reg.isFull && reg.status === RegistrationStatus.PENDING && (
-                          <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">Đầy chỗ</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-2 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Xem chi tiết">
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => alert(`Đã mô phỏng gửi email thông báo cho tài khoản ${reg.student_id}`)}
-                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                          title="Gửi email thông báo"
-                        >
-                          <Send size={16} />
-                        </button>
-                        <button
-                          onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.APPROVED })}
-                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                          title="Phê duyệt"
-                        >
-                          <CheckCircle2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.REJECTED })}
-                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                          title="Từ chối"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={[
+            {
+              header: "Mã sinh viên",
+              align: "left",
+              accessor: (reg) => <span className="text-xs font-mono font-semibold text-slate-900">{reg.student_id || "N/A"}</span>,
+            },
+            {
+              header: "Tên sinh viên",
+              align: "left",
+              accessor: (reg) => <span className="font-semibold text-slate-900 text-sm">{reg.student_name}</span>,
+            },
+            {
+              header: "Nhóm",
+              align: "left",
+              accessor: (reg) => (
+                <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-black">
+                  {getGroupName(reg.year, reg.priority_reasons)}
+                </span>
+              ),
+            },
+            {
+              header: "Điểm",
+              align: "center",
+              accessor: (reg) => (
+                <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black">{reg.ai_score ?? 0}</span>
+              ),
+            },
+            {
+              header: "Đề xuất",
+              align: "left",
+              accessor: (reg) => (
+                <div
+                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
+                    reg.ai_suggestion === AISuggestionType.RECOMMENDED
+                      ? "bg-emerald-50 text-emerald-600"
+                      : reg.ai_suggestion === AISuggestionType.CONSIDER
+                        ? "bg-amber-50 text-amber-600"
+                        : "bg-rose-50 text-rose-600"
+                  }`}
+                >
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
+                    }`}
+                  ></div>
+                  {reg.ai_suggestion}
+                </div>
+              ),
+            },
+            {
+              header: "Trạng thái",
+              align: "left",
+              accessor: (reg) => (
+                <div className="flex items-center gap-1">
+                  <span
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
+                      reg.status === RegistrationStatus.PENDING
+                        ? "bg-amber-100 text-amber-700"
+                        : reg.status === RegistrationStatus.APPROVED
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-rose-100 text-rose-700"
+                    }`}
+                  >
+                    {reg.status}
+                  </span>
+                  {reg.isFull && reg.status === RegistrationStatus.PENDING && (
+                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">Đầy chỗ</span>
+                  )}
+                </div>
+              ),
+            },
+            {
+              header: "Hành động",
+              align: "center",
+              accessor: (reg) => (
+                <div className="flex items-center justify-center gap-2">
+                  <button onClick={() => setSelectedRegDetail(reg)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Xem chi tiết">
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => alert(`Đã mô phỏng gửi email thông báo cho tài khoản ${reg.student_id}`)}
+                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    title="Gửi email thông báo"
+                  >
+                    <Send size={16} />
+                  </button>
+                  <button
+                    onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.APPROVED })}
+                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                    title="Phê duyệt"
+                  >
+                    <CheckCircle2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.REJECTED })}
+                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    title="Từ chối"
+                  >
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          data={currentItems}
+          keyExtractor={(reg) => reg.id}
+          loading={false}
+          emptyState={{ icon: List, title: "Chưa có hồ sơ đăng ký nào", description: "Hãy thử import CSV để thêm dữ liệu" }}
+          selection={{
+            selectedItems: selectedRegs,
+            showCheckboxColumn,
+            onSelectAll: handleSelectAll,
+            onSelectRow: handleSelectReg,
+          }}
+          rowClassName={() => "h-12"}
+        />
       </div>
 
       <Pagination pagination={pagination} />

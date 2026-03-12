@@ -6,6 +6,8 @@ import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import DataTable from "../../../components/common/DataTable.jsx";
+import FilterBar from "../../../components/common/FilterBar.jsx";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 
@@ -215,103 +217,82 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
-        <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Bộ lọc hóa đơn</h3>
-
-        <div className="flex gap-3 items-center">
-          {/* Search */}
-          <div className="relative flex-[3]">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm số phòng, mã hóa đơn, tên sinh viên..."
-              value={searchTerm}
-              onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-xs transition-all bg-slate-50/50"
-            />
-          </div>
-
-          {/* Building Filter */}
-          <select
-            value={filterBuilding}
-            onChange={(e) => handleFilterChange(setFilterBuilding, e.target.value)}
-            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả tòa</option>
-            <option value="A">Tòa A</option>
-            <option value="B">Tòa B</option>
-            <option value="C">Tòa C</option>
-            <option value="D">Tòa D</option>
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={filterStatus}
-            onChange={(e) => handleFilterChange(setFilterStatus, e.target.value)}
-            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả trạng thái</option>
-            <option value="Đã thanh toán">Đã thanh toán</option>
-            <option value="Chưa thanh toán">Chưa thanh toán</option>
-            <option value="Quá hạn">Quá hạn</option>
-          </select>
-
-          {/* Month Filter */}
-          <select
-            value={filterMonth}
-            onChange={(e) => handleFilterChange(setFilterMonth, e.target.value)}
-            className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
-          >
-            <option value="All">Tất cả tháng</option>
-            <option value="2026-01">Tháng 1/2026</option>
-            <option value="2026-02">Tháng 2/2026</option>
-            <option value="2026-03">Tháng 3/2026</option>
-            <option value="2026-04">Tháng 4/2026</option>
-            <option value="2026-05">Tháng 5/2026</option>
-            <option value="2026-06">Tháng 6/2026</option>
-            <option value="2026-07">Tháng 7/2026</option>
-            <option value="2026-08">Tháng 8/2026</option>
-            <option value="2026-09">Tháng 9/2026</option>
-            <option value="2026-10">Tháng 10/2026</option>
-            <option value="2026-11">Tháng 11/2026</option>
-            <option value="2026-12">Tháng 12/2026</option>
-          </select>
-
-          {/* Reset Button */}
-          <button
-            onClick={handleReset}
-            disabled={!hasActiveFilter}
-            className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
-            title="Xóa bộ lọc"
-          >
-            ↺ Reset
-          </button>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3 mt-3 flex-wrap">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-2"
-          >
-            <Plus size={14} /> Hóa đơn mới
-          </button>
-          <button className="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2">
-            <Download size={14} /> Export
-          </button>
-          
-          {/* Toggle ẩn hóa đơn tháng trước đã TT */}
-          <label className="flex items-center gap-2 cursor-pointer ml-auto select-none">
-            <div
-              onClick={() => { setHidePastPaid(v => !v); setCurrentPage(1); }}
-              className={`relative w-9 h-5 rounded-full transition-colors ${hidePastPaid ? 'bg-blue-500' : 'bg-slate-300'}`}
+      <FilterBar
+        title="Bộ lọc hóa đơn"
+        search={{
+          placeholder: "Tìm số phòng, mã hóa đơn, tên sinh viên...",
+          value: searchTerm,
+          onChange: (val) => handleFilterChange(setSearchTerm, val)
+        }}
+        filters={[
+          {
+            value: filterBuilding,
+            onChange: (val) => handleFilterChange(setFilterBuilding, val),
+            options: [
+              { value: "All", label: "Tất cả tòa" },
+              { value: "A", label: "Tòa A" },
+              { value: "B", label: "Tòa B" },
+              { value: "C", label: "Tòa C" },
+              { value: "D", label: "Tòa D" },
+            ]
+          },
+          {
+            value: filterStatus,
+            onChange: (val) => handleFilterChange(setFilterStatus, val),
+            options: [
+              { value: "All", label: "Tất cả trạng thái" },
+              { value: "Đã thanh toán", label: "Đã thanh toán" },
+              { value: "Chưa thanh toán", label: "Chưa thanh toán" },
+              { value: "Quá hạn", label: "Quá hạn" },
+            ]
+          },
+          {
+            value: filterMonth,
+            onChange: (val) => handleFilterChange(setFilterMonth, val),
+            options: [
+              { value: "All", label: "Tất cả tháng" },
+              { value: "2026-01", label: "Tháng 1/2026" },
+              { value: "2026-02", label: "Tháng 2/2026" },
+              { value: "2026-03", label: "Tháng 3/2026" },
+              { value: "2026-04", label: "Tháng 4/2026" },
+              { value: "2026-05", label: "Tháng 5/2026" },
+              { value: "2026-06", label: "Tháng 6/2026" },
+              { value: "2026-07", label: "Tháng 7/2026" },
+              { value: "2026-08", label: "Tháng 8/2026" },
+              { value: "2026-09", label: "Tháng 9/2026" },
+              { value: "2026-10", label: "Tháng 10/2026" },
+              { value: "2026-11", label: "Tháng 11/2026" },
+              { value: "2026-12", label: "Tháng 12/2026" },
+            ]
+          }
+        ]}
+        hasActiveFilter={hasActiveFilter}
+        onReset={handleReset}
+        actionButtons={
+          <>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-2"
             >
-              <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${hidePastPaid ? 'translate-x-4' : 'translate-x-0'}`} />
-            </div>
-            <span className="text-xs font-semibold text-slate-600">Ẩn đã TT tháng trước</span>
-          </label>
-        </div>
-      </div>
+              <Plus size={14} /> Hóa đơn mới
+            </button>
+            <button className="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2">
+              <Download size={14} /> Export
+            </button>
+            
+            {/* Toggle ẩn hóa đơn tháng trước đã TT */}
+            <label className="flex items-center gap-2 cursor-pointer ml-auto select-none">
+              <div
+                onClick={() => { setHidePastPaid(v => !v); pagination.goToPage(1); }}
+                className={`relative w-9 h-5 rounded-full transition-colors ${hidePastPaid ? 'bg-blue-500' : 'bg-slate-300'}`}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${hidePastPaid ? 'translate-x-4' : 'translate-x-0'}`} />
+              </div>
+              <span className="text-xs font-semibold text-slate-600">Ẩn đã TT tháng trước</span>
+            </label>
+          </>
+        }
+      />
 
       {/* Table */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
@@ -342,167 +323,148 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             )}
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="border-b-2 border-slate-300">
-              <tr className="bg-slate-200 text-slate-700 text-xs font-black capitalize tracking-widest">
-                {showCheckboxColumn && (
-                  <th className="px-4 py-3 border-r-2 border-slate-300 w-[5%] text-center">
-                    <input
-                      type="checkbox"
-                      checked={filteredBills.length > 0 && selectedInvoices.size === filteredBills.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 cursor-pointer"
-                      title="Chọn tất cả (tất cả trang)"
-                    />
-                  </th>
-                )}
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[11%]' : 'w-[12%]'} text-center`}>Mã HĐ</th>
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[12%]' : 'w-[13%]'} text-center`}>Phòng</th>
-                <th className="px-6 py-3 border-r-2 border-slate-300 w-[9%] text-center">Sinh viên</th>
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[9%]' : 'w-[10%]'} text-center`}>Tháng</th>
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[11%]' : 'w-[12%]'} text-center`}>Tổng tiền</th>
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[10%]' : 'w-[11%]'} text-center`}>Hạn đóng</th>
-                <th className={`px-6 py-3 border-r-2 border-slate-300 ${showCheckboxColumn ? 'w-[11%]' : 'w-[12%]'} text-center`}>Trạng thái</th>
-                <th className="px-6 py-3 w-[11%] text-center">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-300">
-              {loading ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "9" : "8"} className="px-6 py-8 text-center text-slate-500">
-                    Đang tải dữ liệu...
-                  </td>
-                </tr>
-              ) : currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={showCheckboxColumn ? "9" : "8"} className="px-6 py-8 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400">
-                      <CreditCard size={48} className="mb-4 opacity-50" />
-                      <p className="text-sm font-medium">Không có hóa đơn nào</p>
-                      <p className="text-xs mt-1">Thử thay đổi bộ lọc để tìm kiếm</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((bill) => {
-                  // Safe parsing for billing_month (handle both string and timestamp)
-                  let year, month;
-                  if (typeof bill.billing_month === 'string') {
-                    if (bill.billing_month.includes('T')) {
-                      // ISO timestamp format
-                      const billingDate = new Date(bill.billing_month);
-                      year = billingDate.getFullYear();
-                      month = billingDate.getMonth() + 1;
-                    } else {
-                      // YYYY-MM-DD format
-                      const [y, m] = bill.billing_month.split('-');
-                      year = parseInt(y);
-                      month = parseInt(m);
-                    }
-                  } else {
-                    // Fallback
+        <DataTable
+          columns={[
+            {
+              header: "Mã HĐ",
+              align: "center",
+              width: showCheckboxColumn ? "w-[11%]" : "w-[12%]",
+              accessor: (bill) => <span className="font-bold text-slate-900 text-xs font-mono">{bill.invoice_number}</span>,
+            },
+            {
+              header: "Phòng",
+              align: "center",
+              width: showCheckboxColumn ? "w-[12%]" : "w-[13%]",
+              accessor: (bill) => <span className="text-slate-700 text-xs font-bold">{bill.building}-{bill.room_number}</span>,
+            },
+            {
+              header: "Sinh viên",
+              align: "center",
+              width: "w-[9%]",
+              accessor: (bill) => (
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-xs font-semibold text-slate-700">
+                    {bill.occupancy || 0}/{bill.current_occupancy || 5}
+                  </span>
+                  <button
+                    onClick={() => handleShowStudents(bill)}
+                    className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
+                    title="Xem danh sách sinh viên"
+                  >
+                    <Users size={14} />
+                  </button>
+                </div>
+              ),
+            },
+            {
+              header: "Tháng",
+              align: "center",
+              width: showCheckboxColumn ? "w-[9%]" : "w-[10%]",
+              accessor: (bill) => {
+                let year, month;
+                if (typeof bill.billing_month === "string") {
+                  if (bill.billing_month.includes("T")) {
                     const billingDate = new Date(bill.billing_month);
                     year = billingDate.getFullYear();
                     month = billingDate.getMonth() + 1;
+                  } else {
+                    const [y, m] = bill.billing_month.split("-");
+                    year = parseInt(y);
+                    month = parseInt(m);
                   }
-
-                  const dueDate = bill.due_date ? new Date(bill.due_date.includes('T') ? bill.due_date : bill.due_date + 'T00:00:00') : null;
-                  const isHighlighted = highlightedInvoice && bill.invoice_number === highlightedInvoice;
-
-                  return (
-                    <tr key={bill.id} className={`transition-colors ${isHighlighted ? 'bg-yellow-100 animate-pulse' : 'hover:bg-slate-50/50'}`}>
-                      {showCheckboxColumn && (
-                        <td className="px-4 py-2 border-r-2 border-slate-300 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedInvoices.has(bill.id)}
-                            onChange={() => handleSelectInvoice(bill.id)}
-                            className="w-4 h-4 cursor-pointer"
-                          />
-                        </td>
-                      )}
-                      <td className="px-6 py-2 font-bold text-slate-900 text-xs border-r-2 border-slate-300 text-center font-mono">
-                        {bill.invoice_number}
-                      </td>
-                      <td className="px-6 py-2 text-slate-700 text-xs border-r-2 border-slate-300 text-center font-bold">
-                        {bill.building}-{bill.room_number}
-                      </td>
-                      <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-xs font-semibold text-slate-700">
-                            {bill.occupancy || 0}/{bill.current_occupancy || 5}
-                          </span>
-                          <button
-                            onClick={() => handleShowStudents(bill)}
-                            className="inline-flex items-center justify-center p-1 text-purple-500 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors"
-                            title="Xem danh sách sinh viên"
-                          >
-                            <Users size={14} />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-6 py-2 text-slate-600 text-xs border-r-2 border-slate-300 text-center font-semibold">
-                        Tháng {month}/{year}
-                      </td>
-                      <td className="px-6 py-2 font-bold text-blue-700 text-xs border-r-2 border-slate-300 text-center">
-                        {Math.round(bill.total_amount || 0).toLocaleString('vi-VN')}đ
-                      </td>
-                      <td className="px-6 py-2 text-slate-500 font-semibold text-xs border-r-2 border-slate-300 text-center">
-                        {dueDate ? dueDate.toLocaleDateString('vi-VN') : '—'}
-                      </td>
-                      <td className="px-6 py-2 border-r-2 border-slate-300 text-center">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${bill.status === "Đã thanh toán" ? "bg-emerald-100 text-emerald-700" :
-                          bill.status === "Quá hạn" ? "bg-rose-100 text-rose-700" :
-                            "bg-amber-100 text-amber-700"
-                          }`}>
-                          {bill.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-2 text-center">
-                        <div className="flex justify-center gap-1.5">
-                          <button
-                            onClick={() => setSelectedInvoice(bill)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Xem chi tiết"
-                          >
-                            <Eye size={15} />
-                          </button>
-                          <button
-                            className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
-                            title="In hóa đơn"
-                          >
-                            <Printer size={15} />
-                          </button>
-                          <button
-                            className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                            title="Gửi nhắc nhở"
-                          >
-                            <Send size={15} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (bill.status === "Chưa thanh toán" || bill.status === "Quá hạn") {
-                                setDeleteWarning(bill);
-                              } else {
-                                setDeleteError("");
-                                setInvoiceToDelete(bill);
-                              }
-                            }}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Xóa hóa đơn"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                } else {
+                  const billingDate = new Date(bill.billing_month);
+                  year = billingDate.getFullYear();
+                  month = billingDate.getMonth() + 1;
+                }
+                return <span className="text-slate-600 text-xs font-semibold">Tháng {month}/{year}</span>;
+              },
+            },
+            {
+              header: "Tổng tiền",
+              align: "center",
+              width: showCheckboxColumn ? "w-[11%]" : "w-[12%]",
+              accessor: (bill) => <span className="font-bold text-blue-700 text-xs">{Math.round(bill.total_amount || 0).toLocaleString("vi-VN")}đ</span>,
+            },
+            {
+              header: "Hạn đóng",
+              align: "center",
+              width: showCheckboxColumn ? "w-[10%]" : "w-[11%]",
+              accessor: (bill) => {
+                const dueDate = bill.due_date ? new Date(bill.due_date.includes("T") ? bill.due_date : bill.due_date + "T00:00:00") : null;
+                return <span className="text-slate-500 font-semibold text-xs">{dueDate ? dueDate.toLocaleDateString("vi-VN") : "—"}</span>;
+              },
+            },
+            {
+              header: "Trạng thái",
+              align: "center",
+              width: showCheckboxColumn ? "w-[11%]" : "w-[12%]",
+              accessor: (bill) => (
+                <span
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
+                    bill.status === "Đã thanh toán"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : bill.status === "Quá hạn"
+                        ? "bg-rose-100 text-rose-700"
+                        : "bg-amber-100 text-amber-700"
+                  }`}
+                >
+                  {bill.status}
+                </span>
+              ),
+            },
+            {
+              header: "Hành động",
+              align: "center",
+              width: "w-[11%]",
+              accessor: (bill) => (
+                <div className="flex justify-center gap-1.5">
+                  <button
+                    onClick={() => setSelectedInvoice(bill)}
+                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Xem chi tiết"
+                  >
+                    <Eye size={15} />
+                  </button>
+                  <button className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" title="In hóa đơn">
+                    <Printer size={15} />
+                  </button>
+                  <button className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Gửi nhắc nhở">
+                    <Send size={15} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (bill.status === "Chưa thanh toán" || bill.status === "Quá hạn") {
+                        setDeleteWarning(bill);
+                      } else {
+                        setDeleteError("");
+                        setInvoiceToDelete(bill);
+                      }
+                    }}
+                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Xóa hóa đơn"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ),
+            },
+          ]}
+          data={currentItems}
+          keyExtractor={(bill) => bill.id}
+          loading={loading}
+          emptyState={{ icon: CreditCard, title: "Không có hóa đơn nào", description: "Thử thay đổi bộ lọc để tìm kiếm" }}
+          selection={{
+            selectedItems: selectedInvoices,
+            showCheckboxColumn,
+            onSelectAll: handleSelectAll,
+            onSelectRow: handleSelectInvoice,
+          }}
+          rowClassName={(bill) => {
+            const isHighlighted = highlightedInvoice && bill.invoice_number === highlightedInvoice;
+            return isHighlighted ? "bg-yellow-100 animate-pulse" : "";
+          }}
+        />
       </div>
 
       {/* Pagination */}

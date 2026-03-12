@@ -3,6 +3,7 @@ import { List, BarChart3, RefreshCw, Clock, AlertTriangle } from "lucide-react";
 import StudentList from "./sections/StudentList.jsx";
 import ContractDetailModal from "./sections/ContractDetailModal.jsx";
 import ContractStatistics from "./sections/ContractStatistics.jsx";
+import PageTabs from "../../components/common/PageTabs.jsx";
 import { getContracts, getContractStats, deleteContract } from "../../api/apiContract.js";
 
 const ContractManagement = ({ initialFilter }) => {
@@ -53,36 +54,29 @@ const ContractManagement = ({ initialFilter }) => {
 
   return (
     <div className="space-y-6">
-      {/* Tab navigation */}
-      <div className="flex items-center justify-between border-b border-slate-200">
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={() => setActiveSubTab("list")}
-            className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${
-              activeSubTab === "list" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <List size={18} /> Danh sách SV
-            {pendingCount > 0 && (
+      <PageTabs
+        tabs={[
+          {
+            id: "list",
+            label: "Danh sách SV",
+            icon: List,
+            badge: pendingCount > 0 && (
               <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black flex items-center gap-1">
                 <Clock size={10} /> {pendingCount} chờ phòng
               </span>
-            )}
+            ),
+          },
+          { id: "stats", label: "Thống kê hợp đồng", icon: BarChart3 },
+        ]}
+        activeTab={activeSubTab}
+        onTabChange={setActiveSubTab}
+        rightAction={
+          <button onClick={fetchData} disabled={loading} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-blue-600 transition-colors">
+            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+            Làm mới
           </button>
-          <button
-            onClick={() => setActiveSubTab("stats")}
-            className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${
-              activeSubTab === "stats" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <BarChart3 size={18} /> Thống kê hợp đồng
-          </button>
-        </div>
-        <button onClick={fetchData} disabled={loading} className="flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-blue-600 transition-colors">
-          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-          Làm mới
-        </button>
-      </div>
+        }
+      />
 
       {activeSubTab === "list" && (
         <StudentList 

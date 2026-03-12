@@ -15,6 +15,7 @@ import {
   Calendar,
   Activity,
 } from "lucide-react";
+import StatCard from "../../../components/common/StatCard.jsx";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -81,6 +82,7 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Registrations */}
         <StatCard
+          variant="vertical"
           icon={<FileText size={28} />}
           title="Hồ sơ đăng ký"
           value={stats.registrations.total}
@@ -92,6 +94,7 @@ const DashboardHome = () => {
 
         {/* Rooms */}
         <StatCard
+          variant="vertical"
           icon={<DoorOpen size={28} />}
           title="Phòng ký túc xá"
           value={`${stats.rooms.occupied}/${stats.rooms.total}`}
@@ -102,6 +105,7 @@ const DashboardHome = () => {
 
         {/* Contracts */}
         <StatCard
+          variant="vertical"
           icon={<Users size={28} />}
           title="Hợp đồng sinh viên"
           value={stats.contracts.active}
@@ -113,6 +117,7 @@ const DashboardHome = () => {
 
         {/* Invoices */}
         <StatCard
+          variant="vertical"
           icon={<Receipt size={28} />}
           title="Hóa đơn"
           value={`${stats.invoices.paid}/${stats.invoices.total}`}
@@ -124,6 +129,7 @@ const DashboardHome = () => {
 
         {/* Feedbacks */}
         <StatCard
+          variant="vertical"
           icon={<MessageSquare size={28} />}
           title="Phản ánh"
           value={stats.feedbacks.total}
@@ -135,6 +141,7 @@ const DashboardHome = () => {
 
         {/* Notifications */}
         <StatCard
+          variant="vertical"
           icon={<Bell size={28} />}
           title="Thông báo"
           value={stats.notifications.sent}
@@ -303,42 +310,6 @@ const DashboardHome = () => {
   );
 };
 
-// Stat Card Component
-const StatCard = ({ icon, title, value, subtitle, color, alert, onClick }) => {
-  const colorClasses = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    purple: "bg-purple-50 text-purple-600 border-purple-100",
-    green: "bg-green-50 text-green-600 border-green-100",
-    amber: "bg-amber-50 text-amber-600 border-amber-100",
-    indigo: "bg-indigo-50 text-indigo-600 border-indigo-100",
-    rose: "bg-rose-50 text-rose-600 border-rose-100",
-  };
-
-  return (
-    <div
-      onClick={onClick}
-      className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all cursor-pointer group"
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-14 h-14 rounded-xl flex items-center justify-center border-2 ${colorClasses[color]} transition-all`}>
-          {icon}
-        </div>
-        {alert && (
-          <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-          </div>
-        )}
-      </div>
-      <h3 className="text-sm font-semibold text-slate-500 mb-2">{title}</h3>
-      <p className="text-3xl font-bold text-slate-900 mb-2">{value}</p>
-      <p className="text-sm text-slate-600">{subtitle}</p>
-      <div className="mt-4 flex items-center text-sm font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">
-        Xem chi tiết
-        <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
-      </div>
-    </div>
-  );
-};
 
 // Metric Row Component
 const MetricRow = ({ label, value, color, progress, alert }) => (

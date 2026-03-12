@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Building2, Home, Users, DoorOpen, CheckCircle2, AlertCircle, TrendingUp, LayoutGrid } from "lucide-react";
+import StatCard from "../../../components/common/StatCard.jsx";
 
 const BUILDING_COLORS = ["#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
 
@@ -102,20 +103,6 @@ const RoomAnalytics = ({ rooms }) => {
     };
   }, [rooms]);
 
-  const StatCard = ({ icon: Icon, label, value, subValue, colorClass }) => (
-    <div className="bg-white p-5 rounded-2xl border border-slate-100 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className={`p-4 rounded-xl ${colorClass}`}>
-        <Icon size={26} className="text-white" />
-      </div>
-      <div>
-        <p className="text-xs font-semibold text-slate-500 mb-0.5">{label}</p>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-3xl font-bold text-slate-900">{value}</span>
-          {subValue && <span className="text-xs font-semibold text-slate-400">{subValue}</span>}
-        </div>
-      </div>
-    </div>
-  );
 
   const pieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
     if (percent < 0.05) return null;
@@ -134,12 +121,12 @@ const RoomAnalytics = ({ rooms }) => {
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* ── 1. SUMMARY CARDS ── */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard icon={Building2} label="Số tòa" value={stats.totalBuildings} colorClass="bg-indigo-500" />
-        <StatCard icon={LayoutGrid} label="Tổng phòng" value={stats.totalRooms} colorClass="bg-blue-500" />
-        <StatCard icon={Users} label="Sức chứa tổng" value={stats.totalCapacity} subValue="chỗ" colorClass="bg-purple-500" />
-        <StatCard icon={DoorOpen} label="Phòng trống" value={stats.emptyCount} colorClass="bg-emerald-500" />
-        <StatCard icon={Home} label="Đang có người" value={stats.occupiedCount} colorClass="bg-amber-500" />
-        <StatCard icon={CheckCircle2} label="Đã đầy" value={stats.fullCount} colorClass="bg-rose-500" />
+        <StatCard icon={Building2} label="Số tòa" value={stats.totalBuildings} colorClass="bg-indigo-500 text-white" />
+        <StatCard icon={LayoutGrid} label="Tổng phòng" value={stats.totalRooms} colorClass="bg-blue-500 text-white" />
+        <StatCard icon={Users} label="Sức chứa tổng" value={stats.totalCapacity} subValue="chỗ" colorClass="bg-purple-500 text-white" />
+        <StatCard icon={DoorOpen} label="Phòng trống" value={stats.emptyCount} colorClass="bg-emerald-500 text-white" />
+        <StatCard icon={Home} label="Đang có người" value={stats.occupiedCount} colorClass="bg-amber-500 text-white" />
+        <StatCard icon={CheckCircle2} label="Đã đầy" value={stats.fullCount} colorClass="bg-rose-500 text-white" />
       </div>
 
       {/* ── 2. INSIGHTS PANEL ── */}
