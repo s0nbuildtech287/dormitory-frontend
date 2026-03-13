@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ArrowUpFromLine, Save } from "lucide-react";
+import { getRooms } from "../../../api/apiRoom.js";
 
 const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
@@ -16,6 +17,8 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
     { code: 'WIFI', name: 'Bộ phát Wifi', category: 'Thiết bị mạng', unit: 'Bộ' },
   ];
 
+  const buildings = ['A', 'B', 'C', 'D'];
+
   const [formData, setFormData] = useState({
     asset_code: '',
     asset_name: '',
@@ -24,16 +27,43 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
     quantity: 1,
     available_quantity: 0,
     export_date: new Date().toISOString().split("T")[0],
-    export_to: '',
+    building: '',
+    room_id: '',
     room_number: '',
-    recipient_name: '',
-    recipient_phone: '',
     purpose: 'Sử dụng',
     notes: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]);
+
+  // Fetch rooms when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchRooms();
+    }
+  }, [isOpen]);
+
+  // Filter rooms by building
+  useEffect(() => {
+    if (formData.building) {
+      const filtered = rooms.filter(room => room.building === formData.building);
+      setFilteredRooms(filtered);
+    } else {
+      setFilteredRooms([]);
+    }
+  }, [formData.building, rooms]);
+
+  const fetchRooms = async () => {
+    try {
+      const response = await getRooms();
+      setRooms(response.data || []);
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    }
+  };
 
   const handleAssetTypeChange = (e) => {
     const selectedType = assetTypes.find(type => type.code === e.target.value);
@@ -46,6 +76,26 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
         category_name: selectedType.category,
         unit: selectedType.unit,
         available_quantity: 0, // Will be fetched from API
+      }));
+    }
+  };
+
+  const handleBuildingChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      building: e.target.value,
+      room_id: '',
+      room_number: '',
+    }));
+  };
+
+  const handleRoomChange = (e) => {
+    const selectedRoom = filteredRooms.find(room => room.id === e.target.value);
+    if (selectedRoom) {
+      setFormData(prev => ({
+        ...prev,
+        room_id: selectedRoom.id,
+        room_number: selectedRoom.room_number,
       }));
     }
   };
@@ -195,63 +245,41 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Xuất đến <span className="text-red-500">*</span>
+                Tòa nhà <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="export_to"
-                value={formData.export_to}
-                onChange={handleChange}
+              <select
+                value={formData.building}
+                onChange={handleBuildingChange}
                 required
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="VD: Tòa A, Phòng 101..."
-              />
+              >
+                <option value="">-- Chọn tòa --</option>
+                {buildings.map((building) => (
+                  <option key={building} value={building}>
+                    Tòa {building}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Số phòng
+                Phòng <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="room_number"
-                value={formData.room_number}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="VD: A-101"
-              />
-            </div>
-          </div>
-
-          {/* Recipient Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Người nhận <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="recipient_name"
-                value={formData.recipient_name}
-                onChange={handleChange}
+              <select
+                value={formData.room_id}
+                onChange={handleRoomChange}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="Họ và tên"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Số điện thoại
-              </label>
-              <input
-                type="tel"
-                name="recipient_phone"
-                value={formData.recipient_phone}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="0123456789"
-              />
+                disabled={!formData.building}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-slate-100 disabled:cursor-not-allowed"
+              >
+                <option value="">-- Chọn phòng --</option>
+                {filteredRooms.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.room_number} ({room.current_occupancy}/{room.capacity} người)
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -305,8 +333,12 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Người nhận:</span>
-                <span className="font-semibold">{formData.recipient_name || "---"}</span>
+                <span>Xuất đến:</span>
+                <span className="font-semibold">
+                  {formData.building && formData.room_number 
+                    ? `Tòa ${formData.building} - ${formData.room_number}` 
+                    : '---'}
+                </span>
               </div>
             </div>
           </div>
