@@ -144,16 +144,16 @@ const AssetAnalytics = ({ assets }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <button
           onClick={() => toggleSection('category')}
-          className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          className="w-full p-6 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
         >
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
             <BarChart3 size={20} />
             Phân loại theo danh mục
           </h3>
           {expandedSections.category ? (
-            <ChevronUp size={20} className="text-slate-500" />
+            <ChevronUp size={20} className="text-blue-700" />
           ) : (
-            <ChevronDown size={20} className="text-slate-500" />
+            <ChevronDown size={20} className="text-blue-700" />
           )}
         </button>
         
@@ -169,8 +169,8 @@ const AssetAnalytics = ({ assets }) => {
                     .map(([category, data], index) => (
                     <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                          <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 1}</span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">{category}</span>
                       </div>
@@ -195,8 +195,8 @@ const AssetAnalytics = ({ assets }) => {
                     .map(([category, data], index) => (
                     <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                          <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 1}</span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">{category}</span>
                       </div>
@@ -220,16 +220,16 @@ const AssetAnalytics = ({ assets }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <button
           onClick={() => toggleSection('assetType')}
-          className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          className="w-full p-6 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
         >
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
             <BarChart3 size={20} />
             Phân tích theo loại tài sản
           </h3>
           {expandedSections.assetType ? (
-            <ChevronUp size={20} className="text-slate-500" />
+            <ChevronUp size={20} className="text-blue-700" />
           ) : (
-            <ChevronDown size={20} className="text-slate-500" />
+            <ChevronDown size={20} className="text-blue-700" />
           )}
         </button>
         
@@ -241,8 +241,8 @@ const AssetAnalytics = ({ assets }) => {
                 {locationDistribution.slice(0, 4).map((asset, index) => (
                   <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                        <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                      <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                        <span className="text-xs font-bold text-blue-700">{index + 1}</span>
                       </div>
                       <span className="text-sm font-medium text-slate-700">{asset.name}</span>
                     </div>
@@ -262,8 +262,8 @@ const AssetAnalytics = ({ assets }) => {
                 {locationDistribution.slice(4, 8).map((asset, index) => (
                   <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                        <span className="text-xs font-bold text-slate-700">{index + 5}</span>
+                      <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                        <span className="text-xs font-bold text-blue-700">{index + 5}</span>
                       </div>
                       <span className="text-sm font-medium text-slate-700">{asset.name}</span>
                     </div>
@@ -287,8 +287,8 @@ const AssetAnalytics = ({ assets }) => {
                     {locationDistribution.slice(8).map((asset, index) => (
                       <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                            <span className="text-xs font-bold text-slate-700">{index + 9}</span>
+                          <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                            <span className="text-xs font-bold text-blue-700">{index + 9}</span>
                           </div>
                           <span className="text-sm font-medium text-slate-700">{asset.name}</span>
                         </div>
@@ -313,16 +313,16 @@ const AssetAnalytics = ({ assets }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <button
           onClick={() => toggleSection('location')}
-          className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+          className="w-full p-6 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
         >
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
             <MapPin size={20} />
             Phân bổ tài sản theo vị trí
           </h3>
           {expandedSections.location ? (
-            <ChevronUp size={20} className="text-slate-500" />
+            <ChevronUp size={20} className="text-blue-700" />
           ) : (
-            <ChevronDown size={20} className="text-slate-500" />
+            <ChevronDown size={20} className="text-blue-700" />
           )}
         </button>
         
@@ -338,8 +338,8 @@ const AssetAnalytics = ({ assets }) => {
                   return (
                     <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                          <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 1}</span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">
                           {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
@@ -366,8 +366,8 @@ const AssetAnalytics = ({ assets }) => {
                   return (
                     <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                          <span className="text-xs font-bold text-slate-700">{index + 3}</span>
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 3}</span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">
                           {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
@@ -398,8 +398,8 @@ const AssetAnalytics = ({ assets }) => {
                       return (
                         <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
-                              <span className="text-xs font-bold text-slate-700">{index + 5}</span>
+                            <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                              <span className="text-xs font-bold text-blue-700">{index + 5}</span>
                             </div>
                             <span className="text-sm font-medium text-slate-700">
                               {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
