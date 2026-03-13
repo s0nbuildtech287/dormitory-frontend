@@ -19,51 +19,14 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
   // Ensure assets is always an array
   const safeAssets = Array.isArray(assets) ? assets : [];
 
-  // Group assets by asset_code to show summary
-  const assetSummary = safeAssets.reduce((acc, asset) => {
-    const code = asset.asset_code;
-    if (!acc[code]) {
-      acc[code] = {
-        asset_code: code,
-        name: asset.name,
-        category_name: asset.category_name,
-        unit: asset.unit,
-        purchase_date: asset.purchase_date,
-        purchase_price: asset.purchase_price,
-        total_quantity: 0,
-        in_use: 0,
-        in_stock: 0,
-        damaged: 0,
-      };
-    }
-    
-    const qty = asset.quantity || 0;
-    acc[code].total_quantity += qty;
-    
-    if (asset.status === "Đang sử dụng") {
-      acc[code].in_use += qty;
-    } else if (asset.status === "Sẵn sàng") {
-      acc[code].in_stock += qty;
-    } else if (asset.status === "Hư hỏng" || asset.status === "Đang bảo trì") {
-      acc[code].damaged += qty;
-    }
-    
-    return acc;
-  }, {});
+  // Assets are already grouped by asset_code from API
+  const summaryData = safeAssets;
 
-  const summaryData = Object.values(assetSummary);
-
-  // Calculate statistics
-  const totalAssets = safeAssets.reduce((sum, a) => sum + (a.quantity || 0), 0);
-  const inUse = safeAssets
-    .filter((a) => a.status === "Đang sử dụng")
-    .reduce((sum, a) => sum + (a.quantity || 0), 0);
-  const available = safeAssets
-    .filter((a) => a.status === "Sẵn sàng")
-    .reduce((sum, a) => sum + (a.quantity || 0), 0);
-  const damaged = safeAssets
-    .filter((a) => a.status === "Hư hỏng" || a.status === "Đang bảo trì")
-    .reduce((sum, a) => sum + (a.quantity || 0), 0);
+  // Calculate statistics from summary data
+  const totalAssets = summaryData.reduce((sum, a) => sum + (parseInt(a.total_quantity) || 0), 0);
+  const inUse = summaryData.reduce((sum, a) => sum + (parseInt(a.in_use) || 0), 0);
+  const available = summaryData.reduce((sum, a) => sum + (parseInt(a.in_stock) || 0), 0);
+  const damaged = summaryData.reduce((sum, a) => sum + (parseInt(a.damaged) || 0), 0);
 
   const stats = [
     {
@@ -103,6 +66,12 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
   // Pagination
   const pagination = usePagination(summaryData, 10);
   const { currentItems, totalItems } = pagination;
+
+  // Add STT to each item
+  const itemsWithSTT = currentItems.map((item, index) => ({
+    ...item,
+    stt: index + 1,
+  }));
 
   const handleDeleteConfirm = async () => {
     if (!assetToDelete) return;
@@ -176,9 +145,9 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
               header: "STT",
               align: "center",
               width: "w-[8%]",
-              accessor: (_, index) => (
+              accessor: (asset) => (
                 <span className="text-xs font-semibold text-slate-900">
-                  {(pagination.currentPage - 1) * pagination.itemsPerPage + index + 1}
+                  {asset.stt}
                 </span>
               ),
             },
@@ -188,8 +157,8 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
               width: "w-[20%]",
               accessor: (asset) => (
                 <div>
-                  <div className="text-xs font-semibold text-slate-900">{asset.name}</div>
-                  <div className="text-[10px] text-slate-500">{asset.category_name}</div>
+                  <div className="text-sm font-semibold text-slate-900">{asset.name}</div>
+                  <div className="text-xs text-slate-500">{asset.category_name}</div>
                 </div>
               ),
             },
@@ -249,9 +218,8 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => {
-                      // Find first asset with this code to show details
-                      const detailAsset = safeAssets.find((a) => a.asset_code === asset.asset_code);
-                      setSelectedAsset(detailAsset);
+                      // Show detail modal with summary info
+                      setSelectedAsset(asset);
                     }}
                     className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                     title="Xem chi tiết"
@@ -261,8 +229,7 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
                   <button
                     onClick={() => {
                       setDeleteError("");
-                      const detailAsset = safeAssets.find((a) => a.asset_code === asset.asset_code);
-                      setAssetToDelete(detailAsset);
+                      setAssetToDelete(asset);
                     }}
                     className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Xóa"
@@ -273,7 +240,7 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
               ),
             },
           ]}
-          data={currentItems}
+          data={itemsWithSTT}
           keyExtractor={(asset) => asset.asset_code}
           loading={isLoadingAssets}
           emptyState={{

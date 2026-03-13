@@ -16,14 +16,9 @@ const AssetManagement = () => {
     const fetchAssets = async () => {
       try {
         setIsLoadingAssets(true);
-        // TODO: Backend API chưa có endpoint /api/assets
-        // Tạm thời set empty array
-        console.warn("Asset API endpoint chưa được implement trong backend");
-        setAssets([]);
-        
-        // Uncomment khi backend đã có API
-        // const data = await getAssets();
-        // setAssets(Array.isArray(data) ? data : data.data || []);
+        // Call API with summary=true to get grouped data by asset_code
+        const data = await getAssets({ summary: 'true' });
+        setAssets(Array.isArray(data) ? data : data.data || []);
       } catch (error) {
         console.error("Error fetching assets:", error);
         setAssets([]);
@@ -37,13 +32,9 @@ const AssetManagement = () => {
   const handleRefresh = async () => {
     try {
       setIsLoadingAssets(true);
-      // TODO: Backend API chưa có endpoint /api/assets
-      console.warn("Asset API endpoint chưa được implement trong backend");
-      setAssets([]);
-      
-      // Uncomment khi backend đã có API
-      // const data = await getAssets();
-      // setAssets(Array.isArray(data) ? data : data.data || []);
+      // Call API with summary=true to get grouped data by asset_code
+      const data = await getAssets({ summary: 'true' });
+      setAssets(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Error refreshing assets:", error);
       setAssets([]);
