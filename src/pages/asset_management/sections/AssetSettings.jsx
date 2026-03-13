@@ -75,16 +75,50 @@ const AssetSettings = ({ onRefresh }) => {
   const [transferStatus, setTransferStatus] = useState(null);
 
   // Section 4: Asset Regulations
-  const [regulations, setRegulations] = useState({
-    damageCompensation: true,
-    compensationRate: 100,
-    lostItemFine: 150,
-    maintenanceResponsibility: 'student',
-    inspectionFrequency: 'monthly',
-    reportDamageDeadline: 24,
-    allowPersonalItems: true,
-    prohibitedItems: 'Thiết bị nấu ăn, vật nuôi, chất dễ cháy nổ',
-  });
+  const [regulations, setRegulations] = useState([
+    {
+      id: 1,
+      title: "Điều 1: Trách nhiệm bảo quản tài sản",
+      content: "Sinh viên có trách nhiệm bảo quản tài sản được giao trong phòng ở. Mọi hư hỏng do sử dụng không đúng mục đích hoặc cố ý phá hoại sẽ phải bồi thường 100% giá trị tài sản."
+    },
+    {
+      id: 2,
+      title: "Điều 2: Bồi thường khi làm mất hoặc hư hỏng",
+      content: "Khi làm mất hoàn toàn tài sản, sinh viên phải bồi thường 150% giá trị. Trường hợp hư hỏng có thể sửa chữa, sinh viên chịu toàn bộ chi phí sửa chữa hoặc bồi thường theo giá trị hư hỏng."
+    },
+    {
+      id: 3,
+      title: "Điều 3: Báo cáo hư hỏng và bảo trì",
+      content: "Sinh viên phải báo cáo ngay cho ban quản lý trong vòng 24 giờ khi phát hiện tài sản hư hỏng. Việc không báo cáo kịp thời có thể bị coi là cố ý che giấu và phải chịu trách nhiệm bồi thường."
+    },
+    {
+      id: 4,
+      title: "Điều 4: Kiểm tra định kỳ",
+      content: "Ban quản lý ký túc xá sẽ tiến hành kiểm tra tình trạng tài sản trong phòng định kỳ mỗi tháng. Sinh viên có trách nhiệm hợp tác và tạo điều kiện cho việc kiểm tra."
+    },
+    {
+      id: 5,
+      title: "Điều 5: Vật dụng cá nhân và vật cấm",
+      content: "Sinh viên được phép mang đồ dùng cá nhân vào phòng nhưng nghiêm cấm mang các thiết bị nấu ăn, vật nuôi, chất dễ cháy nổ, vũ khí và các vật phẩm vi phạm pháp luật."
+    },
+    {
+      id: 6,
+      title: "Điều 6: Chuyển nhượng và di chuyển tài sản",
+      content: "Nghiêm cấm tự ý di chuyển tài sản giữa các phòng hoặc mang tài sản của ký túc xá ra ngoài. Mọi trường hợp cần di chuyển phải được sự đồng ý của ban quản lý."
+    },
+    {
+      id: 7,
+      title: "Điều 7: Trả phòng và bàn giao tài sản",
+      content: "Khi trả phòng, sinh viên phải bàn giao đầy đủ tài sản theo danh mục ban đầu. Nếu thiếu hoặc hư hỏng, phải hoàn tất việc bồi thường trước khi được hoàn trả tiền đặt cọc."
+    },
+    {
+      id: 8,
+      title: "Điều 8: Xử lý vi phạm",
+      content: "Vi phạm các quy định về tài sản sẽ bị xử lý theo quy chế của ký túc xá, có thể bao gồm: cảnh cáo, phạt tiền, đình chỉ tạm thời hoặc buộc thôi ở tùy theo mức độ vi phạm."
+    }
+  ]);
+  const [editingRegulation, setEditingRegulation] = useState(null);
+  const [regulationsStatus, setRegulationsStatus] = useState(null);
 
   useEffect(() => {
     fetchRooms();
@@ -555,168 +589,140 @@ const AssetSettings = ({ onRefresh }) => {
         iconBg="bg-green-100"
         iconColor="text-green-600"
         title="4. Điều lệ về Tài sản chung"
-        subtitle="Quy định về bồi thường, trách nhiệm và sử dụng tài sản trong ký túc xá"
+        subtitle="Quy định về bảo quản, sử dụng và bồi thường tài sản trong ký túc xá"
       >
         <div className="space-y-6">
-          {/* Damage Compensation */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-bold text-green-900 border-b border-green-100 pb-2">
-              Bồi thường hư hỏng tài sản
-            </h4>
-            
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-              <div>
-                <p className="font-bold text-slate-900">Yêu cầu bồi thường khi hư hỏng</p>
-                <p className="text-sm text-slate-600 mt-1">Sinh viên phải bồi thường khi làm hư hỏng tài sản</p>
-              </div>
-              <Toggle 
-                checked={regulations.damageCompensation} 
-                onChange={(val) => setRegulations({...regulations, damageCompensation: val})} 
-              />
-            </div>
+          {/* Header */}
+          <div className="text-center space-y-2 pb-4 border-b-2 border-slate-200">
+            <h3 className="text-xl font-bold text-slate-900">QUY ĐỊNH VỀ QUẢN LÝ VÀ SỬ DỤNG TÀI SẢN</h3>
+            <p className="text-sm text-slate-600">KÝ TÚC XÁ SINH VIÊN</p>
+            <p className="text-xs text-slate-500 italic">(Ban hành kèm theo Quyết định số ... ngày ... tháng ... năm ...)</p>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900">Tỷ lệ bồi thường (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    max={200}
-                    value={regulations.compensationRate}
-                    onChange={(e) => setRegulations({...regulations, compensationRate: Number(e.target.value)})}
-                    className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-green-50 outline-none"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">%</span>
+          {/* Regulations List */}
+          <div className="space-y-4">
+            {regulations.map((regulation, index) => (
+              <div key={regulation.id} className="border-2 border-slate-200 rounded-xl overflow-hidden hover:border-green-200 transition-colors">
+                <div className="bg-slate-50 px-6 py-3 border-b border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900">{regulation.title}</h4>
+                    <button
+                      onClick={() => setEditingRegulation(editingRegulation === regulation.id ? null : regulation.id)}
+                      className="text-xs px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-semibold"
+                    >
+                      {editingRegulation === regulation.id ? "Xong" : "Chỉnh sửa"}
+                    </button>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500">100% = bồi thường đúng giá trị tài sản</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-900">Phạt mất tài sản (%)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={100}
-                    max={300}
-                    value={regulations.lostItemFine}
-                    onChange={(e) => setRegulations({...regulations, lostItemFine: Number(e.target.value)})}
-                    className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-green-50 outline-none"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">%</span>
+                <div className="px-6 py-4">
+                  {editingRegulation === regulation.id ? (
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={regulation.title}
+                        onChange={(e) => {
+                          const newRegs = [...regulations];
+                          newRegs[index].title = e.target.value;
+                          setRegulations(newRegs);
+                        }}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-green-500 outline-none"
+                        placeholder="Tiêu đề điều khoản..."
+                      />
+                      <textarea
+                        value={regulation.content}
+                        onChange={(e) => {
+                          const newRegs = [...regulations];
+                          newRegs[index].content = e.target.value;
+                          setRegulations(newRegs);
+                        }}
+                        rows={4}
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none leading-relaxed"
+                        placeholder="Nội dung điều khoản..."
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                      {regulation.content}
+                    </p>
+                  )}
                 </div>
-                <p className="text-xs text-slate-500">Phạt cao hơn khi làm mất hoàn toàn</p>
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* Maintenance Responsibility */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-bold text-green-900 border-b border-green-100 pb-2">
-              Trách nhiệm bảo trì & kiểm tra
-            </h4>
+          {/* Add New Regulation */}
+          <button
+            onClick={() => {
+              const newId = Math.max(...regulations.map(r => r.id)) + 1;
+              setRegulations([...regulations, {
+                id: newId,
+                title: `Điều ${newId}: Tiêu đề mới`,
+                content: "Nội dung điều khoản mới..."
+              }]);
+            }}
+            className="w-full px-4 py-3 border-2 border-dashed border-slate-300 rounded-xl text-sm font-semibold text-slate-600 hover:border-green-500 hover:text-green-600 hover:bg-green-50 transition-colors"
+          >
+            + Thêm điều khoản mới
+          </button>
 
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900">Trách nhiệm bảo trì định kỳ</label>
-              <select
-                value={regulations.maintenanceResponsibility}
-                onChange={(e) => setRegulations({...regulations, maintenanceResponsibility: e.target.value})}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-green-50 outline-none bg-white text-slate-700"
-              >
-                <option value="student">Sinh viên tự bảo trì</option>
-                <option value="dormitory">Ký túc xá bảo trì</option>
-                <option value="shared">Chia sẻ trách nhiệm</option>
-              </select>
-              <p className="text-xs text-slate-500">Quy định ai chịu trách nhiệm bảo trì tài sản</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900">Tần suất kiểm tra tài sản</label>
-              <select
-                value={regulations.inspectionFrequency}
-                onChange={(e) => setRegulations({...regulations, inspectionFrequency: e.target.value})}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-green-50 outline-none bg-white text-slate-700"
-              >
-                <option value="weekly">Hàng tuần</option>
-                <option value="monthly">Hàng tháng</option>
-                <option value="quarterly">Hàng quý</option>
-                <option value="semester">Mỗi học kỳ</option>
-              </select>
-              <p className="text-xs text-slate-500">Ban quản lý kiểm tra tình trạng tài sản</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900">Thời hạn báo cáo hư hỏng (giờ)</label>
-              <input
-                type="number"
-                min={1}
-                max={168}
-                value={regulations.reportDamageDeadline}
-                onChange={(e) => setRegulations({...regulations, reportDamageDeadline: Number(e.target.value)})}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-green-50 outline-none"
-              />
-              <p className="text-xs text-slate-500">Sinh viên phải báo cáo hư hỏng trong thời gian này</p>
-            </div>
-          </div>
-
-          {/* Personal Items & Prohibited */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-bold text-green-900 border-b border-green-100 pb-2">
-              Đồ dùng cá nhân & Vật cấm
-            </h4>
-
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-              <div>
-                <p className="font-bold text-slate-900">Cho phép mang đồ dùng cá nhân</p>
-                <p className="text-sm text-slate-600 mt-1">Sinh viên được mang thêm đồ dùng riêng vào phòng</p>
-              </div>
-              <Toggle 
-                checked={regulations.allowPersonalItems} 
-                onChange={(val) => setRegulations({...regulations, allowPersonalItems: val})} 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900">Danh sách vật cấm mang vào</label>
-              <textarea
-                value={regulations.prohibitedItems}
-                onChange={(e) => setRegulations({...regulations, prohibitedItems: e.target.value})}
-                rows={3}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-green-50 outline-none"
-                placeholder="Liệt kê các vật cấm..."
-              />
-              <p className="text-xs text-slate-500">Các vật phẩm không được phép mang vào ký túc xá</p>
-            </div>
-          </div>
-
-          {/* Important Notice */}
+          {/* Footer Notice */}
           <div className="p-4 bg-green-50 rounded-xl border-2 border-green-200">
             <div className="flex items-start gap-3">
               <AlertCircle size={18} className="text-green-600 shrink-0 mt-0.5" />
               <div className="text-sm text-green-700">
-                <p className="font-semibold mb-2">Lưu ý quan trọng về điều lệ:</p>
+                <p className="font-semibold mb-2">Lưu ý quan trọng:</p>
                 <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li>Điều lệ này áp dụng cho tất cả sinh viên trong ký túc xá</li>
-                  <li>Vi phạm điều lệ có thể dẫn đến xử lý kỷ luật</li>
-                  <li>Sinh viên cần đọc kỹ và ký xác nhận khi nhận phòng</li>
-                  <li>Ban quản lý có quyền điều chỉnh điều lệ khi cần thiết</li>
+                  <li>Điều lệ này có hiệu lực kể từ ngày ban hành</li>
+                  <li>Mọi sinh viên ở ký túc xá đều phải tuân thủ các quy định trên</li>
+                  <li>Sinh viên cần đọc kỹ và ký xác nhận đã hiểu rõ khi nhận phòng</li>
+                  <li>Ban quản lý có quyền sửa đổi, bổ sung điều lệ khi cần thiết</li>
                 </ul>
               </div>
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => {
-                localStorage.setItem('assetRegulations', JSON.stringify(regulations));
-                setSaveStatus("success");
-                setTimeout(() => setSaveStatus(null), 4000);
-              }}
-              className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md shadow-green-200"
-            >
-              <Save size={14} /> Lưu điều lệ
-            </button>
+          <div className="flex items-center justify-between gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+            <div>
+              {regulationsStatus === "success" && (
+                <span className="flex items-center gap-2 text-emerald-700 text-sm font-semibold">
+                  <CheckCircle size={15} /> Đã lưu điều lệ thành công!
+                </span>
+              )}
+              {regulationsStatus === "error" && (
+                <span className="flex items-center gap-2 text-rose-700 text-sm font-semibold">
+                  <AlertCircle size={15} /> Lỗi khi lưu điều lệ.
+                </span>
+              )}
+              {!regulationsStatus && (
+                <span className="text-sm text-slate-500">
+                  {regulations.length} điều khoản • Có thể chỉnh sửa
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (confirm("Bạn có chắc muốn xóa điều khoản cuối cùng?")) {
+                    setRegulations(regulations.slice(0, -1));
+                  }
+                }}
+                disabled={regulations.length <= 1}
+                className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-xl text-sm font-bold text-slate-600 hover:bg-white transition-colors disabled:opacity-40"
+              >
+                <RotateCcw size={14} /> Xóa cuối
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.setItem('assetRegulations', JSON.stringify(regulations));
+                  setRegulationsStatus("success");
+                  setTimeout(() => setRegulationsStatus(null), 4000);
+                }}
+                className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition-all shadow-md shadow-green-200"
+              >
+                <Save size={14} /> Lưu điều lệ
+              </button>
+            </div>
           </div>
         </div>
       </Section>
