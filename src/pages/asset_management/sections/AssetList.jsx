@@ -157,7 +157,7 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
               width: "w-[20%]",
               accessor: (asset) => (
                 <div>
-                  <div className="text-sm font-semibold text-slate-900">{asset.name}</div>
+                  <div className="text-base font-semibold text-slate-900">{asset.name}</div>
                   <div className="text-xs text-slate-500">{asset.category_name}</div>
                 </div>
               ),
