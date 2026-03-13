@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Package, Wrench, Settings, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Save, RotateCcw, ArrowLeftRight } from "lucide-react";
-import { getAssets, updateAsset, getAssetLimits, updateAssetLimits, getAssetRegulations, updateAssetRegulations } from "../../../api/apiAsset.js";
+import { getAssets, getAssetsByRoom, createAsset, updateAsset, getAssetLimits, updateAssetLimits, getAssetRegulations, updateAssetRegulations } from "../../../api/apiAsset.js";
 import { getRooms } from "../../../api/apiRoom.js";
 
 // Toggle switch helper
@@ -57,10 +57,10 @@ const AssetSettings = ({ onRefresh }) => {
   const [limitsStatus, setLimitsStatus] = useState(null);
 
   // Section 2: Asset Recall from Rooms
-  const [recallSearch, setRecallSearch] = useState("");
-  const [recallBuilding, setRecallBuilding] = useState("All");
+  const [recallBuilding, setRecallBuilding] = useState("");
   const [recallRoom, setRecallRoom] = useState("");
   const [roomAssets, setRoomAssets] = useState([]);
+  const [roomAssetsLoading, setRoomAssetsLoading] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [selectedRecalls, setSelectedRecalls] = useState({});
   const [recallLoading, setRecallLoading] = useState(false);
@@ -150,27 +150,115 @@ const AssetSettings = ({ onRefresh }) => {
 
   const uniqueBuildings = [...new Set(rooms.map((r) => r.building).filter(Boolean))].sort();
 
-  const filteredRooms = rooms.filter((r) => {
-    if (recallBuilding !== "All" && r.building !== recallBuilding) return false;
-    if (recallRoom && !r.room_number?.includes(recallRoom)) return false;
-    return true;
-  });
+  const filteredRooms = rooms.filter((r) => r.building === recallBuilding);
+
+  useEffect(() => {
+    if (!recallRoom) {
+      setRoomAssets([]);
+      setSelectedRecalls({});
+      return;
+    }
+
+    const fetchRoomAssets = async () => {
+      setRoomAssetsLoading(true);
+      setRecallStatus(null);
+      try {
+        const response = await getAssetsByRoom(recallRoom);
+        setRoomAssets(response.data || []);
+      } catch (error) {
+        console.error("Error fetching room assets:", error);
+        setRoomAssets([]);
+      } finally {
+        setRoomAssetsLoading(false);
+      }
+    };
+
+    fetchRoomAssets();
+  }, [recallRoom]);
 
   const handleRecallAssets = async () => {
-    const recallIds = Object.keys(selectedRecalls).filter(id => selectedRecalls[id]);
-    if (recallIds.length === 0) return;
+    const selectedAssets = roomAssets
+      .map((asset) => {
+        const assetId = String(asset.id || "");
+        const maxQuantity = Number(asset.quantity) || 0;
+        const recallQuantity = Number(selectedRecalls[assetId]) || 0;
+        return {
+          ...asset,
+          assetId,
+          maxQuantity,
+          recallQuantity,
+        };
+      })
+      .filter((asset) => asset.assetId && asset.recallQuantity > 0 && asset.recallQuantity <= asset.maxQuantity);
+
+    if (selectedAssets.length === 0) return;
 
     setRecallLoading(true);
     setRecallStatus("saving");
     try {
-      await Promise.all(recallIds.map(id => 
-        updateAsset(id, { room_id: null, location: 'Kho', status: 'Sẵn sàng' })
-      ));
+      for (const asset of selectedAssets) {
+        const {
+          assetId,
+          asset_code,
+          recallQuantity,
+          maxQuantity,
+        } = asset;
+        const remainQuantity = maxQuantity - recallQuantity;
+
+        if (remainQuantity <= 0) {
+          await updateAsset(assetId, {
+            room_id: null,
+            location: "Kho",
+            status: "Sẵn sàng",
+            quantity: maxQuantity,
+          });
+        } else {
+          await updateAsset(assetId, { quantity: remainQuantity });
+        }
+
+        const assetsResponse = await getAssets({ search: asset_code });
+        const warehouseAsset = (assetsResponse.data || []).find(
+          (item) =>
+            item.asset_code === asset_code &&
+            String(item.id) !== assetId &&
+            item.room_id === null &&
+            item.status === "Sẵn sàng"
+        );
+
+        if (warehouseAsset) {
+          await updateAsset(warehouseAsset.id, {
+            quantity: (Number(warehouseAsset.quantity) || 0) + recallQuantity,
+            room_id: null,
+            location: "Kho",
+            status: "Sẵn sàng",
+          });
+        } else if (remainQuantity > 0) {
+          await createAsset({
+            asset_code,
+            name: asset.name || asset.asset_name || asset_code,
+            category_name: asset.category_name || "Khác",
+            unit: asset.unit || "Cái",
+            room_id: null,
+            location: "Kho",
+            quantity: recallQuantity,
+            status: "Sẵn sàng",
+            condition: asset.condition || "Tốt",
+            purchase_price: Number(asset.purchase_price) || 0,
+            supplier: asset.supplier || "",
+            warranty_period: Number(asset.warranty_period) || 0,
+            description: asset.description || "",
+          });
+        }
+      }
+
       setSelectedRecalls({});
       setRecallStatus("success");
+      const latestRoomAssets = await getAssetsByRoom(recallRoom);
+      setRoomAssets(latestRoomAssets.data || []);
       if (onRefresh) await onRefresh();
       setTimeout(() => setRecallStatus(null), 4000);
     } catch (error) {
+      console.error("Error recalling assets:", error);
       setRecallStatus("error");
       setTimeout(() => setRecallStatus(null), 4000);
     } finally {
@@ -433,16 +521,18 @@ const AssetSettings = ({ onRefresh }) => {
         title="2. Thu hồi tài sản từ phòng"
         subtitle="Thu hồi tài sản hư hỏng hoặc cần bảo trì về kho"
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <select
             value={recallBuilding}
             onChange={(e) => {
               setRecallBuilding(e.target.value);
               setRecallRoom("");
+              setRoomAssets([]);
+              setSelectedRecalls({});
             }}
             className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-orange-50 text-slate-700"
           >
-            <option value="All">Tất cả tòa</option>
+            <option value="">-- Chọn tòa --</option>
             {uniqueBuildings.map((b) => (
               <option key={b} value={b}>Tòa {b}</option>
             ))}
@@ -450,22 +540,18 @@ const AssetSettings = ({ onRefresh }) => {
 
           <select
             value={recallRoom}
-            onChange={(e) => setRecallRoom(e.target.value)}
-            disabled={recallBuilding === "All"}
+            onChange={(e) => {
+              setRecallRoom(e.target.value);
+              setSelectedRecalls({});
+            }}
+            disabled={!recallBuilding}
             className="w-full text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-orange-50 text-slate-700 disabled:opacity-50"
           >
-            <option value="">Tất cả phòng</option>
+            <option value="">-- Chọn phòng --</option>
             {filteredRooms.map((r) => (
-              <option key={r.id} value={r.room_number}>{r.room_number}</option>
+              <option key={r.id} value={r.id}>{r.room_number}</option>
             ))}
           </select>
-
-          <button
-            onClick={() => {/* Fetch room assets */}}
-            className="px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold hover:bg-orange-700 transition-colors"
-          >
-            Tìm kiếm
-          </button>
         </div>
 
         <div className="rounded-2xl border-2 border-slate-200 overflow-hidden">
@@ -473,16 +559,76 @@ const AssetSettings = ({ onRefresh }) => {
             <span className="text-xs font-black uppercase tracking-widest text-slate-600">
               Tài sản trong phòng
             </span>
-            {Object.keys(selectedRecalls).filter(id => selectedRecalls[id]).length > 0 && (
+            {Object.values(selectedRecalls).filter((qty) => Number(qty) > 0).length > 0 && (
               <span className="px-2.5 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-bold">
-                {Object.keys(selectedRecalls).filter(id => selectedRecalls[id]).length} đã chọn
+                {Object.values(selectedRecalls).filter((qty) => Number(qty) > 0).length} đã chọn
               </span>
             )}
           </div>
           <div className="divide-y divide-slate-100 max-h-[360px] overflow-y-auto">
-            <div className="px-6 py-10 text-center text-slate-400 text-sm">
-              Chọn tòa và phòng để xem tài sản
-            </div>
+            {!recallRoom && (
+              <div className="px-6 py-10 text-center text-slate-400 text-sm">
+                Chọn tòa và phòng để xem tài sản
+              </div>
+            )}
+            {recallRoom && roomAssetsLoading && (
+              <div className="px-6 py-10 text-center text-slate-400 text-sm">
+                Đang tải tài sản trong phòng...
+              </div>
+            )}
+            {recallRoom && !roomAssetsLoading && roomAssets.length === 0 && (
+              <div className="px-6 py-10 text-center text-slate-400 text-sm">
+                Phòng này chưa có tài sản để thu hồi
+              </div>
+            )}
+            {recallRoom && !roomAssetsLoading && roomAssets.map((asset) => {
+              const assetId = String(asset.id || "");
+              const currentQuantity = Number(asset.quantity) || 0;
+              const selectedQuantity = Number(selectedRecalls[assetId]) || 0;
+              const isDisabled = !assetId || currentQuantity <= 0;
+
+              return (
+                <div key={assetId || `${asset.asset_code}-${asset.asset_name}`} className="px-6 py-4 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{asset.asset_name || asset.name || asset.asset_code}</p>
+                    <p className="text-xs text-slate-500">
+                      {asset.asset_code} • Hiện có: {currentQuantity} {asset.unit || "cái"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={0}
+                      max={currentQuantity}
+                      value={selectedQuantity}
+                      disabled={isDisabled || recallLoading}
+                      onChange={(e) => {
+                        const inputValue = Number(e.target.value) || 0;
+                        const nextValue = Math.max(0, Math.min(currentQuantity, inputValue));
+                        setSelectedRecalls((prev) => ({
+                          ...prev,
+                          [assetId]: nextValue,
+                        }));
+                      }}
+                      className="w-24 px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-right outline-none focus:ring-2 focus:ring-orange-100 disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      disabled={isDisabled || recallLoading}
+                      onClick={() => {
+                        setSelectedRecalls((prev) => ({
+                          ...prev,
+                          [assetId]: currentQuantity,
+                        }));
+                      }}
+                      className="px-3 py-2 text-xs font-bold rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50 disabled:opacity-50"
+                    >
+                      Tất cả
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -505,14 +651,14 @@ const AssetSettings = ({ onRefresh }) => {
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedRecalls({})}
-              disabled={Object.keys(selectedRecalls).length === 0 || recallLoading}
+              disabled={Object.values(selectedRecalls).every((qty) => !Number(qty)) || recallLoading}
               className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-xl text-sm font-bold text-slate-600 hover:bg-white transition-colors disabled:opacity-40"
             >
               <RotateCcw size={14} /> Bỏ chọn
             </button>
             <button
               onClick={handleRecallAssets}
-              disabled={Object.keys(selectedRecalls).filter(id => selectedRecalls[id]).length === 0 || recallLoading}
+              disabled={Object.values(selectedRecalls).every((qty) => !Number(qty)) || recallLoading}
               className="flex items-center gap-2 px-5 py-2 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-md shadow-orange-200 disabled:opacity-40"
             >
               <Save size={14} /> {recallLoading ? "Đang thu hồi..." : "Thu hồi về kho"}
