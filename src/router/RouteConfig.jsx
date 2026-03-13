@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import React from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useNavigation } from "../contexts/NavigationContext.jsx";
 import { useNavigationHandlers } from "../hooks/useNavigationHandlers.js";
@@ -48,13 +49,32 @@ const RouteConfig = () => {
 
   return (
     <Routes>
-      {routes.map((route) => (
-        <Route
-          key={route.id}
-          path={route.path}
-          element={<route.component {...getProps(route.id)} />}
-        />
-      ))}
+      {routes.map((route) => {
+        // Render main route
+        const mainRoute = (
+          <Route
+            key={route.id}
+            path={route.path}
+            element={<route.component {...getProps(route.id)} />}
+          />
+        );
+
+        // Render submenu routes if they exist
+        const submenuRoutes = route.submenu?.map((subRoute) => (
+          <Route
+            key={subRoute.id}
+            path={subRoute.path}
+            element={<subRoute.component {...getProps(subRoute.id)} />}
+          />
+        ));
+
+        return (
+          <React.Fragment key={route.id}>
+            {mainRoute}
+            {submenuRoutes}
+          </React.Fragment>
+        );
+      })}
       
       {/* Profile Admin Route */}
       <Route path="/profile-admin" element={<ProfileAdmin user={user} />} />

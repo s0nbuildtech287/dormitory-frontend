@@ -16,6 +16,7 @@ const Layout = ({ user, onLogout, children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState(null);
   const notificationsRef = useRef(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
@@ -30,7 +31,65 @@ const Layout = ({ user, onLogout, children }) => {
 
   // Current active route from URL
   const activePath = location.pathname;
-  const activeItem = menuItems.find((item) => item.path === activePath) || menuItems[0];
+  
+  // Find active item (including submenu items)
+  let activeItem = null;
+  for (const item of menuItems) {
+    if (item.submenu) {
+      const submenuItem = item.submenu.find((sub) => sub.path === activePath);
+      if (submenuItem) {
+        activeItem = submenuItem;
+        break;
+      }
+    }
+    if (item.path === activePath) {
+      activeItem = item;
+      break;
+    }
+  }
+  if (!activeItem) activeItem = menuItems[0];
+
+  // Auto-open submenu if current path is in submenu
+  useEffect(() => {
+    for (const item of menuItems) {
+      if (item.submenu) {
+        const isSubmenuActive = item.submenu.some((sub) => sub.path === activePath);
+        if (isSubmenuActive) {
+          setOpenSubmenu(item.id);
+          break;
+        }
+      }
+    }
+  }, [activePath, menuItems]);
+
+  const toggleSubmenu = (itemId) => {
+    setOpenSubmenu(openSubmenu === itemId ? null : itemId);
+  };
+
+  // Check if a menu item or its submenu is active
+  const isMenuItemActive = (item) => {
+    if (item.submenu) {
+      return item.submenu.some((sub) => sub.path === activePath);
+    }
+    return item.path === activePath;
+  };
+
+  // Handle menu item click
+  const handleMenuItemClick = (item) => {
+    if (item.submenu) {
+      // If has submenu, toggle it and navigate to first submenu item
+      const isCurrentlyOpen = openSubmenu === item.id;
+      setOpenSubmenu(isCurrentlyOpen ? null : item.id);
+      
+      // Navigate to first submenu item
+      if (!isCurrentlyOpen && item.submenu.length > 0) {
+        navigate(item.submenu[0].path);
+      }
+    } else {
+      // No submenu, just navigate
+      navigate(item.path);
+    }
+  };
 
   // Close notifications dropdown when clicking outside
   useEffect(() => {
@@ -74,18 +133,49 @@ const Layout = ({ user, onLogout, children }) => {
         {/* Navigation */}
         <nav className="flex-1 mt-6 overflow-y-auto px-3 space-y-1">
           {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center p-3 rounded-xl transition-all ${activePath === item.path
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
+            <div key={item.id}>
+              {/* Main menu item */}
+              <button
+                onClick={() => handleMenuItemClick(item)}
+                className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
+                  isMenuItemActive(item)
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800"
                 }`}
-              title={!isSidebarOpen ? item.label : ""}
-            >
-              {getIconComponent(item.icon)}
-              {isSidebarOpen && <span className="ml-3 font-medium truncate">{item.label}</span>}
-            </button>
+                title={!isSidebarOpen ? item.label : ""}
+              >
+                <div className="flex items-center">
+                  {getIconComponent(item.icon)}
+                  {isSidebarOpen && <span className="ml-3 font-medium truncate">{item.label}</span>}
+                </div>
+                {isSidebarOpen && item.submenu && (
+                  <LucideIcons.ChevronDown
+                    size={16}
+                    className={`transition-transform ${openSubmenu === item.id ? "rotate-180" : ""}`}
+                  />
+                )}
+              </button>
+
+              {/* Submenu items */}
+              {item.submenu && isSidebarOpen && openSubmenu === item.id && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {item.submenu.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => navigate(subItem.path)}
+                      className={`w-full flex items-center p-2.5 rounded-lg transition-all text-sm ${
+                        activePath === subItem.path
+                          ? "bg-blue-500/30 text-blue-200 border border-blue-400/30"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800"
+                      }`}
+                    >
+                      {getIconComponent(subItem.icon)}
+                      <span className="ml-3 font-medium truncate">{subItem.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </nav>
 

@@ -3,6 +3,7 @@ import AdminDashboard from "../pages/admin_dashboard/index.jsx";
 import RegistrationManagement from "../pages/registration_management/index.jsx";
 import StudentDashboard from "../pages/student/index.jsx";
 import RoomManagement from "../pages/room_management/index.jsx";
+import AssetManagement from "../pages/asset_management/index.jsx";
 import ContractManagement from "../pages/contract_management/index.jsx";
 import BillingManagement from "../pages/billing_management/index.jsx";
 import NotificationManagement from "../pages/notification_management/index.jsx";
@@ -33,8 +34,24 @@ export const ADMIN_ROUTES = [
     label: "Quản lý phòng",
     path: "/rooms",
     component: RoomManagement,
-    icon: "Home",
+    icon: "Building2",
     role: UserRole.ADMIN,
+    submenu: [
+      {
+        id: "rooms-list",
+        label: "Thông tin phòng",
+        path: "/rooms",
+        component: RoomManagement,
+        icon: "DoorOpen",
+      },
+      {
+        id: "assets",
+        label: "Cơ sở vật chất",
+        path: "/assets",
+        component: AssetManagement,
+        icon: "Package",
+      },
+    ],
   },
   {
     id: "students",
