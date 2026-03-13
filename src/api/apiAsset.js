@@ -160,6 +160,31 @@ export const deleteAsset = async (id) => {
 };
 
 /**
+ * Get asset distribution by building
+ * @returns {Promise<Object>} Building distribution data
+ */
+export const getAssetsByBuilding = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/buildings`, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching assets by building:", error);
+    throw error;
+  }
+};
+
+/**
  * Get asset statistics
  * @returns {Promise<Object>} Asset statistics
  */

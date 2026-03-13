@@ -1,6 +1,23 @@
 import { Package, TrendingUp, MapPin, PieChart, BarChart3, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getAssetsByBuilding } from "../../../api/apiAsset.js";
 
 const AssetAnalytics = ({ assets }) => {
+  const [buildingData, setBuildingData] = useState([]);
+  
+  // Fetch building distribution data
+  useEffect(() => {
+    const fetchBuildingData = async () => {
+      try {
+        const response = await getAssetsByBuilding();
+        setBuildingData(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error("Error fetching building data:", error);
+        setBuildingData([]);
+      }
+    };
+    fetchBuildingData();
+  }, []);
   // Ensure assets is always an array
   const safeAssets = Array.isArray(assets) ? assets : [];
 
@@ -163,142 +180,168 @@ const AssetAnalytics = ({ assets }) => {
         </div>
       </div>
 
-      {/* Asset Type Analysis */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-          <BarChart3 size={20} />
-          Phân tích theo loại tài sản
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {locationDistribution.map((asset, index) => (
-            <div key={asset.asset_code} className="bg-slate-50 rounded-lg p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900 mb-1">{asset.total}</div>
-                <div className="text-sm font-medium text-slate-700 mb-2">{asset.name}</div>
-                <div className="text-xs text-slate-500 mb-3">
-                  {formatCurrency(asset.value)} đ
-                </div>
-                
-                {/* Mini bar chart */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span>Sử dụng</span>
-                    <span>{asset.inUse}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1">
-                    <div
-                      className="bg-green-500 h-1 rounded-full"
-                      style={{ width: `${(asset.inUse / asset.total) * 100}%` }}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between text-xs">
-                    <span>Kho</span>
-                    <span>{asset.inStock}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1">
-                    <div
-                      className="bg-blue-500 h-1 rounded-full"
-                      style={{ width: `${(asset.inStock / asset.total) * 100}%` }}
-                    />
-                  </div>
-                  
-                  {asset.damaged > 0 && (
-                    <>
-                      <div className="flex justify-between text-xs">
-                        <span>Hư hỏng</span>
-                        <span>{asset.damaged}</span>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-1">
-                        <div
-                          className="bg-red-500 h-1 rounded-full"
-                          style={{ width: `${(asset.damaged / asset.total) * 100}%` }}
-                        />
-                      </div>
-                    </>
-                  )}
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Asset Type Analysis Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <BarChart3 size={20} />
+            Phân tích theo loại tài sản
+          </h3>
+          
+          {/* Pie Chart */}
+          <div className="flex flex-col items-center">
+            <div className="relative w-64 h-64 mb-4">
+              <svg width="256" height="256" className="transform -rotate-90">
+                {(() => {
+                  let currentAngle = 0;
+                  return locationDistribution.map((asset, index) => {
+                    const percentage = totalAssets > 0 ? (asset.total / totalAssets) * 100 : 0;
+                    const angle = (percentage / 100) * 360;
+                    const startAngle = currentAngle;
+                    const endAngle = currentAngle + angle;
+                    
+                    const x1 = 128 + 100 * Math.cos((startAngle * Math.PI) / 180);
+                    const y1 = 128 + 100 * Math.sin((startAngle * Math.PI) / 180);
+                    const x2 = 128 + 100 * Math.cos((endAngle * Math.PI) / 180);
+                    const y2 = 128 + 100 * Math.sin((endAngle * Math.PI) / 180);
+                    
+                    const largeArcFlag = angle > 180 ? 1 : 0;
+                    
+                    const pathData = [
+                      `M 128 128`,
+                      `L ${x1} ${y1}`,
+                      `A 100 100 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                      `Z`
+                    ].join(' ');
+                    
+                    currentAngle += angle;
+                    
+                    return (
+                      <path
+                        key={asset.asset_code}
+                        d={pathData}
+                        fill={colors[index % colors.length]}
+                        stroke="white"
+                        strokeWidth="2"
+                        className="hover:opacity-80 transition-opacity"
+                        title={`${asset.name}: ${asset.total} (${percentage.toFixed(1)}%)`}
+                      />
+                    );
+                  });
+                })()}
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-xl font-bold text-slate-900">{totalAssets}</div>
+                  <div className="text-xs text-slate-500">Tổng tài sản</div>
                 </div>
               </div>
             </div>
-          ))}
+            
+            {/* Legend */}
+            <div className="grid grid-cols-2 gap-2 w-full">
+              {locationDistribution.map((asset, index) => (
+                <div key={asset.asset_code} className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: colors[index % colors.length] }}
+                  />
+                  <span className="text-xs text-slate-600 truncate">{asset.name}</span>
+                  <span className="text-xs text-slate-400 ml-auto">{asset.total}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Asset Distribution by Location */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-          <MapPin size={20} />
-          Phân bổ tài sản theo vị trí
-        </h3>
-        <div className="space-y-6">
-          {locationDistribution.map((asset, index) => (
-            <div key={asset.asset_code} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-800">{asset.name}</h4>
-                  <p className="text-xs text-slate-500">
-                    Tổng: {asset.total} cái • Giá trị: {formatCurrency(asset.value)} đ
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-slate-600">
-                    {formatCurrency(asset.unitPrice)} đ/cái
+        {/* Asset Distribution by Location Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <MapPin size={20} />
+            Phân bổ tài sản theo vị trí
+          </h3>
+          
+          {/* Bar Chart */}
+          <div className="space-y-4">
+            {buildingData.length > 0 && (
+              <div className="relative h-64">
+                <svg width="100%" height="256" className="overflow-visible">
+                  {buildingData.map((building, index) => {
+                    const totalBuilding = parseInt(building.total_quantity) || 0;
+                    const maxValue = Math.max(...buildingData.map(b => parseInt(b.total_quantity) || 0));
+                    const barHeight = maxValue > 0 ? (totalBuilding / maxValue) * 200 : 0;
+                    const barWidth = 40;
+                    const barX = index * 60 + 20;
+                    const barY = 220 - barHeight;
+                    const buildingColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+                    
+                    return (
+                      <g key={building.building}>
+                        {/* Bar */}
+                        <rect
+                          x={barX}
+                          y={barY}
+                          width={barWidth}
+                          height={barHeight}
+                          fill={buildingColors[index % buildingColors.length]}
+                          className="hover:opacity-80 transition-opacity"
+                          rx="4"
+                        />
+                        
+                        {/* Value label on top */}
+                        <text
+                          x={barX + barWidth / 2}
+                          y={barY - 5}
+                          textAnchor="middle"
+                          className="text-xs fill-slate-700 font-medium"
+                        >
+                          {totalBuilding}
+                        </text>
+                        
+                        {/* Building label at bottom */}
+                        <text
+                          x={barX + barWidth / 2}
+                          y={240}
+                          textAnchor="middle"
+                          className="text-xs fill-slate-600"
+                        >
+                          {building.building === 'Kho' ? 'Kho' : `Tòa ${building.building}`}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            )}
+            
+            {/* Legend with details */}
+            <div className="space-y-2">
+              {buildingData.map((building, index) => {
+                const totalBuilding = parseInt(building.total_quantity) || 0;
+                const buildingValue = parseFloat(building.total_value) || 0;
+                const buildingColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+                
+                return (
+                  <div key={building.building} className="flex items-center justify-between p-2 bg-slate-50 rounded">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: buildingColors[index % buildingColors.length] }}
+                      />
+                      <span className="text-sm font-medium text-slate-700">
+                        {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
+                      <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              
-              {/* Stacked Bar Chart */}
-              <div className="relative">
-                <div className="flex h-8 bg-slate-100 rounded-lg overflow-hidden">
-                  {asset.inUse > 0 && (
-                    <div
-                      className="bg-green-500 flex items-center justify-center text-white text-xs font-medium"
-                      style={{ width: `${(asset.inUse / asset.total) * 100}%` }}
-                      title={`Đang sử dụng: ${asset.inUse}`}
-                    >
-                      {asset.inUse > 0 && asset.inUse}
-                    </div>
-                  )}
-                  {asset.inStock > 0 && (
-                    <div
-                      className="bg-blue-500 flex items-center justify-center text-white text-xs font-medium"
-                      style={{ width: `${(asset.inStock / asset.total) * 100}%` }}
-                      title={`Tồn kho: ${asset.inStock}`}
-                    >
-                      {asset.inStock > 0 && asset.inStock}
-                    </div>
-                  )}
-                  {asset.damaged > 0 && (
-                    <div
-                      className="bg-red-500 flex items-center justify-center text-white text-xs font-medium"
-                      style={{ width: `${(asset.damaged / asset.total) * 100}%` }}
-                      title={`Hư hỏng: ${asset.damaged}`}
-                    >
-                      {asset.damaged > 0 && asset.damaged}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Legend */}
-              <div className="flex items-center gap-4 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
-                  <span className="text-slate-600">Đang sử dụng: {asset.inUse}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
-                  <span className="text-slate-600">Tồn kho: {asset.inStock}</span>
-                </div>
-                {asset.damaged > 0 && (
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
-                    <span className="text-slate-600">Hư hỏng: {asset.damaged}</span>
-                  </div>
-                )}
-              </div>
+                );
+              })}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>
