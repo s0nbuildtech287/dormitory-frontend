@@ -1,17 +1,23 @@
 import { useState } from "react";
-import { Plus, Eye, Trash2, Package, CheckCircle, TrendingUp, AlertTriangle } from "lucide-react";
+import { Plus, Eye, Trash2, Package, CheckCircle, TrendingUp, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, History } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import AddAssetModal from "./AddAssetModal.jsx";
 import AssetDetailModal from "./AssetDetailModal.jsx";
+import ImportAssetModal from "./ImportAssetModal.jsx";
+import ExportAssetModal from "./ExportAssetModal.jsx";
+import AssetHistoryModal from "./AssetHistoryModal.jsx";
 import { deleteAsset } from "../../../api/apiAsset.js";
 
 const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
   // Modal states
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [showAddAssetModal, setShowAddAssetModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -131,12 +137,38 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
             Bảng thông tin cơ sở vật chất ({totalItems} loại tài sản)
           </h3>
 
-          <button
-            onClick={() => setShowAddAssetModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
-          >
-            <Plus size={16} /> Thêm mới
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowHistoryModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm shadow-sm"
+              title="Lịch sử xuất/nhập"
+            >
+              <History size={16} /> Lịch sử
+            </button>
+            
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm shadow-sm"
+              title="Nhập kho"
+            >
+              <ArrowDownToLine size={16} /> Nhập kho
+            </button>
+            
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all font-bold text-sm shadow-sm"
+              title="Xuất kho"
+            >
+              <ArrowUpFromLine size={16} /> Xuất kho
+            </button>
+            
+            <button
+              onClick={() => setShowAddAssetModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+            >
+              <Plus size={16} /> Thêm mới
+            </button>
+          </div>
         </div>
 
         <DataTable
@@ -262,6 +294,29 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
           setShowAddAssetModal(false);
           onRefresh();
         }}
+      />
+
+      <ImportAssetModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={() => {
+          setShowImportModal(false);
+          onRefresh();
+        }}
+      />
+
+      <ExportAssetModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onSuccess={() => {
+          setShowExportModal(false);
+          onRefresh();
+        }}
+      />
+
+      <AssetHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
       />
 
       <AssetDetailModal
