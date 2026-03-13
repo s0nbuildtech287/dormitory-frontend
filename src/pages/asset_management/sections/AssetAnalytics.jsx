@@ -1,4 +1,4 @@
-import { Package, TrendingUp, MapPin, BarChart3, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { Package, TrendingUp, MapPin, BarChart3, DollarSign, ChevronDown, ChevronUp, TrendingDown, ArrowUpFromLine, ArrowDownToLine } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAssetsByBuilding } from "../../../api/apiAsset.js";
 
@@ -421,6 +421,102 @@ const AssetAnalytics = ({ assets }) => {
             )}
           </div>
         )}
+      </div>
+
+      {/* Import/Export Statistics - Fake Data */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Import Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <ArrowDownToLine size={20} className="text-blue-600" />
+              Thống kê nhập kho
+            </h3>
+            <div className="text-sm text-slate-500">12 tháng qua</div>
+          </div>
+          
+          {/* Bar Chart */}
+          <div className="space-y-3">
+            {[
+              { month: 'Tháng 2', value: 45, label: '45 tài sản' },
+              { month: 'Tháng 4', value: 28, label: '28 tài sản' },
+              { month: 'Tháng 6', value: 52, label: '52 tài sản' },
+              { month: 'Tháng 9', value: 38, label: '38 tài sản' },
+              { month: 'Tháng 11', value: 42, label: '42 tài sản' },
+            ].map((item, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="w-20 text-xs font-medium text-slate-600">{item.month}</div>
+                <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-300 to-blue-500 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                    style={{ width: `${(item.value / 60) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white">{item.label}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Summary */}
+          <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">205</div>
+              <div className="text-xs text-slate-500">Tổng nhập kho</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">5</div>
+              <div className="text-xs text-slate-500">Lần nhập kho</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Export Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <ArrowUpFromLine size={20} className="text-cyan-600" />
+              Thống kê xuất kho
+            </h3>
+            <div className="text-sm text-slate-500">12 tháng qua</div>
+          </div>
+          
+          {/* Bar Chart */}
+          <div className="space-y-3">
+            {[
+              { month: 'Tháng 1', value: 22, label: '22 tài sản' },
+              { month: 'Tháng 3', value: 18, label: '18 tài sản' },
+              { month: 'Tháng 5', value: 15, label: '15 tài sản' },
+              { month: 'Tháng 8', value: 25, label: '25 tài sản' },
+              { month: 'Tháng 10', value: 12, label: '12 tài sản' },
+              { month: 'Tháng 12', value: 20, label: '20 tài sản' },
+            ].map((item, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="w-20 text-xs font-medium text-slate-600">{item.month}</div>
+                <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-300 to-cyan-500 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                    style={{ width: `${(item.value / 30) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white">{item.label}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Summary */}
+          <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-cyan-600">112</div>
+              <div className="text-xs text-slate-500">Tổng xuất kho</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-cyan-600">6</div>
+              <div className="text-xs text-slate-500">Lần xuất kho</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
