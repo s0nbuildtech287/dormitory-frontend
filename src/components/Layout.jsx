@@ -158,7 +158,7 @@ const Layout = ({ user, onLogout, children }) => {
 
               {/* Submenu items */}
               {item.submenu && isSidebarOpen && openSubmenu === item.id && (
-                <div className="ml-4 mt-1 space-y-1">
+                <div className="ml-6 mt-1 space-y-1 pl-2 border-l-2 border-slate-700">
                   {item.submenu.map((subItem) => (
                     <button
                       key={subItem.id}
