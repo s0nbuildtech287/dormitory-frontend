@@ -161,6 +161,67 @@ const AssetAnalytics = ({ assets }) => {
         </div>
       </div>
 
+      {/* Asset Type Analysis */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <BarChart3 size={20} />
+          Phân tích theo loại tài sản
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {locationDistribution.map((asset, index) => (
+            <div key={asset.asset_code} className="bg-slate-50 rounded-lg p-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-slate-900 mb-1">{asset.total}</div>
+                <div className="text-sm font-medium text-slate-700 mb-2">{asset.name}</div>
+                <div className="text-xs text-slate-500 mb-3">
+                  {formatCurrency(asset.value)} đ
+                </div>
+                
+                {/* Mini bar chart */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span>Sử dụng</span>
+                    <span>{asset.inUse}</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1">
+                    <div
+                      className="bg-green-500 h-1 rounded-full"
+                      style={{ width: `${(asset.inUse / asset.total) * 100}%` }}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-between text-xs">
+                    <span>Kho</span>
+                    <span>{asset.inStock}</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1">
+                    <div
+                      className="bg-blue-500 h-1 rounded-full"
+                      style={{ width: `${(asset.inStock / asset.total) * 100}%` }}
+                    />
+                  </div>
+                  
+                  {asset.damaged > 0 && (
+                    <>
+                      <div className="flex justify-between text-xs">
+                        <span>Hư hỏng</span>
+                        <span>{asset.damaged}</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-1">
+                        <div
+                          className="bg-red-500 h-1 rounded-full"
+                          style={{ width: `${(asset.damaged / asset.total) * 100}%` }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Asset Distribution by Location */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -233,67 +294,6 @@ const AssetAnalytics = ({ assets }) => {
                     <span className="text-slate-600">Hư hỏng: {asset.damaged}</span>
                   </div>
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Asset Type Analysis */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-          <BarChart3 size={20} />
-          Phân tích theo loại tài sản
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {locationDistribution.map((asset, index) => (
-            <div key={asset.asset_code} className="bg-slate-50 rounded-lg p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900 mb-1">{asset.total}</div>
-                <div className="text-sm font-medium text-slate-700 mb-2">{asset.name}</div>
-                <div className="text-xs text-slate-500 mb-3">
-                  {formatCurrency(asset.value)} đ
-                </div>
-                
-                {/* Mini bar chart */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span>Sử dụng</span>
-                    <span>{asset.inUse}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1">
-                    <div
-                      className="bg-green-500 h-1 rounded-full"
-                      style={{ width: `${(asset.inUse / asset.total) * 100}%` }}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between text-xs">
-                    <span>Kho</span>
-                    <span>{asset.inStock}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1">
-                    <div
-                      className="bg-blue-500 h-1 rounded-full"
-                      style={{ width: `${(asset.inStock / asset.total) * 100}%` }}
-                    />
-                  </div>
-                  
-                  {asset.damaged > 0 && (
-                    <>
-                      <div className="flex justify-between text-xs">
-                        <span>Hư hỏng</span>
-                        <span>{asset.damaged}</span>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-1">
-                        <div
-                          className="bg-red-500 h-1 rounded-full"
-                          style={{ width: `${(asset.damaged / asset.total) * 100}%` }}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
             </div>
           ))}
