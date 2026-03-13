@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, History, ArrowDownToLine, ArrowUpFromLine, Filter, Calendar, Package, User, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { getAssetHistory } from "../../../api/apiAsset.js";
 
 const AssetHistoryModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -8,72 +9,36 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
   const [filterDate, setFilterDate] = useState("all"); // all, today, week, month
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedId, setExpandedId] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Mock data - sẽ thay bằng API call
-  const mockHistory = [
-    {
-      id: "1",
-      type: "import",
-      asset_code: "NT001",
-      asset_name: "Giường đơn",
-      quantity: 10,
-      unit: "Cái",
-      date: "2024-03-10",
-      supplier: "Công ty TNHH Nội thất ABC",
-      invoice_number: "HD001",
-      price: 2000000,
-      total_price: 20000000,
-      created_by: "Admin",
-      notes: "Nhập lô hàng mới cho tòa A",
-    },
-    {
-      id: "2",
-      type: "export",
-      asset_code: "NT001",
-      asset_name: "Giường đơn",
-      quantity: 5,
-      unit: "Cái",
-      date: "2024-03-11",
-      export_to: "Tòa A - Phòng 101",
-      room_number: "A-101",
-      recipient_name: "Nguyễn Văn A",
-      recipient_phone: "0123456789",
-      purpose: "Sử dụng",
-      created_by: "Admin",
-      notes: "Cấp phát cho phòng mới",
-    },
-    {
-      id: "3",
-      type: "import",
-      asset_code: "TB002",
-      asset_name: "Quạt trần",
-      quantity: 20,
-      unit: "Cái",
-      date: "2024-03-09",
-      supplier: "Công ty Điện máy XYZ",
-      invoice_number: "HD002",
-      price: 500000,
-      total_price: 10000000,
-      created_by: "Admin",
-      notes: "Nhập quạt cho tòa B",
-    },
-    {
-      id: "4",
-      type: "export",
-      asset_code: "TB002",
-      asset_name: "Quạt trần",
-      quantity: 3,
-      unit: "Cái",
-      date: "2024-03-12",
-      export_to: "Tòa B - Phòng 205",
-      room_number: "B-205",
-      recipient_name: "Trần Thị B",
-      recipient_phone: "0987654321",
-      purpose: "Sử dụng",
-      created_by: "Admin",
-      notes: "Thay thế quạt hỏng",
-    },
-  ];
+  // Fetch history when modal opens or filters change
+  useEffect(() => {
+    if (isOpen) {
+      fetchHistory();
+    }
+  }, [isOpen, filterType, filterDate]);
+
+  const fetchHistory = async () => {
+    setIsLoading(true);
+    try {
+      const params = {};
+      if (filterType !== "all") {
+        params.type = filterType;
+      }
+      
+      const response = await getAssetHistory(params);
+      setHistory(response.data || []);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      setHistory([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock data - replaced with real API data
+  const mockHistory = history;
 
   const filteredHistory = mockHistory.filter((item) => {
     // Filter by type
@@ -179,7 +144,12 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
 
         {/* History List */}
         <div className="flex-1 overflow-y-auto p-6">
-          {filteredHistory.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+              <History size={48} className="mb-3 animate-spin" />
+              <p className="text-lg font-medium">Đang tải...</p>
+            </div>
+          ) : filteredHistory.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
               <History size={48} className="mb-3" />
               <p className="text-lg font-medium">Không có lịch sử</p>

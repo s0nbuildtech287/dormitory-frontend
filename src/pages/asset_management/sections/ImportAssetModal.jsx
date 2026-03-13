@@ -1,52 +1,50 @@
 import { useState } from "react";
-import { X, ArrowDownToLine, Save, Search } from "lucide-react";
+import { X, ArrowDownToLine, Save } from "lucide-react";
+import { importAsset } from "../../../api/apiAsset.js";
 
 const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
+  // 8 loại tài sản cố định
+  const assetTypes = [
+    { code: 'GIUONG', name: 'Giường', category: 'Nội thất', unit: 'Cái' },
+    { code: 'TU', name: 'Tủ quần áo', category: 'Nội thất', unit: 'Cái' },
+    { code: 'BAN', name: 'Bàn học', category: 'Nội thất', unit: 'Cái' },
+    { code: 'QUAT', name: 'Quạt trần', category: 'Thiết bị điện', unit: 'Cái' },
+    { code: 'DIEUHOA', name: 'Điều hòa', category: 'Thiết bị điện', unit: 'Cái' },
+    { code: 'DEN', name: 'Đèn', category: 'Thiết bị điện', unit: 'Cái' },
+    { code: 'CAMERA', name: 'Camera an ninh', category: 'Thiết bị an ninh', unit: 'Cái' },
+    { code: 'WIFI', name: 'Bộ phát Wifi', category: 'Thiết bị mạng', unit: 'Bộ' },
+  ];
+
   const [formData, setFormData] = useState({
-    asset_code: "",
-    asset_name: "",
+    asset_code: '',
+    asset_name: '',
+    category_name: '',
+    unit: 'Cái',
     quantity: 1,
-    unit: "Cái",
     import_date: new Date().toISOString().split("T")[0],
-    supplier: "",
+    supplier: '',
     purchase_price: 0,
     total_price: 0,
-    invoice_number: "",
-    notes: "",
+    invoice_number: `HD${Date.now()}`, // Auto-generated
+    notes: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchResults, setShowSearchResults] = useState(false);
 
-  // Mock search results - sẽ thay bằng API call
-  const mockAssets = [
-    { asset_code: "NT001", name: "Giường đơn", unit: "Cái", category: "Nội thất" },
-    { asset_code: "NT002", name: "Tủ quần áo", unit: "Cái", category: "Nội thất" },
-    { asset_code: "TB001", name: "Quạt trần", unit: "Cái", category: "Thiết bị điện" },
-    { asset_code: "TB002", name: "Điều hòa", unit: "Cái", category: "Thiết bị điện" },
-  ];
-
-  const searchResults = searchQuery
-    ? mockAssets.filter(
-        (asset) =>
-          asset.asset_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          asset.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
-
-  const handleSelectAsset = (asset) => {
-    setFormData((prev) => ({
-      ...prev,
-      asset_code: asset.asset_code,
-      asset_name: asset.name,
-      unit: asset.unit,
-    }));
-    setSearchQuery("");
-    setShowSearchResults(false);
+  const handleAssetTypeChange = (e) => {
+    const selectedType = assetTypes.find(type => type.code === e.target.value);
+    if (selectedType) {
+      setFormData(prev => ({
+        ...prev,
+        asset_code: selectedType.code,
+        asset_name: selectedType.name,
+        category_name: selectedType.category,
+        unit: selectedType.unit,
+      }));
+    }
   };
 
   const handleChange = (e) => {
@@ -72,12 +70,11 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
     setError("");
 
     try {
-      // TODO: Call API to import asset
-      console.log("Import asset:", formData);
+      await importAsset(formData);
       onSuccess();
     } catch (err) {
       console.error("Error importing asset:", err);
-      setError(err.response?.data?.message || "Không thể nhập kho. Vui lòng thử lại.");
+      setError(err.message || "Không thể nhập kho. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -114,81 +111,48 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
           )}
 
-          {/* Search Asset */}
-          <div className="relative">
+          {/* Select Asset Type */}
+          <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Tìm kiếm tài sản
+              Loại tài sản <span className="text-red-500">*</span>
             </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSearchResults(true);
-                }}
-                onFocus={() => setShowSearchResults(true)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Tìm theo mã hoặc tên tài sản..."
-              />
-            </div>
-            
-            {/* Search Results Dropdown */}
-            {showSearchResults && searchQuery && searchResults.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {searchResults.map((asset) => (
-                  <button
-                    key={asset.asset_code}
-                    type="button"
-                    onClick={() => handleSelectAsset(asset)}
-                    className="w-full px-4 py-3 text-left hover:bg-green-50 transition-colors border-b border-slate-100 last:border-b-0"
-                  >
-                    <div className="font-semibold text-slate-900">{asset.name}</div>
-                    <div className="text-sm text-slate-600">
-                      Mã: {asset.asset_code} • {asset.category} • {asset.unit}
-                    </div>
-                  </button>
-                ))}
+            <select
+              value={formData.asset_code}
+              onChange={handleAssetTypeChange}
+              required
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="">-- Chọn loại tài sản --</option>
+              {assetTypes.map((type) => (
+                <option key={type.code} value={type.code}>
+                  {type.name} ({type.category})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Display selected asset info */}
+          {formData.asset_code && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <p className="text-green-700 font-medium">Mã tài sản</p>
+                  <p className="text-green-900 font-semibold">{formData.asset_code}</p>
+                </div>
+                <div>
+                  <p className="text-green-700 font-medium">Tên tài sản</p>
+                  <p className="text-green-900 font-semibold">{formData.asset_name}</p>
+                </div>
+                <div>
+                  <p className="text-green-700 font-medium">Danh mục</p>
+                  <p className="text-green-900 font-semibold">{formData.category_name}</p>
+                </div>
               </div>
-            )}
-          </div>
-
-          {/* Asset Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Mã tài sản <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="asset_code"
-                value={formData.asset_code}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="VD: NT001"
-              />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Tên tài sản <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="asset_name"
-                value={formData.asset_name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="VD: Giường đơn"
-              />
-            </div>
-          </div>
+          )}
 
           {/* Quantity & Unit */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Số lượng nhập <span className="text-red-500">*</span>
@@ -213,27 +177,13 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 name="unit"
                 value={formData.unit}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Cái, Bộ..."
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Ngày nhập <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="import_date"
-                value={formData.import_date}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                disabled
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-600"
               />
             </div>
           </div>
 
-          {/* Supplier & Invoice */}
+          {/* Supplier */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -251,15 +201,15 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Số hóa đơn
+                Ngày nhập <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                name="invoice_number"
-                value={formData.invoice_number}
+                type="date"
+                name="import_date"
+                value={formData.import_date}
                 onChange={handleChange}
+                required
                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="VD: HD001"
               />
             </div>
           </div>
@@ -309,6 +259,10 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h3 className="text-sm font-semibold text-green-900 mb-2">Tóm tắt nhập kho</h3>
             <div className="space-y-1 text-sm text-green-800">
+              <div className="flex justify-between">
+                <span>Số hóa đơn:</span>
+                <span className="font-semibold">{formData.invoice_number}</span>
+              </div>
               <div className="flex justify-between">
                 <span>Số lượng:</span>
                 <span className="font-semibold">{formData.quantity} {formData.unit}</span>

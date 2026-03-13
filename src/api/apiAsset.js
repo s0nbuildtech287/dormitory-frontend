@@ -208,3 +208,63 @@ export const getAssetStatistics = async () => {
     throw error;
   }
 };
+
+/**
+ * Import asset to warehouse
+ * @param {Object} importData - Import data
+ * @returns {Promise<Object>} Import response
+ */
+export const importAsset = async (importData) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/import`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(importData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error importing asset:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get import/export history
+ * @param {Object} params - Query parameters (type, date_from, date_to, limit)
+ * @returns {Promise<Object>} History data
+ */
+export const getAssetHistory = async (params = {}) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `${API_BASE_URL}/assets/history?${queryString}` : `${API_BASE_URL}/assets/history`;
+
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching asset history:", error);
+    throw error;
+  }
+};
