@@ -1,6 +1,30 @@
+import { useState, useEffect } from "react";
 import { X, Home, Package, Wifi, Car, Droplet, Zap, Users } from "lucide-react";
+import { getAssetsByRoom } from "../../../api/apiAsset.js";
 
 const RoomDetailModal = ({ room, onClose }) => {
+    const [roomAssets, setRoomAssets] = useState([]);
+    const [loadingAssets, setLoadingAssets] = useState(false);
+
+    useEffect(() => {
+        if (room?.id) {
+            fetchRoomAssets();
+        }
+    }, [room?.id]);
+
+    const fetchRoomAssets = async () => {
+        setLoadingAssets(true);
+        try {
+            const response = await getAssetsByRoom(room.id);
+            setRoomAssets(response.data || []);
+        } catch (error) {
+            console.error("Error fetching room assets:", error);
+            setRoomAssets([]);
+        } finally {
+            setLoadingAssets(false);
+        }
+    };
+
     if (!room) return null;
 
     return (
@@ -57,24 +81,26 @@ const RoomDetailModal = ({ room, onClose }) => {
                         <h4 className="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
                             <Package size={18} /> Trang thiết bị
                         </h4>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                                <span className="text-sm font-semibold text-slate-600">Giường:</span>
-                                <span className="text-sm font-bold text-slate-900">{room.capacity} chiếc</span>
+                        {loadingAssets ? (
+                            <div className="flex items-center justify-center py-8 text-slate-400">
+                                <div className="w-6 h-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
                             </div>
-                            <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                                <span className="text-sm font-semibold text-slate-600">Tủ:</span>
-                                <span className="text-sm font-bold text-slate-900">{room.capacity} chiếc</span>
+                        ) : roomAssets.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-3">
+                                {roomAssets.map((asset) => (
+                                    <div key={asset.asset_code} className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
+                                        <span className="text-sm font-semibold text-slate-600">{asset.name}:</span>
+                                        <span className="text-sm font-bold text-slate-900">
+                                            {asset.total_quantity} {asset.unit}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                                <span className="text-sm font-semibold text-slate-600">Bàn học:</span>
-                                <span className="text-sm font-bold text-slate-900">{room.capacity} chiếc</span>
+                        ) : (
+                            <div className="text-center py-8 text-slate-400 text-sm">
+                                Chưa có trang thiết bị nào trong phòng
                             </div>
-                            <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                                <span className="text-sm font-semibold text-slate-600">Điều hòa:</span>
-                                <span className="text-sm font-bold text-slate-900">1 chiếc</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Services */}

@@ -268,3 +268,29 @@ export const getAssetHistory = async (params = {}) => {
     throw error;
   }
 };
+
+/**
+ * Get assets by room
+ * @param {string} roomId - Room ID
+ * @returns {Promise<Object>} Assets in room
+ */
+export const getAssetsByRoom = async (roomId) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/room/${roomId}`, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching assets by room:", error);
+    throw error;
+  }
+};
