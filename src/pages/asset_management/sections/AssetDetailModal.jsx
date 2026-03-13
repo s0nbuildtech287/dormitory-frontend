@@ -4,6 +4,9 @@ const AssetDetailModal = ({ asset, onClose, onRefresh }) => {
   // Don't render if no asset
   if (!asset) return null;
 
+  // Debug log to check asset data
+  console.log("Asset data in modal:", asset);
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       "Đang sử dụng": "bg-green-100 text-green-700 border-green-200",
@@ -64,20 +67,15 @@ const AssetDetailModal = ({ asset, onClose, onRefresh }) => {
         <div className="p-6 space-y-6">
           {/* Status Badges */}
           <div className="flex items-center gap-3">
-            <span
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${getStatusBadge(
-                asset.status
-              )}`}
-            >
-              {asset.status}
-            </span>
-            <span
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${getConditionBadge(
-                asset.condition
-              )}`}
-            >
-              {asset.condition}
-            </span>
+            {asset.status && (
+              <span
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${getStatusBadge(
+                  asset.status
+                )}`}
+              >
+                {asset.status}
+              </span>
+            )}
           </div>
 
           {/* Basic Info */}
@@ -93,7 +91,7 @@ const AssetDetailModal = ({ asset, onClose, onRefresh }) => {
               <div>
                 <label className="text-sm font-medium text-slate-500">Số lượng</label>
                 <p className="text-base font-semibold text-slate-900 mt-1">
-                  {asset.quantity} {asset.unit}
+                  {asset.total_quantity || asset.quantity} {asset.unit}
                 </p>
               </div>
 
@@ -128,13 +126,6 @@ const AssetDetailModal = ({ asset, onClose, onRefresh }) => {
                   {formatCurrency(asset.purchase_price)}
                 </p>
               </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-500">Giá trị hiện tại</label>
-                <p className="text-base font-semibold text-green-600 mt-1">
-                  {formatCurrency(asset.current_value)}
-                </p>
-              </div>
             </div>
           </div>
 
@@ -142,7 +133,7 @@ const AssetDetailModal = ({ asset, onClose, onRefresh }) => {
           <div className="bg-slate-50 rounded-lg p-4 space-y-3">
             <div className="flex items-center gap-2 text-slate-700 font-medium">
               <Wrench size={16} />
-              <span>Thông tin nhà cung cấp & Bảo hành</span>
+              <span>Thông tin nhà cung cấp</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -152,41 +143,61 @@ const AssetDetailModal = ({ asset, onClose, onRefresh }) => {
                 </p>
               </div>
               <div>
-                <label className="text-sm text-slate-500">Thời gian bảo hành</label>
+                <label className="text-sm text-slate-500">Đơn vị tính</label>
                 <p className="text-sm font-medium text-slate-900 mt-1">
-                  {asset.warranty_period} tháng
-                </p>
-              </div>
-              <div className="col-span-2">
-                <label className="text-sm text-slate-500">Hết hạn bảo hành</label>
-                <p className="text-sm font-medium text-slate-900 mt-1">
-                  {formatDate(asset.warranty_expiry)}
+                  {asset.unit || "Cái"}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Specifications */}
-          {asset.specifications && (
-            <div className="bg-blue-50 rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-2 text-blue-700 font-medium">
-                <Info size={16} />
-                <span>Thông số kỹ thuật</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(
-                  typeof asset.specifications === "string"
-                    ? JSON.parse(asset.specifications)
-                    : asset.specifications
-                ).map(([key, value]) => (
-                  <div key={key} className="text-sm">
-                    <span className="text-blue-600 font-medium">{key}:</span>{" "}
-                    <span className="text-slate-700">{value}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="bg-blue-50 rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-2 text-blue-700 font-medium">
+              <Info size={16} />
+              <span>Thông số kỹ thuật</span>
             </div>
-          )}
+            <div className="grid grid-cols-2 gap-3">
+              {(() => {
+                if (!asset.specifications) {
+                  return (
+                    <div className="text-sm text-slate-500 col-span-2">
+                      Chưa có thông số kỹ thuật
+                    </div>
+                  );
+                }
+                
+                try {
+                  const specs = typeof asset.specifications === "string" 
+                    ? JSON.parse(asset.specifications) 
+                    : asset.specifications;
+                  
+                  const entries = Object.entries(specs);
+                  if (entries.length === 0) {
+                    return (
+                      <div className="text-sm text-slate-500 col-span-2">
+                        Chưa có thông số kỹ thuật
+                      </div>
+                    );
+                  }
+                  
+                  return entries.map(([key, value]) => (
+                    <div key={key} className="text-sm">
+                      <span className="text-blue-600 font-medium">{key}:</span>{" "}
+                      <span className="text-slate-700">{value}</span>
+                    </div>
+                  ));
+                } catch (error) {
+                  console.error("Error parsing specifications:", error);
+                  return (
+                    <div className="text-sm text-red-600 col-span-2">
+                      Lỗi hiển thị thông số kỹ thuật
+                    </div>
+                  );
+                }
+              })()}
+            </div>
+          </div>
 
           {/* Description */}
           {asset.description && (
