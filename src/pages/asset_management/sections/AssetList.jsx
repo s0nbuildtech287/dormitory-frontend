@@ -153,11 +153,11 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
             },
             {
               header: "Tên tài sản",
-              align: "left",
+              align: "center",
               width: "w-[20%]",
               accessor: (asset) => (
-                <div>
-                  <div className="text-base font-semibold text-slate-900">{asset.name}</div>
+                <div className="text-center">
+                  <div className="text-xs font-semibold text-slate-900">{asset.name}</div>
                   <div className="text-xs text-slate-500">{asset.category_name}</div>
                 </div>
               ),
@@ -202,7 +202,7 @@ const AssetList = ({ assets, isLoadingAssets, onRefresh }) => {
             },
             {
               header: "Giá tiền / cái",
-              align: "right",
+              align: "center",
               width: "w-[14%]",
               accessor: (asset) => (
                 <span className="text-xs font-semibold text-slate-900">
