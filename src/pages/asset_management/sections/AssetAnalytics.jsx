@@ -1,4 +1,4 @@
-import { Package, TrendingUp, MapPin, BarChart3, DollarSign } from "lucide-react";
+import { Package, TrendingUp, MapPin, BarChart3, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAssetsByBuilding } from "../../../api/apiAsset.js";
 
@@ -18,6 +18,18 @@ const BUILDING_COLORS = [
 
 const AssetAnalytics = ({ assets }) => {
   const [buildingData, setBuildingData] = useState([]);
+  const [expandedSections, setExpandedSections] = useState({
+    category: false,
+    assetType: false,
+    location: false
+  });
+  
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   
   // Fetch building distribution data
   useEffect(() => {
@@ -129,132 +141,130 @@ const AssetAnalytics = ({ assets }) => {
       </div>
 
       {/* Category Analysis */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-          <BarChart3 size={20} />
-          Phân loại theo danh mục
-        </h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left side - Nội thất và Thiết bị an ninh */}
-          <div>
-            <h4 className="text-md font-semibold text-slate-800 mb-4">Nội thất & Thiết bị an ninh</h4>
-            <div className="space-y-3">
-              {Object.entries(byCategory)
-                .filter(([category]) => category === 'Nội thất' || category === 'Thiết bị an ninh')
-                .map(([category, data], index) => (
-                <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: ASSET_COLORS[index % ASSET_COLORS.length] }}
-                    />
-                    <span className="text-sm font-medium text-slate-700">{category}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-slate-900">{data.quantity} cái</div>
-                    <div className="text-xs text-slate-500">{formatCurrency(data.value)} đ</div>
-                    <div className="text-xs text-slate-400">
-                      Chiếm {((data.quantity / totalAssets) * 100).toFixed(1)}% tổng số • {((data.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => toggleSection('category')}
+          className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        >
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <BarChart3 size={20} />
+            Phân loại theo danh mục
+          </h3>
+          {expandedSections.category ? (
+            <ChevronUp size={20} className="text-slate-500" />
+          ) : (
+            <ChevronDown size={20} className="text-slate-500" />
+          )}
+        </button>
+        
+        {expandedSections.category && (
+          <div className="px-6 pb-6 border-t border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+              {/* Left side - Nội thất và Thiết bị an ninh */}
+              <div>
+                <h4 className="text-md font-semibold text-slate-800 mb-4">Nội thất & Thiết bị an ninh</h4>
+                <div className="space-y-3">
+                  {Object.entries(byCategory)
+                    .filter(([category]) => category === 'Nội thất' || category === 'Thiết bị an ninh')
+                    .map(([category, data], index) => (
+                    <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                          <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">{category}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{data.quantity} cái</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(data.value)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((data.quantity / totalAssets) * 100).toFixed(1)}% tổng số • {((data.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Right side - Điện và Mạng */}
-          <div>
-            <h4 className="text-md font-semibold text-slate-800 mb-4">Điện & Mạng</h4>
-            <div className="space-y-3">
-              {Object.entries(byCategory)
-                .filter(([category]) => category === 'Thiết bị điện' || category === 'Thiết bị mạng')
-                .map(([category, data], index) => (
-                <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: ASSET_COLORS[(index + 2) % ASSET_COLORS.length] }}
-                    />
-                    <span className="text-sm font-medium text-slate-700">{category}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-slate-900">{data.quantity} cái</div>
-                    <div className="text-xs text-slate-500">{formatCurrency(data.value)} đ</div>
-                    <div className="text-xs text-slate-400">
-                      Chiếm {((data.quantity / totalAssets) * 100).toFixed(1)}% tổng số • {((data.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+              {/* Right side - Điện và Mạng */}
+              <div>
+                <h4 className="text-md font-semibold text-slate-800 mb-4">Điện & Mạng</h4>
+                <div className="space-y-3">
+                  {Object.entries(byCategory)
+                    .filter(([category]) => category === 'Thiết bị điện' || category === 'Thiết bị mạng')
+                    .map(([category, data], index) => (
+                    <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                          <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">{category}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{data.quantity} cái</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(data.value)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((data.quantity / totalAssets) * 100).toFixed(1)}% tổng số • {((data.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Asset Type Analysis */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-          <BarChart3 size={20} />
-          Phân tích theo loại tài sản
-        </h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left side - 4 items */}
-          <div className="space-y-3">
-            {locationDistribution.slice(0, 4).map((asset, index) => (
-              <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: ASSET_COLORS[index % ASSET_COLORS.length] }}
-                  />
-                  <span className="text-sm font-medium text-slate-700">{asset.name}</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
-                  <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
-                  <div className="text-xs text-slate-400">
-                    Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Right side - 4 items */}
-          <div className="space-y-3">
-            {locationDistribution.slice(4, 8).map((asset, index) => (
-              <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: ASSET_COLORS[(index + 4) % ASSET_COLORS.length] }}
-                  />
-                  <span className="text-sm font-medium text-slate-700">{asset.name}</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
-                  <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
-                  <div className="text-xs text-slate-400">
-                    Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Remaining items - centered */}
-        {locationDistribution.length > 8 && (
-          <div className="mt-8 pt-6 border-t border-slate-200">
-            <div className="flex justify-center">
-              <div className="w-full lg:w-1/2 space-y-3">
-                {locationDistribution.slice(8).map((asset, index) => (
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => toggleSection('assetType')}
+          className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        >
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <BarChart3 size={20} />
+            Phân tích theo loại tài sản
+          </h3>
+          {expandedSections.assetType ? (
+            <ChevronUp size={20} className="text-slate-500" />
+          ) : (
+            <ChevronDown size={20} className="text-slate-500" />
+          )}
+        </button>
+        
+        {expandedSections.assetType && (
+          <div className="px-6 pb-6 border-t border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+              {/* Left side - 4 items */}
+              <div className="space-y-3">
+                {locationDistribution.slice(0, 4).map((asset, index) => (
                   <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: ASSET_COLORS[(index + 8) % ASSET_COLORS.length] }}
-                      />
+                      <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                        <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                      </div>
+                      <span className="text-sm font-medium text-slate-700">{asset.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
+                      <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
+                      <div className="text-xs text-slate-400">
+                        Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right side - 4 items */}
+              <div className="space-y-3">
+                {locationDistribution.slice(4, 8).map((asset, index) => (
+                  <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                        <span className="text-xs font-bold text-slate-700">{index + 5}</span>
+                      </div>
                       <span className="text-sm font-medium text-slate-700">{asset.name}</span>
                     </div>
                     <div className="text-right">
@@ -268,92 +278,97 @@ const AssetAnalytics = ({ assets }) => {
                 ))}
               </div>
             </div>
+
+            {/* Remaining items - centered */}
+            {locationDistribution.length > 8 && (
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <div className="flex justify-center">
+                  <div className="w-full lg:w-1/2 space-y-3">
+                    {locationDistribution.slice(8).map((asset, index) => (
+                      <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                            <span className="text-xs font-bold text-slate-700">{index + 9}</span>
+                          </div>
+                          <span className="text-sm font-medium text-slate-700">{asset.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
+                          <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
+                          <div className="text-xs text-slate-400">
+                            Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Asset Distribution by Location */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-          <MapPin size={20} />
-          Phân bổ tài sản theo vị trí
-        </h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left side - Tòa A, B */}
-          <div className="space-y-3">
-            {buildingData.slice(0, 2).map((building, index) => {
-              const totalBuilding = parseInt(building.total_quantity) || 0;
-              const buildingValue = parseFloat(building.total_value) || 0;
-              
-              return (
-                <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: BUILDING_COLORS[index % BUILDING_COLORS.length] }}
-                    />
-                    <span className="text-sm font-medium text-slate-700">
-                      {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
-                    <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
-                    <div className="text-xs text-slate-400">
-                      Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Right side - Tòa C, D */}
-          <div className="space-y-3">
-            {buildingData.slice(2, 4).map((building, index) => {
-              const totalBuilding = parseInt(building.total_quantity) || 0;
-              const buildingValue = parseFloat(building.total_value) || 0;
-              
-              return (
-                <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: BUILDING_COLORS[(index + 2) % BUILDING_COLORS.length] }}
-                    />
-                    <span className="text-sm font-medium text-slate-700">
-                      {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
-                    <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
-                    <div className="text-xs text-slate-400">
-                      Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Kho tổng - centered at bottom */}
-        {buildingData.length > 4 && (
-          <div className="mt-8 pt-6 border-t border-slate-200">
-            <div className="flex justify-center">
-              <div className="w-full lg:w-1/2">
-                {buildingData.slice(4).map((building, index) => {
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => toggleSection('location')}
+          className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        >
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <MapPin size={20} />
+            Phân bổ tài sản theo vị trí
+          </h3>
+          {expandedSections.location ? (
+            <ChevronUp size={20} className="text-slate-500" />
+          ) : (
+            <ChevronDown size={20} className="text-slate-500" />
+          )}
+        </button>
+        
+        {expandedSections.location && (
+          <div className="px-6 pb-6 border-t border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+              {/* Left side - Tòa A, B */}
+              <div className="space-y-3">
+                {buildingData.slice(0, 2).map((building, index) => {
                   const totalBuilding = parseInt(building.total_quantity) || 0;
                   const buildingValue = parseFloat(building.total_value) || 0;
                   
                   return (
                     <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div 
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: BUILDING_COLORS[4] }}
-                        />
+                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                          <span className="text-xs font-bold text-slate-700">{index + 1}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">
+                          {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right side - Tòa C, D */}
+              <div className="space-y-3">
+                {buildingData.slice(2, 4).map((building, index) => {
+                  const totalBuilding = parseInt(building.total_quantity) || 0;
+                  const buildingValue = parseFloat(building.total_value) || 0;
+                  
+                  return (
+                    <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                          <span className="text-xs font-bold text-slate-700">{index + 3}</span>
+                        </div>
                         <span className="text-sm font-medium text-slate-700">
                           {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
                         </span>
@@ -370,6 +385,40 @@ const AssetAnalytics = ({ assets }) => {
                 })}
               </div>
             </div>
+
+            {/* Kho tổng - centered at bottom */}
+            {buildingData.length > 4 && (
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <div className="flex justify-center">
+                  <div className="w-full lg:w-1/2">
+                    {buildingData.slice(4).map((building, index) => {
+                      const totalBuilding = parseInt(building.total_quantity) || 0;
+                      const buildingValue = parseFloat(building.total_value) || 0;
+                      
+                      return (
+                        <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded bg-slate-200 flex items-center justify-center">
+                              <span className="text-xs font-bold text-slate-700">{index + 5}</span>
+                            </div>
+                            <span className="text-sm font-medium text-slate-700">
+                              {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
+                            <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
+                            <div className="text-xs text-slate-400">
+                              Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
