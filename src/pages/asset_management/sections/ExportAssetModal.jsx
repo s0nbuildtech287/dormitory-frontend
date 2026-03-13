@@ -168,8 +168,18 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
       await exportAsset(formData);
       onSuccess();
     } catch (err) {
-      console.error("Error exporting asset:", err);
-      setError(err.message || "Không thể xuất kho. Vui lòng thử lại.");
+      // Extract error message from different possible formats
+      let errorMessage = "Không thể xuất kho. Vui lòng thử lại.";
+      
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.error) {
+        errorMessage = err.error;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -214,11 +224,6 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {error}
-            </div>
-          )}
 
           {/* Select Asset Type */}
           <div>
@@ -414,6 +419,13 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {error}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">

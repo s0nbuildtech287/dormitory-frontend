@@ -266,7 +266,7 @@ export const exportAsset = async (exportData) => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error exporting asset:", error);
+    // Không log console.error nữa vì lỗi đã được hiển thị trong UI
     throw error;
   }
 };
@@ -322,6 +322,112 @@ export const getAssetsByRoom = async (roomId) => {
     return await response.json();
   } catch (error) {
     console.error("Error fetching assets by room:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get asset limits
+ */
+export const getAssetLimits = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/settings/limits`, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching asset limits:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update asset limits
+ */
+export const updateAssetLimits = async (limits) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/settings/limits`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(limits),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating asset limits:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get asset regulations
+ */
+export const getAssetRegulations = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/settings/regulations`, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching asset regulations:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update asset regulations
+ */
+export const updateAssetRegulations = async (regulations) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/settings/regulations`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(regulations),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating asset regulations:", error);
     throw error;
   }
 };

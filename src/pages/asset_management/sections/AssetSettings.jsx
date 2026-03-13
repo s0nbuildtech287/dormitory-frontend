@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Package, Wrench, Archive, Settings, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Search, Save, RotateCcw, ArrowLeftRight } from "lucide-react";
-import { getAssets, updateAsset } from "../../../api/apiAsset.js";
+import { Package, Wrench, Settings, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Save, RotateCcw, ArrowLeftRight } from "lucide-react";
+import { getAssets, updateAsset, getAssetLimits, updateAssetLimits, getAssetRegulations, updateAssetRegulations } from "../../../api/apiAsset.js";
 import { getRooms } from "../../../api/apiRoom.js";
 
 // Toggle switch helper
