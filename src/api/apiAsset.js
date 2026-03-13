@@ -241,6 +241,37 @@ export const importAsset = async (importData) => {
 };
 
 /**
+ * Export asset from warehouse to room
+ * @param {Object} exportData - Export data
+ * @returns {Promise<Object>} Export response
+ */
+export const exportAsset = async (exportData) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(`${API_BASE_URL}/assets/export`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(exportData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error exporting asset:", error);
+    throw error;
+  }
+};
+
+/**
  * Get import/export history
  * @param {Object} params - Query parameters (type, date_from, date_to, limit)
  * @returns {Promise<Object>} History data

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, ArrowUpFromLine, Save } from "lucide-react";
+import { X, ArrowUpFromLine, Save, Eye, Package } from "lucide-react";
 import { getRooms } from "../../../api/apiRoom.js";
+import { exportAsset, getAssets, getAssetsByRoom } from "../../../api/apiAsset.js";
 
 const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
-  if (!isOpen) return null;
-
   // 8 loại tài sản cố định
   const assetTypes = [
     { code: 'GIUONG', name: 'Giường', category: 'Nội thất', unit: 'Cái' },
@@ -38,6 +37,9 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
   const [error, setError] = useState("");
   const [rooms, setRooms] = useState([]);
   const [filteredRooms, setFilteredRooms] = useState([]);
+  const [showRoomAssetsModal, setShowRoomAssetsModal] = useState(false);
+  const [roomAssets, setRoomAssets] = useState([]);
+  const [loadingRoomAssets, setLoadingRoomAssets] = useState(false);
 
   // Fetch rooms when modal opens
   useEffect(() => {
@@ -65,18 +67,39 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const handleAssetTypeChange = (e) => {
+  const handleAssetTypeChange = async (e) => {
     const selectedType = assetTypes.find(type => type.code === e.target.value);
     if (selectedType) {
-      // TODO: Fetch available quantity from API
       setFormData(prev => ({
         ...prev,
         asset_code: selectedType.code,
         asset_name: selectedType.name,
         category_name: selectedType.category,
         unit: selectedType.unit,
-        available_quantity: 0, // Will be fetched from API
+        available_quantity: 0,
       }));
+      
+      // Fetch available quantity from warehouse
+      try {
+        const response = await getAssets({ search: selectedType.code });
+        if (response.success && response.data) {
+          // Find asset in warehouse (room_id = null, status = 'Sẵn sàng')
+          const warehouseAsset = response.data.find(
+            asset => asset.asset_code === selectedType.code && 
+                    asset.room_id === null && 
+                    asset.status === 'Sẵn sàng'
+          );
+          
+          if (warehouseAsset) {
+            setFormData(prev => ({
+              ...prev,
+              available_quantity: warehouseAsset.quantity || 0,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching available quantity:", error);
+      }
     }
   };
 
@@ -97,6 +120,27 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
         room_id: selectedRoom.id,
         room_number: selectedRoom.room_number,
       }));
+    }
+  };
+
+  const handleViewRoomAssets = async () => {
+    if (!formData.room_id) {
+      alert("Vui lòng chọn phòng trước");
+      return;
+    }
+
+    setLoadingRoomAssets(true);
+    setShowRoomAssetsModal(true);
+    try {
+      const response = await getAssetsByRoom(formData.room_id);
+      const assets = response.data || [];
+      console.log("Room assets response:", assets);
+      setRoomAssets(assets);
+    } catch (error) {
+      console.error("Error fetching room assets:", error);
+      setRoomAssets([]);
+    } finally {
+      setLoadingRoomAssets(false);
     }
   };
 
@@ -121,16 +165,33 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
     setError("");
 
     try {
-      // TODO: Call API to export asset
-      console.log("Export asset:", formData);
+      await exportAsset(formData);
       onSuccess();
     } catch (err) {
       console.error("Error exporting asset:", err);
-      setError(err.response?.data?.message || "Không thể xuất kho. Vui lòng thử lại.");
+      setError(err.message || "Không thể xuất kho. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Group assets by asset_code and sum quantities
+  const groupedRoomAssets = roomAssets.reduce((acc, asset) => {
+    const key = asset.asset_code;
+    if (!acc[key]) {
+      acc[key] = {
+        asset_name: asset.asset_name,
+        unit: asset.unit,
+        quantity: 0
+      };
+    }
+    acc[key].quantity += Number(asset.quantity) || 0;
+    return acc;
+  }, {});
+
+  const groupedAssetsList = Object.values(groupedRoomAssets);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -266,20 +327,31 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Phòng <span className="text-red-500">*</span>
               </label>
-              <select
-                value={formData.room_id}
-                onChange={handleRoomChange}
-                required
-                disabled={!formData.building}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-slate-100 disabled:cursor-not-allowed"
-              >
-                <option value="">-- Chọn phòng --</option>
-                {filteredRooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.room_number} ({room.current_occupancy}/{room.capacity} người)
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  value={formData.room_id}
+                  onChange={handleRoomChange}
+                  required
+                  disabled={!formData.building}
+                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-slate-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">-- Chọn phòng --</option>
+                  {filteredRooms.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.room_number} ({room.current_occupancy}/{room.capacity} người)
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleViewRoomAssets}
+                  disabled={!formData.room_id}
+                  className="p-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
+                  title="Xem trang thiết bị phòng"
+                >
+                  <Eye size={18} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -363,6 +435,69 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
         </form>
       </div>
+
+      {/* Room Assets Modal */}
+      {showRoomAssetsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full max-h-[60vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4 text-orange-600" />
+                <h3 className="text-base font-bold text-orange-600">
+                  Phòng {formData.room_number}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowRoomAssetsModal(false)}
+                className="p-1 hover:bg-slate-100 rounded transition-colors"
+              >
+                <X size={18} className="text-slate-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4 overflow-y-auto max-h-[calc(60vh-100px)]">
+              {loadingRoomAssets ? (
+                <div className="flex items-center justify-center py-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600"></div>
+                </div>
+              ) : groupedAssetsList.length === 0 ? (
+                <div className="text-center py-6">
+                  <Package className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">Phòng chưa có trang thiết bị</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {groupedAssetsList.map((asset, index) => (
+                    <div
+                      key={index}
+                      className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center justify-between"
+                    >
+                      <span className="text-sm font-medium text-slate-900">
+                        {asset.asset_name}
+                      </span>
+                      <span className="text-sm font-semibold text-orange-700">
+                        {asset.quantity} {asset.unit}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-slate-200 px-4 py-3 bg-slate-50">
+              <button
+                onClick={() => setShowRoomAssetsModal(false)}
+                className="w-full px-3 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
