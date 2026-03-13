@@ -1,40 +1,85 @@
-import React from "react";
-import { Package } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LayoutGrid, BarChart3, Settings } from "lucide-react";
+import { getAssets } from "../../api/apiAsset.js";
+import AssetList from "./sections/AssetList.jsx";
+import AssetAnalytics from "./sections/AssetAnalytics.jsx";
+import AssetSettings from "./sections/AssetSettings.jsx";
+import PageTabs from "../../components/common/PageTabs.jsx";
 
-/**
- * Asset Management Page
- * Quản lý cơ sở vật chất
- */
 const AssetManagement = () => {
+  const [assets, setAssets] = useState([]);
+  const [isLoadingAssets, setIsLoadingAssets] = useState(true);
+  const [activeSubTab, setActiveSubTab] = useState("list");
+
+  // Fetch assets data
+  useEffect(() => {
+    const fetchAssets = async () => {
+      try {
+        setIsLoadingAssets(true);
+        // TODO: Backend API chưa có endpoint /api/assets
+        // Tạm thời set empty array
+        console.warn("Asset API endpoint chưa được implement trong backend");
+        setAssets([]);
+        
+        // Uncomment khi backend đã có API
+        // const data = await getAssets();
+        // setAssets(Array.isArray(data) ? data : data.data || []);
+      } catch (error) {
+        console.error("Error fetching assets:", error);
+        setAssets([]);
+      } finally {
+        setIsLoadingAssets(false);
+      }
+    };
+    fetchAssets();
+  }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setIsLoadingAssets(true);
+      // TODO: Backend API chưa có endpoint /api/assets
+      console.warn("Asset API endpoint chưa được implement trong backend");
+      setAssets([]);
+      
+      // Uncomment khi backend đã có API
+      // const data = await getAssets();
+      // setAssets(Array.isArray(data) ? data : data.data || []);
+    } catch (error) {
+      console.error("Error refreshing assets:", error);
+      setAssets([]);
+    } finally {
+      setIsLoadingAssets(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-100 rounded-xl">
-            <Package className="w-6 h-6 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Cơ sở vật chất</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Quản lý tài sản và thiết bị trong ký túc xá
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Tabs Navigation */}
+      <PageTabs
+        tabs={[
+          { id: "list", label: "Danh sách tài sản", icon: LayoutGrid },
+          { id: "analytics", label: "Thống kê tài sản", icon: BarChart3 },
+          { id: "settings", label: "Điều chỉnh", icon: Settings },
+        ]}
+        activeTab={activeSubTab}
+        onTabChange={setActiveSubTab}
+      />
 
-      {/* Content */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-        <div className="text-center py-12">
-          <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-700 mb-2">
-            Trang Cơ sở vật chất
-          </h3>
-          <p className="text-slate-500">
-            Chức năng đang được phát triển...
-          </p>
-        </div>
-      </div>
+      {/* Tab Content */}
+      {activeSubTab === "list" && (
+        <AssetList 
+          assets={assets} 
+          isLoadingAssets={isLoadingAssets} 
+          onRefresh={handleRefresh} 
+        />
+      )}
+      {activeSubTab === "analytics" && <AssetAnalytics assets={assets} />}
+      {activeSubTab === "settings" && (
+        <AssetSettings 
+          assets={assets} 
+          onRefresh={handleRefresh} 
+        />
+      )}
     </div>
   );
 };
