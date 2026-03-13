@@ -67,8 +67,8 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
 
   const getTypeColor = (type) => {
     return type === "import" 
-      ? { text: "text-green-700" }
-      : { text: "text-orange-700" };
+      ? { text: "text-slate-700" }
+      : { text: "text-slate-700" };
   };
 
   const getTypeLabel = (type) => {
@@ -81,8 +81,8 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <History className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-slate-100 rounded-lg">
+              <History className="w-5 h-5 text-slate-700" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900">Lịch sử xuất nhập kho</h2>
@@ -107,7 +107,7 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm theo mã hoặc tên tài sản..."
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
               />
             </div>
 
@@ -117,7 +117,7 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
               >
                 <option value="all">Tất cả</option>
                 <option value="import">Nhập kho</option>
@@ -131,7 +131,7 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
               <select
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-sm"
               >
                 <option value="all">Tất cả thời gian</option>
                 <option value="today">Hôm nay</option>
@@ -217,7 +217,7 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
                         {/* Transaction Details */}
                         {item.type === "import" ? (
                           <div className="bg-white border border-slate-200 rounded-lg p-4">
-                            <h4 className="text-sm font-semibold text-green-700 mb-3">Thông tin nhập kho</h4>
+                            <h4 className="text-sm font-semibold text-slate-700 mb-3">Thông tin nhập kho</h4>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <p className="text-xs text-slate-500">Nhà cung cấp</p>
@@ -239,7 +239,7 @@ const AssetHistoryModal = ({ isOpen, onClose }) => {
                           </div>
                         ) : (
                           <div className="bg-white border border-slate-200 rounded-lg p-4">
-                            <h4 className="text-sm font-semibold text-orange-700 mb-3">Thông tin xuất kho</h4>
+                            <h4 className="text-sm font-semibold text-slate-700 mb-3">Thông tin xuất kho</h4>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <p className="text-xs text-slate-500">Xuất đến</p>

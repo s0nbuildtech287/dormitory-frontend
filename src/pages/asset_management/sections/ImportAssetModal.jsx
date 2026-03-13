@@ -90,8 +90,8 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <ArrowDownToLine className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-slate-100 rounded-lg">
+              <ArrowDownToLine className="w-5 h-5 text-slate-700" />
             </div>
             <h2 className="text-xl font-bold text-slate-900">Nhập kho tài sản</h2>
           </div>
@@ -120,7 +120,7 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.asset_code}
               onChange={handleAssetTypeChange}
               required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             >
               <option value="">-- Chọn loại tài sản --</option>
               {assetTypes.map((type) => (
@@ -133,19 +133,19 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
 
           {/* Display selected asset info */}
           {formData.asset_code && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-green-700 font-medium">Mã tài sản</p>
-                  <p className="text-green-900 font-semibold">{formData.asset_code}</p>
+                  <p className="text-slate-600 font-medium">Mã tài sản</p>
+                  <p className="text-slate-900 font-semibold">{formData.asset_code}</p>
                 </div>
                 <div>
-                  <p className="text-green-700 font-medium">Tên tài sản</p>
-                  <p className="text-green-900 font-semibold">{formData.asset_name}</p>
+                  <p className="text-slate-600 font-medium">Tên tài sản</p>
+                  <p className="text-slate-900 font-semibold">{formData.asset_name}</p>
                 </div>
                 <div>
-                  <p className="text-green-700 font-medium">Danh mục</p>
-                  <p className="text-green-900 font-semibold">{formData.category_name}</p>
+                  <p className="text-slate-600 font-medium">Danh mục</p>
+                  <p className="text-slate-900 font-semibold">{formData.category_name}</p>
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 onChange={handleChange}
                 min="1"
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               />
             </div>
 
@@ -194,7 +194,7 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 name="supplier"
                 value={formData.supplier}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                 placeholder="Tên nhà cung cấp"
               />
             </div>
@@ -209,7 +209,7 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 value={formData.import_date}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 value={formData.purchase_price}
                 onChange={handleChange}
                 min="0"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               />
             </div>
 
@@ -250,15 +250,15 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.notes}
               onChange={handleChange}
               rows="3"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               placeholder="Ghi chú về lô hàng nhập..."
             />
           </div>
 
           {/* Summary Box */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-green-900 mb-2">Tóm tắt nhập kho</h3>
-            <div className="space-y-1 text-sm text-green-800">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-slate-900 mb-2">Tóm tắt nhập kho</h3>
+            <div className="space-y-1 text-sm text-slate-700">
               <div className="flex justify-between">
                 <span>Số hóa đơn:</span>
                 <span className="font-semibold">{formData.invoice_number}</span>
@@ -286,7 +286,7 @@ const ImportAssetModal = ({ isOpen, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={16} />
               {isSubmitting ? "Đang xử lý..." : "Xác nhận nhập kho"}

@@ -199,8 +199,8 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <ArrowUpFromLine className="w-5 h-5 text-orange-600" />
+            <div className="p-2 bg-slate-100 rounded-lg">
+              <ArrowUpFromLine className="w-5 h-5 text-slate-700" />
             </div>
             <h2 className="text-xl font-bold text-slate-900">Xuất kho tài sản</h2>
           </div>
@@ -229,7 +229,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.asset_code}
               onChange={handleAssetTypeChange}
               required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             >
               <option value="">-- Chọn loại tài sản --</option>
               {assetTypes.map((type) => (
@@ -242,19 +242,19 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
 
           {/* Display selected asset info */}
           {formData.asset_code && (
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-orange-700 font-medium">Mã tài sản</p>
-                  <p className="text-orange-900 font-semibold">{formData.asset_code}</p>
+                  <p className="text-slate-600 font-medium">Mã tài sản</p>
+                  <p className="text-slate-900 font-semibold">{formData.asset_code}</p>
                 </div>
                 <div>
-                  <p className="text-orange-700 font-medium">Tên tài sản</p>
-                  <p className="text-orange-900 font-semibold">{formData.asset_name}</p>
+                  <p className="text-slate-600 font-medium">Tên tài sản</p>
+                  <p className="text-slate-900 font-semibold">{formData.asset_name}</p>
                 </div>
                 <div>
-                  <p className="text-orange-700 font-medium">Danh mục</p>
-                  <p className="text-orange-900 font-semibold">{formData.category_name}</p>
+                  <p className="text-slate-600 font-medium">Danh mục</p>
+                  <p className="text-slate-900 font-semibold">{formData.category_name}</p>
                 </div>
               </div>
             </div>
@@ -283,7 +283,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 min="1"
                 max={formData.available_quantity}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               />
             </div>
 
@@ -297,7 +297,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 value={formData.export_date}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -312,7 +312,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 value={formData.building}
                 onChange={handleBuildingChange}
                 required
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               >
                 <option value="">-- Chọn tòa --</option>
                 {buildings.map((building) => (
@@ -333,7 +333,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={handleRoomChange}
                   required
                   disabled={!formData.building}
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent disabled:bg-slate-100 disabled:cursor-not-allowed"
                 >
                   <option value="">-- Chọn phòng --</option>
                   {filteredRooms.map((room) => (
@@ -346,7 +346,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                   type="button"
                   onClick={handleViewRoomAssets}
                   disabled={!formData.room_id}
-                  className="p-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
+                  className="p-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
                   title="Xem trang thiết bị phòng"
                 >
                   <Eye size={18} />
@@ -364,7 +364,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               name="purpose"
               value={formData.purpose}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             >
               <option value="Sử dụng">Sử dụng</option>
               <option value="Bảo trì">Bảo trì</option>
@@ -385,15 +385,15 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               value={formData.notes}
               onChange={handleChange}
               rows="3"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               placeholder="Ghi chú về lô hàng xuất..."
             />
           </div>
 
           {/* Summary Box */}
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-orange-900 mb-2">Tóm tắt xuất kho</h3>
-            <div className="space-y-1 text-sm text-orange-800">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-slate-900 mb-2">Tóm tắt xuất kho</h3>
+            <div className="space-y-1 text-sm text-slate-700">
               <div className="flex justify-between">
                 <span>Số lượng xuất:</span>
                 <span className="font-semibold">{formData.quantity} {formData.unit}</span>
@@ -427,7 +427,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={16} />
               {isSubmitting ? "Đang xử lý..." : "Xác nhận xuất kho"}
@@ -443,8 +443,8 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
             {/* Modal Header */}
             <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-orange-600" />
-                <h3 className="text-base font-bold text-orange-600">
+                <Package className="w-4 h-4 text-slate-700" />
+                <h3 className="text-base font-bold text-slate-900">
                   Phòng {formData.room_number}
                 </h3>
               </div>
@@ -472,12 +472,12 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                   {groupedAssetsList.map((asset, index) => (
                     <div
                       key={index}
-                      className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center justify-between"
+                      className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 flex items-center justify-between"
                     >
                       <span className="text-sm font-medium text-slate-900">
                         {asset.asset_name}
                       </span>
-                      <span className="text-sm font-semibold text-orange-700">
+                      <span className="text-sm font-semibold text-slate-700">
                         {asset.quantity} {asset.unit}
                       </span>
                     </div>
@@ -490,7 +490,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
             <div className="border-t border-slate-200 px-4 py-3 bg-slate-50">
               <button
                 onClick={() => setShowRoomAssetsModal(false)}
-                className="w-full px-3 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors"
+                className="w-full px-3 py-2 bg-slate-600 text-white text-sm rounded-lg hover:bg-slate-700 transition-colors"
               >
                 Đóng
               </button>
