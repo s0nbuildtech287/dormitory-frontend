@@ -89,9 +89,9 @@ const RoomDetailModal = ({ room, onClose }) => {
                             <div className="grid grid-cols-2 gap-3">
                                 {roomAssets.map((asset) => (
                                     <div key={asset.asset_code} className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
-                                        <span className="text-sm font-semibold text-slate-600">{asset.name}:</span>
+                                        <span className="text-sm font-semibold text-slate-600">{asset.asset_name}:</span>
                                         <span className="text-sm font-bold text-slate-900">
-                                            {asset.total_quantity} {asset.unit}
+                                            {asset.quantity} {asset.unit}
                                         </span>
                                     </div>
                                 ))}
