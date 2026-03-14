@@ -38,7 +38,12 @@ const formatDate = (value, withTime = false) => {
   return withTime ? date.toLocaleString("vi-VN") : date.toLocaleDateString("vi-VN");
 };
 
-const getStudentCode = (record) => record.student_id || record.user_id || "N/A";
+const getStudentCode = (record) =>
+  record.snapshot_student_id ||
+  record.rf_student_id ||
+  record.student_id ||
+  record.user_id ||
+  "N/A";
 
 const getRoomLabel = (record) => {
   if (!record.room_number) return "Chưa gán phòng";
@@ -698,6 +703,8 @@ const HistoryModal = ({ records, onClose }) => {
   });
 
   const sorted = [...filtered].sort((a, b) => new Date(b.violation_date) - new Date(a.violation_date));
+  const historyPagination = usePagination(sorted, 10);
+  const { currentItems: historyItems, totalItems: historyTotal } = historyPagination;
 
   const columns = [
     {
@@ -747,8 +754,8 @@ const HistoryModal = ({ records, onClose }) => {
           </button>
         </div>
 
-        <div className="p-6 flex flex-col gap-4 max-h-[80vh] overflow-y-auto">
-          <div className="flex flex-wrap gap-3 items-center">
+        <div className="p-6 flex flex-col gap-4" style={{ maxHeight: "80vh", overflow: "hidden" }}>
+          <div className="flex flex-wrap gap-3 items-center flex-shrink-0">
             <div className="relative flex-1 min-w-[220px]">
               <input
                 type="text"
@@ -783,10 +790,10 @@ const HistoryModal = ({ records, onClose }) => {
             </select>
           </div>
 
-          <div className="border border-slate-200 rounded-2xl overflow-hidden">
+          <div className="border border-slate-200 rounded-2xl flex-1 min-h-0 overflow-y-auto">
             <DataTable
               columns={columns}
-              data={sorted}
+              data={historyItems}
               keyExtractor={(record) => record.id}
               loading={false}
               emptyState={{
@@ -796,6 +803,10 @@ const HistoryModal = ({ records, onClose }) => {
               }}
               rowClassName={() => "h-12"}
             />
+          </div>
+          <div className="flex items-center justify-between flex-shrink-0">
+            <p className="text-xs text-slate-500">Tổng {historyTotal} bản ghi</p>
+            <Pagination pagination={historyPagination} totalItems={historyTotal} itemsPerPage={10} />
           </div>
         </div>
       </div>
