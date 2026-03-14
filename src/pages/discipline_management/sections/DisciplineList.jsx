@@ -839,7 +839,7 @@ const AddRecordModal = ({ onClose, onCreated }) => {
       setSubmitError("");
       setStudentInfo("");
 
-      const response = await getContracts({ search: studentId.trim(), status: "Active" });
+      const response = await getContracts({ search: studentId.trim() });
       const matches = Array.isArray(response?.data) ? response.data : [];
 
       if (matches.length === 0) {
@@ -853,9 +853,10 @@ const AddRecordModal = ({ onClose, onCreated }) => {
       setUserId(match.user_id || "");
       setRoomId(match.room_id || "");
 
+      const studentCode = match.snapshot_student_id || match.rf_student_id || "";
       const labelParts = [
         match.student_name ? `SV: ${match.student_name}` : "",
-        match.snapshot_student_id ? `Mã SV: ${match.snapshot_student_id}` : "",
+        studentCode ? `Mã SV: ${studentCode}` : "",
         match.room_number ? `Phòng: ${match.building ? `${match.building}-` : ""}${match.room_number}` : "",
       ].filter(Boolean);
 
