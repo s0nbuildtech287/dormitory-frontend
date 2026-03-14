@@ -165,7 +165,6 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
   // ── Section 4: Cài đặt mặc định ──────────────────────────────────────────
   const [defaults, setDefaults] = useState({
     defaultCapacity: 4,
-    defaultGender: "Nam",
     defaultRentPrice: 400000,
     autoCloseMaintenance: true,
     maxFloorsPerBuilding: 6,
@@ -573,19 +572,6 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-purple-50 outline-none"
             />
             <p className="text-xs text-slate-500">Được áp dụng khi tạo phòng mới không nhập sức chứa</p>
-          </div>
-
-          {/* Default gender */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-900">Giới tính mặc định</label>
-            <select
-              value={defaults.defaultGender}
-              onChange={(e) => setDefaults((d) => ({ ...d, defaultGender: e.target.value }))}
-              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-purple-50 outline-none text-slate-700"
-            >
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-            </select>
           </div>
 
           {/* Default rent price */}
