@@ -106,6 +106,7 @@ const DisciplineList = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+  const [recordsToDelete, setRecordsToDelete] = useState([]);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
@@ -350,6 +351,17 @@ const DisciplineList = () => {
                 <Send size={13} /> Gửi email ({selectedRecords.size})
               </button>
             )}
+            {showCheckboxColumn && selectedRecords.size > 0 && (
+              <button
+                onClick={() => {
+                  setDeleteError("");
+                  setRecordsToDelete([...selectedRecords]);
+                }}
+                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-red-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
+              >
+                <Trash2 size={13} /> Xóa ({selectedRecords.size})
+              </button>
+            )}
           </div>
         </div>
 
@@ -445,6 +457,40 @@ const DisciplineList = () => {
       >
         <p className="text-sm text-slate-600">
           Bạn có chắc muốn xóa phiếu vi phạm <span className="font-bold text-slate-900">#{recordToDelete?.id}</span> không?
+        </p>
+        {deleteError && <p className="text-xs text-rose-600 font-semibold mt-2">{deleteError}</p>}
+      </ConfirmModal>
+      <ConfirmModal
+        isOpen={recordsToDelete.length > 0}
+        onClose={() => {
+          setRecordsToDelete([]);
+          setDeleteError("");
+        }}
+        onConfirm={async () => {
+          if (recordsToDelete.length === 0) return;
+          try {
+            setDeleteLoading(true);
+            setDeleteError("");
+            await Promise.all(recordsToDelete.map((id) => deleteDisciplinaryRecord(id)));
+            setRecordsToDelete([]);
+            clearSelection();
+            fetchRecords();
+          } catch (err) {
+            setDeleteError(err.message || "Xóa nhiều phiếu thất bại");
+          } finally {
+            setDeleteLoading(false);
+          }
+        }}
+        title="Xác nhận xóa nhiều phiếu"
+        confirmText="Xóa tất cả"
+        icon={Trash2}
+        iconBgColor="bg-red-50"
+        iconColor="text-red-600"
+        confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
+        isLoading={deleteLoading}
+      >
+        <p className="text-sm text-slate-600">
+          Bạn có chắc muốn xóa <span className="font-bold text-slate-900">{recordsToDelete.length}</span> phiếu đã chọn không?
         </p>
         {deleteError && <p className="text-xs text-rose-600 font-semibold mt-2">{deleteError}</p>}
       </ConfirmModal>
