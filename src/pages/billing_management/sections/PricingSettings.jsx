@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { DollarSign, Zap, Droplet, Trash2, Wifi, Car, Save, RotateCcw, CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp } from "lucide-react";
-import { getPricingSettings, updatePricingSettings } from "../../../api/apiSettings";
+import { getPricingSettings, updatePricingSettings } from "../../../api/apiInvoice";
 
 // ─── Section accordion wrapper ────────────────────────────────────────────────
 const Section = ({ id, expanded, onToggle, icon: Icon, iconBg, iconColor, title, subtitle, children, onSave, onReset, hasChanges, saveStatus }) => (

@@ -164,3 +164,26 @@ export const updateOverdueInvoices = async () => {
   });
   return handleResponse(response);
 };
+
+/**
+ * Get pricing settings
+ */
+export const getPricingSettings = async () => {
+  const response = await fetch(`${API_BASE_URL}/invoices/pricing-settings`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};
+
+/**
+ * Update pricing settings
+ * @param {Object} pricingData - Pricing configuration object
+ */
+export const updatePricingSettings = async (pricingData) => {
+  const response = await fetch(`${API_BASE_URL}/invoices/pricing-settings`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({ value: pricingData }),
+  });
+  return handleResponse(response);
+};

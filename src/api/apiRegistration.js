@@ -349,7 +349,7 @@ export const getScoringWeights = async () => {
     };
 
     const response = await fetch(
-      `${API_BASE_URL}/settings/scoring-weights`,
+      `${API_BASE_URL}/registrations/scoring-weights`,
       { method: 'GET', headers }
     );
 
@@ -378,7 +378,7 @@ export const updateScoringWeights = async (scoringWeights) => {
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/settings/scoring-weights`,
+      `${API_BASE_URL}/registrations/scoring-weights`,
       {
         method: 'PUT',
         headers: {
