@@ -179,17 +179,13 @@ const AssetSettings = ({ onRefresh }) => {
   const handleRecallAssets = async () => {
     const selectedAssets = roomAssets
       .map((asset) => {
-        const assetId = String(asset.id || "");
+        const assetKey = asset.asset_code || String(asset.id || "");
         const maxQuantity = Number(asset.quantity) || 0;
-        const recallQuantity = Number(selectedRecalls[assetId]) || 0;
-        return {
-          ...asset,
-          assetId,
-          maxQuantity,
-          recallQuantity,
-        };
+        const entry = selectedRecalls[assetKey];
+        const recallQuantity = entry ? Number(entry.qty) || maxQuantity : 0;
+        return { ...asset, assetKey, maxQuantity, recallQuantity };
       })
-      .filter((asset) => asset.assetId && asset.recallQuantity > 0 && asset.recallQuantity <= asset.maxQuantity);
+      .filter((asset) => asset.assetKey && asset.recallQuantity > 0 && asset.recallQuantity <= asset.maxQuantity);
 
     if (selectedAssets.length === 0) return;
 
@@ -197,56 +193,63 @@ const AssetSettings = ({ onRefresh }) => {
     setRecallStatus("saving");
     try {
       for (const asset of selectedAssets) {
-        const {
-          assetId,
-          asset_code,
-          recallQuantity,
-          maxQuantity,
-        } = asset;
+        const { asset_code, recallQuantity, maxQuantity } = asset;
+
+        // Lấy tất cả bản ghi asset theo asset_code
+        const assetsResponse = await getAssets({ search: asset_code });
+        const allRecords = assetsResponse.data || [];
+
+        // Tìm bản ghi trong phòng
+        const roomAssetRecord = allRecords.find(
+          (item) => item.asset_code === asset_code && String(item.room_id) === String(recallRoom)
+        );
+        if (!roomAssetRecord) continue;
+
         const remainQuantity = maxQuantity - recallQuantity;
 
+        // Update bản ghi trong phòng (merge đầy đủ fields)
         if (remainQuantity <= 0) {
-          await updateAsset(assetId, {
+          await updateAsset(roomAssetRecord.id, {
+            ...roomAssetRecord,
             room_id: null,
             location: "Kho",
             status: "Sẵn sàng",
             quantity: maxQuantity,
           });
         } else {
-          await updateAsset(assetId, { quantity: remainQuantity });
+          await updateAsset(roomAssetRecord.id, {
+            ...roomAssetRecord,
+            quantity: remainQuantity,
+          });
         }
 
-        const assetsResponse = await getAssets({ search: asset_code });
-        const warehouseAsset = (assetsResponse.data || []).find(
-          (item) =>
-            item.asset_code === asset_code &&
-            String(item.id) !== assetId &&
-            item.room_id === null &&
-            item.status === "Sẵn sàng"
+        // Tìm bản ghi kho cùng asset_code
+        const warehouseRecord = allRecords.find(
+          (item) => item.asset_code === asset_code && item.room_id === null && item.status === "Sẵn sàng"
+            && String(item.id) !== String(roomAssetRecord.id)
         );
 
-        if (warehouseAsset) {
-          await updateAsset(warehouseAsset.id, {
-            quantity: (Number(warehouseAsset.quantity) || 0) + recallQuantity,
-            room_id: null,
-            location: "Kho",
-            status: "Sẵn sàng",
+        if (warehouseRecord) {
+          await updateAsset(warehouseRecord.id, {
+            ...warehouseRecord,
+            quantity: (Number(warehouseRecord.quantity) || 0) + recallQuantity,
           });
         } else if (remainQuantity > 0) {
+          // Tạo bản ghi kho mới nếu chưa có
           await createAsset({
             asset_code,
-            name: asset.name || asset.asset_name || asset_code,
-            category_name: asset.category_name || "Khác",
-            unit: asset.unit || "Cái",
+            name: roomAssetRecord.name || asset_code,
+            category_name: roomAssetRecord.category_name || "Khác",
+            unit: roomAssetRecord.unit || "Cái",
             room_id: null,
             location: "Kho",
             quantity: recallQuantity,
             status: "Sẵn sàng",
-            condition: asset.condition || "Tốt",
-            purchase_price: Number(asset.purchase_price) || 0,
-            supplier: asset.supplier || "",
-            warranty_period: Number(asset.warranty_period) || 0,
-            description: asset.description || "",
+            condition: roomAssetRecord.condition || "Tốt",
+            purchase_price: Number(roomAssetRecord.purchase_price) || 0,
+            supplier: roomAssetRecord.supplier || "",
+            warranty_period: Number(roomAssetRecord.warranty_period) || 0,
+            description: roomAssetRecord.description || "",
           });
         }
       }
@@ -559,9 +562,9 @@ const AssetSettings = ({ onRefresh }) => {
             <span className="text-xs font-black uppercase tracking-widest text-slate-600">
               Tài sản trong phòng
             </span>
-            {Object.values(selectedRecalls).filter((qty) => Number(qty) > 0).length > 0 && (
+            {Object.values(selectedRecalls).filter(Boolean).length > 0 && (
               <span className="px-2.5 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-bold">
-                {Object.values(selectedRecalls).filter((qty) => Number(qty) > 0).length} đã chọn
+                {Object.values(selectedRecalls).filter(Boolean).length} đã chọn
               </span>
             )}
           </div>
@@ -582,50 +585,74 @@ const AssetSettings = ({ onRefresh }) => {
               </div>
             )}
             {recallRoom && !roomAssetsLoading && roomAssets.map((asset) => {
-              const assetId = String(asset.id || "");
+              const assetKey = asset.asset_code || String(asset.id || "");
               const currentQuantity = Number(asset.quantity) || 0;
-              const selectedQuantity = Number(selectedRecalls[assetId]) || 0;
-              const isDisabled = !assetId || currentQuantity <= 0;
+              const recallEntry = selectedRecalls[assetKey];
+              const isChecked = !!recallEntry;
+              const recallQty = isChecked ? (recallEntry.qty ?? currentQuantity) : 0;
+              const isDisabled = !assetKey || currentQuantity <= 0;
 
               return (
-                <div key={assetId || `${asset.asset_code}-${asset.asset_name}`} className="px-6 py-4 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">{asset.asset_name || asset.name || asset.asset_code}</p>
-                    <p className="text-xs text-slate-500">
-                      {asset.asset_code} • Hiện có: {currentQuantity} {asset.unit || "cái"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
+                <div
+                  key={assetKey}
+                  className={`px-6 py-4 flex items-center justify-between gap-4 transition-colors ${isChecked ? "bg-orange-50" : "hover:bg-slate-50"}`}
+                >
+                  <div
+                    className="flex items-center gap-3 flex-1 cursor-pointer"
+                    onClick={() => {
+                      if (isDisabled || recallLoading) return;
+                      setSelectedRecalls((prev) => {
+                        if (prev[assetKey]) {
+                          const next = { ...prev };
+                          delete next[assetKey];
+                          return next;
+                        }
+                        return { ...prev, [assetKey]: { qty: currentQuantity } };
+                      });
+                    }}
+                  >
                     <input
-                      type="number"
-                      min={0}
-                      max={currentQuantity}
-                      value={selectedQuantity}
+                      type="checkbox"
+                      checked={isChecked}
                       disabled={isDisabled || recallLoading}
-                      onChange={(e) => {
-                        const inputValue = Number(e.target.value) || 0;
-                        const nextValue = Math.max(0, Math.min(currentQuantity, inputValue));
-                        setSelectedRecalls((prev) => ({
-                          ...prev,
-                          [assetId]: nextValue,
-                        }));
-                      }}
-                      className="w-24 px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-right outline-none focus:ring-2 focus:ring-orange-100 disabled:opacity-50"
+                      readOnly
+                      className="w-4 h-4 accent-orange-500 cursor-pointer shrink-0"
                     />
-                    <button
-                      type="button"
-                      disabled={isDisabled || recallLoading}
-                      onClick={() => {
-                        setSelectedRecalls((prev) => ({
-                          ...prev,
-                          [assetId]: currentQuantity,
-                        }));
-                      }}
-                      className="px-3 py-2 text-xs font-bold rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50 disabled:opacity-50"
-                    >
-                      Tất cả
-                    </button>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{asset.asset_name || asset.name || asset.asset_code}</p>
+                      <p className="text-xs text-slate-500">
+                        {asset.asset_code} • Hiện có: {currentQuantity} {asset.unit || "cái"}
+                      </p>
+                    </div>
                   </div>
+                  {isChecked && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <input
+                        type="number"
+                        min={1}
+                        max={currentQuantity}
+                        value={recallQty}
+                        disabled={recallLoading}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          const val = Math.max(1, Math.min(currentQuantity, Number(e.target.value) || 1));
+                          setSelectedRecalls((prev) => ({ ...prev, [assetKey]: { qty: val } }));
+                        }}
+                        className="w-20 px-3 py-2 border border-orange-300 rounded-lg text-sm font-semibold text-right outline-none focus:ring-2 focus:ring-orange-200"
+                      />
+                      <button
+                        type="button"
+                        disabled={recallLoading}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRecalls((prev) => ({ ...prev, [assetKey]: { qty: currentQuantity } }));
+                        }}
+                        className="px-3 py-2 text-xs font-bold rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+                      >
+                        Tất cả
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -651,14 +678,14 @@ const AssetSettings = ({ onRefresh }) => {
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedRecalls({})}
-              disabled={Object.values(selectedRecalls).every((qty) => !Number(qty)) || recallLoading}
+              disabled={!Object.values(selectedRecalls).some(Boolean) || recallLoading}
               className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-xl text-sm font-bold text-slate-600 hover:bg-white transition-colors disabled:opacity-40"
             >
               <RotateCcw size={14} /> Bỏ chọn
             </button>
             <button
               onClick={handleRecallAssets}
-              disabled={Object.values(selectedRecalls).every((qty) => !Number(qty)) || recallLoading}
+              disabled={!Object.values(selectedRecalls).some(Boolean) || recallLoading}
               className="flex items-center gap-2 px-5 py-2 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-all shadow-md shadow-orange-200 disabled:opacity-40"
             >
               <Save size={14} /> {recallLoading ? "Đang thu hồi..." : "Thu hồi về kho"}
