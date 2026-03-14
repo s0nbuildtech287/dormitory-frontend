@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import {
-  ShieldAlert, Plus, Eye, Search, CheckCircle,
-  Clock, XCircle, RefreshCw, FileWarning, Gavel,
+  ShieldAlert, Plus, Eye, CheckCircle,
+  Clock, XCircle, FileWarning, Gavel,
   BadgeDollarSign, TrendingUp
 } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
+import FilterBar from "../../../components/common/FilterBar.jsx";
 
 // ── Mock data ────────────────────────────────────────────────────────────────
 const MOCK_RECORDS = [
@@ -170,104 +171,89 @@ const DisciplineList = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => {
           const Icon = s.icon;
           return (
-            <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${s.bg}`}>
-                <Icon size={22} className={s.text} />
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 font-medium">{s.label}</p>
-                <p className="text-xl font-black text-slate-900">{s.value}</p>
+            <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${s.bg}`}>
+                  <Icon size={20} className={s.text} />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">{s.label}</p>
+                  <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Filter bar */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
-          <div className="relative md:col-span-2">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm sinh viên, mã SV, phòng..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-red-50 outline-none bg-slate-50"
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-4 focus:ring-red-50 bg-white text-slate-700"
-          >
-            <option value="All">Tất cả trạng thái</option>
-            <option>Chờ xử lý</option>
-            <option>Đã xử lý</option>
-            <option>Đã khiếu nại</option>
-            <option>Đã hủy</option>
-          </select>
-          <select
-            value={filterLevel}
-            onChange={(e) => setFilterLevel(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-4 focus:ring-red-50 bg-white text-slate-700"
-          >
-            <option value="All">Tất cả mức độ</option>
-            {LEVELS.map((l) => <option key={l}>{l}</option>)}
-          </select>
-          <div className="flex items-center gap-2 justify-end">
-            {hasFilter && (
+      {/* Filter Bar */}
+      <FilterBar
+        title="Bộ lọc vi phạm"
+        search={{
+          placeholder: "Tìm sinh viên, mã SV, phòng...",
+          value: search,
+          onChange: (val) => setSearch(val),
+        }}
+        customFilters={
+          <>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-red-50 text-slate-700 shadow-sm"
+            >
+              <option value="All">Tất cả trạng thái</option>
+              <option>Chờ xử lý</option>
+              <option>Đã xử lý</option>
+              <option>Đã khiếu nại</option>
+              <option>Đã hủy</option>
+            </select>
+            <select
+              value={filterLevel}
+              onChange={(e) => setFilterLevel(e.target.value)}
+              className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-red-50 text-slate-700 shadow-sm"
+            >
+              <option value="All">Tất cả mức độ</option>
+              {LEVELS.map((l) => <option key={l}>{l}</option>)}
+            </select>
+          </>
+        }
+        hasActiveFilter={hasFilter}
+        onReset={() => { setSearch(""); setFilterStatus("All"); setFilterLevel("All"); setFilterType("All"); }}
+        actionButtons={
+          <div className="flex flex-wrap gap-2">
+            {["All", ...VIOLATION_TYPES].map((t) => (
               <button
-                onClick={() => { setSearch(""); setFilterStatus("All"); setFilterLevel("All"); setFilterType("All"); }}
-                className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                key={t}
+                onClick={() => setFilterType(t)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  filterType === t
+                    ? "bg-red-600 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
               >
-                <XCircle size={14} /> Xóa lọc
+                {t === "All" ? "Tất cả loại" : t}
               </button>
-            )}
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-all shadow-md shadow-red-200 whitespace-nowrap"
-            >
-              <Plus size={15} /> Lập phiếu
-            </button>
+            ))}
           </div>
-        </div>
-
-        {/* Violation type chips */}
-        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-100">
-          {["All", ...VIOLATION_TYPES].map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilterType(t)}
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                filterType === t ? "bg-red-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {t === "All" ? "Tất cả loại" : t}
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-xl">
-              <ShieldAlert size={18} className="text-red-600" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900">Danh sách vi phạm kỷ luật</h3>
-              <p className="text-xs text-slate-500">{filtered.length} bản ghi</p>
-            </div>
-          </div>
-          <button className="flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:text-blue-600 transition-colors">
-            <RefreshCw size={14} /> Làm mới
+      <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between">
+          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider">
+            Danh sách vi phạm kỷ luật ({filtered.length} bản ghi)
+          </h3>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold text-sm shadow-sm"
+          >
+            <Plus size={15} /> Lập phiếu
           </button>
         </div>
 
