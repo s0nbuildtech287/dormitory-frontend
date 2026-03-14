@@ -192,6 +192,10 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   // Ensure rooms is always an array
   const safeRooms = Array.isArray(rooms) ? rooms : [];
 
+  // Dynamic filter options from data
+  const uniqueBuildings = [...new Set(safeRooms.map((r) => r.building).filter(Boolean))].sort();
+  const uniqueFloors = [...new Set(safeRooms.map((r) => r.floor).filter(Boolean))].sort((a, b) => a - b);
+
   // Filter and pagination logic
   const filteredRooms = safeRooms.filter((r) => {
     const matchesBuilding = filterBuilding === "All" || r.building === filterBuilding;
@@ -239,10 +243,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             className: "col-span-1",
             options: [
               { value: "All", label: "Tất cả tòa" },
-              { value: "A", label: "Tòa A" },
-              { value: "B", label: "Tòa B" },
-              { value: "C", label: "Tòa C" },
-              { value: "D", label: "Tòa D" },
+              ...uniqueBuildings.map((b) => ({ value: b, label: `Tòa ${b}` })),
             ]
           },
           {
@@ -251,11 +252,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             className: "col-span-1",
             options: [
               { value: "All", label: "Tất cả tầng" },
-              { value: "1", label: "Tầng 1" },
-              { value: "2", label: "Tầng 2" },
-              { value: "3", label: "Tầng 3" },
-              { value: "4", label: "Tầng 4" },
-              { value: "5", label: "Tầng 5" },
+              ...uniqueFloors.map((f) => ({ value: String(f), label: `Tầng ${f}` })),
             ]
           },
           {
