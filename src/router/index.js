@@ -5,7 +5,7 @@ import StudentDashboard from "../pages/student/index.jsx";
 import RoomManagement from "../pages/room_management/index.jsx";
 import AssetManagement from "../pages/asset_management/index.jsx";
 import ContractManagement from "../pages/contract_management/index.jsx";
-import DisciplineWarning from "../pages/contract_management/DisciplineWarning.jsx";
+import DisciplineManagement from "../pages/discipline_management/index.jsx";
 import BillingManagement from "../pages/billing_management/index.jsx";
 import NotificationManagement from "../pages/notification_management/index.jsx";
 import FeedbackManagement from "../pages/feedback_management/index.jsx";
@@ -73,7 +73,7 @@ export const ADMIN_ROUTES = [
         id: "discipline",
         label: "Cảnh báo kỷ luật",
         path: "/discipline",
-        component: DisciplineWarning,
+        component: DisciplineManagement,
         icon: "ShieldAlert",
       },
     ],
