@@ -1,30 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ShieldAlert,
-  Plus,
-  Eye,
-  CheckCircle,
-  Clock,
-  XCircle,
-  FileWarning,
-  Gavel,
-  BadgeDollarSign,
-  TrendingUp,
-  Send,
-  Trash2,
-} from "lucide-react";
+import { ShieldAlert, Plus, Eye, CheckCircle, Clock, XCircle, FileWarning, Gavel, BadgeDollarSign, TrendingUp, Send, Trash2, History } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
-import {
-  createDisciplinaryRecord,
-  deleteDisciplinaryRecord,
-  getDisciplinaryRecords,
-  updateDisciplinaryRecord,
-} from "../../../api/apiDiscipline.js";
+import { createDisciplinaryRecord, deleteDisciplinaryRecord, getDisciplinaryRecords, updateDisciplinaryRecord } from "../../../api/apiDiscipline.js";
 import { getContracts } from "../../../api/apiContract.js";
 
 const LEVEL_CONFIG = {
@@ -42,16 +24,7 @@ const STATUS_CONFIG = {
   "Đã hủy": { color: "bg-slate-100 text-slate-500", icon: XCircle },
 };
 
-const VIOLATION_TYPES = [
-  "Vi phạm nội quy",
-  "Gây mất trật tự",
-  "Hư hại tài sản",
-  "Vệ sinh kém",
-  "Trốn phòng",
-  "Nộp tiền trễ",
-  "Sử dụng điện sai quy định",
-  "Khác",
-];
+const VIOLATION_TYPES = ["Vi phạm nội quy", "Gây mất trật tự", "Hư hại tài sản", "Vệ sinh kém", "Trốn phòng", "Nộp tiền trễ", "Sử dụng điện sai quy định", "Khác"];
 
 const LEVELS = ["Nhắc nhở", "Cảnh cáo", "Phạt tiền", "Đình chỉ tạm thời", "Buộc thôi ở"];
 const STATUS_OPTIONS = ["Chờ xử lý", "Đã xử lý", "Đã khiếu nại", "Đã hủy"];
@@ -112,6 +85,7 @@ const DisciplineList = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [recordsToDelete, setRecordsToDelete] = useState([]);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -137,10 +111,12 @@ const DisciplineList = () => {
     fetchRecords();
   }, [fetchRecords]);
 
+  const visibleRecords = useMemo(() => records.filter((record) => record.status !== "Đã hủy"), [records]);
+
   const filtered = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
 
-    return records.filter((record) => {
+    return visibleRecords.filter((record) => {
       const matchSearch =
         !normalizedSearch ||
         record.student_name?.toLowerCase().includes(normalizedSearch) ||
@@ -153,7 +129,7 @@ const DisciplineList = () => {
 
       return matchSearch && matchStatus && matchLevel && matchType;
     });
-  }, [records, search, filterStatus, filterLevel, filterType]);
+  }, [visibleRecords, search, filterStatus, filterLevel, filterType]);
 
   const pagination = usePagination(filtered, 10);
   const { currentItems, totalItems } = pagination;
@@ -167,10 +143,10 @@ const DisciplineList = () => {
   } = useSelection(filtered.map((record) => record.id));
   const hasFilter = search || filterStatus !== "All" || filterLevel !== "All" || filterType !== "All";
 
-  const totalRecords = records.length;
-  const pending = records.filter((record) => record.status === "Chờ xử lý").length;
-  const unpaidPenalty = records.filter((record) => Number(record.penalty_amount) > 0 && !record.penalty_paid).length;
-  const totalPenalty = records.reduce((sum, record) => sum + Number(record.penalty_amount || 0), 0);
+  const totalRecords = visibleRecords.length;
+  const pending = visibleRecords.filter((record) => record.status === "Chờ xử lý").length;
+  const unpaidPenalty = visibleRecords.filter((record) => Number(record.penalty_amount) > 0 && !record.penalty_paid).length;
+  const totalPenalty = visibleRecords.reduce((sum, record) => sum + Number(record.penalty_amount || 0), 0);
 
   const stats = [
     { label: "Tổng vi phạm", value: totalRecords, icon: ShieldAlert, bg: "bg-red-100", text: "text-red-600" },
@@ -219,20 +195,14 @@ const DisciplineList = () => {
       header: "Hành động",
       accessor: (record) => (
         <div className="flex items-center justify-center gap-1.5">
-          <button
-            onClick={() => setSelectedRecord(record)}
-            className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-blue-600"
-            title="Xem chi tiết"
-          >
+          <button onClick={() => setSelectedRecord(record)} className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-blue-600" title="Xem chi tiết">
             <Eye size={15} />
           </button>
           <button
             onClick={() => {
               setEmailSentSet((prev) => new Set([...prev, record.id]));
             }}
-            className={`p-1.5 rounded-lg transition-colors ${
-              emailSentSet.has(record.id) ? "text-slate-700 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"
-            }`}
+            className={`p-1.5 rounded-lg transition-colors ${emailSentSet.has(record.id) ? "text-slate-700 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
             title={emailSentSet.has(record.id) ? "Đã gửi email" : "Gửi email"}
           >
             <Send size={15} />
@@ -325,9 +295,7 @@ const DisciplineList = () => {
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  filterType === type ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${filterType === type ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
               >
                 {type === "All" ? "Tất cả loại" : type}
               </button>
@@ -338,9 +306,7 @@ const DisciplineList = () => {
 
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between">
-          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider">
-            Danh sách vi phạm kỷ luật ({filtered.length} bản ghi)
-          </h3>
+          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider">Danh sách vi phạm kỷ luật ({filtered.length} bản ghi)</h3>
           <div className="flex items-center gap-2">
             <button
               onClick={handleToggleCheckbox}
@@ -358,6 +324,12 @@ const DisciplineList = () => {
                 <Send size={13} /> Gửi email ({selectedRecords.size})
               </button>
             )}
+            <button
+              onClick={() => setShowHistoryModal(true)}
+              className="px-3 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <History size={13} /> Lịch sử vi phạm
+            </button>
             {showCheckboxColumn && selectedRecords.size > 0 && (
               <button
                 onClick={() => {
@@ -445,17 +417,17 @@ const DisciplineList = () => {
           try {
             setDeleteLoading(true);
             setDeleteError("");
-            await deleteDisciplinaryRecord(recordToDelete.id);
+            await updateDisciplinaryRecord(recordToDelete.id, { status: "Đã hủy" });
             setRecordToDelete(null);
             fetchRecords();
           } catch (err) {
-            setDeleteError(err.message || "Xóa phiếu vi phạm thất bại");
+            setDeleteError(err.message || "Ẩn phiếu vi phạm thất bại");
           } finally {
             setDeleteLoading(false);
           }
         }}
-        title="Xác nhận xóa phiếu"
-        confirmText="Xóa phiếu"
+        title="Xác nhận ẩn phiếu"
+        confirmText="Ẩn phiếu"
         icon={Trash2}
         iconBgColor="bg-red-50"
         iconColor="text-red-600"
@@ -463,7 +435,8 @@ const DisciplineList = () => {
         isLoading={deleteLoading}
       >
         <p className="text-sm text-slate-600">
-          Bạn có chắc muốn xóa phiếu vi phạm <span className="font-bold text-slate-900">#{recordToDelete?.id}</span> không?
+          Phiếu sẽ bị ẩn khỏi danh sách nhưng vẫn lưu trong lịch sử. Bạn có chắc muốn ẩn phiếu
+          <span className="font-bold text-slate-900"> #{recordToDelete?.id}</span> không?
         </p>
         {deleteError && <p className="text-xs text-rose-600 font-semibold mt-2">{deleteError}</p>}
       </ConfirmModal>
@@ -478,18 +451,18 @@ const DisciplineList = () => {
           try {
             setDeleteLoading(true);
             setDeleteError("");
-            await Promise.all(recordsToDelete.map((id) => deleteDisciplinaryRecord(id)));
+            await Promise.all(recordsToDelete.map((id) => updateDisciplinaryRecord(id, { status: "Đã hủy" })));
             setRecordsToDelete([]);
             clearSelection();
             fetchRecords();
           } catch (err) {
-            setDeleteError(err.message || "Xóa nhiều phiếu thất bại");
+            setDeleteError(err.message || "Ẩn nhiều phiếu thất bại");
           } finally {
             setDeleteLoading(false);
           }
         }}
-        title="Xác nhận xóa nhiều phiếu"
-        confirmText="Xóa tất cả"
+        title="Xác nhận ẩn nhiều phiếu"
+        confirmText="Ẩn tất cả"
         icon={Trash2}
         iconBgColor="bg-red-50"
         iconColor="text-red-600"
@@ -497,10 +470,11 @@ const DisciplineList = () => {
         isLoading={deleteLoading}
       >
         <p className="text-sm text-slate-600">
-          Bạn có chắc muốn xóa <span className="font-bold text-slate-900">{recordsToDelete.length}</span> phiếu đã chọn không?
+          Bạn có chắc muốn ẩn <span className="font-bold text-slate-900">{recordsToDelete.length}</span> phiếu đã chọn không?
         </p>
         {deleteError && <p className="text-xs text-rose-600 font-semibold mt-2">{deleteError}</p>}
       </ConfirmModal>
+      {showHistoryModal && <HistoryModal records={records.filter((record) => record.status !== "Chờ xử lý")} onClose={() => setShowHistoryModal(false)} />}
     </div>
   );
 };
@@ -582,38 +556,38 @@ const RecordDetailModal = ({ record, onClose, onUpdated }) => {
                 <span className="font-semibold text-slate-900 text-right">{value}</span>
               </div>
             ))}
-          <div className="flex justify-between items-center text-sm gap-4">
-            <span className="text-slate-500">Mức kỷ luật</span>
-            {isEditing ? (
-              <select
-                value={disciplinaryLevel}
-                onChange={(event) => setDisciplinaryLevel(event.target.value)}
-                className="px-3 py-2 border border-red-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-200 bg-white"
-              >
-                {LEVELS.map((level) => (
-                  <option key={level}>{level}</option>
-                ))}
-              </select>
-            ) : (
-              <LevelBadge level={record.disciplinary_level} />
-            )}
-          </div>
-          <div className="flex justify-between items-center text-sm gap-4">
-            <span className="text-slate-500">Trạng thái</span>
-            {isEditing ? (
-              <select
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="px-3 py-2 border border-red-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-200 bg-white"
-              >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt}>{opt}</option>
-                ))}
-              </select>
-            ) : (
-              <StatusBadge status={record.status} />
-            )}
-          </div>
+            <div className="flex justify-between items-center text-sm gap-4">
+              <span className="text-slate-500">Mức kỷ luật</span>
+              {isEditing ? (
+                <select
+                  value={disciplinaryLevel}
+                  onChange={(event) => setDisciplinaryLevel(event.target.value)}
+                  className="px-3 py-2 border border-red-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-200 bg-white"
+                >
+                  {LEVELS.map((level) => (
+                    <option key={level}>{level}</option>
+                  ))}
+                </select>
+              ) : (
+                <LevelBadge level={record.disciplinary_level} />
+              )}
+            </div>
+            <div className="flex justify-between items-center text-sm gap-4">
+              <span className="text-slate-500">Trạng thái</span>
+              {isEditing ? (
+                <select
+                  value={status}
+                  onChange={(event) => setStatus(event.target.value)}
+                  className="px-3 py-2 border border-red-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-red-200 bg-white"
+                >
+                  {STATUS_OPTIONS.map((opt) => (
+                    <option key={opt}>{opt}</option>
+                  ))}
+                </select>
+              ) : (
+                <StatusBadge status={record.status} />
+              )}
+            </div>
           </div>
 
           <div className="p-4 bg-slate-50 rounded-2xl">
@@ -640,9 +614,7 @@ const RecordDetailModal = ({ record, onClose, onUpdated }) => {
             </div>
             <div className="flex items-center justify-between gap-4 text-sm">
               <span className="text-slate-600">Điểm còn lại</span>
-              <span className="font-bold text-emerald-700">
-                {getRemainingScore(record, scoreDeducted)}
-              </span>
+              <span className="font-bold text-emerald-700">{getRemainingScore(record, scoreDeducted)}</span>
             </div>
 
             <div className="flex items-center justify-between gap-4 text-sm">
@@ -657,9 +629,7 @@ const RecordDetailModal = ({ record, onClose, onUpdated }) => {
                   className="w-32 px-3 py-2 border border-orange-200 rounded-xl text-sm font-semibold text-right outline-none focus:ring-2 focus:ring-orange-200 bg-white"
                 />
               ) : (
-                <span className="font-bold text-orange-600">
-                  {Number(record.penalty_amount || 0) > 0 ? formatCurrency(record.penalty_amount) : "—"}
-                </span>
+                <span className="font-bold text-orange-600">{Number(record.penalty_amount || 0) > 0 ? formatCurrency(record.penalty_amount) : "—"}</span>
               )}
             </div>
 
@@ -688,28 +658,145 @@ const RecordDetailModal = ({ record, onClose, onUpdated }) => {
         </div>
 
         <div className="p-6 border-t border-slate-100 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-          >
+          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">
             Đóng
           </button>
           {isEditing ? (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-60"
-            >
+            <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-60">
               {saving ? "Đang lưu..." : "Lưu"}
             </button>
           ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors"
-            >
+            <button onClick={() => setIsEditing(true)} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors">
               Chỉnh sửa
             </button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const HistoryModal = ({ records, onClose }) => {
+  const [historySearch, setHistorySearch] = useState("");
+  const [historyLevel, setHistoryLevel] = useState("All");
+  const [historyScore, setHistoryScore] = useState("All");
+
+  const filtered = records.filter((record) => {
+    const q = historySearch.trim().toLowerCase();
+    const matchSearch = !q || record.student_name?.toLowerCase().includes(q) || getStudentCode(record).toLowerCase().includes(q) || record.violation_type?.toLowerCase().includes(q);
+    const matchLevel = historyLevel === "All" || record.disciplinary_level === historyLevel;
+    const remainingScore = getRemainingScore(record);
+    const matchScore =
+      historyScore === "All" ||
+      (historyScore === ">=90" && remainingScore >= 90) ||
+      (historyScore === ">=80" && remainingScore >= 80 && remainingScore < 90) ||
+      (historyScore === ">=60" && remainingScore >= 60 && remainingScore < 80) ||
+      (historyScore === ">=50" && remainingScore >= 50 && remainingScore < 60) ||
+      (historyScore === ">=40" && remainingScore >= 40 && remainingScore < 50) ||
+      (historyScore === "<40" && remainingScore < 40);
+    return matchSearch && matchLevel && matchScore;
+  });
+
+  const sorted = [...filtered].sort((a, b) => new Date(b.violation_date) - new Date(a.violation_date));
+
+  const columns = [
+    {
+      header: "Sinh viên",
+      accessor: (record) => (
+        <div>
+          <p className="text-sm font-bold text-slate-900">{record.student_name || "Không rõ"}</p>
+          <p className="text-xs text-slate-500">
+            {getStudentCode(record)} • Phòng {getRoomLabel(record)}
+          </p>
+        </div>
+      ),
+    },
+    {
+      header: "Loại vi phạm",
+      accessor: (record) => <span className="text-sm text-slate-700 font-medium">{record.violation_type}</span>,
+    },
+    {
+      header: "Ngày vi phạm",
+      accessor: (record) => <span className="text-xs text-slate-600">{formatDate(record.violation_date)}</span>,
+    },
+    {
+      header: "Mức kỷ luật",
+      accessor: (record) => <LevelBadge level={record.disciplinary_level} />,
+    },
+    {
+      header: "Trạng thái",
+      accessor: (record) => <StatusBadge status={record.status} />,
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl animate-in scale-in duration-200 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-blue-100 rounded-xl">
+              <History size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900">Lịch sử vi phạm đã xử lý</h3>
+              <p className="text-xs text-slate-500">{records.length} bản ghi</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+            <XCircle size={18} className="text-slate-400" />
+          </button>
+        </div>
+
+        <div className="p-6 flex flex-col gap-4 max-h-[80vh] overflow-y-auto">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[220px]">
+              <input
+                type="text"
+                placeholder="Tìm theo tên, mã SV, loại vi phạm..."
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                className="w-full pl-4 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-xs transition-all bg-slate-50/50"
+              />
+            </div>
+            <select
+              value={historyLevel}
+              onChange={(e) => setHistoryLevel(e.target.value)}
+              className="text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            >
+              <option value="All">Tất cả mức kỷ luật</option>
+              {LEVELS.map((level) => (
+                <option key={level}>{level}</option>
+              ))}
+            </select>
+            <select
+              value={historyScore}
+              onChange={(e) => setHistoryScore(e.target.value)}
+              className="text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+            >
+              <option value="All">Tất cả mức điểm</option>
+              <option value=">=90">trên 90</option>
+              <option value=">=80">80 - 89</option>
+              <option value=">=60">60 - 79</option>
+              <option value=">=50">50 - 59</option>
+              <option value=">=40">40 - 49</option>
+              <option value="<40"> dưới 40</option>
+            </select>
+          </div>
+
+          <div className="border border-slate-200 rounded-2xl overflow-hidden">
+            <DataTable
+              columns={columns}
+              data={sorted}
+              keyExtractor={(record) => record.id}
+              loading={false}
+              emptyState={{
+                icon: ShieldAlert,
+                title: "Chưa có lịch sử xử lý",
+                description: "Các phiếu đã xử lý hoặc đã ẩn sẽ hiển thị ở đây",
+              }}
+              rowClassName={() => "h-12"}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -819,26 +906,22 @@ const AddRecordModal = ({ onClose, onCreated }) => {
           </button>
         </div>
         <div className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-sm font-bold text-slate-700">Mã sinh viên</label>
-          <div className="flex gap-2">
-            <input
-              value={studentId}
-              onChange={(event) => setStudentId(event.target.value)}
-              placeholder="VD: 20210001"
-              className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-red-50"
-            />
-            <button
-              onClick={handleSearchStudent}
-              disabled={searchingStudent}
-              className="px-3 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 disabled:opacity-60"
-            >
-              {searchingStudent ? "Đang tìm..." : "Tìm"}
-            </button>
+          <div className="space-y-1.5">
+            <label className="text-sm font-bold text-slate-700">Mã sinh viên</label>
+            <div className="flex gap-2">
+              <input
+                value={studentId}
+                onChange={(event) => setStudentId(event.target.value)}
+                placeholder="VD: 20210001"
+                className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-red-50"
+              />
+              <button onClick={handleSearchStudent} disabled={searchingStudent} className="px-3 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 disabled:opacity-60">
+                {searchingStudent ? "Đang tìm..." : "Tìm"}
+              </button>
+            </div>
+            {studentInfo && <p className="text-xs text-emerald-600 font-semibold">{studentInfo}</p>}
+            {userId && <p className="text-xs text-slate-500">user_id: {userId}</p>}
           </div>
-          {studentInfo && <p className="text-xs text-emerald-600 font-semibold">{studentInfo}</p>}
-          {userId && <p className="text-xs text-slate-500">user_id: {userId}</p>}
-        </div>
           <div className="space-y-1.5">
             <label className="text-sm font-bold text-slate-700">Mã phòng (tùy chọn)</label>
             <input
@@ -911,11 +994,7 @@ const AddRecordModal = ({ onClose, onCreated }) => {
           <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50">
             Hủy
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 disabled:opacity-60"
-          >
+          <button onClick={handleSubmit} disabled={submitting} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 disabled:opacity-60">
             {submitting ? "Đang lập..." : "Lập phiếu"}
           </button>
         </div>
