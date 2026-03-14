@@ -72,6 +72,13 @@ const getRoomLabel = (record) => {
   return `${record.building ? `${record.building}-` : ""}${record.room_number}`;
 };
 
+const getRemainingScore = (record, overrideDeducted) => {
+  const current = Number(record.conduct_score);
+  if (Number.isFinite(current)) return Math.max(0, current);
+  const deducted = Number(overrideDeducted ?? record.score_deducted ?? 0);
+  return Math.max(0, 100 - deducted);
+};
+
 const LevelBadge = ({ level }) => {
   const cfg = LEVEL_CONFIG[level] || { color: "bg-slate-100 text-slate-600", dot: "bg-slate-400" };
   return (
@@ -630,6 +637,12 @@ const RecordDetailModal = ({ record, onClose, onUpdated }) => {
               ) : (
                 <span className="font-bold text-orange-700">{Number(record.score_deducted || 0)}</span>
               )}
+            </div>
+            <div className="flex items-center justify-between gap-4 text-sm">
+              <span className="text-slate-600">Điểm còn lại</span>
+              <span className="font-bold text-emerald-700">
+                {getRemainingScore(record, scoreDeducted)}
+              </span>
             </div>
 
             <div className="flex items-center justify-between gap-4 text-sm">
