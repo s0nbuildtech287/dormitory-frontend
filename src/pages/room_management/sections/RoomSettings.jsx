@@ -167,7 +167,6 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
     defaultCapacity: 4,
     defaultGender: "Nam",
     defaultRentPrice: 400000,
-    allowMixed: false,
     autoCloseMaintenance: true,
     maxFloorsPerBuilding: 6,
   });
@@ -473,9 +472,8 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                 >
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
-                  <option value="Mix">Hỗn hợp</option>
                 </select>
-                <p className="text-xs text-slate-500">Phòng hỗn hợp chỉ dành cho trường hợp đặc biệt</p>
+                <p className="text-xs text-slate-500">Giới tính quy định sinh viên được phép ở phòng này</p>
               </div>
 
               {/* Rent price */}
@@ -623,14 +621,6 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
 
         {/* Toggles */}
         <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-            <div>
-              <p className="font-bold text-slate-900 text-sm">Cho phép phòng Hỗn hợp (Nam + Nữ)</p>
-              <p className="text-xs text-slate-500 mt-0.5">Nếu bật, admin có thể tạo phòng ở chung giới tính</p>
-            </div>
-            <Toggle checked={defaults.allowMixed} onChange={(v) => setDefaults((d) => ({ ...d, allowMixed: v }))} />
-          </div>
-
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
             <div>
               <p className="font-bold text-slate-900 text-sm">Tự động đóng phòng khi bật Bảo trì</p>
