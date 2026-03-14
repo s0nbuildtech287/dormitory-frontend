@@ -177,24 +177,6 @@ const DisciplineScoreSettings = () => {
         </div>
       </div>
 
-      {/* Điểm trừ theo mức kỷ luật (readonly, chỉ tham khảo) */}
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <h4 className="font-bold text-slate-900">Điểm trừ theo mức kỷ luật</h4>
-          <p className="text-xs text-slate-500 mt-0.5">Tham khảo — backend dùng khi không có config theo loại vi phạm</p>
-        </div>
-        <div className="px-6 py-4 grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {Object.entries(LEVEL_SCORE).map(([level, pts]) => (
-            <div key={level} className={`p-3 rounded-2xl text-center border-2 ${pts === 0 ? 'border-slate-200 bg-slate-50' : 'border-purple-100 bg-purple-50'}`}>
-              <p className="text-xs text-slate-500 mb-1">{level}</p>
-              <p className={`text-xl font-black ${pts === 0 ? 'text-slate-400' : 'text-purple-700'}`}>
-                {pts === 0 ? '—' : `-${pts}`}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Ngưỡng email & cảnh báo */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">

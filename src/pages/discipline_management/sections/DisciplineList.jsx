@@ -214,8 +214,12 @@ const DisciplineList = () => {
           </button>
           <button
             onClick={async () => {
-              setDeleteError("");
-              setRecordToDelete(record);
+              try {
+                await updateDisciplinaryRecord(record.id, { status: "Đã hủy" });
+                fetchRecords();
+              } catch (err) {
+                console.error("Xóa phiếu thất bại:", err);
+              }
             }}
             className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Xóa phiếu"
@@ -555,6 +559,7 @@ const RecordDetailModal = ({ record, onClose, onUpdated }) => {
             {[
               ["Loại vi phạm", record.violation_type || "—"],
               ["Ngày vi phạm", formatDate(record.violation_date, true)],
+              ["Số lần vi phạm", `Lần ${record.violation_count || 1}`],
             ].map(([label, value]) => (
               <div key={label} className="flex justify-between text-sm gap-4">
                 <span className="text-slate-500">{label}</span>
