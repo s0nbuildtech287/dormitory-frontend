@@ -9,17 +9,7 @@ import Pagination from "../../../components/common/Pagination.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 
-// ── Mock data ────────────────────────────────────────────────────────────────
-const MOCK_RECORDS = [
-  { id: "DR001", student_name: "Nguyễn Văn An", student_id: "SV001", room_number: "A101", violation_type: "Gây mất trật tự", violation_date: "2025-03-01T10:00:00", disciplinary_level: "Cảnh cáo", penalty_amount: 0, penalty_paid: false, status: "Đã xử lý", description: "Gây ồn ào sau 22h, ảnh hưởng các phòng lân cận." },
-  { id: "DR002", student_name: "Trần Thị Bình", student_id: "SV002", room_number: "B203", violation_type: "Hư hại tài sản", violation_date: "2025-03-05T14:30:00", disciplinary_level: "Phạt tiền", penalty_amount: 500000, penalty_paid: true, status: "Đã xử lý", description: "Làm vỡ gương phòng tắm chung." },
-  { id: "DR003", student_name: "Lê Minh Cường", student_id: "SV003", room_number: "C305", violation_type: "Vi phạm nội quy", violation_date: "2025-03-08T09:00:00", disciplinary_level: "Nhắc nhở", penalty_amount: 0, penalty_paid: false, status: "Chờ xử lý", description: "Để xe không đúng nơi quy định." },
-  { id: "DR004", student_name: "Phạm Thị Dung", student_id: "SV004", room_number: "A204", violation_type: "Nộp tiền trễ", violation_date: "2025-02-28T00:00:00", disciplinary_level: "Nhắc nhở", penalty_amount: 50000, penalty_paid: false, status: "Chờ xử lý", description: "Chậm nộp tiền phòng tháng 2/2025 hơn 15 ngày." },
-  { id: "DR005", student_name: "Hoàng Văn Em", student_id: "SV005", room_number: "D102", violation_type: "Trốn phòng", violation_date: "2025-03-10T20:00:00", disciplinary_level: "Đình chỉ tạm thời", penalty_amount: 0, penalty_paid: false, status: "Đã khiếu nại", description: "Cho người ngoài ở qua đêm không đăng ký." },
-  { id: "DR006", student_name: "Vũ Thị Phương", student_id: "SV006", room_number: "B301", violation_type: "Vệ sinh kém", violation_date: "2025-03-12T11:00:00", disciplinary_level: "Cảnh cáo", penalty_amount: 0, penalty_paid: false, status: "Chờ xử lý", description: "Phòng không đạt tiêu chuẩn vệ sinh trong 2 lần kiểm tra liên tiếp." },
-  { id: "DR007", student_name: "Đặng Quốc Hùng", student_id: "SV007", room_number: "C401", violation_type: "Sử dụng điện sai quy định", violation_date: "2025-03-03T16:00:00", disciplinary_level: "Phạt tiền", penalty_amount: 200000, penalty_paid: true, status: "Đã xử lý", description: "Sử dụng bếp điện trong phòng ở." },
-  { id: "DR008", student_name: "Ngô Thị Lan", student_id: "SV008", room_number: "A302", violation_type: "Khác", violation_date: "2025-03-14T08:30:00", disciplinary_level: "Nhắc nhở", penalty_amount: 0, penalty_paid: false, status: "Đã hủy", description: "Phản ánh nhầm, đã xác minh không vi phạm." },
-];
+// ── Mock data đã xóa — dữ liệu sẽ load từ API ──────────────────────────────
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const LEVEL_CONFIG = {
@@ -76,7 +66,7 @@ const DisciplineList = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const records = MOCK_RECORDS;
+  const records = [];
 
   // Stats
   const totalRecords = records.length;
@@ -110,7 +100,10 @@ const DisciplineList = () => {
   const columns = [
     {
       header: "STT",
-      accessor: (_, i) => <span className="text-xs text-slate-400 font-bold">{(pagination.currentPage - 1) * 10 + i + 1}</span>,
+      accessor: (r) => {
+        const idx = currentItems.indexOf(r);
+        return <span className="text-xs text-slate-400 font-bold">{(pagination.currentPage - 1) * 10 + idx + 1}</span>;
+      },
       width: "w-12",
     },
     {
