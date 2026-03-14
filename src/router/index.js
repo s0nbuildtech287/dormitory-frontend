@@ -5,6 +5,7 @@ import StudentDashboard from "../pages/student/index.jsx";
 import RoomManagement from "../pages/room_management/index.jsx";
 import AssetManagement from "../pages/asset_management/index.jsx";
 import ContractManagement from "../pages/contract_management/index.jsx";
+import DisciplineWarning from "../pages/contract_management/DisciplineWarning.jsx";
 import BillingManagement from "../pages/billing_management/index.jsx";
 import NotificationManagement from "../pages/notification_management/index.jsx";
 import FeedbackManagement from "../pages/feedback_management/index.jsx";
@@ -58,8 +59,24 @@ export const ADMIN_ROUTES = [
     label: "Hợp đồng sinh viên",
     path: "/students",
     component: ContractManagement,
-    icon: "Users",
+    icon: "ScrollText",
     role: UserRole.ADMIN,
+    submenu: [
+      {
+        id: "students-list",
+        label: "Thông tin sinh viên",
+        path: "/students",
+        component: ContractManagement,
+        icon: "UserCheck",
+      },
+      {
+        id: "discipline",
+        label: "Cảnh báo kỷ luật",
+        path: "/discipline",
+        component: DisciplineWarning,
+        icon: "ShieldAlert",
+      },
+    ],
   },
   {
     id: "billing",
