@@ -162,13 +162,28 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
     }
   };
 
-  // ── Section 4: Cài đặt mặc định ──────────────────────────────────────────
-  const [defaults, setDefaults] = useState({
-    defaultCapacity: 4,
-    defaultRentPrice: 400000,
-    autoCloseMaintenance: true,
-    maxFloorsPerBuilding: 6,
-  });
+  // ── Section 4: Cài đặt mặc định — tính từ dữ liệu phòng thực tế ─────────
+  const derivedDefaults = useMemo(() => {
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    if (safeRooms.length === 0) return { defaultCapacity: 5, defaultRentPrice: 500000, maxFloorsPerBuilding: 10 };
+
+    // Mode của capacity (giá trị xuất hiện nhiều nhất)
+    const capCount = {};
+    safeRooms.forEach((r) => { const c = r.capacity || 0; capCount[c] = (capCount[c] || 0) + 1; });
+    const defaultCapacity = Number(Object.entries(capCount).sort((a, b) => b[1] - a[1])[0][0]);
+
+    // Median của rent_price
+    const prices = safeRooms.map((r) => Number(r.rent_price) || 0).filter((p) => p > 0).sort((a, b) => a - b);
+    const defaultRentPrice = prices.length > 0 ? prices[Math.floor(prices.length / 2)] : 500000;
+
+    // Max floor thực tế
+    const maxFloorsPerBuilding = Math.max(...safeRooms.map((r) => r.floor || 0), 1);
+
+    return { defaultCapacity, defaultRentPrice, maxFloorsPerBuilding };
+  }, [rooms]);
+
+  const [defaults, setDefaults] = useState({ autoCloseMaintenance: true });
+  const mergedDefaults = { ...derivedDefaults, ...defaults };
 
   const handleToggle = (id) => setExpandedSection((prev) => (prev === id ? null : id));
 
@@ -567,7 +582,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               type="number"
               min={1}
               max={20}
-              value={defaults.defaultCapacity}
+              value={mergedDefaults.defaultCapacity}
               onChange={(e) => setDefaults((d) => ({ ...d, defaultCapacity: Number(e.target.value) }))}
               className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-purple-50 outline-none"
             />
@@ -582,7 +597,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                 type="number"
                 min={0}
                 step={50000}
-                value={defaults.defaultRentPrice}
+                value={mergedDefaults.defaultRentPrice}
                 onChange={(e) => setDefaults((d) => ({ ...d, defaultRentPrice: Number(e.target.value) }))}
                 className="w-full px-4 py-3 pr-16 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-purple-50 outline-none"
               />
@@ -597,7 +612,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               type="number"
               min={1}
               max={20}
-              value={defaults.maxFloorsPerBuilding}
+              value={mergedDefaults.maxFloorsPerBuilding}
               onChange={(e) => setDefaults((d) => ({ ...d, maxFloorsPerBuilding: Number(e.target.value) }))}
               className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-purple-50 outline-none"
             />
@@ -612,7 +627,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               <p className="font-bold text-slate-900 text-sm">Tự động đóng phòng khi bật Bảo trì</p>
               <p className="text-xs text-slate-500 mt-0.5">Phòng bảo trì sẽ tự không hiện trong danh sách chọn phòng</p>
             </div>
-            <Toggle checked={defaults.autoCloseMaintenance} onChange={(v) => setDefaults((d) => ({ ...d, autoCloseMaintenance: v }))} />
+            <Toggle checked={mergedDefaults.autoCloseMaintenance} onChange={(v) => setDefaults((d) => ({ ...d, autoCloseMaintenance: v }))} />
           </div>
         </div>
 
