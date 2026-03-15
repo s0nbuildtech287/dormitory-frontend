@@ -587,6 +587,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       <InvoiceDetailModal
         invoice={selectedInvoice}
         onClose={() => setSelectedInvoice(null)}
+        onUpdated={() => { setSelectedInvoice(null); fetchInvoices(); }}
       />
 
       {/* Create Invoice Modal */}
