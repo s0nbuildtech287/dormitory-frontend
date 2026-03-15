@@ -107,6 +107,14 @@ export const ADMIN_ROUTES = [
 // Student Routes
 export const STUDENT_ROUTES = [
   {
+    id: "home",
+    label: "Trang chủ",
+    path: "/home",
+    component: StudentDashboard,
+    icon: "Home",
+    role: UserRole.STUDENT,
+  },
+  {
     id: "profile",
     label: "Thông tin cá nhân",
     path: "/profile",
@@ -128,14 +136,6 @@ export const STUDENT_ROUTES = [
     path: "/bills",
     component: StudentDashboard,
     icon: "CreditCard",
-    role: UserRole.STUDENT,
-  },
-  {
-    id: "notifications",
-    label: "Thông báo",
-    path: "/notifications",
-    component: StudentDashboard,
-    icon: "Bell",
     role: UserRole.STUDENT,
   },
   {

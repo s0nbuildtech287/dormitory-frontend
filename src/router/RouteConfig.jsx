@@ -18,7 +18,7 @@ const RouteConfig = () => {
   const { handleNavigateToContract, handleNavigateToInvoice, handleNavigateToNotification } = useNavigationHandlers();
 
   const routes = user?.role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
-  const defaultPath = user?.role === UserRole.ADMIN ? "/dashboard" : "/profile";
+  const defaultPath = user?.role === UserRole.ADMIN ? "/dashboard" : "/home";
 
   const getProps = (routeId) => {
     const props = { user, tab: routeId };
