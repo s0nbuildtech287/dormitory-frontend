@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, Megaphone, AlertTriangle, Wrench, CreditCard, Info, Clock } from "lucide-react";
-import { getAllNotifications } from "../../../api/apiNotification.js";
+import { getStudentNotifications } from "../../../api/apiStudent.js";
 
 const TYPE_CONFIG = {
   "Thông báo chung": { icon: Megaphone, bg: "bg-blue-50", border: "border-blue-400", iconBg: "bg-blue-100", iconColor: "text-blue-600", badge: "bg-blue-100 text-blue-700" },
@@ -32,7 +32,7 @@ const StudentHome = () => {
   const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
-    getAllNotifications()
+    getStudentNotifications()
       .then((res) => setNotifications(Array.isArray(res?.data) ? res.data : []))
       .catch(() => setNotifications([]))
       .finally(() => setLoading(false));

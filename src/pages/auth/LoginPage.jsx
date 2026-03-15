@@ -41,8 +41,9 @@ const LoginPage = ({ onLogin }) => {
         if (data.success) {
           // Lưu token và user info vào localStorage
           saveAuthToken(data.data.token);
-          saveCurrentUser(data.data.user);
-          onLogin(data.data.user);
+          const user = { ...data.data.user, name: data.data.user.full_name || data.data.user.name };
+          saveCurrentUser(user);
+          onLogin(user);
         } else {
           setError(data.message || 'Đăng nhập thất bại');
         }
@@ -52,23 +53,22 @@ const LoginPage = ({ onLogin }) => {
         setIsLoading(false);
       }
     } else {
-      // Simulate API call for student
-      setTimeout(() => {
-        // Student login: any password for demo, validate ID format
-        if (idInput.toUpperCase().startsWith("SV") || idInput.length >= 5) {
-          onLogin({
-            id: "std-1",
-            name: "Sinh Viên",
-            email: "student@ktx.edu.vn",
-            role: UserRole.STUDENT,
-            studentId: idInput.toUpperCase(),
-            avatar: "https://ui-avatars.com/api/?name=Student&background=10b981&color=fff",
-          });
+      // Real student login via API
+      try {
+        const data = await adminLogin(idInput, passwordInput);
+        if (data.success) {
+          saveAuthToken(data.data.token);
+          const user = { ...data.data.user, name: data.data.user.full_name || data.data.user.name };
+          saveCurrentUser(user);
+          onLogin(user);
         } else {
-          setError("Mã sinh viên không hợp lệ (Ví dụ: SV2024001)");
+          setError(data.message || 'Đăng nhập thất bại');
         }
+      } catch (err) {
+        setError(err.message || 'Lỗi kết nối đến server');
+      } finally {
         setIsLoading(false);
-      }, 800);
+      }
     }
   };
 
@@ -120,14 +120,14 @@ const LoginPage = ({ onLogin }) => {
           <form onSubmit={handleLogin} className="space-y-4">
             {/* ID Input */}
             <div>
-              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{loginRole === UserRole.ADMIN ? "Tài khoản quản lý" : "Mã số sinh viên"}</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{loginRole === UserRole.ADMIN ? "Tài khoản quản lý" : "Email sinh viên"}</label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{loginRole === UserRole.ADMIN ? <KeyRound size={20} /> : <ShieldCheck size={20} />}</div>
                 <input
                   type="text"
                   value={idInput}
                   onChange={(e) => setIdInput(e.target.value)}
-                  placeholder={loginRole === UserRole.ADMIN ? "admin" : "Ví dụ: SV2024001"}
+                  placeholder={loginRole === UserRole.ADMIN ? "admin" : "email@student.edu.vn"}
                   className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${
                     error ? "border-red-300 focus:ring-red-100" : "border-slate-200 focus:ring-blue-100"
                   } rounded-2xl outline-none focus:ring-4 transition-all font-medium`}
