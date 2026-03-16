@@ -44,18 +44,33 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     const code = otpDigits.join("");
     if (code.length < 6) { setOtpError("Vui lòng nhập đủ 6 số!"); return; }
-    if (code !== "123456") {
-      setOtpError("Mã OTP không đúng. Thử lại!");
-      setOtpDigits(["", "", "", "", "", ""]);
-      setTimeout(() => otpRefs.current[0]?.focus(), 0);
-      return;
+    try {
+      const res = await fetch("http://localhost:1234/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: pendingAuth.user.email, code }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setOtpError("Mã OTP không đúng hoặc đã hết hạn. Thử lại!");
+        setOtpDigits(["", "", "", "", "", ""]);
+        setTimeout(() => otpRefs.current[0]?.focus(), 0);
+        return;
+      }
+      // Lưu session 24h
+      const sessions = JSON.parse(localStorage.getItem("otp_sessions") || "{}");
+      sessions[pendingAuth.user.email] = Date.now();
+      localStorage.setItem("otp_sessions", JSON.stringify(sessions));
+
+      saveAuthToken(pendingAuth.token);
+      saveCurrentUser(pendingAuth.user);
+      onLogin(pendingAuth.user);
+    } catch {
+      setOtpError("Lỗi kết nối. Thử lại!");
     }
-    saveAuthToken(pendingAuth.token);
-    saveCurrentUser(pendingAuth.user);
-    onLogin(pendingAuth.user);
   };
 
   const handleLogin = async (e) => {
@@ -78,12 +93,23 @@ const LoginPage = ({ onLogin }) => {
       if (data.success) {
         const user = { ...data.data.user, name: data.data.user.full_name || data.data.user.name };
         const otpSettings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
-        const isOtpEnabled = otpSettings[user.id] === true;
+        const isOtpEnabled = otpSettings[user.email] === true;
 
-        if (isOtpEnabled) {
+        // Kiểm tra session 24h - nếu đã xác thực OTP trong 24h thì bỏ qua
+        const sessions = JSON.parse(localStorage.getItem("otp_sessions") || "{}");
+        const lastVerified = sessions[user.email];
+        const within24h = lastVerified && (Date.now() - lastVerified) < 24 * 60 * 60 * 1000;
+
+        if (isOtpEnabled && !within24h) {
           setPendingAuth({ token: data.data.token, user });
           setOtpDigits(["", "", "", "", "", ""]);
           setOtpError(null);
+          // Gửi OTP về email
+          await fetch("http://localhost:1234/api/auth/send-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email }),
+          });
           setShowOtp(true);
         } else {
           saveAuthToken(data.data.token);

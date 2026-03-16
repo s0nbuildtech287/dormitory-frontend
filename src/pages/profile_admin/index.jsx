@@ -34,15 +34,14 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
   // OTP 2FA state
   const [otpEnabled, setOtpEnabled] = useState(() => {
     const settings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
-    return settings[user?.id] === true;
+    return settings[user?.email] === true;
   });
 
   const handleToggleOtp = () => {
     const newVal = !otpEnabled;
     setOtpEnabled(newVal);
-    // Lưu vào localStorage theo user id để LoginPage đọc được
     const settings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
-    settings[user?.id] = newVal;
+    settings[user?.email] = newVal;
     localStorage.setItem("otp_settings", JSON.stringify(settings));
   };
 
