@@ -31,6 +31,9 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
 
+  // OTP 2FA state
+  const [otpEnabled, setOtpEnabled] = useState(false);
+
   const isSuperAdmin = user?.email === "buixu4ns0n@gmail.com";
 
   const handleInputChange = (e) => {
@@ -253,7 +256,15 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
               <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} placeholder="Xác nhận mật khẩu mới..."
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
             </div>
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              {/* OTP toggle */}
+              <button onClick={() => setOtpEnabled(v => !v)}
+                className="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-800 transition-colors">
+                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${otpEnabled ? "bg-blue-600" : "bg-slate-300"}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ${otpEnabled ? "translate-x-6" : "translate-x-1"}`} />
+                </div>
+                <span className="font-medium">Xác thực OTP khi đăng nhập</span>
+              </button>
               <button onClick={handleChangePassword} disabled={isSaving}
                 className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
                 {isSaving ? <><Loader2 size={16} className="animate-spin" /> Đang cập nhật...</> : <><Lock size={16} /> Đổi mật khẩu</>}
