@@ -108,6 +108,14 @@ const StudentHome = () => {
     setReadIds((prev) => new Set([...prev, n.id]));
   };
 
+  const handleToggleRead = (id) => {
+    setReadIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   const handleClose = () => setModal(null);
 
   const handleToggleStar = (id) => {
@@ -221,7 +229,9 @@ const StudentHome = () => {
         onClose={handleClose}
         onDelete={handleDelete}
         onToggleStar={handleToggleStar}
+        onToggleRead={handleToggleRead}
         starredIds={starredIds}
+        isRead={modal ? readIds.has(modal.id) : false}
       />
     </div>
   );
