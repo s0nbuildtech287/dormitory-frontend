@@ -32,7 +32,19 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
   const [newAdminName, setNewAdminName] = useState("");
 
   // OTP 2FA state
-  const [otpEnabled, setOtpEnabled] = useState(false);
+  const [otpEnabled, setOtpEnabled] = useState(() => {
+    const settings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
+    return settings[user?.id] === true;
+  });
+
+  const handleToggleOtp = () => {
+    const newVal = !otpEnabled;
+    setOtpEnabled(newVal);
+    // Lưu vào localStorage theo user id để LoginPage đọc được
+    const settings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
+    settings[user?.id] = newVal;
+    localStorage.setItem("otp_settings", JSON.stringify(settings));
+  };
 
   const isSuperAdmin = user?.email === "buixu4ns0n@gmail.com";
 
@@ -258,7 +270,7 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
             </div>
             <div className="flex items-center justify-between pt-4 border-t border-slate-100">
               {/* OTP toggle */}
-              <button onClick={() => setOtpEnabled(v => !v)}
+              <button onClick={handleToggleOtp}
                 className="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-800 transition-colors">
                 <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${otpEnabled ? "bg-blue-600" : "bg-slate-300"}`}>
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ${otpEnabled ? "translate-x-6" : "translate-x-1"}`} />
