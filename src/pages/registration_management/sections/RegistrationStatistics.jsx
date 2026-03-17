@@ -5,6 +5,9 @@ import { RegistrationStatus } from "../../../utils/types.js";
 import { getScoringWeights } from "../../../api/apiRegistration.js";
 import StatCard from "../../../components/common/StatCard.jsx";
 
+// Tông màu xanh từ đậm đến nhạt (đồng bộ với ContractStatistics)
+const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
+
 const RegistrationStatistics = ({ regs }) => {
   const [quotaSettings, setQuotaSettings] = useState({
     totalSlots: 1000,
@@ -345,7 +348,7 @@ const RegistrationStatistics = ({ regs }) => {
                     <span>{Math.round(pct)}%</span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-rose-400" : "bg-emerald-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-400" : "bg-blue-600"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                   </div>
                 </div>
                 <div className="w-36 shrink-0 flex items-center justify-end gap-2">
@@ -375,7 +378,7 @@ const RegistrationStatistics = ({ regs }) => {
                     <span>{Math.round(pct)}%</span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-rose-400" : "bg-blue-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-400" : "bg-blue-700"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                   </div>
                 </div>
                 <div className="w-36 shrink-0 flex items-center justify-end gap-2">
@@ -405,7 +408,7 @@ const RegistrationStatistics = ({ regs }) => {
                     <span>{Math.round(pct)}%</span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-rose-400" : "bg-purple-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-500" : "bg-blue-600"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                   </div>
                 </div>
                 <div className="w-36 shrink-0 flex items-center justify-end gap-2">
@@ -546,8 +549,8 @@ const RegistrationStatistics = ({ regs }) => {
                 <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} />
                 <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                 <Legend wrapperStyle={{ fontWeight: "bold", fontSize: "14px" }} formatter={(value) => <span style={{ color: "#1e293b" }}>{value}</span>} />
-                <Bar dataKey="Nam" stackId="a" fill="#bfdbfe" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="Nữ" stackId="a" fill="#fbcfe8" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Nam" stackId="a" fill="#2563eb" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="Nữ" stackId="a" fill="#93c5fd" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -569,7 +572,7 @@ const RegistrationStatistics = ({ regs }) => {
                 <PieChart>
                   <Pie data={statsData.priorityBreakdown} cx="50%" cy="50%" labelLine={false} label={false} outerRadius={90} dataKey="value">
                     {statsData.priorityBreakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={["#fecaca", "#fed7aa", "#fde68a", "#d9f99d", "#a7f3d0", "#e0e7ff"][index % 6]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
@@ -611,8 +614,8 @@ const RegistrationStatistics = ({ regs }) => {
                 <Tooltip cursor={{ fill: "#f7fafc" }} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                 <defs>
                   <linearGradient id="provinceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#fed7aa" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#fdba74" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#1e40af" stopOpacity={0.8} />
                   </linearGradient>
                 </defs>
                 <Bar dataKey="count" fill="url(#provinceGradient)" radius={[8, 8, 0, 0]} barSize={60} />
@@ -641,8 +644,8 @@ const RegistrationStatistics = ({ regs }) => {
                   <Tooltip cursor={{ fill: "#f7fafc" }} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                   <defs>
                     <linearGradient id="facultyGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#c7d2fe" stopOpacity={0.8} />
-                      <stop offset="100%" stopColor="#818cf8" stopOpacity={0.9} />
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#1e40af" stopOpacity={1} />
                     </linearGradient>
                   </defs>
                   <Bar dataKey="value" fill="url(#facultyGradient)" radius={[0, 8, 8, 0]} barSize={20} />
@@ -676,8 +679,8 @@ const RegistrationStatistics = ({ regs }) => {
                 <Tooltip cursor={{ fill: "#f7fafc" }} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                 <defs>
                   <linearGradient id="yearlyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#93c5fd" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#1e40af" stopOpacity={0.8} />
                   </linearGradient>
                 </defs>
                 <Bar dataKey="count" fill="url(#yearlyGradient)" radius={[8, 8, 0, 0]} barSize={60} />
@@ -701,10 +704,10 @@ const RegistrationStatistics = ({ regs }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={statsData.cohorts} cx="50%" cy="50%" labelLine={false} label={false} outerRadius={100} dataKey="value">
-                    <Cell fill="#fecaca" />
-                    <Cell fill="#bfdbfe" />
-                    <Cell fill="#ddd6fe" />
-                    <Cell fill="#fde68a" />
+                    <Cell fill={COLORS[0]} />
+                    <Cell fill={COLORS[2]} />
+                    <Cell fill={COLORS[4]} />
+                    <Cell fill={COLORS[1]} />
                   </Pie>
                   <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                   <Legend
