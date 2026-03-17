@@ -2,18 +2,18 @@ import { Package, TrendingUp, MapPin, BarChart3, DollarSign, ChevronDown, Chevro
 import { useState, useEffect } from "react";
 import { getAssetsByBuilding } from "../../../api/apiAsset.js";
 
-// Educational color palette - soft and professional
+// Tông màu xanh từ đậm đến nhạt (đồng bộ với ContractStatistics)
 const ASSET_COLORS = [
-  "#3B82F6", "#10B981", "#F59E0B", "#EF4444", 
-  "#8B5CF6", "#06B6D4", "#84CC16", "#F97316"
+  "#1e40af", "#2563eb", "#3b82f6", "#60a5fa",
+  "#93c5fd", "#bfdbfe", "#dbeafe", "#eff6ff"
 ];
 
 const BUILDING_COLORS = [
-  "#3B82F6", // Tòa A - Blue
-  "#10B981", // Tòa B - Green  
-  "#F59E0B", // Tòa C - Amber
-  "#EF4444", // Tòa D - Red
-  "#8B5CF6"  // Kho - Purple
+  "#1e40af", // Tòa A
+  "#2563eb", // Tòa B
+  "#3b82f6", // Tòa C
+  "#60a5fa", // Tòa D
+  "#93c5fd"  // Kho
 ];
 
 const AssetAnalytics = ({ assets }) => {
@@ -448,7 +448,7 @@ const AssetAnalytics = ({ assets }) => {
                 <div className="w-20 text-xs font-medium text-slate-600">{item.month}</div>
                 <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
                   <div 
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-300 to-blue-500 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-600 to-blue-800 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
                     style={{ width: `${(item.value / 60) * 100}%` }}
                   >
                     <span className="text-xs font-semibold text-white">{item.label}</span>
@@ -495,7 +495,7 @@ const AssetAnalytics = ({ assets }) => {
                 <div className="w-20 text-xs font-medium text-slate-600">{item.month}</div>
                 <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
                   <div 
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-cyan-300 to-cyan-500 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
                     style={{ width: `${(item.value / 30) * 100}%` }}
                   >
                     <span className="text-xs font-semibold text-white">{item.label}</span>

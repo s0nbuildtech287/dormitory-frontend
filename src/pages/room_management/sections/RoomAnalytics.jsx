@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Building2, Home, Users, DoorOpen, CheckCircle2, AlertCircle, TrendingUp, LayoutGrid } from "lucide-react";
 import StatCard from "../../../components/common/StatCard.jsx";
 
-const BUILDING_COLORS = ["#3b82f6", "#f43f5e", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
+const BUILDING_COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
 
 const RoomAnalytics = ({ rooms }) => {
   const stats = useMemo(() => {
@@ -56,9 +56,9 @@ const RoomAnalytics = ({ rooms }) => {
 
     // --- Status pie ---
     const statusPie = [
-      { name: "Trống", value: emptyCount, color: "#10b981" },
-      { name: "Đang ở", value: occupiedCount, color: "#f59e0b" },
-      { name: "Đã đầy", value: fullCount, color: "#f43f5e" },
+      { name: "Trống", value: emptyCount, color: "#93c5fd" },
+      { name: "Đang ở", value: occupiedCount, color: "#3b82f6" },
+      { name: "Đã đầy", value: fullCount, color: "#1e40af" },
     ].filter((d) => d.value > 0);
 
     // --- Gender pie ---
@@ -66,9 +66,9 @@ const RoomAnalytics = ({ rooms }) => {
     const femaleRooms = safeRooms.filter((r) => r.gender === "Nữ").length;
     const otherRooms = safeRooms.length - maleRooms - femaleRooms;
     const genderPie = [
-      { name: "Phòng Nam", value: maleRooms, color: "#3b82f6" },
-      { name: "Phòng Nữ", value: femaleRooms, color: "#f43f5e" },
-      ...(otherRooms > 0 ? [{ name: "Khác", value: otherRooms, color: "#94a3b8" }] : []),
+      { name: "Phòng Nam", value: maleRooms, color: "#2563eb" },
+      { name: "Phòng Nữ", value: femaleRooms, color: "#93c5fd" },
+      ...(otherRooms > 0 ? [{ name: "Khác", value: otherRooms, color: "#bfdbfe" }] : []),
     ].filter((d) => d.value > 0);
 
     // --- Floor breakdown ---
@@ -242,9 +242,9 @@ const RoomAnalytics = ({ rooms }) => {
                   <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} allowDecimals={false} />
                   <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                   <Legend wrapperStyle={{ fontWeight: "bold", fontSize: "13px" }} formatter={(v) => <span style={{ color: "#1e293b" }}>{v}</span>} />
-                  <Bar dataKey="empty" name="Trống" stackId="a" fill="#6ee7b7" />
-                  <Bar dataKey="occupied" name="Đang ở" stackId="a" fill="#fcd34d" />
-                  <Bar dataKey="full" name="Đã đầy" stackId="a" fill="#fca5a5" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="empty" name="Trống" stackId="a" fill="#bfdbfe" />
+                  <Bar dataKey="occupied" name="Đang ở" stackId="a" fill="#60a5fa" />
+                  <Bar dataKey="full" name="Đã đầy" stackId="a" fill="#1e40af" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -272,8 +272,8 @@ const RoomAnalytics = ({ rooms }) => {
                   <Tooltip formatter={(v) => [`${v}%`, "Tỷ lệ lấp đầy"]} contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                   <defs>
                     <linearGradient id="rateGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#818cf8" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#c7d2fe" stopOpacity={0.7} />
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#1e40af" stopOpacity={0.8} />
                     </linearGradient>
                   </defs>
                   <Bar dataKey="rate" name="Tỷ lệ lấp đầy" fill="url(#rateGradient)" radius={[8, 8, 0, 0]} barSize={48} />
@@ -341,9 +341,9 @@ const RoomAnalytics = ({ rooms }) => {
                   <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} allowDecimals={false} />
                   <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
                   <Legend wrapperStyle={{ fontWeight: "bold", fontSize: "13px" }} formatter={(v) => <span style={{ color: "#1e293b" }}>{v}</span>} />
-                  <Bar dataKey="rooms" name="Số phòng" fill="#bfdbfe" radius={[4, 4, 0, 0]} barSize={24} />
-                  <Bar dataKey="capacity" name="Sức chứa" fill="#818cf8" radius={[4, 4, 0, 0]} barSize={24} />
-                  <Bar dataKey="occupancy" name="Đang ở" fill="#6ee7b7" radius={[4, 4, 0, 0]} barSize={24} />
+                  <Bar dataKey="rooms" name="Số phòng" fill="#93c5fd" radius={[4, 4, 0, 0]} barSize={24} />
+                  <Bar dataKey="capacity" name="Sức chứa" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} />
+                  <Bar dataKey="occupancy" name="Đang ở" fill="#1e40af" radius={[4, 4, 0, 0]} barSize={24} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

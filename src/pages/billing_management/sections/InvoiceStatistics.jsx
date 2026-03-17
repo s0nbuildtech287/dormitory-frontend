@@ -358,8 +358,8 @@ const InvoiceStatistics = ({ bills, onNavigateToInvoice }) => {
                   contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
                 />
                 <Legend />
-                <Line type="monotone" dataKey="electric" name="Tiền điện" stroke="#f59e0b" strokeWidth={3} dot={{ fill: "#f59e0b", r: 4 }} />
-                <Line type="monotone" dataKey="water" name="Tiền nước" stroke="#3b82f6" strokeWidth={3} dot={{ fill: "#3b82f6", r: 4 }} />
+                <Line type="monotone" dataKey="electric" name="Tiền điện" stroke="#2563eb" strokeWidth={3} dot={{ fill: "#2563eb", r: 4 }} />
+                <Line type="monotone" dataKey="water" name="Tiền nước" stroke="#93c5fd" strokeWidth={3} dot={{ fill: "#93c5fd", r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -382,8 +382,8 @@ const InvoiceStatistics = ({ bills, onNavigateToInvoice }) => {
                   contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
                 />
                 <Legend />
-                <Bar dataKey="paid" name="Đã thu" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="unpaid" name="Chưa thu" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="paid" name="Đã thu" fill="#1e40af" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="unpaid" name="Chưa thu" fill="#93c5fd" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
