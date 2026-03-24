@@ -156,10 +156,10 @@ const LoginPage = ({ onLogin }) => {
       <div className="w-full lg:w-1/2 bg-sky-50 flex items-center justify-center p-10">
         <div className="w-full max-w-sm bg-white rounded-2xl shadow-md border border-sky-100 p-8">
           {/* Logo + tiêu đề */}
-          <div className="text-center mb-8">
-            <img src={logoImg} alt="Logo trường" className="w-16 h-16 object-contain mx-auto mb-3" />
-            <h1 className="text-2xl font-bold text-gray-800">Dormitory Unis</h1>
-            <p className="text-gray-500 text-sm mt-1">Hệ thống quản lý Ký túc xá</p>
+          <div className="bg-sky-100 rounded-xl px-6 py-5 text-center mb-6">
+            <img src={logoImg} alt="Logo trường" className="w-14 h-14 object-contain mx-auto mb-2" />
+            <h1 className="text-xl font-bold text-sky-800">Dormitory Unis</h1>
+            <p className="text-sky-500 text-xs mt-0.5">Hệ thống quản lý Ký túc xá</p>
           </div>
           {/* Role Tabs */}
           <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
