@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone } from "lucide-react";
+import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone, Building2 } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
 import ktxBg from "../../assets/images/ktx2.jpg";
@@ -153,8 +153,14 @@ const LoginPage = ({ onLogin }) => {
       </div>
 
       {/* Bên phải — form full height */}
-      <div className="w-full lg:w-1/2 bg-sky-50 flex items-center justify-center p-10">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-md border border-sky-100 p-8">
+      <div className="w-full lg:w-1/2 bg-sky-50 flex items-center px-8 py-10">
+        {/* Icon trái — căn giữa khoảng trống bên trái */}
+        <div className="flex-1 flex justify-center">
+          <Building2 size={56} className="text-sky-900 opacity-80" />
+        </div>
+
+        {/* Card form — cố định width */}
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-md border border-sky-100 p-8 shrink-0">
           {/* Logo + tiêu đề */}
           <div className="bg-sky-100 rounded-xl px-6 py-5 text-center mb-6">
             <img src={logoImg} alt="Logo trường" className="w-14 h-14 object-contain mx-auto mb-2" />
@@ -270,6 +276,11 @@ const LoginPage = ({ onLogin }) => {
           </form>
 
           <p className="text-center text-xs text-gray-400 mt-6">© 2025 Dormitory Unis — Hệ thống quản lý giáo dục</p>
+        </div>
+
+        {/* Icon phải — căn giữa khoảng trống bên phải */}
+        <div className="flex-1 flex justify-center">
+          <Building2 size={56} className="text-sky-900 opacity-80" />
         </div>
       </div>
     </div>
