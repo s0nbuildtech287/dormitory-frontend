@@ -160,7 +160,7 @@ const LoginPage = ({ onLogin }) => {
         </div>
 
         {/* Card form — cố định width */}
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-md border border-sky-100 p-8 shrink-0">
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl border border-sky-100 p-8 shrink-0">
           {/* Logo + tiêu đề */}
           <div className="bg-sky-100 rounded-xl px-6 py-5 text-center mb-6">
             <img src={logoImg} alt="Logo trường" className="w-14 h-14 object-contain mx-auto mb-2" />
