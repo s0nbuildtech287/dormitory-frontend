@@ -3,8 +3,7 @@ import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
 import ktxBg from "../../assets/images/ktx2.jpg";
-
-const LOGO_URL = "http://localhost:1234/uploads/logo/logo.png";
+import logoImg from "../../assets/images/logo.png";
 
 const LoginPage = ({ onLogin }) => {
   const [loginRole, setLoginRole] = useState(UserRole.STUDENT);
@@ -152,7 +151,7 @@ const LoginPage = ({ onLogin }) => {
 
           {/* Logo + tiêu đề */}
           <div className="text-center mb-8">
-            <img src={LOGO_URL} alt="Logo trường" className="w-16 h-16 object-contain mx-auto mb-3" />
+            <img src={logoImg} alt="Logo trường" className="w-16 h-16 object-contain mx-auto mb-3" />
             <h1 className="text-2xl font-bold text-gray-800">Dormitory Unis</h1>
             <p className="text-gray-500 text-sm mt-1">Hệ thống quản lý Ký túc xá</p>
           </div>
