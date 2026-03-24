@@ -156,7 +156,7 @@ const LoginPage = ({ onLogin }) => {
       <div className="w-full lg:w-1/2 bg-sky-50 flex items-center px-8 py-10">
         {/* Icon trái — căn giữa khoảng trống bên trái */}
         <div className="flex-1 flex justify-center">
-          <Building2 size={56} className="text-sky-900 opacity-80" />
+          <Building2 size={40} className="text-sky-300" />
         </div>
 
         {/* Card form — cố định width */}
@@ -280,7 +280,7 @@ const LoginPage = ({ onLogin }) => {
 
         {/* Icon phải — căn giữa khoảng trống bên phải */}
         <div className="flex-1 flex justify-center">
-          <Building2 size={56} className="text-sky-900 opacity-80" />
+          <Building2 size={40} className="text-sky-300" />
         </div>
       </div>
     </div>
