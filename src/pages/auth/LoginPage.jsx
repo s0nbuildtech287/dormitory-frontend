@@ -168,7 +168,7 @@ const LoginPage = ({ onLogin }) => {
             <p className="text-sky-500 text-xs mt-0.5">Hệ thống quản lý Ký túc xá</p>
           </div>
           {/* Role Tabs */}
-          <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+          <div className="flex bg-gray-100 border border-gray-300 p-1 rounded-xl mb-6">
             <button
               onClick={() => toggleRole(UserRole.STUDENT)}
               className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loginRole === UserRole.STUDENT ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
@@ -194,7 +194,7 @@ const LoginPage = ({ onLogin }) => {
                   value={idInput}
                   onChange={(e) => setIdInput(e.target.value)}
                   placeholder={loginRole === UserRole.ADMIN ? "admin" : "email@student.edu.vn"}
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border ${error ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-200 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400`}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border ${error ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400`}
                   disabled={isLoading || showOtp}
                 />
               </div>
@@ -212,7 +212,7 @@ const LoginPage = ({ onLogin }) => {
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border ${error ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-200 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400`}
+                  className={`w-full pl-10 pr-4 py-3 bg-gray-50 border ${error ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400`}
                   disabled={isLoading || showOtp}
                 />
               </div>
