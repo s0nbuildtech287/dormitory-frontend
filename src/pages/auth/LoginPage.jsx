@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
+import ktxImg from "../../assets/images/ktx.jpg";
 import tluBg from "../../assets/images/tlu.jpg";
 import logoImg from "../../assets/images/logo.png";
 
@@ -146,14 +147,19 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center relative"
+    <div className="min-h-screen flex items-center justify-center p-4"
       style={{ backgroundImage: `url(${tluBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
     >
+      {/* Card tổng — 2 cột */}
+      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl">
 
+        {/* Bên trái — ảnh ktx */}
+        <div className="hidden md:flex md:w-[55%] shrink-0 bg-white p-3 rounded-l-2xl">
+          <img src={ktxImg} alt="Ký túc xá" className="w-full h-full object-cover rounded-xl" />
+        </div>
 
-      {/* Card form — căn giữa */}
-      <div className="relative z-10 w-full max-w-sm bg-white/70 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8">
+        {/* Bên phải — form đăng nhập */}
+        <div className="flex-1 bg-white flex flex-col justify-center px-8 py-10">
           {/* Logo + tiêu đề */}
           <div className="bg-sky-100 rounded-xl px-6 py-5 text-center mb-6">
             <img src={logoImg} alt="Logo trường" className="w-14 h-14 object-contain mx-auto mb-2" />
@@ -270,6 +276,7 @@ const LoginPage = ({ onLogin }) => {
 
           <p className="text-center text-xs text-gray-400 mt-6">© 2025 Dormitory Unis — Hệ thống quản lý giáo dục</p>
         </div>
+      </div>
     </div>
   );
 };
