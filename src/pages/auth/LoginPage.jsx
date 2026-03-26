@@ -3,8 +3,12 @@ import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
 import ktxImg from "../../assets/images/ktx.jpg";
+import tlu1Img from "../../assets/images/tlu1.jpg";
+import tlu2Img from "../../assets/images/tlu2.jpg";
 import tluBg from "../../assets/images/tlu.jpg";
 import logoImg from "../../assets/images/logo.png";
+
+const SLIDE_IMAGES = [ktxImg, tlu1Img, tlu2Img];
 
 const LoginPage = ({ onLogin }) => {
   const [loginRole, setLoginRole] = useState(UserRole.STUDENT);
@@ -19,6 +23,12 @@ const LoginPage = ({ onLogin }) => {
   const [otpError, setOtpError] = useState(null);
   const [pendingAuth, setPendingAuth] = useState(null);
   const otpRefs = useRef([]);
+
+  const [slideIndex, setSlideIndex] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSlideIndex((i) => (i + 1) % SLIDE_IMAGES.length), 5000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (showOtp) otpRefs.current[0]?.focus();
@@ -154,9 +164,14 @@ const LoginPage = ({ onLogin }) => {
       {/* Card tổng — 2 cột */}
       <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl relative z-10">
 
-        {/* Bên trái — ảnh ktx */}
-        <div className="hidden md:flex md:w-[55%] shrink-0 bg-white p-3 rounded-l-2xl">
-          <img src={ktxImg} alt="Ký túc xá" className="w-full h-full object-cover rounded-xl" />
+        {/* Bên trái — slideshow */}
+        <div className="hidden md:flex md:w-[55%] shrink-0 bg-white p-3 rounded-l-2xl overflow-hidden">
+          <img
+            key={slideIndex}
+            src={SLIDE_IMAGES[slideIndex]}
+            alt="Ký túc xá"
+            className="w-full h-full object-cover rounded-xl transition-opacity duration-700 animate-fade-in"
+          />
         </div>
 
         {/* Bên phải — form đăng nhập */}
