@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone, Building2 } from "lucide-react";
+import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone } from "lucide-react";
 import { UserRole } from "../../utils/types.js";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
-import ktxBg from "../../assets/images/ktx2.jpg";
+import tluBg from "../../assets/images/tlu.jpg";
 import logoImg from "../../assets/images/logo.png";
 
 const LoginPage = ({ onLogin }) => {
@@ -146,26 +146,19 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Bên trái — ảnh full height, bo tròn góc phải */}
-      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden rounded-tr-3xl rounded-br-3xl">
-        <img src={ktxBg} alt="Ký túc xá" className="w-full h-full object-cover" />
-      </div>
+    <div
+      className="min-h-screen flex items-center justify-center relative"
+      style={{ backgroundImage: `url(${tluBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
+    >
 
-      {/* Bên phải — form full height */}
-      <div className="w-full lg:w-1/2 bg-sky-50 flex items-center px-8 py-10">
-        {/* Icon trái — căn giữa khoảng trống bên trái */}
-        <div className="flex-1 flex justify-center">
-          <Building2 size={40} className="text-sky-300" />
-        </div>
 
-        {/* Card form — cố định width */}
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl border border-sky-100 p-8 shrink-0">
+      {/* Card form — căn giữa */}
+      <div className="relative z-10 w-full max-w-sm bg-white/70 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8">
           {/* Logo + tiêu đề */}
           <div className="bg-sky-100 rounded-xl px-6 py-5 text-center mb-6">
             <img src={logoImg} alt="Logo trường" className="w-14 h-14 object-contain mx-auto mb-2" />
             <h1 className="text-xl font-bold text-sky-800">Dormitory Unis</h1>
-            <p className="text-sky-500 text-xs mt-0.5">Hệ thống quản lý Ký túc xá</p>
+            <p className="text-sky-500 text-xs mt-0.5">Hệ thống ký túc xá trường đại học Thuỷ Lợi</p>
           </div>
           {/* Role Tabs */}
           <div className="flex bg-gray-100 border border-gray-300 p-1 rounded-xl mb-6">
@@ -277,12 +270,6 @@ const LoginPage = ({ onLogin }) => {
 
           <p className="text-center text-xs text-gray-400 mt-6">© 2025 Dormitory Unis — Hệ thống quản lý giáo dục</p>
         </div>
-
-        {/* Icon phải — căn giữa khoảng trống bên phải */}
-        <div className="flex-1 flex justify-center">
-          <Building2 size={40} className="text-sky-300" />
-        </div>
-      </div>
     </div>
   );
 };
