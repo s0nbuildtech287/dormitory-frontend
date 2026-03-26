@@ -147,11 +147,12 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4"
+    <div className="min-h-screen flex items-center justify-center p-4 relative"
       style={{ backgroundImage: `url(${tluBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
     >
+      <div className="absolute inset-0 bg-black/20" />
       {/* Card tổng — 2 cột */}
-      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl">
+      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl relative z-10">
 
         {/* Bên trái — ảnh ktx */}
         <div className="hidden md:flex md:w-[55%] shrink-0 bg-white p-3 rounded-l-2xl">
