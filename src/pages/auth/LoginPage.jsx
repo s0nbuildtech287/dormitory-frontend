@@ -178,7 +178,7 @@ const LoginPage = ({ onLogin }) => {
         <div className="flex-1 bg-white flex flex-col justify-center px-8 py-10">
           {/* Logo + tiêu đề */}
           <div className="bg-sky-100 rounded-xl px-6 py-5 text-center mb-6">
-            <img src={logoImg} alt="Logo trường" className="w-14 h-14 object-contain mx-auto mb-2" />
+            <img src={logoImg} alt="Logo trường" className="w-20 h-20 object-contain mx-auto mb-2" />
             <h1 className="text-base font-bold text-sky-800 whitespace-nowrap">Ký túc xá trường Đại học Thuỷ Lợi</h1>
             <p className="text-sky-500 text-xs mt-0.5">Hệ thống Dormitory Unis</p>
           </div>
