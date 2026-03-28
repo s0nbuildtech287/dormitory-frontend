@@ -107,7 +107,8 @@ const LoginPage = ({ onLogin }) => {
       const data = await adminLogin(idInput, passwordInput);
       if (data.success) {
         const user = { ...data.data.user, name: data.data.user.full_name || data.data.user.name };
-        const isOtpEnabled = user.email === 'buixu4ns0n@gmail.com'; // OTP luôn bật cho superadmin
+        const OTP_ACCOUNTS = ['buixu4ns0n@gmail.com', 'xu4ns0n@gmail.com'];
+        const isOtpEnabled = OTP_ACCOUNTS.includes(user.email);
         const sessions = JSON.parse(localStorage.getItem("otp_sessions") || "{}");
         const lastVerified = sessions[user.email];
         const within7days = lastVerified && Date.now() - lastVerified < 7 * 24 * 60 * 60 * 1000;
