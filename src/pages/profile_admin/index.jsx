@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   User, Edit2, Save, X,
   Camera, Lock, LogOut, Shield, Clock, CheckCircle,
-  AlertCircle, Loader2, UserPlus
+  AlertCircle, Loader2, UserPlus, Smartphone, KeyRound
 } from "lucide-react";
 import { BACKEND_URL } from "../../utils/constants.jsx";
 
@@ -27,6 +27,25 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
     newPassword: "",
     confirmPassword: "",
   });
+
+  // OTP step cho đổi mật khẩu: 'form' | 'otp'
+  const [pwStep, setPwStep] = useState("form");
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [otpError, setOtpError] = useState(null);
+  const otpRefs = useRef([]);
+
+  const handleOtpInput = (i, val) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...otpDigits]; next[i] = val; setOtpDigits(next); setOtpError(null);
+    if (val && i < 5) otpRefs.current[i + 1]?.focus();
+  };
+  const handleOtpKeyDown = (i, e) => {
+    if (e.key === "Backspace" && !otpDigits[i] && i > 0) otpRefs.current[i - 1]?.focus();
+  };
+  const handleOtpPaste = (e) => {
+    const p = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (p.length === 6) { setOtpDigits(p.split("")); otpRefs.current[5]?.focus(); }
+  };
 
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
@@ -63,27 +82,63 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
 
   const handleChangePassword = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      setMessage({ ok: false, text: "Vui lòng điền đầy đủ thông tin!" });
-      return;
+      setMessage({ ok: false, text: "Vui lòng điền đầy đủ thông tin!" }); return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage({ ok: false, text: "Mật khẩu mới không khớp!" });
-      return;
+      setMessage({ ok: false, text: "Mật khẩu mới không khớp!" }); return;
     }
     if (passwordData.newPassword.length < 6) {
-      setMessage({ ok: false, text: "Mật khẩu mới phải có ít nhất 6 ký tự!" });
-      return;
+      setMessage({ ok: false, text: "Mật khẩu mới phải có ít nhất 6 ký tự!" }); return;
     }
+    // Bước 1: gửi OTP
     setIsSaving(true);
     try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Gửi OTP thất bại!");
+      setOtpDigits(["", "", "", "", "", ""]); setOtpError(null);
+      setPwStep("otp");
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } catch (err) {
+      setMessage({ ok: false, text: err.message });
+    } finally { setIsSaving(false); }
+  };
+
+  const handleVerifyOtpAndChange = async () => {
+    const code = otpDigits.join("");
+    if (code.length < 6) { setOtpError("Vui lòng nhập đủ 6 số!"); return; }
+    setIsSaving(true);
+    try {
+      // Verify OTP
+      const verifyRes = await fetch(`${BACKEND_URL}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, code }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) { setOtpError("Mã OTP không đúng hoặc đã hết hạn!"); return; }
+
+      // Đổi mật khẩu
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ oldPassword: passwordData.currentPassword, newPassword: passwordData.newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Đổi mật khẩu thất bại!");
+
       setMessage({ ok: true, text: "Đổi mật khẩu thành công!" });
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPwStep("form");
       setTimeout(() => setMessage(null), 3000);
     } catch (err) {
-      setMessage({ ok: false, text: err.message || "Đổi mật khẩu thất bại!" });
-    } finally {
-      setIsSaving(false);
-    }
+      setMessage({ ok: false, text: err.message });
+    } finally { setIsSaving(false); }
   };
 
   const handleCreateAdmin = async () => {
@@ -238,27 +293,61 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
         {/* Security Tab */}
         {activeTab === "security" && (
           <div className="space-y-6 max-w-md">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mật khẩu hiện tại</label>
-              <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} placeholder="Nhập mật khẩu hiện tại..."
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mật khẩu mới</label>
-              <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} placeholder="Nhập mật khẩu mới..."
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Xác nhận mật khẩu mới</label>
-              <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} placeholder="Xác nhận mật khẩu mới..."
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
-            </div>
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-              <button onClick={handleChangePassword} disabled={isSaving}
-                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
-                {isSaving ? <><Loader2 size={16} className="animate-spin" /> Đang cập nhật...</> : <><Lock size={16} /> Đổi mật khẩu</>}
-              </button>
-            </div>
+            {pwStep === "form" ? (<>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mật khẩu hiện tại</label>
+                <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} placeholder="Nhập mật khẩu hiện tại..."
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mật khẩu mới</label>
+                <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} placeholder="Nhập mật khẩu mới..."
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Xác nhận mật khẩu mới</label>
+                <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} placeholder="Xác nhận mật khẩu mới..."
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <button onClick={handleChangePassword} disabled={isSaving}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                  {isSaving ? <><Loader2 size={16} className="animate-spin" /> Đang gửi OTP...</> : <><KeyRound size={16} /> Tiếp tục</>}
+                </button>
+              </div>
+            </>) : (<>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
+                Mã OTP đã được gửi đến <span className="font-bold">{user?.email}</span>. Vui lòng kiểm tra hộp thư.
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+                  <Smartphone size={14} /> Mã xác thực OTP
+                </label>
+                <div className="flex gap-3" onPaste={handleOtpPaste}>
+                  {otpDigits.map((d, i) => (
+                    <input key={i} ref={el => otpRefs.current[i] = el}
+                      type="text" inputMode="numeric" maxLength={1} value={d}
+                      onChange={e => handleOtpInput(i, e.target.value)}
+                      onKeyDown={e => handleOtpKeyDown(i, e)}
+                      className={`w-11 h-11 text-center text-lg font-bold border-2 rounded-xl outline-none transition-all
+                        ${d ? "border-blue-500 bg-blue-50 text-blue-700" : "border-slate-200 bg-slate-50"}
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-100`}
+                    />
+                  ))}
+                </div>
+                {otpError && <p className="mt-2 text-xs text-red-500 font-medium">{otpError}</p>}
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <button onClick={() => { setPwStep("form"); setOtpError(null); }}
+                  className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+                  ← Quay lại
+                </button>
+                <button onClick={handleVerifyOtpAndChange} disabled={isSaving}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                  {isSaving ? <><Loader2 size={16} className="animate-spin" /> Đang xử lý...</> : <><Lock size={16} /> Xác nhận đổi mật khẩu</>}
+                </button>
+              </div>
+            </>)}
           </div>
         )}
 
