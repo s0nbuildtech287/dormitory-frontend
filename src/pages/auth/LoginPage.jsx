@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { KeyRound, ShieldCheck, Lock, LogIn, Smartphone } from "lucide-react";
-import { UserRole } from "../../utils/types.js";
+import { Mail, Lock, LogIn, Smartphone } from "lucide-react";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
 import ktxImg from "../../assets/images/ktx.jpg";
 import tlu1Img from "../../assets/images/tlu1.jpg";
@@ -11,10 +10,11 @@ import logoImg from "../../assets/images/logo.png";
 const SLIDE_IMAGES = [ktxImg, tlu1Img, tlu2Img];
 
 const LoginPage = ({ onLogin }) => {
-  const [loginRole, setLoginRole] = useState(UserRole.STUDENT);
   const [idInput, setIdInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [error, setError] = useState(null);
+  const [idError, setIdError] = useState(null);
+  const [passwordError, setPasswordError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // OTP inline state
@@ -58,10 +58,7 @@ const LoginPage = ({ onLogin }) => {
 
   const handleVerifyOtp = async () => {
     const code = otpDigits.join("");
-    if (code.length < 6) {
-      setOtpError("Vui lòng nhập đủ 6 số!");
-      return;
-    }
+    if (code.length < 6) { setOtpError("Vui lòng nhập đủ 6 số!"); return; }
     try {
       const res = await fetch("http://localhost:1234/api/auth/verify-otp", {
         method: "POST",
@@ -75,11 +72,9 @@ const LoginPage = ({ onLogin }) => {
         setTimeout(() => otpRefs.current[0]?.focus(), 0);
         return;
       }
-      // Lưu session 24h
       const sessions = JSON.parse(localStorage.getItem("otp_sessions") || "{}");
       sessions[pendingAuth.user.email] = Date.now();
       localStorage.setItem("otp_sessions", JSON.stringify(sessions));
-
       saveAuthToken(pendingAuth.token);
       saveCurrentUser(pendingAuth.user);
       onLogin(pendingAuth.user);
@@ -88,35 +83,32 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
+  const validateId = (val) => {
+    if (!val.trim()) return "Vui lòng nhập email";
+    if (val.trim() === "admin") return null; // account đặc biệt
+    if (!val.includes("@")) return "Email không hợp lệ, thiếu ký tự @";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return "Email không đúng định dạng";
+    return null;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (showOtp) { handleVerifyOtp(); return; }
 
-    // Nếu đang ở bước OTP thì verify
-    if (showOtp) {
-      handleVerifyOtp();
-      return;
-    }
-
-    if (!idInput.trim()) {
-      setError(loginRole === UserRole.ADMIN ? "Vui lòng nhập tài khoản quản lý" : "Vui lòng nhập mã sinh viên");
-      return;
-    }
-    if (!passwordInput.trim()) {
-      setError("Vui lòng nhập mật khẩu");
-      return;
-    }
+    const idErr = validateId(idInput);
+    const pwErr = !passwordInput.trim() ? "Vui lòng nhập mật khẩu" : null;
+    setIdError(idErr);
+    setPasswordError(pwErr);
+    if (idErr || pwErr) return;
 
     setIsLoading(true);
     setError(null);
-
     try {
       const data = await adminLogin(idInput, passwordInput);
       if (data.success) {
         const user = { ...data.data.user, name: data.data.user.full_name || data.data.user.name };
         const otpSettings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
         const isOtpEnabled = otpSettings[user.email] === true;
-
-        // Kiểm tra session 24h - nếu đã xác thực OTP trong 24h thì bỏ qua
         const sessions = JSON.parse(localStorage.getItem("otp_sessions") || "{}");
         const lastVerified = sessions[user.email];
         const within24h = lastVerified && Date.now() - lastVerified < 24 * 60 * 60 * 1000;
@@ -125,7 +117,6 @@ const LoginPage = ({ onLogin }) => {
           setPendingAuth({ token: data.data.token, user });
           setOtpDigits(["", "", "", "", "", ""]);
           setOtpError(null);
-          // Gửi OTP về email
           await fetch("http://localhost:1234/api/auth/send-otp", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -138,7 +129,7 @@ const LoginPage = ({ onLogin }) => {
           onLogin(user);
         }
       } else {
-        setError(data.message || "Đăng nhập thất bại");
+        setError(data.message || "Tài khoản hoặc mật khẩu không đúng");
       }
     } catch (err) {
       setError(err.message || "Lỗi kết nối đến server");
@@ -147,22 +138,12 @@ const LoginPage = ({ onLogin }) => {
     }
   };
 
-  const toggleRole = (role) => {
-    setLoginRole(role);
-    setError(null);
-    setIdInput("");
-    setPasswordInput("");
-    setShowOtp(false);
-    setPendingAuth(null);
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative"
       style={{ backgroundImage: `url(${tluBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
     >
       <div className="absolute inset-0 bg-black/20" />
-      {/* Card tổng — 2 cột */}
-      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl lg:max-w-4xl md:max-w-2xl relative z-10">
+      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl relative z-10">
 
         {/* Bên trái — slideshow */}
         <div className="hidden md:flex md:w-[52%] shrink-0 bg-white p-2 lg:p-3 rounded-l-2xl overflow-hidden">
@@ -170,52 +151,40 @@ const LoginPage = ({ onLogin }) => {
             key={slideIndex}
             src={SLIDE_IMAGES[slideIndex]}
             alt="Ký túc xá"
-            className="w-full h-full object-cover rounded-xl transition-opacity duration-700 animate-fade-in"
+            className="w-full h-full object-cover rounded-xl transition-opacity duration-700"
           />
         </div>
 
         {/* Bên phải — form đăng nhập */}
         <div className="flex-1 bg-white flex flex-col justify-center px-5 py-6 lg:px-8 lg:py-10">
           {/* Logo + tiêu đề */}
-          <div className="bg-sky-100 rounded-xl px-4 py-4 text-center mb-4 lg:mb-6">
+          <div className="bg-sky-100 rounded-xl px-4 py-4 text-center mb-5">
             <img src={logoImg} alt="Logo trường" className="w-14 h-14 lg:w-20 lg:h-20 object-contain mx-auto mb-2" />
-            <h1 className="text-sm lg:text-base font-bold text-sky-800 whitespace-nowrap">Ký túc xá trường Đại học Thuỷ Lợi</h1>
+            <h1 className="text-sm lg:text-base font-bold text-sky-800">Ký túc xá trường Đại học Thuỷ Lợi</h1>
             <p className="text-sky-500 text-xs mt-0.5">Hệ thống Dormitory Unis</p>
-          </div>
-          {/* Role Tabs */}
-          <div className="flex bg-gray-100 border border-gray-300 p-1 rounded-xl mb-4 lg:mb-6">
-            <button
-              onClick={() => toggleRole(UserRole.STUDENT)}
-              className={`flex-1 py-1.5 lg:py-2 text-sm font-semibold rounded-lg transition-all ${loginRole === UserRole.STUDENT ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              Sinh viên
-            </button>
-            <button
-              onClick={() => toggleRole(UserRole.ADMIN)}
-              className={`flex-1 py-1.5 lg:py-2 text-sm font-semibold rounded-lg transition-all ${loginRole === UserRole.ADMIN ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              Ban quản lý
-            </button>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
-            {/* Email/ID */}
+            {/* Email / tài khoản */}
             <div className={showOtp ? "opacity-50 pointer-events-none" : ""}>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{loginRole === UserRole.ADMIN ? "Tài khoản quản lý" : "Email sinh viên"}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email / Tài khoản</label>
               <div className="relative">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">{loginRole === UserRole.ADMIN ? <KeyRound size={18} /> : <ShieldCheck size={18} />}</div>
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Mail size={18} />
+                </div>
                 <input
                   type="text"
                   value={idInput}
-                  onChange={(e) => setIdInput(e.target.value)}
-                  placeholder={loginRole === UserRole.ADMIN ? "admin" : "email@student.edu.vn"}
-                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border ${error ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
+                  onChange={(e) => { setIdInput(e.target.value); setIdError(null); }}
+                  placeholder="email@tlu.edu.vn"
+                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border ${idError ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
                   disabled={isLoading || showOtp}
                 />
               </div>
+              {idError && <p className="mt-1.5 text-xs text-red-500 font-medium">{idError}</p>}
             </div>
 
-            {/* Password */}
+            {/* Mật khẩu */}
             <div className={showOtp ? "opacity-50 pointer-events-none" : ""}>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu</label>
               <div className="relative">
@@ -225,12 +194,13 @@ const LoginPage = ({ onLogin }) => {
                 <input
                   type="password"
                   value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
+                  onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(null); }}
                   placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border ${error ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border ${passwordError ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
                   disabled={isLoading || showOtp}
                 />
               </div>
+              {passwordError && <p className="mt-1.5 text-xs text-red-500 font-medium">{passwordError}</p>}
               {error && !showOtp && <p className="mt-1.5 text-xs text-red-500 font-medium">{error}</p>}
             </div>
 
@@ -245,49 +215,34 @@ const LoginPage = ({ onLogin }) => {
                 </label>
                 <div className="flex gap-2 justify-between" onPaste={handleOtpPaste}>
                   {otpDigits.map((d, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => (otpRefs.current[i] = el)}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={d}
+                    <input key={i} ref={(el) => (otpRefs.current[i] = el)}
+                      type="text" inputMode="numeric" maxLength={1} value={d}
                       onChange={(e) => handleOtpInput(i, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(i, e)}
                       className={`w-9 h-9 lg:w-10 lg:h-10 text-center text-base font-bold border-2 rounded-lg outline-none transition-all
-                          ${d ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 bg-gray-50 text-gray-800"}
-                          focus:border-blue-500 focus:ring-2 focus:ring-blue-100`}
+                        ${d ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 bg-gray-50 text-gray-800"}
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-100`}
                     />
                   ))}
                 </div>
                 {otpError && <p className="mt-2 text-xs text-red-500 font-medium">{otpError}</p>}
-                <button
-                  type="button"
-                  onClick={() => { setShowOtp(false); setPendingAuth(null); }}
-                  className="mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-                >
+                <button type="button" onClick={() => { setShowOtp(false); setPendingAuth(null); }}
+                  className="mt-2 text-xs text-gray-400 hover:text-gray-600 transition-colors">
                   ← Quay lại
                 </button>
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-all active:scale-95"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>{showOtp ? "Xác nhận OTP" : "Đăng nhập"}</span>
-                  <LogIn size={18} />
-                </>
-              )}
+            <button type="submit" disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-all active:scale-95">
+              {isLoading
+                ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : <><span>{showOtp ? "Xác nhận OTP" : "Đăng nhập"}</span><LogIn size={18} /></>
+              }
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-4 lg:mt-6">© 2025 Dormitory Unis — Hệ thống quản lý giáo dục</p>
+          <p className="text-center text-xs text-gray-400 mt-5">© 2025 Dormitory Unis — Hệ thống quản lý giáo dục</p>
         </div>
       </div>
     </div>
