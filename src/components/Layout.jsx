@@ -288,6 +288,7 @@ const Layout = ({ user, onLogout, children }) => {
                       {user.role === UserRole.ADMIN ? "Ban Quản Lý" : "Sinh Viên"}
                     </p>
                   </div>
+                  {user.role === UserRole.ADMIN && (
                   <button
                     onClick={() => {
                       navigate("/profile-admin");
@@ -298,6 +299,7 @@ const Layout = ({ user, onLogout, children }) => {
                     <User size={16} />
                     Hồ sơ cá nhân
                   </button>
+                  )}
                   <button
                     onClick={() => {
                       navigate("/profile-admin?tab=security");

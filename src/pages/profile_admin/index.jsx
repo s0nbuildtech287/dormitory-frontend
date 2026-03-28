@@ -11,7 +11,7 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
   const [searchParams] = useSearchParams();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "info");
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || (user?.role === "STUDENT" ? "security" : "info"));
   const [message, setMessage] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -215,12 +215,14 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
 
       {/* Tabs Navigation */}
       <div className="flex items-center space-x-1 border-b border-slate-200 bg-white rounded-t-2xl">
-        <button
-          onClick={() => setActiveTab("info")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === "info" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
-        >
-          <User size={18} /> Thông tin cá nhân
-        </button>
+        {user?.role !== "STUDENT" && (
+          <button
+            onClick={() => setActiveTab("info")}
+            className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === "info" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
+          >
+            <User size={18} /> Thông tin cá nhân
+          </button>
+        )}
         <button
           onClick={() => setActiveTab("security")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === "security" ? "border-blue-600 text-blue-700 bg-blue-50/50" : "border-transparent text-slate-500 hover:text-slate-700"}`}
