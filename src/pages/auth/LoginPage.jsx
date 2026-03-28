@@ -113,7 +113,7 @@ const LoginPage = ({ onLogin }) => {
         const lastVerified = sessions[user.email];
         const within24h = lastVerified && Date.now() - lastVerified < 24 * 60 * 60 * 1000;
 
-        if (isOtpEnabled && !within24h) {
+        if (isOtpEnabled && !within24h && user.role !== 'ADMIN') {
           setPendingAuth({ token: data.data.token, user });
           setOtpDigits(["", "", "", "", "", ""]);
           setOtpError(null);
