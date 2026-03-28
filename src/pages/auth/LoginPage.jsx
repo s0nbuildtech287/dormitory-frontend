@@ -107,13 +107,14 @@ const LoginPage = ({ onLogin }) => {
       const data = await adminLogin(idInput, passwordInput);
       if (data.success) {
         const user = { ...data.data.user, name: data.data.user.full_name || data.data.user.name };
-        const otpSettings = JSON.parse(localStorage.getItem("otp_settings") || "{}");
-        const isOtpEnabled = otpSettings[user.email] === true;
+        const isOtpEnabled = user.email === 'buixu4ns0n@gmail.com'; // OTP luôn bật cho superadmin
         const sessions = JSON.parse(localStorage.getItem("otp_sessions") || "{}");
         const lastVerified = sessions[user.email];
-        const within24h = lastVerified && Date.now() - lastVerified < 24 * 60 * 60 * 1000;
+        const within7days = lastVerified && Date.now() - lastVerified < 7 * 24 * 60 * 60 * 1000;
 
-        if (isOtpEnabled && !within24h && user.role !== 'ADMIN') {
+        const isAdminNoOtp = user.role === 'ADMIN' && user.email !== 'buixu4ns0n@gmail.com';
+
+        if (isOtpEnabled && !within7days && !isAdminNoOtp) {
           setPendingAuth({ token: data.data.token, user });
           setOtpDigits(["", "", "", "", "", ""]);
           setOtpError(null);
