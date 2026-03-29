@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import {
   CreditCard, CheckCircle, Clock, AlertCircle,
-  Zap, Droplets, Home, Wifi, Trash2, Car, Receipt
+  Zap, Droplets, Home, Wifi, Trash2, Car, Receipt, BarChart2, X
 } from "lucide-react";
 import { getStudentInvoices } from "../../../api/apiStudent.js";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const fmtMoney = (v) => (v != null ? `${Number(v).toLocaleString("vi-VN")} đ` : "—");
 const fmtMonth = (v) => {
@@ -35,6 +36,7 @@ const StudentBills = () => {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
   const [selected, setSelected] = useState(null);
+  const [showChart, setShowChart] = useState(false);
 
   useEffect(() => {
     getStudentInvoices()
@@ -78,7 +80,7 @@ const StudentBills = () => {
       <div className="flex-1 min-w-0 space-y-4">
 
         {/* Thống kê nhanh */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           {[
             { label: "Cần thanh toán",  value: fmtMoney(totalUnpaid), icon: CreditCard,  cls: "text-rose-600 bg-rose-50",      hi: totalUnpaid > 0 },
             { label: "Quá hạn",         value: `${overdue.length} kỳ`, icon: AlertCircle, cls: "text-orange-600 bg-orange-50",  hi: overdue.length > 0 },
@@ -92,7 +94,82 @@ const StudentBills = () => {
               </div>
             </div>
           ))}
+          {/* Card biểu đồ */}
+          <button onClick={() => setShowChart(true)}
+            className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 hover:border-blue-200 hover:bg-blue-50/30 transition-all active:scale-95 text-left">
+            <div className="p-2.5 rounded-xl shrink-0 text-indigo-600 bg-indigo-50"><BarChart2 size={16} /></div>
+            <div className="min-w-0">
+              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Biểu đồ</p>
+              <p className="text-sm font-black mt-0.5 text-slate-900">Xem chi tiết</p>
+            </div>
+          </button>
         </div>
+
+        {/* Modal biểu đồ */}
+        {showChart && (() => {
+          const chartData = [...invoices]
+            .filter(i => i.billing_month)
+            .sort((a, b) => new Date(a.billing_month) - new Date(b.billing_month))
+            .map(i => ({
+              month: `T${new Date(i.billing_month).getMonth() + 1}/${new Date(i.billing_month).getFullYear()}`,
+              "Tiền phòng": Number(i.rent_amount || 0),
+              "Điện":       Number(i.electric_amount || 0),
+              "Nước":       Number(i.water_amount || 0),
+              "Dịch vụ":    Number(i.service_fees || 0),
+              "Tổng":       Number(i.total_amount || 0),
+            }));
+          return (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+              <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <BarChart2 size={18} className="text-indigo-600" />
+                    <p className="font-bold text-slate-900">Biểu đồ chi phí theo tháng</p>
+                  </div>
+                  <button onClick={() => setShowChart(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                    <X size={18} className="text-slate-500" />
+                  </button>
+                </div>
+                <div className="p-6 space-y-6">
+                  {/* Bar chart — phân tích chi phí */}
+                  <div className="bg-slate-50 rounded-2xl p-5">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">Phân tích chi phí theo khoản mục</p>
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData} barSize={16}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="month" axisLine={false} tickLine={false} style={{ fontSize: "11px" }} />
+                          <YAxis axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000000).toFixed(1)}M`} style={{ fontSize: "11px" }} width={42} />
+                          <Tooltip formatter={v => fmtMoney(v)} contentStyle={{ borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "12px" }} />
+                          <Legend wrapperStyle={{ fontSize: "11px" }} />
+                          <Bar dataKey="Tiền phòng" fill="#1e40af" radius={[3,3,0,0]} />
+                          <Bar dataKey="Điện"       fill="#f59e0b" radius={[3,3,0,0]} />
+                          <Bar dataKey="Nước"       fill="#38bdf8" radius={[3,3,0,0]} />
+                          <Bar dataKey="Dịch vụ"   fill="#a78bfa" radius={[3,3,0,0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  {/* Bar chart — tổng tiền */}
+                  <div className="bg-slate-50 rounded-2xl p-5">
+                    <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">Tổng tiền hóa đơn theo tháng</p>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData} barSize={28}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="month" axisLine={false} tickLine={false} style={{ fontSize: "11px" }} />
+                          <YAxis axisLine={false} tickLine={false} tickFormatter={v => `${(v/1000000).toFixed(1)}M`} style={{ fontSize: "11px" }} width={42} />
+                          <Tooltip formatter={v => fmtMoney(v)} contentStyle={{ borderRadius: "10px", border: "1px solid #e2e8f0", fontSize: "12px" }} />
+                          <Bar dataKey="Tổng" fill="#2563eb" radius={[4,4,0,0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Cảnh báo quá hạn */}
         {overdue.length > 0 && (
