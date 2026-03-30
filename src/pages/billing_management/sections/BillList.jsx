@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle, Ban } from "lucide-react";
+import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle, Ban, Square, CheckSquare } from "lucide-react";
 import { getInvoices, deleteInvoice } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
 import { usePagination } from "../../../hooks/usePagination.js";
@@ -29,6 +29,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   const [hidePastPaid, setHidePastPaid] = useState(true);
   
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [bulkDeleteInvoices, setBulkDeleteInvoices] = useState([]);
 
   // Fetch invoices from API
   useEffect(() => {
@@ -309,18 +310,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
                   : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <Send size={13} /> {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
+              {showCheckboxColumn ? <CheckSquare size={13} /> : <Square size={13} />} {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
             </button>
-            
-            {/* Bulk Email Button */}
-            {showCheckboxColumn && selectedInvoices.size > 0 && (
-              <button
-                onClick={handleBulkEmail}
-                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
-              >
-                <Send size={13} /> Gửi email ({selectedInvoices.size})
-              </button>
-            )}
           </div>
         </div>
         <DataTable
@@ -429,12 +420,22 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
                   <button className="p-1.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors" title="In hóa đơn">
                     <Printer size={15} />
                   </button>
-                  <button className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Gửi nhắc nhở">
+                  <button
+                    onClick={() => {
+                      if (showCheckboxColumn && selectedInvoices.size > 0) {
+                        setShowBulkEmailModal(true);
+                      }
+                    }}
+                    className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    title={showCheckboxColumn && selectedInvoices.size > 0 ? "Gửi nhắc nhở hàng loạt" : "Gửi nhắc nhở"}
+                  >
                     <Send size={15} />
                   </button>
                   <button
                     onClick={() => {
-                      if (bill.status === "Chưa thanh toán" || bill.status === "Quá hạn") {
+                      if (showCheckboxColumn && selectedInvoices.size > 0) {
+                        setBulkDeleteInvoices([...selectedInvoices]);
+                      } else if (bill.status === "Chưa thanh toán" || bill.status === "Quá hạn") {
                         setDeleteWarning(bill);
                       } else {
                         setDeleteError("");
@@ -442,7 +443,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
                       }
                     }}
                     className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Xóa hóa đơn"
+                    title={showCheckboxColumn && selectedInvoices.size > 0 ? "Xóa hàng loạt" : "Xóa hóa đơn"}
                   >
                     <Trash2 size={15} />
                   </button>
@@ -626,6 +627,37 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
         <p className="text-sm text-slate-500 mt-2">
           Bạn sẽ được chuyển đến trang soạn thảo thông báo để hoàn tất nội dung email.
         </p>
+      </ConfirmModal>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={bulkDeleteInvoices.length > 0}
+        onClose={() => setBulkDeleteInvoices([])}
+        onConfirm={async () => {
+          try {
+            setDeleteLoading(true);
+            await Promise.all(bulkDeleteInvoices.map(id => deleteInvoice(id)));
+            setBulkDeleteInvoices([]);
+            clearSelection();
+            fetchInvoices();
+          } catch (err) {
+            setDeleteError(err.message || "Xóa hàng loạt thất bại");
+          } finally {
+            setDeleteLoading(false);
+          }
+        }}
+        title="Xóa hàng loạt hóa đơn?"
+        confirmText="Xóa tất cả"
+        icon={Trash2}
+        iconBgColor="bg-red-50"
+        iconColor="text-red-500"
+        confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
+        isLoading={deleteLoading}
+      >
+        <p className="text-sm text-slate-600">
+          Số hóa đơn sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteInvoices.length}</span>
+        </p>
+        <p className="text-xs text-slate-500 mt-1">Chỉ xóa được hóa đơn đã thanh toán. Hóa đơn chưa thanh toán sẽ bị bỏ qua.</p>
       </ConfirmModal>
     </div>
   );

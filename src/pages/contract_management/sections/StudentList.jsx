@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send } from "lucide-react";
+import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -37,6 +37,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const markEmailSent = (id) => setEmailSentSet((prev) => new Set([...prev, id]));
 
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [bulkDeleteContracts, setBulkDeleteContracts] = useState([]);
 
   const filtered = contracts.filter((c) => {
     const q = searchTerm.toLowerCase();
@@ -213,18 +214,8 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <Send size={13} /> {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
+              {showCheckboxColumn ? <CheckSquare size={13} /> : <Square size={13} />} {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
             </button>
-            
-            {/* Bulk Email Button */}
-            {showCheckboxColumn && selectedContracts.size > 0 && (
-              <button
-                onClick={handleBulkEmail}
-                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
-              >
-                <Send size={13} /> Gửi email ({selectedContracts.size})
-              </button>
-            )}
           </div>
         </div>
         <DataTable
@@ -323,14 +314,28 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                     </button>
                     <button
                       onClick={() => {
-                        if (!emailSent) markEmailSent(c.id);
+                        if (showCheckboxColumn && selectedContracts.size > 0) {
+                          setShowBulkEmailModal(true);
+                        } else if (!emailSent) {
+                          markEmailSent(c.id);
+                        }
                       }}
                       className={`p-1.5 rounded-lg transition-colors ${emailSent ? "text-slate-800 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
-                      title={emailSent ? `Đã gửi email${c.email_sent_at ? " " + new Date(c.email_sent_at).toLocaleDateString("vi-VN") : ""}` : "Gửi email thông báo"}
+                      title={showCheckboxColumn && selectedContracts.size > 0 ? "Gửi email hàng loạt" : emailSent ? `Đã gửi email${c.email_sent_at ? " " + new Date(c.email_sent_at).toLocaleDateString("vi-VN") : ""}` : "Gửi email thông báo"}
                     >
                       <Send size={15} />
                     </button>
-                    <button onClick={() => onDeleteContract(c.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Xóa hợp đồng">
+                    <button
+                      onClick={() => {
+                        if (showCheckboxColumn && selectedContracts.size > 0) {
+                          setBulkDeleteContracts([...selectedContracts]);
+                        } else {
+                          onDeleteContract(c.id);
+                        }
+                      }}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title={showCheckboxColumn && selectedContracts.size > 0 ? "Xóa hàng loạt" : "Xóa hợp đồng"}
+                    >
                       <Trash2 size={15} />
                     </button>
                   </div>
@@ -379,6 +384,27 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                 .filter(Boolean)
             )].length} email
           </span>
+        </p>
+      </ConfirmModal>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={bulkDeleteContracts.length > 0}
+        onClose={() => setBulkDeleteContracts([])}
+        onConfirm={() => {
+          bulkDeleteContracts.forEach(id => onDeleteContract(id));
+          setBulkDeleteContracts([]);
+          clearSelection();
+        }}
+        title="Xóa hàng loạt hợp đồng?"
+        confirmText="Xóa tất cả"
+        icon={Trash2}
+        iconBgColor="bg-red-50"
+        iconColor="text-red-600"
+        confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
+      >
+        <p className="text-sm text-slate-600">
+          Số hợp đồng sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteContracts.length}</span>
         </p>
       </ConfirmModal>
     </div>

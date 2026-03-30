@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send } from "lucide-react";
+import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -33,6 +33,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [chartLoading, setChartLoading] = useState(false);
   const [hoveredBar, setHoveredBar] = useState(null);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [bulkDeleteRooms, setBulkDeleteRooms] = useState([]);
 
   const handleShowInvoice = async (room) => {
     try {
@@ -300,18 +301,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                   : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <Send size={13} /> {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
+              {showCheckboxColumn ? <CheckSquare size={13} /> : <Square size={13} />} {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
             </button>
-            
-            {/* Bulk Email Button */}
-            {showCheckboxColumn && selectedRooms.size > 0 && (
-              <button
-                onClick={handleBulkEmail}
-                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
-              >
-                <Send size={13} /> Gửi email ({selectedRooms.size})
-              </button>
-            )}
           </div>
         </div>
         <DataTable
@@ -425,19 +416,29 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                     <Eye size={16} />
                   </button>
                   <button
-                    onClick={() => alert(`Đã mô phỏng gửi email nhắc nhở cho tất cả sinh viên phòng ${room.room_number}`)}
+                    onClick={() => {
+                      if (showCheckboxColumn && selectedRooms.size > 0) {
+                        setShowBulkEmailModal(true);
+                      } else {
+                        alert(`Đã mô phỏng gửi email nhắc nhở cho tất cả sinh viên phòng ${room.room_number}`);
+                      }
+                    }}
                     className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                    title="Gửi email nhắc nhở"
+                    title={showCheckboxColumn && selectedRooms.size > 0 ? "Gửi email hàng loạt" : "Gửi email nhắc nhở"}
                   >
                     <Send size={16} />
                   </button>
                   <button
                     onClick={() => {
-                      setDeleteError("");
-                      setRoomToDelete(room);
+                      if (showCheckboxColumn && selectedRooms.size > 0) {
+                        setBulkDeleteRooms([...selectedRooms]);
+                      } else {
+                        setDeleteError("");
+                        setRoomToDelete(room);
+                      }
                     }}
                     className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Xóa phòng"
+                    title={showCheckboxColumn && selectedRooms.size > 0 ? "Xóa hàng loạt" : "Xóa phòng"}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -819,6 +820,36 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {deleteError}
           </p>
         )}
+      </ConfirmModal>
+
+      {/* Bulk Delete Rooms Confirmation Modal */}
+      <ConfirmModal
+        isOpen={bulkDeleteRooms.length > 0}
+        onClose={() => setBulkDeleteRooms([])}
+        onConfirm={async () => {
+          try {
+            setDeleteLoading(true);
+            await Promise.all(bulkDeleteRooms.map(id => deleteRoom(id)));
+            setBulkDeleteRooms([]);
+            clearSelection();
+            onRefresh();
+          } catch (err) {
+            setDeleteError(err.message || "Xóa hàng loạt thất bại");
+          } finally {
+            setDeleteLoading(false);
+          }
+        }}
+        title="Xóa hàng loạt phòng?"
+        confirmText="Xóa tất cả"
+        icon={Trash2}
+        iconBgColor="bg-red-50"
+        iconColor="text-red-600"
+        confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
+        isLoading={deleteLoading}
+      >
+        <p className="text-sm text-slate-600">
+          Số phòng sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteRooms.length}</span>
+        </p>
       </ConfirmModal>
     </div>
   );

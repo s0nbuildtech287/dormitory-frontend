@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send } from "lucide-react";
+import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -77,6 +77,7 @@ const RegistrationList = ({
   const [filterGroup, setFilterGroup] = useState("All");
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
   const [isConfirming, setIsConfirming] = useState(null);
+  const [bulkAction, setBulkAction] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
@@ -335,18 +336,8 @@ const RegistrationList = ({
                   : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <Send size={13} /> {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
+              {showCheckboxColumn ? <CheckSquare size={13} /> : <Square size={13} />} {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
             </button>
-            
-            {/* Bulk Email Button */}
-            {showCheckboxColumn && selectedRegs.size > 0 && (
-              <button
-                onClick={handleBulkEmail}
-                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
-              >
-                <Send size={13} /> Gửi email ({selectedRegs.size})
-              </button>
-            )}
           </div>
         </div>
         <DataTable
@@ -430,23 +421,41 @@ const RegistrationList = ({
                     <Eye size={16} />
                   </button>
                   <button
-                    onClick={() => alert(`Đã mô phỏng gửi email thông báo cho tài khoản ${reg.student_id}`)}
+                    onClick={() => {
+                      if (showCheckboxColumn && selectedRegs.size > 0) {
+                        setShowBulkEmailModal(true);
+                      } else {
+                        alert(`Đã mô phỏng gửi email thông báo cho tài khoản ${reg.student_id}`);
+                      }
+                    }}
                     className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                    title="Gửi email thông báo"
+                    title={showCheckboxColumn && selectedRegs.size > 0 ? "Gửi email hàng loạt" : "Gửi email thông báo"}
                   >
                     <Send size={16} />
                   </button>
                   <button
-                    onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.APPROVED })}
+                    onClick={() => {
+                      if (showCheckboxColumn && selectedRegs.size > 0) {
+                        setBulkAction({ status: RegistrationStatus.APPROVED, ids: [...selectedRegs] });
+                      } else {
+                        setIsConfirming({ id: reg.id, status: RegistrationStatus.APPROVED });
+                      }
+                    }}
                     className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                    title="Phê duyệt"
+                    title={showCheckboxColumn && selectedRegs.size > 0 ? "Duyệt hàng loạt" : "Phê duyệt"}
                   >
                     <CheckCircle2 size={16} />
                   </button>
                   <button
-                    onClick={() => setIsConfirming({ id: reg.id, status: RegistrationStatus.REJECTED })}
+                    onClick={() => {
+                      if (showCheckboxColumn && selectedRegs.size > 0) {
+                        setBulkAction({ status: RegistrationStatus.REJECTED, ids: [...selectedRegs] });
+                      } else {
+                        setIsConfirming({ id: reg.id, status: RegistrationStatus.REJECTED });
+                      }
+                    }}
                     className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                    title="Từ chối"
+                    title={showCheckboxColumn && selectedRegs.size > 0 ? "Từ chối hàng loạt" : "Từ chối"}
                   >
                     <XCircle size={16} />
                   </button>
@@ -812,6 +821,36 @@ const RegistrationList = ({
                 .filter(Boolean)
             )].length} email
           </span>
+        </p>
+      </ConfirmModal>
+      {/* BULK ACTION CONFIRMATION (approve/reject nhiều) */}
+      <ConfirmModal
+        isOpen={!!bulkAction}
+        onClose={() => setBulkAction(null)}
+        onConfirm={async () => {
+          if (!bulkAction) return;
+          try {
+            if (bulkAction.status === RegistrationStatus.APPROVED) {
+              await Promise.all(bulkAction.ids.map(id => approveRegistration(id)));
+            } else if (bulkAction.status === RegistrationStatus.REJECTED) {
+              await Promise.all(bulkAction.ids.map(id => rejectRegistration(id, "Từ chối từ admin")));
+            }
+            setBulkAction(null);
+            clearSelection();
+            if (onRefresh) onRefresh();
+          } catch (error) {
+            alert(error.message || "Có lỗi xảy ra");
+          }
+        }}
+        title={bulkAction?.status === RegistrationStatus.APPROVED ? "Duyệt hàng loạt?" : "Từ chối hàng loạt?"}
+        confirmText={bulkAction?.status === RegistrationStatus.APPROVED ? "Duyệt tất cả" : "Từ chối tất cả"}
+        icon={bulkAction?.status === RegistrationStatus.APPROVED ? CheckCircle2 : XCircle}
+        iconBgColor={bulkAction?.status === RegistrationStatus.APPROVED ? "bg-emerald-100" : "bg-rose-100"}
+        iconColor={bulkAction?.status === RegistrationStatus.APPROVED ? "text-emerald-600" : "text-rose-600"}
+        confirmColor={bulkAction?.status === RegistrationStatus.APPROVED ? "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-200" : "bg-rose-600 hover:bg-rose-700 focus:ring-rose-200"}
+      >
+        <p className="text-sm text-slate-600">
+          Số hồ sơ được chọn: <span className="font-bold text-slate-900">{bulkAction?.ids?.length}</span>
         </p>
       </ConfirmModal>
     </div>

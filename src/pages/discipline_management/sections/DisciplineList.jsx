@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ShieldAlert, Plus, Eye, CheckCircle, Clock, XCircle, FileWarning, Gavel, BadgeDollarSign, TrendingUp, Send, Trash2, History } from "lucide-react";
+import { ShieldAlert, Plus, Eye, CheckCircle, Clock, XCircle, FileWarning, Gavel, BadgeDollarSign, TrendingUp, Send, Trash2, History, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -205,24 +205,28 @@ const DisciplineList = () => {
           </button>
           <button
             onClick={() => {
-              setEmailSentSet((prev) => new Set([...prev, record.id]));
+              if (showCheckboxColumn && selectedRecords.size > 0) {
+                setShowBulkEmailModal(true);
+              } else {
+                setEmailSentSet((prev) => new Set([...prev, record.id]));
+              }
             }}
             className={`p-1.5 rounded-lg transition-colors ${emailSentSet.has(record.id) ? "text-slate-700 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
-            title={emailSentSet.has(record.id) ? "Đã gửi email" : "Gửi email"}
+            title={showCheckboxColumn && selectedRecords.size > 0 ? "Gửi email hàng loạt" : emailSentSet.has(record.id) ? "Đã gửi email" : "Gửi email"}
           >
             <Send size={15} />
           </button>
           <button
-            onClick={async () => {
-              try {
-                await updateDisciplinaryRecord(record.id, { status: "Đã hủy" });
-                fetchRecords();
-              } catch (err) {
-                console.error("Xóa phiếu thất bại:", err);
+            onClick={() => {
+              if (showCheckboxColumn && selectedRecords.size > 0) {
+                setDeleteError("");
+                setRecordsToDelete([...selectedRecords]);
+              } else {
+                setRecordToDelete(record);
               }
             }}
             className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            title="Xóa phiếu"
+            title={showCheckboxColumn && selectedRecords.size > 0 ? "Xóa hàng loạt" : "Xóa phiếu"}
           >
             <Trash2 size={15} />
           </button>
@@ -323,33 +327,14 @@ const DisciplineList = () => {
                 showCheckboxColumn ? "bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
               }`}
             >
-              <Send size={13} /> {showCheckboxColumn ? "Tắt chế độ chọn" : "Chọn nhiều"}
+              {showCheckboxColumn ? <CheckSquare size={13} /> : <Square size={13} />} {showCheckboxColumn ? "Tắt chế độ chọn" : "Chọn nhiều"}
             </button>
-            {showCheckboxColumn && selectedRecords.size > 0 && (
-              <button
-                onClick={() => setShowBulkEmailModal(true)}
-                className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-amber-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
-              >
-                <Send size={13} /> Gửi email ({selectedRecords.size})
-              </button>
-            )}
             <button
               onClick={() => setShowHistoryModal(true)}
               className="px-3 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
             >
               <History size={13} /> Lịch sử vi phạm
             </button>
-            {showCheckboxColumn && selectedRecords.size > 0 && (
-              <button
-                onClick={() => {
-                  setDeleteError("");
-                  setRecordsToDelete([...selectedRecords]);
-                }}
-                className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-red-200 transition-colors flex items-center gap-1.5 animate-in fade-in duration-200"
-              >
-                <Trash2 size={13} /> Xóa ({selectedRecords.size})
-              </button>
-            )}
           </div>
         </div>
 
