@@ -146,6 +146,14 @@ export const STUDENT_ROUTES = [
     icon: "MessageSquare",
     role: UserRole.STUDENT,
   },
+  {
+    id: "regulations",
+    label: "Nội quy",
+    path: "/regulations",
+    component: StudentDashboard,
+    icon: "BookOpen",
+    role: UserRole.STUDENT,
+  },
 ];
 
 /**
