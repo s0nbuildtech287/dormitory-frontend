@@ -46,3 +46,19 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Marquee animation for header — 1 đoạn duy nhất, chạy từ phải qua trái, dừng 3s rồi lặp */
+@keyframes marquee-single {
+  0%        { transform: translateX(50%); opacity: 0; }
+  5%        { transform: translateX(50%); opacity: 1; }
+  87%       { transform: translateX(-150%); opacity: 1; }
+  87.01%    { transform: translateX(-50%); opacity: 0; }
+  99.99%    { transform: translateX(50%); opacity: 0; }
+  100%      { transform: translateX(50%); opacity: 0; }
+}
+
+.animate-marquee-single {
+  animation: marquee-single 15s linear infinite;
+  display: inline-flex;
+  width: max-content;
+}

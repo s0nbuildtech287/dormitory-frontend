@@ -200,9 +200,16 @@ const Layout = ({ user, onLogout, children }) => {
       >
         {/* Header */}
         <header className="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-900 capitalize">
-            {activeItem?.label || ""}
-          </h2>
+          {/* Marquee text — chiếm phần giữa, không đè lên avatar/noti */}
+          <div className="flex-1 overflow-hidden mx-4">
+            <div className="flex items-center gap-3 animate-marquee-single whitespace-nowrap">
+              <img src={logoImg} alt="Logo" className="h-8 w-8 shrink-0" />
+              <span className="text-base font-bold text-slate-700">
+                Chào mừng đến trường Đại học Thủy Lợi - 175 Tây Sơn, Đống Đa, Hà Nội
+              </span>
+              <img src={logoImg} alt="Logo" className="h-8 w-8 shrink-0" />
+            </div>
+          </div>
           <div className="flex items-center space-x-4">
             {/* Notification Bell */}
             <div className="relative" ref={notificationsRef}>
