@@ -134,3 +134,15 @@ export const deleteContract = async (id) => {
   });
   return handleResponse(response);
 };
+
+/**
+ * Revert contract: xóa hợp đồng, trả hồ sơ về "Chờ duyệt"
+ * Chỉ cho phép khi Pending + chưa cọc + chưa bản cứng
+ */
+export const revertContract = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/${id}/revert`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};

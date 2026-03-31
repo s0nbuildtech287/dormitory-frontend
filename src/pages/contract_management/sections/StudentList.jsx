@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare } from "lucide-react";
+import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare, RotateCcw } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -7,6 +7,7 @@ import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
+import { revertContract } from "../../../api/apiContract.js";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -40,6 +41,8 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkDeleteContracts, setBulkDeleteContracts] = useState([]);
   const [composeEmail, setComposeEmail] = useState(null);
+  const [revertTarget, setRevertTarget] = useState(null); // contract to revert
+  const [revertLoading, setRevertLoading] = useState(false);
 
   const filtered = contracts.filter((c) => {
     const q = searchTerm.toLowerCase();
@@ -308,11 +311,21 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
               accessor: (c) => {
                 const emailSent = emailSentSet.has(c.id) || !!c.email_sent_at;
                 const isPending = c.status === "Pending";
+                const canRevert = isPending && !c.deposit_paid && !c.hard_copy_received;
                 return (
                   <div className="flex items-center justify-center gap-1.5">
                     <button onClick={() => onViewDetail(c.id)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title={isPending ? "Gán phòng" : "Xem chi tiết"}>
                       <Eye size={15} />
                     </button>
+                    {canRevert && (
+                      <button
+                        onClick={() => setRevertTarget(c)}
+                        className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="Hoàn tác – trả hồ sơ về danh sách đăng ký"
+                      >
+                        <RotateCcw size={15} />
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         if (showCheckboxColumn && selectedContracts.size > 0) {
@@ -411,6 +424,37 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
         <p className="text-sm text-slate-600">
           Số hợp đồng sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteContracts.length}</span>
         </p>
+      </ConfirmModal>
+
+      {/* Revert Contract Modal */}
+      <ConfirmModal
+        isOpen={!!revertTarget}
+        onClose={() => setRevertTarget(null)}
+        onConfirm={async () => {
+          if (!revertTarget) return;
+          setRevertLoading(true);
+          try {
+            await revertContract(revertTarget.id);
+            setRevertTarget(null);
+            if (onRefresh) onRefresh();
+          } catch (err) {
+            alert(err.message || "Hoàn tác thất bại");
+          } finally {
+            setRevertLoading(false);
+          }
+        }}
+        title="Hoàn tác hợp đồng?"
+        confirmText="Hoàn tác"
+        icon={RotateCcw}
+        iconBgColor="bg-amber-50"
+        iconColor="text-amber-600"
+        confirmColor="bg-amber-600 hover:bg-amber-700 focus:ring-amber-200"
+        isLoading={revertLoading}
+      >
+        <p className="text-sm text-slate-600">
+          Hợp đồng của <span className="font-bold text-slate-900">{revertTarget?.student_name}</span> sẽ bị xóa và hồ sơ đăng ký sẽ trở về trạng thái <span className="font-bold text-amber-700">Chờ duyệt</span>.
+        </p>
+        <p className="text-xs text-slate-400 mt-1">Tài khoản sinh viên cũng sẽ bị xóa. Hành động này không thể hoàn tác.</p>
       </ConfirmModal>
 
       <EmailComposeModal
