@@ -6,6 +6,7 @@ import {
   Activity,
   DollarSign,
   MessageSquare,
+  History,
 } from "lucide-react";
 import DashboardHome from "./sections/DashboardHome.jsx";
 import RegistrationStatistics from "../registration_management/sections/RegistrationStatistics.jsx";
@@ -89,6 +90,7 @@ const AdminDashboard = () => {
         >
           <Home size={18} /> Trang chủ
         </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0" />
         <button
           onClick={() => setActiveSubTab("registration-stats")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
@@ -99,6 +101,7 @@ const AdminDashboard = () => {
         >
           <BarChart3 size={18} /> Thống kê & Phân tích
         </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0" />
         <button
           onClick={() => setActiveSubTab("room-stats")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
@@ -109,6 +112,7 @@ const AdminDashboard = () => {
         >
           <PieChart size={18} /> Thống kê mật độ
         </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0" />
         <button
           onClick={() => setActiveSubTab("contract-stats")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
@@ -119,6 +123,7 @@ const AdminDashboard = () => {
         >
           <Activity size={18} /> Thống kê hợp đồng
         </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0" />
         <button
           onClick={() => setActiveSubTab("invoice-stats")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
@@ -129,6 +134,7 @@ const AdminDashboard = () => {
         >
           <DollarSign size={18} /> Thống kê hóa đơn
         </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0" />
         <button
           onClick={() => setActiveSubTab("feedback-stats")}
           className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
@@ -138,6 +144,17 @@ const AdminDashboard = () => {
           }`}
         >
           <MessageSquare size={18} /> Thống kê phản ánh
+        </button>
+        <span className="w-px h-5 bg-slate-200 shrink-0" />
+        <button
+          onClick={() => setActiveSubTab("activity-log")}
+          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
+            activeSubTab === "activity-log"
+              ? "border-blue-600 text-blue-700 bg-blue-50/50"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <History size={18} /> Lịch sử hoạt động
         </button>
       </div>
 
@@ -156,6 +173,15 @@ const AdminDashboard = () => {
           {activeSubTab === "contract-stats" && <ContractStatistics contracts={contracts} />}
           {activeSubTab === "invoice-stats" && <InvoiceStatistics bills={bills} />}
           {activeSubTab === "feedback-stats" && <FeedbackStatistics feedbacks={feedbacks} />}
+          {activeSubTab === "activity-log" && (
+            <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-400">
+              <div className="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center">
+                <History size={36} className="text-slate-300" />
+              </div>
+              <p className="text-lg font-bold text-slate-500">Lịch sử hoạt động</p>
+              <p className="text-sm text-slate-400">Chức năng đang phát triển</p>
+            </div>
+          )}
         </>
       )}
     </div>
