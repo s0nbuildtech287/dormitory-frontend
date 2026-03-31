@@ -60,12 +60,12 @@ const StatCard = ({
     return (
       <div
         onClick={onClick}
-        className={`bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm transition-all group ${
+        className={`bg-white p-4 md:p-6 rounded-2xl border-2 border-slate-200 shadow-sm transition-all group ${
           isClickable ? "hover:shadow-lg hover:border-slate-300 cursor-pointer" : ""
         }`}
       >
-        <div className="flex items-start justify-between mb-4">
-          <div className={`w-14 h-14 rounded-xl flex items-center justify-center border-2 ${colorClasses[color] || 'bg-slate-50 text-slate-600 border-slate-100'} transition-all`}>
+        <div className="flex items-start justify-between mb-3 md:mb-4">
+          <div className={`w-11 h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center border-2 ${colorClasses[color] || 'bg-slate-50 text-slate-600 border-slate-100'} transition-all`}>
             {renderIcon()}
           </div>
           {alert && (
@@ -74,13 +74,13 @@ const StatCard = ({
             </div>
           )}
         </div>
-        <h3 className="text-sm font-semibold text-slate-500 mb-2">{displayTitle}</h3>
-        <p className="text-3xl font-bold text-slate-900 mb-2">{value}</p>
-        <p className="text-sm text-slate-600">{displaySubtitle}</p>
+        <h3 className="text-xs md:text-sm font-semibold text-slate-500 mb-1 md:mb-2">{displayTitle}</h3>
+        <p className="text-xl md:text-3xl font-bold text-slate-900 mb-1 md:mb-2">{value}</p>
+        <p className="text-xs md:text-sm text-slate-600">{displaySubtitle}</p>
         {isClickable && (
-          <div className="mt-4 flex items-center text-sm font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">
+          <div className="mt-3 md:mt-4 flex items-center text-xs md:text-sm font-semibold text-slate-400 group-hover:text-slate-600 transition-colors">
             Xem chi tiết
-            <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
           </div>
         )}
       </div>

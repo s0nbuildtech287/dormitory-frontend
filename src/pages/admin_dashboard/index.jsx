@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Home,
   BarChart3,
@@ -77,113 +77,61 @@ const AdminDashboard = () => {
   }, [activeSubTab]);
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Tabs Navigation */}
-      <div className="flex items-center space-x-1 border-b border-slate-200 overflow-x-auto scrollbar-hide">
-        <button
-          onClick={() => setActiveSubTab("home")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "home"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <Home size={18} /> Trang chủ
-        </button>
-        <span className="w-px h-5 bg-slate-200 shrink-0" />
-        <button
-          onClick={() => setActiveSubTab("registration-stats")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "registration-stats"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <BarChart3 size={18} /> Thống kê & Phân tích
-        </button>
-        <span className="w-px h-5 bg-slate-200 shrink-0" />
-        <button
-          onClick={() => setActiveSubTab("room-stats")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "room-stats"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <PieChart size={18} /> Thống kê mật độ
-        </button>
-        <span className="w-px h-5 bg-slate-200 shrink-0" />
-        <button
-          onClick={() => setActiveSubTab("contract-stats")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "contract-stats"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <Activity size={18} /> Thống kê hợp đồng
-        </button>
-        <span className="w-px h-5 bg-slate-200 shrink-0" />
-        <button
-          onClick={() => setActiveSubTab("invoice-stats")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "invoice-stats"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <DollarSign size={18} /> Thống kê hóa đơn
-        </button>
-        <span className="w-px h-5 bg-slate-200 shrink-0" />
-        <button
-          onClick={() => setActiveSubTab("feedback-stats")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "feedback-stats"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <MessageSquare size={18} /> Thống kê phản ánh
-        </button>
-        <span className="w-px h-5 bg-slate-200 shrink-0" />
-        <button
-          onClick={() => setActiveSubTab("activity-log")}
-          className={`px-6 py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap flex items-center gap-2 ${
-            activeSubTab === "activity-log"
-              ? "border-blue-600 text-blue-700 bg-blue-50/50"
-              : "border-transparent text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          <History size={18} /> Lịch sử hoạt động
-        </button>
+      <div className="flex items-center bg-white border border-slate-200 rounded-2xl overflow-x-auto scrollbar-hide mb-6 px-2 shadow-sm">
+        {[
+          { id: "home", icon: <Home size={16} />, label: "Trang chủ" },
+          { id: "registration-stats", icon: <BarChart3 size={16} />, label: "TK & Phân tích" },
+          { id: "room-stats", icon: <PieChart size={16} />, label: "TK mật độ" },
+          { id: "contract-stats", icon: <Activity size={16} />, label: "TK hợp đồng" },
+          { id: "invoice-stats", icon: <DollarSign size={16} />, label: "TK hóa đơn" },
+          { id: "feedback-stats", icon: <MessageSquare size={16} />, label: "TK phản ánh" },
+          { id: "activity-log", icon: <History size={16} />, label: "Lịch sử HĐ" },
+        ].map((tab, idx, arr) => (
+          <React.Fragment key={tab.id}>
+            <button
+              onClick={() => setActiveSubTab(tab.id)}
+              className={`px-3 xl:px-5 py-3 text-xs xl:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 rounded-xl my-1 ${
+                activeSubTab === tab.id
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </button>
+          </React.Fragment>
+        ))}
       </div>
 
       {/* Tab Content */}
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-        </div>
-      )}
-      
-      {!loading && (
-        <>
-          {activeSubTab === "home" && <DashboardHome />}
-          {activeSubTab === "registration-stats" && <RegistrationStatistics regs={registrations} />}
-          {activeSubTab === "room-stats" && <RoomAnalytics rooms={rooms} />}
-          {activeSubTab === "contract-stats" && <ContractStatistics contracts={contracts} />}
-          {activeSubTab === "invoice-stats" && <InvoiceStatistics bills={bills} />}
-          {activeSubTab === "feedback-stats" && <FeedbackStatistics feedbacks={feedbacks} />}
-          {activeSubTab === "activity-log" && (
-            <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-400">
-              <div className="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center">
-                <History size={36} className="text-slate-300" />
+      <div className="space-y-6">
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+          </div>
+        )}
+        {!loading && (
+          <>
+            {activeSubTab === "home" && <DashboardHome />}
+            {activeSubTab === "registration-stats" && <RegistrationStatistics regs={registrations} />}
+            {activeSubTab === "room-stats" && <RoomAnalytics rooms={rooms} />}
+            {activeSubTab === "contract-stats" && <ContractStatistics contracts={contracts} />}
+            {activeSubTab === "invoice-stats" && <InvoiceStatistics bills={bills} />}
+            {activeSubTab === "feedback-stats" && <FeedbackStatistics feedbacks={feedbacks} />}
+            {activeSubTab === "activity-log" && (
+              <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-400">
+                <div className="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center">
+                  <History size={36} className="text-slate-300" />
+                </div>
+                <p className="text-lg font-bold text-slate-500">Lịch sử hoạt động</p>
+                <p className="text-sm text-slate-400">Chức năng đang phát triển</p>
               </div>
-              <p className="text-lg font-bold text-slate-500">Lịch sử hoạt động</p>
-              <p className="text-sm text-slate-400">Chức năng đang phát triển</p>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

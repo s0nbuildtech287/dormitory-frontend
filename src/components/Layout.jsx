@@ -327,7 +327,7 @@ const Layout = ({ user, onLogout, children }) => {
         </header>
 
         {/* Page Content */}
-        <div className="p-8 max-w-[1400px] mx-auto">
+        <div className="p-4 md:p-6 xl:p-8 w-full">
           {children}
         </div>
       </main>
