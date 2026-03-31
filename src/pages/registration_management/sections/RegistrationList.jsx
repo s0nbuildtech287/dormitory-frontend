@@ -9,6 +9,7 @@ import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
+import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration } from "../../../api/apiRegistration.js";
 
 // Helper function to determine priority group
@@ -81,6 +82,7 @@ const RegistrationList = ({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
+  const [composeEmail, setComposeEmail] = useState(null); // { to, subject, body, recipientCount }
 
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
@@ -199,12 +201,14 @@ const RegistrationList = ({
 
   const handleConfirmBulkEmail = () => {
     const selected = regs.filter(r => selectedRegs.has(r.id));
-    const emails = [...new Set(selected.map(r => r.student_email || r.email).filter(Boolean))];
-    
+    const emails = [...new Set(selected.map(r => r.email || r.student_email).filter(Boolean))];
     setShowBulkEmailModal(false);
-    clearSelection();
-    
-    alert(`Đã mô phỏng gửi email cho ${selected.length} hồ sơ.\nTổng số email: ${emails.length}\n${emails.join(', ')}`);
+    setComposeEmail({
+      to: emails,
+      subject: "",
+      body: "",
+      recipientCount: selected.length,
+    });
   };
 
   return (
@@ -425,7 +429,12 @@ const RegistrationList = ({
                       if (showCheckboxColumn && selectedRegs.size > 0) {
                         setShowBulkEmailModal(true);
                       } else {
-                        alert(`Đã mô phỏng gửi email thông báo cho tài khoản ${reg.student_id}`);
+                        setComposeEmail({
+                          to: reg.email || reg.student_email || "",
+                          subject: "",
+                          body: "",
+                          recipientCount: 1,
+                        });
                       }
                     }}
                     className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -853,6 +862,18 @@ const RegistrationList = ({
           Số hồ sơ được chọn: <span className="font-bold text-slate-900">{bulkAction?.ids?.length}</span>
         </p>
       </ConfirmModal>
+
+      <EmailComposeModal
+        isOpen={!!composeEmail}
+        onClose={() => { setComposeEmail(null); clearSelection(); }}
+        defaultTo={composeEmail?.to}
+        defaultSubject={composeEmail?.subject}
+        defaultBody={composeEmail?.body}
+        recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        onSend={({ to, subject, body }) => {
+          console.log("Gửi email:", { to, subject, body });
+        }}
+      />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import Pagination from "../../../components/common/Pagination.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import { createDisciplinaryRecord, deleteDisciplinaryRecord, getDisciplinaryRecords, updateDisciplinaryRecord } from "../../../api/apiDiscipline.js";
 import { getContracts } from "../../../api/apiContract.js";
 
@@ -95,6 +96,7 @@ const DisciplineList = () => {
   const [recordsToDelete, setRecordsToDelete] = useState([]);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [composeEmail, setComposeEmail] = useState(null);
 
   const fetchRecords = useCallback(async () => {
     try {
@@ -208,7 +210,11 @@ const DisciplineList = () => {
               if (showCheckboxColumn && selectedRecords.size > 0) {
                 setShowBulkEmailModal(true);
               } else {
-                setEmailSentSet((prev) => new Set([...prev, record.id]));
+                setComposeEmail({
+                  to: record.student_email || "",
+                  subject: "",
+                  body: "",
+                });
               }
             }}
             className={`p-1.5 rounded-lg transition-colors ${emailSentSet.has(record.id) ? "text-slate-700 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
@@ -385,12 +391,20 @@ const DisciplineList = () => {
         isOpen={showBulkEmailModal}
         onClose={() => setShowBulkEmailModal(false)}
         onConfirm={() => {
+          const emails = [...selectedRecords].map(id => {
+            const r = records.find(rec => rec.id === id);
+            return r?.student_email;
+          }).filter(Boolean);
           setShowBulkEmailModal(false);
-          clearSelection();
-          alert(`Đã mô phỏng gửi email cho ${selectedRecords.size} phiếu.`);
+          setComposeEmail({
+            to: [...new Set(emails)],
+            subject: "",
+            body: "",
+            recipientCount: selectedRecords.size,
+          });
         }}
         title="Xác nhận gửi email hàng loạt"
-        confirmText="Gửi email"
+        confirmText="Tiếp tục"
         icon={Send}
         iconBgColor="bg-amber-50"
         iconColor="text-amber-600"
@@ -469,6 +483,18 @@ const DisciplineList = () => {
         {deleteError && <p className="text-xs text-rose-600 font-semibold mt-2">{deleteError}</p>}
       </ConfirmModal>
       {showHistoryModal && <HistoryModal records={records.filter((record) => record.status !== "Chờ xử lý")} onClose={() => setShowHistoryModal(false)} />}
+
+      <EmailComposeModal
+        isOpen={!!composeEmail}
+        onClose={() => { setComposeEmail(null); clearSelection(); }}
+        defaultTo={composeEmail?.to}
+        defaultSubject={composeEmail?.subject}
+        defaultBody={composeEmail?.body}
+        recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        onSend={({ to, subject, body }) => {
+          console.log("Gửi email:", { to, subject, body });
+        }}
+      />
     </div>
   );
 };

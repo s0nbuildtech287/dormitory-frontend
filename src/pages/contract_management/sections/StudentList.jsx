@@ -6,6 +6,7 @@ import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
+import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -38,6 +39,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkDeleteContracts, setBulkDeleteContracts] = useState([]);
+  const [composeEmail, setComposeEmail] = useState(null);
 
   const filtered = contracts.filter((c) => {
     const q = searchTerm.toLowerCase();
@@ -85,15 +87,14 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 
   const handleConfirmBulkEmail = () => {
     const selected = contracts.filter(c => selectedContracts.has(c.id));
-    const studentEmails = [...new Set(selected.map(c => c.student_email || c.email).filter(Boolean))];
-    
-    // Simulate sending email since we don't have backend integration here
-    selected.forEach(c => markEmailSent(c.id));
-    
+    const emails = [...new Set(selected.map(c => c.email || c.student_email).filter(Boolean))];
     setShowBulkEmailModal(false);
-    clearSelection();
-    
-    alert(`Đã mô phỏng gửi email cho ${selected.length} sinh viên.\nEmail: ${studentEmails.join(', ')}`);
+    setComposeEmail({
+      to: emails,
+      subject: "",
+      body: "",
+      recipientCount: selected.length,
+    });
   };
 
   const handleFilterChange = (setter, value) => {
@@ -316,8 +317,12 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                       onClick={() => {
                         if (showCheckboxColumn && selectedContracts.size > 0) {
                           setShowBulkEmailModal(true);
-                        } else if (!emailSent) {
-                          markEmailSent(c.id);
+                        } else {
+                          setComposeEmail({
+                            to: c.email || c.student_email || "",
+                            subject: "",
+                            body: "",
+                          });
                         }
                       }}
                       className={`p-1.5 rounded-lg transition-colors ${emailSent ? "text-slate-800 hover:bg-slate-100" : "text-blue-500 hover:bg-blue-50"}`}
@@ -407,6 +412,18 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           Số hợp đồng sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteContracts.length}</span>
         </p>
       </ConfirmModal>
+
+      <EmailComposeModal
+        isOpen={!!composeEmail}
+        onClose={() => { setComposeEmail(null); clearSelection(); }}
+        defaultTo={composeEmail?.to}
+        defaultSubject={composeEmail?.subject}
+        defaultBody={composeEmail?.body}
+        recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        onSend={({ to, subject, body }) => {
+          console.log("Gửi email:", { to, subject, body });
+        }}
+      />
     </div>
   );
 };

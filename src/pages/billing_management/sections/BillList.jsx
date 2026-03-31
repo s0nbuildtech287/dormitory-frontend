@@ -10,6 +10,7 @@ import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
+import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 
 const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter, onNavigateToNotification }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,6 +31,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkDeleteInvoices, setBulkDeleteInvoices] = useState([]);
+  const [composeEmail, setComposeEmail] = useState(null);
 
   // Fetch invoices from API
   useEffect(() => {
@@ -119,30 +121,19 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
 
   const handleConfirmBulkEmail = () => {
     const selectedBills = safeBills.filter(bill => selectedInvoices.has(bill.id));
-    const studentEmails = [...new Set(
+    const emails = [...new Set(
       selectedBills
         .map(bill => bill.student_emails)
         .filter(Boolean)
-        .flatMap(emails => emails.split(',').map(e => e.trim()))
+        .flatMap(e => e.split(',').map(x => x.trim()))
     )];
-    
     setShowBulkEmailModal(false);
-    clearSelection();
-    
-    console.log('Navigating to notification with:', { recipients: studentEmails, invoices: selectedBills });
-    
-    // Navigate to notification page with pre-filled data
-    if (onNavigateToNotification) {
-      onNavigateToNotification({
-        recipients: studentEmails,
-        subject: `Nhắc nhở thanh toán hóa đơn`,
-        invoices: selectedBills
-      });
-    } else {
-      // Fallback: show alert with email list
-      alert(`Chức năng chuyển đến trang thông báo chưa được kết nối.\n\nDanh sách email (${studentEmails.length}):\n${studentEmails.join('\n')}`);
-      console.warn('onNavigateToNotification prop is not provided');
-    }
+    setComposeEmail({
+      to: emails,
+      subject: "Nhắc nhở thanh toán hóa đơn",
+      body: "",
+      recipientCount: selectedBills.length,
+    });
   };
 
   // Ensure bills is always an array
@@ -424,6 +415,12 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
                     onClick={() => {
                       if (showCheckboxColumn && selectedInvoices.size > 0) {
                         setShowBulkEmailModal(true);
+                      } else {
+                        setComposeEmail({
+                          to: bill.student_emails?.split(',').map(e => e.trim()).filter(Boolean) || [],
+                          subject: `Nhắc nhở thanh toán hóa đơn ${bill.invoice_number || ""}`,
+                          body: "",
+                        });
                       }
                     }}
                     className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -659,6 +656,18 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
         </p>
         <p className="text-xs text-slate-500 mt-1">Chỉ xóa được hóa đơn đã thanh toán. Hóa đơn chưa thanh toán sẽ bị bỏ qua.</p>
       </ConfirmModal>
+
+      <EmailComposeModal
+        isOpen={!!composeEmail}
+        onClose={() => { setComposeEmail(null); clearSelection(); }}
+        defaultTo={composeEmail?.to}
+        defaultSubject={composeEmail?.subject}
+        defaultBody={composeEmail?.body}
+        recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        onSend={({ to, subject, body }) => {
+          console.log("Gửi email:", { to, subject, body });
+        }}
+      />
     </div>
   );
 };

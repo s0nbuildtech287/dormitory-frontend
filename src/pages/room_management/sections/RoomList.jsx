@@ -9,6 +9,7 @@ import FilterBar from "../../../components/common/FilterBar.jsx";
 import AddRoomModal from "./AddRoomModal.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailModal.jsx";
+import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import { deleteRoom } from "../../../api/apiRoom.js";
 import { getInvoices } from "../../../api/apiInvoice.js";
 
@@ -34,6 +35,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [hoveredBar, setHoveredBar] = useState(null);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkDeleteRooms, setBulkDeleteRooms] = useState([]);
+  const [composeEmail, setComposeEmail] = useState(null);
 
   const handleShowInvoice = async (room) => {
     try {
@@ -169,25 +171,21 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
   const handleConfirmBulkEmail = () => {
     const selected = safeRooms.filter(r => selectedRooms.has(r.id));
-    
-    // Gathers emails using the students array for each room
     const emails = [];
     selected.forEach(room => {
       if (room.students && Array.isArray(room.students)) {
         room.students.forEach(s => {
-          if (s.email || s.student_email) {
-             emails.push(s.email || s.student_email);
-          }
+          if (s.email || s.student_email) emails.push(s.email || s.student_email);
         });
       }
     });
-    
-    const uniqueEmails = [...new Set(emails)];
-    
     setShowBulkEmailModal(false);
-    clearSelection();
-    
-    alert(`Đã mô phỏng gửi email cho các sinh viên trong ${selected.length} phòng.\nTổng số email khả dụng: ${uniqueEmails.length}\n${uniqueEmails.join(', ')}`);
+    setComposeEmail({
+      to: [...new Set(emails)],
+      subject: "",
+      body: "",
+      recipientCount: selected.length,
+    });
   };
 
   // Ensure rooms is always an array
@@ -223,7 +221,6 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     handleSelectAll, 
     clearSelection 
   } = useSelection(filteredRooms.map(r => r.id));
-  const goToNextPage = () => setCurrentPage((prev) => Math.min(totalPages, prev + 1));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -420,7 +417,17 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                       if (showCheckboxColumn && selectedRooms.size > 0) {
                         setShowBulkEmailModal(true);
                       } else {
-                        alert(`Đã mô phỏng gửi email nhắc nhở cho tất cả sinh viên phòng ${room.room_number}`);
+                        const emails = [];
+                        if (room.students && Array.isArray(room.students)) {
+                          room.students.forEach(s => {
+                            if (s.email || s.student_email) emails.push(s.email || s.student_email);
+                          });
+                        }
+                        setComposeEmail({
+                          to: [...new Set(emails)],
+                          subject: `Thông báo phòng ${room.room_number}`,
+                          body: "",
+                        });
                       }
                     }}
                     className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -851,6 +858,18 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
           Số phòng sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteRooms.length}</span>
         </p>
       </ConfirmModal>
+
+      <EmailComposeModal
+        isOpen={!!composeEmail}
+        onClose={() => { setComposeEmail(null); clearSelection(); }}
+        defaultTo={composeEmail?.to}
+        defaultSubject={composeEmail?.subject}
+        defaultBody={composeEmail?.body}
+        recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        onSend={({ to, subject, body }) => {
+          console.log("Gửi email:", { to, subject, body });
+        }}
+      />
     </div>
   );
 };
