@@ -79,7 +79,7 @@ const AdminDashboard = () => {
   return (
     <div>
       {/* Tabs Navigation */}
-      <div className="flex justify-center pt-4 mb-4">
+      <div className="flex justify-center -mt-4 md:-mt-6 xl:-mt-8 mb-4 pt-3 pb-1 bg-slate-50">
       <div className="inline-flex items-center bg-white border border-slate-200 rounded-2xl overflow-x-auto scrollbar-hide px-2 shadow-sm">
         {[
           { id: "home", icon: <Home size={16} />, label: "Trang chủ" },
