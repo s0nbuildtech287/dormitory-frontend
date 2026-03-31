@@ -46,7 +46,7 @@ const DashboardHome = () => {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-4 animate-in fade-in duration-500">
       {/* Welcome Section */}
       <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-5 md:p-8 rounded-3xl text-white shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
