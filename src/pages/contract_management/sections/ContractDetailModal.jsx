@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { X, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCw, Sparkles, Star, FileX, FileCheck } from "lucide-react";
 import { getContractById, getSuggestedRooms, assignRoom, terminateContract, updateContract } from "../../../api/apiContract.js";
+import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const fmt = (v) => (v !== null && v !== undefined && v !== "" ? v : "—");
@@ -145,15 +146,18 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
   const [terminating, setTerminating] = useState(false);
   const [confirmTerminate, setConfirmTerminate] = useState(false);
   const [actionMsg, setActionMsg] = useState(null);
-  const [flagSaving, setFlagSaving] = useState(null); // 'deposit' | 'hardcopy' | null
+  const [flagSaving, setFlagSaving] = useState(null);
+  const [composeEmail, setComposeEmail] = useState(null);
+  const [sendEmailChecked, setSendEmailChecked] = useState(false);
 
   const toggleFlag = async (field, currentValue) => {
     setFlagSaving(field);
     try {
       const res = await updateContract(contractId, { [field]: !currentValue });
-      if (res.success) setContract((prev) => ({ ...prev, [field]: !currentValue }));
+      if (res.success) {
+        setContract((prev) => ({ ...prev, [field]: !currentValue }));
+      }
     } catch (e) {
-      // silent — thường do chưa chạy migration, hiện lội cũng được
       console.warn("Toggle flag error:", e.message);
     } finally {
       setFlagSaving(null);
@@ -218,6 +222,7 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
   const gpa = contract?.rf_gpa;
 
   return (
+    <>
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto animate-in scale-in duration-300">
         {/* Header */}
@@ -421,6 +426,45 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                   {flagSaving === "hard_copy_received" && <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin flex-shrink-0" />}
                 </button>
               </div>
+
+              {/* Checkbox + nút gửi email – chỉ enable khi đủ 2 điều kiện */}
+              <div className={`mt-3 flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl border transition-colors ${
+                contract.deposit_paid && contract.hard_copy_received
+                  ? "border-blue-200 bg-blue-50"
+                  : "border-slate-200 bg-slate-50 opacity-60"
+              }`}>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={sendEmailChecked}
+                    onChange={e => setSendEmailChecked(e.target.checked)}
+                    disabled={!contract.deposit_paid || !contract.hard_copy_received}
+                    className="w-4 h-4 rounded accent-blue-600"
+                  />
+                  <span className="text-xs font-semibold text-slate-700">
+                    Gửi email thông báo hợp đồng cho sinh viên
+                  </span>
+                </label>
+                <button
+                  disabled={!sendEmailChecked || !contract.deposit_paid || !contract.hard_copy_received}
+                  onClick={() => {
+                    const tpl = EMAIL_TEMPLATES.CONTRACT_CREATED(contract);
+                    setComposeEmail({
+                      to: contract.student_email || "",
+                      subject: tpl.subject,
+                      body: tpl.body,
+                    });
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-colors whitespace-nowrap"
+                >
+                  <Mail size={13} /> Gửi email
+                </button>
+              </div>
+              {(!contract.deposit_paid || !contract.hard_copy_received) && (
+                <p className="text-[11px] text-slate-400 mt-1.5 px-1">
+                  Cần tích đủ "Đã cọc" và "Đã nhận bản cứng" trước khi gửi email.
+                </p>
+              )}
             </div>
 
             {/* ── Thông tin phòng & dịch vụ ── */}
@@ -540,6 +584,20 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
         </div>
       )}
     </div>
+
+    {/* Email Compose Modal */}
+    <EmailComposeModal
+      isOpen={!!composeEmail}
+      onClose={() => setComposeEmail(null)}
+      defaultTo={composeEmail?.to}
+      defaultSubject={composeEmail?.subject}
+      defaultBody={composeEmail?.body}
+      templates={[
+        EMAIL_TEMPLATES.CONTRACT_CREATED(contract || {}),
+      ]}
+      onSend={() => {}}
+    />
+    </>
   );
 };
 

@@ -6,7 +6,7 @@ import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
-import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
+import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -420,6 +420,12 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
         defaultSubject={composeEmail?.subject}
         defaultBody={composeEmail?.body}
         recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        templates={[
+          EMAIL_TEMPLATES.CONTRACT_CREATED(),
+          EMAIL_TEMPLATES.DEPOSIT_CONFIRMED(),
+          EMAIL_TEMPLATES.HARDCOPY_CONFIRMED(),
+          EMAIL_TEMPLATES.APPROVED_REGISTRATION(),
+        ]}
         onSend={({ to, subject, body }) => {
           console.log("Gửi email:", { to, subject, body });
         }}

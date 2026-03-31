@@ -9,7 +9,7 @@ import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
-import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
+import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
 import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration } from "../../../api/apiRegistration.js";
 
 // Helper function to determine priority group
@@ -83,6 +83,7 @@ const RegistrationList = ({
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [composeEmail, setComposeEmail] = useState(null); // { to, subject, body, recipientCount }
+  const [sendEmailOnApprove, setSendEmailOnApprove] = useState(true); // checkbox auto-send
 
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
@@ -759,6 +760,15 @@ const RegistrationList = ({
               await deleteRegistration(isConfirming.id);
             } else if (isConfirming.status === RegistrationStatus.APPROVED) {
               await approveRegistration(isConfirming.id);
+              // Tự mở compose email nếu checkbox được chọn
+              if (sendEmailOnApprove) {
+                const reg = regs.find(r => r.id === isConfirming.id);
+                const email = reg?.student_email || reg?.email || "";
+                if (email) {
+                  const tpl = EMAIL_TEMPLATES.APPROVED_REGISTRATION(reg || {});
+                  setComposeEmail({ to: email, subject: tpl.subject, body: tpl.body });
+                }
+              }
             } else if (isConfirming.status === RegistrationStatus.REJECTED) {
               await rejectRegistration(isConfirming.id, "Từ chối từ admin");
             }
@@ -802,7 +812,19 @@ const RegistrationList = ({
               ? "bg-red-600 hover:bg-red-700 focus:ring-red-200"
               : "bg-rose-600 hover:bg-rose-700 focus:ring-rose-200"
         }
-      />
+      >
+        {isConfirming?.status === RegistrationStatus.APPROVED && (
+          <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={sendEmailOnApprove}
+              onChange={e => setSendEmailOnApprove(e.target.checked)}
+              className="w-4 h-4 rounded accent-emerald-600"
+            />
+            <span className="text-sm text-slate-600">Gửi email thông báo cho sinh viên sau khi duyệt</span>
+          </label>
+        )}
+      </ConfirmModal>
 
       <AddRegistrationModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleAddRegistration} />
 
@@ -870,6 +892,10 @@ const RegistrationList = ({
         defaultSubject={composeEmail?.subject}
         defaultBody={composeEmail?.body}
         recipientCount={composeEmail?.recipientCount > 1 ? composeEmail.recipientCount : undefined}
+        templates={[
+          EMAIL_TEMPLATES.APPROVED_REGISTRATION(),
+          EMAIL_TEMPLATES.REJECTED_REGISTRATION(),
+        ]}
         onSend={({ to, subject, body }) => {
           console.log("Gửi email:", { to, subject, body });
         }}
