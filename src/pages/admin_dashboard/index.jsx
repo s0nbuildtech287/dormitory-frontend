@@ -9,6 +9,7 @@ import {
   History,
 } from "lucide-react";
 import DashboardHome from "./sections/DashboardHome.jsx";
+import ActivityLog from "./sections/ActivityLog.jsx";
 import RegistrationStatistics from "../registration_management/sections/RegistrationStatistics.jsx";
 import RoomAnalytics from "../room_management/sections/RoomAnalytics.jsx";
 import ContractStatistics from "../contract_management/sections/ContractStatistics.jsx";
@@ -123,15 +124,7 @@ const AdminDashboard = () => {
             {activeSubTab === "contract-stats" && <ContractStatistics contracts={contracts} />}
             {activeSubTab === "invoice-stats" && <InvoiceStatistics bills={bills} />}
             {activeSubTab === "feedback-stats" && <FeedbackStatistics feedbacks={feedbacks} />}
-            {activeSubTab === "activity-log" && (
-              <div className="flex flex-col items-center justify-center py-24 gap-4 text-slate-400">
-                <div className="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center">
-                  <History size={36} className="text-slate-300" />
-                </div>
-                <p className="text-lg font-bold text-slate-500">Lịch sử hoạt động</p>
-                <p className="text-sm text-slate-400">Chức năng đang phát triển</p>
-              </div>
-            )}
+            {activeSubTab === "activity-log" && <ActivityLog />}
           </>
         )}
       </div>
