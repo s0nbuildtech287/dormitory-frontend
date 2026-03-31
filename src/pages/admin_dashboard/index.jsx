@@ -79,7 +79,8 @@ const AdminDashboard = () => {
   return (
     <div>
       {/* Tabs Navigation */}
-      <div className="flex items-center bg-white border border-slate-200 rounded-2xl overflow-x-auto scrollbar-hide mb-6 px-2 shadow-sm">
+      <div className="flex justify-center mb-6">
+      <div className="inline-flex items-center bg-white border border-slate-200 rounded-2xl overflow-x-auto scrollbar-hide px-2 shadow-sm">
         {[
           { id: "home", icon: <Home size={16} />, label: "Trang chủ" },
           { id: "registration-stats", icon: <BarChart3 size={16} />, label: "Thống kê & Phân tích" },
@@ -101,8 +102,10 @@ const AdminDashboard = () => {
               {tab.icon}
               <span>{tab.label}</span>
             </button>
+            {idx < arr.length - 1 && <span className="w-px h-5 bg-slate-200 shrink-0" />}
           </React.Fragment>
         ))}
+      </div>
       </div>
 
       {/* Tab Content */}
