@@ -82,12 +82,12 @@ const AdminDashboard = () => {
       <div className="flex items-center bg-white border border-slate-200 rounded-2xl overflow-x-auto scrollbar-hide mb-6 px-2 shadow-sm">
         {[
           { id: "home", icon: <Home size={16} />, label: "Trang chủ" },
-          { id: "registration-stats", icon: <BarChart3 size={16} />, label: "TK & Phân tích" },
-          { id: "room-stats", icon: <PieChart size={16} />, label: "TK mật độ" },
-          { id: "contract-stats", icon: <Activity size={16} />, label: "TK hợp đồng" },
-          { id: "invoice-stats", icon: <DollarSign size={16} />, label: "TK hóa đơn" },
-          { id: "feedback-stats", icon: <MessageSquare size={16} />, label: "TK phản ánh" },
-          { id: "activity-log", icon: <History size={16} />, label: "Lịch sử HĐ" },
+          { id: "registration-stats", icon: <BarChart3 size={16} />, label: "Thống kê & Phân tích" },
+          { id: "room-stats", icon: <PieChart size={16} />, label: "Thống kê mật độ" },
+          { id: "contract-stats", icon: <Activity size={16} />, label: "Thống kê hợp đồng" },
+          { id: "invoice-stats", icon: <DollarSign size={16} />, label: "Thống kê hóa đơn" },
+          { id: "feedback-stats", icon: <MessageSquare size={16} />, label: "Thống kê phản ánh" },
+          { id: "activity-log", icon: <History size={16} />, label: "Lịch sử hoạt động" },
         ].map((tab, idx, arr) => (
           <React.Fragment key={tab.id}>
             <button
