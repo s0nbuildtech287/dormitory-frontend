@@ -1,33 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import Pagination from "../../../components/common/Pagination.jsx";
-
-// Fake logs dựa theo schema log_system:
-// action, entity_type, entity_id, old_value, new_value, user_id, ip_address, created_at
-const FAKE_LOGS = [
-  { id: "LOG001", admin: "Nguyễn Văn An",   action: "APPROVE_REGISTRATION",  entity_type: "register_forms",     entity_id: "RF2024001", detail: "Phê duyệt hồ sơ đăng ký của sinh viên Trần Thị Bình (SV2024001)", ip_address: "192.168.1.10", created_at: "2026-03-31T08:12:00" },
-  { id: "LOG002", admin: "Lê Thị Hoa",      action: "CREATE_INVOICE",         entity_type: "invoices",           entity_id: "HD2026031", detail: "Tạo hóa đơn tháng 3/2026 cho phòng P301 - Tổng 1.250.000 VNĐ", ip_address: "192.168.1.11", created_at: "2026-03-31T08:45:00" },
-  { id: "LOG003", admin: "Nguyễn Văn An",   action: "REJECT_REGISTRATION",    entity_type: "register_forms",     entity_id: "RF2024045", detail: "Từ chối hồ sơ đăng ký của sinh viên Phạm Văn Cường (SV2024045) - Không đủ điều kiện ưu tiên", ip_address: "192.168.1.10", created_at: "2026-03-31T09:10:00" },
-  { id: "LOG004", admin: "Trần Minh Đức",   action: "UPDATE_ROOM",            entity_type: "rooms",              entity_id: "P301",      detail: "Cập nhật phòng P301 - Thay đổi sức chứa từ 4 lên 6 người", ip_address: "192.168.1.12", created_at: "2026-03-31T09:30:00" },
-  { id: "LOG005", admin: "Lê Thị Hoa",      action: "CREATE_NOTIFICATION",    entity_type: "notifications",      entity_id: "NTF2026031",detail: "Gửi thông báo nhắc nhở đóng tiền phòng tháng 3 đến toàn bộ sinh viên", ip_address: "192.168.1.11", created_at: "2026-03-31T10:00:00" },
-  { id: "LOG006", admin: "Trần Minh Đức",   action: "RESOLVE_FEEDBACK",       entity_type: "feedbacks",          entity_id: "FB2026031", detail: "Xử lý và đóng phản ánh #FB2026031 - Sửa chữa điều hòa phòng P205", ip_address: "192.168.1.12", created_at: "2026-03-31T10:22:00" },
-  { id: "LOG007", admin: "Nguyễn Văn An",   action: "CREATE_CONTRACT",        entity_type: "student_contracts",  entity_id: "HD2026007", detail: "Tạo hợp đồng mới cho sinh viên Ngô Thị Dung - Phòng P402, kỳ 2026-2027", ip_address: "192.168.1.10", created_at: "2026-03-31T11:05:00" },
-  { id: "LOG008", admin: "Phạm Thu Hằng",   action: "CREATE_DISCIPLINARY",    entity_type: "disciplinary_records",entity_id:"KL2026008", detail: "Lập phiếu kỷ luật cho sinh viên Lê Văn Em (SV2023112) - Vi phạm nội quy, về muộn giờ quy định", ip_address: "192.168.1.13", created_at: "2026-03-31T11:40:00" },
-  { id: "LOG009", admin: "Lê Thị Hoa",      action: "UPDATE_INVOICE",         entity_type: "invoices",           entity_id: "HD2026031", detail: "Cập nhật trạng thái hóa đơn HD2026031 sang Đã thanh toán - Thu tiền mặt", ip_address: "192.168.1.11", created_at: "2026-03-31T13:15:00" },
-  { id: "LOG010", admin: "Trần Minh Đức",   action: "CREATE_ROOM",            entity_type: "rooms",              entity_id: "P501",      detail: "Thêm phòng mới P501, P502, P503 vào hệ thống - Tầng 5 khu B", ip_address: "192.168.1.12", created_at: "2026-03-31T13:50:00" },
-  { id: "LOG011", admin: "Nguyễn Văn An",   action: "APPROVE_REGISTRATION",   entity_type: "register_forms",     entity_id: "RF2024089", detail: "Phê duyệt hồ sơ đăng ký của sinh viên Hoàng Văn Phúc (SV2024089)", ip_address: "192.168.1.10", created_at: "2026-03-31T14:10:00" },
-  { id: "LOG012", admin: "Phạm Thu Hằng",   action: "CREATE_NOTIFICATION",    entity_type: "notifications",      entity_id: "NTF2026032",detail: "Gửi thông báo lịch kiểm tra phòng định kỳ tháng 4 đến toàn bộ sinh viên", ip_address: "192.168.1.13", created_at: "2026-03-31T14:35:00" },
-  { id: "LOG013", admin: "Lê Thị Hoa",      action: "DELETE_REGISTRATION",    entity_type: "register_forms",     entity_id: "RF2024102", detail: "Xóa hồ sơ đăng ký trùng lặp của sinh viên Vũ Thị Giang (SV2024102)", ip_address: "192.168.1.11", created_at: "2026-03-31T15:00:00" },
-  { id: "LOG014", admin: "Trần Minh Đức",   action: "UPDATE_CONTRACT",        entity_type: "student_contracts",  entity_id: "HD2026014", detail: "Gia hạn hợp đồng cho 15 sinh viên hết hạn vào tháng 4/2026", ip_address: "192.168.1.12", created_at: "2026-03-31T15:20:00" },
-  { id: "LOG015", admin: "Nguyễn Văn An",   action: "RESOLVE_FEEDBACK",       entity_type: "feedbacks",          entity_id: "FB2026028", detail: "Xử lý phản ánh #FB2026028 - Thay bóng đèn hành lang tầng 2", ip_address: "192.168.1.10", created_at: "2026-03-31T15:45:00" },
-  { id: "LOG016", admin: "Phạm Thu Hằng",   action: "UPDATE_USER",            entity_type: "users",              entity_id: "USR011",    detail: "Cập nhật thông tin tài khoản admin Lê Thị Hoa - Đổi số điện thoại liên hệ", ip_address: "192.168.1.13", created_at: "2026-03-31T16:00:00" },
-  { id: "LOG017", admin: "Lê Thị Hoa",      action: "CREATE_INVOICE",         entity_type: "invoices",           entity_id: "HD2026017", detail: "Tạo hóa đơn dịch vụ internet tháng 3/2026 cho 120 phòng", ip_address: "192.168.1.11", created_at: "2026-03-31T16:20:00" },
-  { id: "LOG018", admin: "Trần Minh Đức",   action: "UPDATE_FEEDBACK",        entity_type: "feedbacks",          entity_id: "FB2026035", detail: "Đóng phản ánh #FB2026035 - Không đủ cơ sở xử lý, yêu cầu bổ sung thông tin", ip_address: "192.168.1.12", created_at: "2026-03-31T16:50:00" },
-  { id: "LOG019", admin: "Nguyễn Văn An",   action: "UPDATE_DISCIPLINARY",    entity_type: "disciplinary_records",entity_id:"KL2026019", detail: "Nâng mức kỷ luật lên Cảnh cáo cho sinh viên Đinh Văn Hải (SV2022078) - Tái phạm lần 2", ip_address: "192.168.1.10", created_at: "2026-03-31T17:10:00" },
-  { id: "LOG020", admin: "Phạm Thu Hằng",   action: "CREATE_NOTIFICATION",    entity_type: "notifications",      entity_id: "NTF2026033",detail: "Gửi thông báo kết quả xét duyệt đợt 1 tháng 4 đến 45 sinh viên đăng ký", ip_address: "192.168.1.13", created_at: "2026-03-31T17:30:00" },
-];
-
-const ADMINS = [...new Set(FAKE_LOGS.map(l => l.admin))];
+import { getActivityLogs } from "../../../api/apiLog.js";
 
 const DATE_FILTERS = [
   { label: "Tất cả thời gian", value: "all" },
@@ -36,37 +10,57 @@ const DATE_FILTERS = [
   { label: "30 ngày qua",      value: "30days" },
 ];
 
-// action -> { label, color classes }
 const ACTION_META = {
-  // Xanh lá — tạo mới
-  APPROVE_REGISTRATION:  { label: "Phê duyệt hồ sơ",      cls: "bg-green-100 text-green-700" },
-  CREATE_CONTRACT:       { label: "Tạo hợp đồng",          cls: "bg-green-100 text-green-700" },
-  CREATE_INVOICE:        { label: "Tạo hóa đơn",           cls: "bg-green-100 text-green-700" },
-  CREATE_NOTIFICATION:   { label: "Gửi thông báo",         cls: "bg-green-100 text-green-700" },
-  CREATE_ROOM:           { label: "Tạo phòng",             cls: "bg-green-100 text-green-700" },
+  // Xanh lá — tạo mới / phê duyệt
+  APPROVE_REGISTRATION:   { label: "Phê duyệt hồ sơ",        cls: "bg-green-100 text-green-700" },
+  CREATE_CONTRACT:        { label: "Tạo hợp đồng",            cls: "bg-green-100 text-green-700" },
+  CREATE_INVOICE:         { label: "Tạo hóa đơn",             cls: "bg-green-100 text-green-700" },
+  CREATE_NOTIFICATION:    { label: "Gửi thông báo",           cls: "bg-green-100 text-green-700" },
+  CREATE_ROOM:            { label: "Tạo phòng",               cls: "bg-green-100 text-green-700" },
+  CREATE_USER:            { label: "Tạo tài khoản",           cls: "bg-green-100 text-green-700" },
+  CREATE_ASSET:           { label: "Thêm tài sản",            cls: "bg-green-100 text-green-700" },
+  CREATE_FEEDBACK:        { label: "Tạo phản ánh",            cls: "bg-green-100 text-green-700" },
+  IMPORT_REGISTRATIONS:   { label: "Nhập hồ sơ hàng loạt",   cls: "bg-green-100 text-green-700" },
+  LOGIN:                  { label: "Đăng nhập",               cls: "bg-green-100 text-green-700" },
   // Đỏ — tiêu cực / kỷ luật / xóa
-  REJECT_REGISTRATION:   { label: "Từ chối hồ sơ",         cls: "bg-red-100 text-red-700" },
-  DELETE_REGISTRATION:   { label: "Xóa hồ sơ",             cls: "bg-red-100 text-red-700" },
-  CREATE_DISCIPLINARY:   { label: "Lập phiếu kỷ luật",     cls: "bg-red-100 text-red-700" },
-  UPDATE_DISCIPLINARY:   { label: "Cập nhật kỷ luật",      cls: "bg-red-100 text-red-700" },
-  // Xanh dương — cập nhật / bình thường
-  UPDATE_CONTRACT:       { label: "Cập nhật hợp đồng",     cls: "bg-blue-100 text-blue-700" },
-  UPDATE_INVOICE:        { label: "Cập nhật hóa đơn",      cls: "bg-blue-100 text-blue-700" },
-  RESOLVE_FEEDBACK:      { label: "Xử lý phản ánh",        cls: "bg-blue-100 text-blue-700" },
-  UPDATE_FEEDBACK:       { label: "Cập nhật phản ánh",     cls: "bg-blue-100 text-blue-700" },
-  UPDATE_ROOM:           { label: "Cập nhật phòng",        cls: "bg-blue-100 text-blue-700" },
-  UPDATE_USER:           { label: "Cập nhật tài khoản",    cls: "bg-blue-100 text-blue-700" },
+  REJECT_REGISTRATION:    { label: "Từ chối hồ sơ",           cls: "bg-red-100 text-red-700" },
+  DELETE_REGISTRATION:    { label: "Xóa hồ sơ",               cls: "bg-red-100 text-red-700" },
+  DELETE_CONTRACT:        { label: "Xóa hợp đồng",            cls: "bg-red-100 text-red-700" },
+  DELETE_INVOICE:         { label: "Xóa hóa đơn",             cls: "bg-red-100 text-red-700" },
+  DELETE_ROOM:            { label: "Xóa phòng",               cls: "bg-red-100 text-red-700" },
+  DELETE_ASSET:           { label: "Xóa tài sản",             cls: "bg-red-100 text-red-700" },
+  DELETE_USER:            { label: "Xóa tài khoản",           cls: "bg-red-100 text-red-700" },
+  CREATE_DISCIPLINARY:    { label: "Lập phiếu kỷ luật",       cls: "bg-red-100 text-red-700" },
+  UPDATE_DISCIPLINARY:    { label: "Cập nhật kỷ luật",        cls: "bg-red-100 text-red-700" },
+  TERMINATE_CONTRACT:     { label: "Chấm dứt hợp đồng",       cls: "bg-red-100 text-red-700" },
+  LOGOUT:                 { label: "Đăng xuất",               cls: "bg-red-100 text-red-700" },
+  // Xanh dương — cập nhật / xử lý thông thường
+  UPDATE_CONTRACT:        { label: "Cập nhật hợp đồng",       cls: "bg-blue-100 text-blue-700" },
+  UPDATE_INVOICE:         { label: "Cập nhật hóa đơn",        cls: "bg-blue-100 text-blue-700" },
+  RESOLVE_FEEDBACK:       { label: "Xử lý phản ánh",          cls: "bg-blue-100 text-blue-700" },
+  UPDATE_FEEDBACK:        { label: "Cập nhật phản ánh",       cls: "bg-blue-100 text-blue-700" },
+  UPDATE_ROOM:            { label: "Cập nhật phòng",          cls: "bg-blue-100 text-blue-700" },
+  UPDATE_USER:            { label: "Cập nhật tài khoản",      cls: "bg-blue-100 text-blue-700" },
+  UPDATE_REGISTRATION:    { label: "Cập nhật hồ sơ",          cls: "bg-blue-100 text-blue-700" },
+  UPDATE_ASSET:           { label: "Cập nhật tài sản",        cls: "bg-blue-100 text-blue-700" },
+  UPDATE_NOTIFICATION:    { label: "Cập nhật thông báo",      cls: "bg-blue-100 text-blue-700" },
+  ASSIGN_ROOM:            { label: "Gán phòng",               cls: "bg-blue-100 text-blue-700" },
+  REVERT_CONTRACT:        { label: "Hoàn tác hợp đồng",       cls: "bg-blue-100 text-blue-700" },
+  UPDATE_SETTINGS:        { label: "Cập nhật cài đặt",        cls: "bg-blue-100 text-blue-700" },
+  RECALCULATE_SCORES:     { label: "Tính lại điểm AI",        cls: "bg-blue-100 text-blue-700" },
 };
 
 const ENTITY_LABEL = {
-  register_forms:       "Hồ sơ đăng ký",
-  invoices:             "Hóa đơn",
-  student_contracts:    "Hợp đồng",
-  notifications:        "Thông báo",
-  feedbacks:            "Phản ánh",
-  rooms:                "Phòng",
-  disciplinary_records: "Kỷ luật",
-  users:                "Tài khoản",
+  register_forms:        "Hồ sơ đăng ký",
+  invoices:              "Hóa đơn",
+  student_contracts:     "Hợp đồng",
+  notifications:         "Thông báo",
+  feedbacks:             "Phản ánh",
+  rooms:                 "Phòng",
+  disciplinary_records:  "Kỷ luật",
+  users:                 "Tài khoản",
+  assets:                "Tài sản",
+  settings:              "Cài đặt",
 };
 
 const formatTime = (iso) =>
@@ -75,19 +69,21 @@ const formatTime = (iso) =>
     day: "2-digit", month: "2-digit", year: "numeric",
   });
 
-const isInRange = (iso, range) => {
-  const d = new Date(iso);
+const getDateRange = (range) => {
   const now = new Date();
   if (range === "today") {
-    return d.toDateString() === now.toDateString();
+    const start = new Date(now); start.setHours(0, 0, 0, 0);
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
   }
   if (range === "7days") {
-    return (now - d) / 86400000 <= 7;
+    const start = new Date(now); start.setDate(start.getDate() - 7);
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
   }
   if (range === "30days") {
-    return (now - d) / 86400000 <= 30;
+    const start = new Date(now); start.setDate(start.getDate() - 30);
+    return { startDate: start.toISOString(), endDate: now.toISOString() };
   }
-  return true;
+  return {};
 };
 
 const ActivityLog = () => {
@@ -98,30 +94,76 @@ const ActivityLog = () => {
   const [currentPage, setCurrentPage]   = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Danh sách action có trong data
-  const availableActions = useMemo(() => [...new Set(FAKE_LOGS.map(l => l.action))], []);
+  const [logs, setLogs]       = useState([]);
+  const [total, setTotal]     = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [adminList, setAdminList] = useState([]);
 
-  const filtered = useMemo(() => {
-    return FAKE_LOGS.filter(log => {
-      const matchSearch = search === "" ||
-        log.detail.toLowerCase().includes(search.toLowerCase()) ||
-        log.admin.toLowerCase().includes(search.toLowerCase()) ||
-        log.entity_id.toLowerCase().includes(search.toLowerCase());
-      const matchAdmin  = filterAdmin  === "all" || log.admin  === filterAdmin;
-      const matchDate   = isInRange(log.created_at, filterDate);
-      const matchAction = filterAction === "all" || log.action === filterAction;
-      return matchSearch && matchAdmin && matchDate && matchAction;
-    });
-  }, [search, filterAdmin, filterDate, filterAction]);
+  const actionList = Object.keys(ACTION_META);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
-  const safePage   = Math.min(currentPage, totalPages);
-  const paginated  = filtered.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const dateRange = getDateRange(filterDate);
+      const res = await getActivityLogs({
+        search:    search || undefined,
+        action:    filterAction !== "all" ? filterAction : undefined,
+        startDate: dateRange.startDate,
+        endDate:   dateRange.endDate,
+        page:      currentPage,
+        limit:     itemsPerPage,
+      });
+
+      if (res.success) {
+        const mapped = res.data.map(l => ({
+          id:          l.id,
+          admin:       l.user_name || "Không rõ",
+          action:      l.action,
+          entity_type: l.entity_type,
+          entity_id:   l.entity_id,
+          detail:      (() => {
+            try {
+              const nv = typeof l.new_value === 'string' ? JSON.parse(l.new_value) : l.new_value;
+              return nv?.detail || l.action;
+            } catch { return l.action; }
+          })(),
+          ip_address:  l.ip_address,
+          created_at:  l.created_at,
+        }));
+
+        // Lọc theo admin ở client
+        const filtered = filterAdmin === "all"
+          ? mapped
+          : mapped.filter(l => l.admin === filterAdmin);
+
+        setLogs(filtered);
+        setTotal(res.pagination?.total ?? filtered.length);
+
+        // Cập nhật danh sách admin từ data thực
+        setAdminList(prev => {
+          const all = [...new Set([...prev, ...mapped.map(l => l.admin)])];
+          return all;
+        });
+      } else {
+        setLogs([]);
+        setTotal(0);
+      }
+    } catch {
+      setLogs([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, filterAdmin, filterDate, filterAction, currentPage, itemsPerPage]);
+
+  useEffect(() => { fetchLogs(); }, [fetchLogs]);
+
+  const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
 
   const pagination = {
-    currentPage: safePage,
+    currentPage,
     totalPages,
-    totalItems: filtered.length,
+    totalItems: total,
     itemsPerPage,
     setItemsPerPage: (v) => { setItemsPerPage(v); setCurrentPage(1); },
     goToPage: setCurrentPage,
@@ -152,7 +194,7 @@ const ActivityLog = () => {
             className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
           >
             <option value="all">Tất cả admin</option>
-            {ADMINS.map(a => <option key={a} value={a}>{a}</option>)}
+            {adminList.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
           <ChevronDown size={14} className="text-slate-400 shrink-0" />
         </div>
@@ -177,14 +219,14 @@ const ActivityLog = () => {
             className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer"
           >
             <option value="all">Tất cả hành động</option>
-            {availableActions.map(a => (
+            {actionList.map(a => (
               <option key={a} value={a}>{ACTION_META[a]?.label || a}</option>
             ))}
           </select>
           <ChevronDown size={14} className="text-slate-400 shrink-0" />
         </div>
 
-        <span className="text-xs text-slate-400 ml-auto">{filtered.length} kết quả</span>
+        <span className="text-xs text-slate-400 ml-auto">{total} kết quả</span>
       </div>
 
       {/* Table */}
@@ -201,14 +243,20 @@ const ActivityLog = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {paginated.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="py-16 text-center">
+                  <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto" />
+                </td>
+              </tr>
+            ) : logs.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-16 text-center text-slate-400">
                   <Search size={32} className="mx-auto mb-2 opacity-30" />
                   <p className="font-semibold">Không tìm thấy kết quả</p>
                 </td>
               </tr>
-            ) : paginated.map(log => (
+            ) : logs.map(log => (
               <tr key={log.id} className="hover:bg-slate-50/60 transition-colors">
                 <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap text-xs">
                   {formatTime(log.created_at)}
