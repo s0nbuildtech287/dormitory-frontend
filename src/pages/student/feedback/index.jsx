@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Send, MessageSquare, CheckCircle, Clock, Loader2,
   ChevronDown, AlertCircle, Wrench, Shield, Trash2, Cpu, HelpCircle,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { getStudentFeedbacks, createStudentFeedback } from "../../../api/apiStudent.js";
 
@@ -34,6 +35,8 @@ const StudentFeedback = () => {
   const [error, setError]           = useState(null);
   const [success, setSuccess]       = useState(false);
   const [expanded, setExpanded]     = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   const load = () => {
     setLoading(true);
@@ -71,6 +74,9 @@ const StudentFeedback = () => {
     processing: feedbacks.filter(f => f.status === "Processing").length,
     resolved:   feedbacks.filter(f => f.status === "Resolved").length,
   };
+
+  const totalPages = Math.max(1, Math.ceil(feedbacks.length / ITEMS_PER_PAGE));
+  const paginated  = feedbacks.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -174,7 +180,7 @@ const StudentFeedback = () => {
                   <p className="text-sm font-semibold">Chưa có phản ánh nào</p>
                   <p className="text-xs">Hãy gửi phản ánh đầu tiên của bạn</p>
                 </div>
-              ) : feedbacks.map(f => {
+              ) : paginated.map(f => {
                 const cfg = STATUS_CFG[f.status] || STATUS_CFG.New;
                 const isOpen = expanded === f.id;
                 return (
@@ -233,6 +239,44 @@ const StudentFeedback = () => {
                 );
               })}
             </div>
+
+            {/* Pagination */}
+            {!loading && feedbacks.length > ITEMS_PER_PAGE && (
+              <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
+                <p className="text-xs text-slate-500">
+                  Hiển thị <span className="font-semibold text-slate-700">{(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, feedbacks.length)}</span> / {feedbacks.length} phản ánh
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setCurrentPage(n)}
+                      className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${
+                        currentPage === n
+                          ? "bg-slate-900 text-white"
+                          : "text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
