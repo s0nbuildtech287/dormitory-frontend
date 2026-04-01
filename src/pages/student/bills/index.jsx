@@ -47,7 +47,16 @@ const StudentBills = () => {
   const [submitMsg, setSubmitMsg]     = useState(null); // { type: "success"|"error", text }
 
   const today = new Date();
-  const isSubmitWindow = today.getDate() <= 5; // 5 ngày đầu tháng
+  const isSubmitWindow = today.getDate() <= 5;
+
+  // Kiểm tra hóa đơn tháng trước đã thanh toán chưa
+  const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const prevMonthInvoice = invoices.find(i => {
+    const d = new Date(i.billing_month);
+    return d.getFullYear() === prevMonth.getFullYear() && d.getMonth() === prevMonth.getMonth();
+  });
+  const isPrevPaid = prevMonthInvoice?.status === "Đã thanh toán";
+  const canSubmitMeter = isSubmitWindow && !isPrevPaid; // 5 ngày đầu tháng
 
   const loadInvoices = () => {
     setLoading(true);
@@ -129,20 +138,20 @@ const StudentBills = () => {
             </div>
           ))}
           {/* Card gửi số điện/nước */}
-          <button onClick={() => isSubmitWindow && setShowMeterModal(true)}
+          <button onClick={() => canSubmitMeter && setShowMeterModal(true)}
             className={`bg-white rounded-2xl border shadow-sm p-4 flex items-center gap-3 text-left transition-all active:scale-95 ${
-              isSubmitWindow
+              canSubmitMeter
                 ? "border-blue-200 hover:bg-blue-50/40 cursor-pointer"
                 : "border-slate-100 opacity-50 cursor-not-allowed"
             }`}
-            title={isSubmitWindow ? "Gửi số điện/nước" : "Chỉ mở trong 5 ngày đầu tháng"}>
-            <div className={`p-2.5 rounded-xl shrink-0 ${isSubmitWindow ? "text-blue-600 bg-blue-50" : "text-slate-400 bg-slate-100"}`}>
+            title={!isSubmitWindow ? "Chỉ mở trong 5 ngày đầu tháng" : isPrevPaid ? "Hóa đơn đã thanh toán" : "Gửi số điện/nước"}>
+            <div className={`p-2.5 rounded-xl shrink-0 ${canSubmitMeter ? "text-blue-600 bg-blue-50" : "text-slate-400 bg-slate-100"}`}>
               <Zap size={16} />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Điện / Nước</p>
-              <p className={`text-sm font-black mt-0.5 ${isSubmitWindow ? "text-blue-700" : "text-slate-400"}`}>
-                {isSubmitWindow ? `Còn ${5 - today.getDate()} ngày` : "Đã hết hạn"}
+              <p className={`text-sm font-black mt-0.5 ${canSubmitMeter ? "text-blue-700" : "text-slate-400"}`}>
+                {!isSubmitWindow ? "Đã hết hạn" : isPrevPaid ? "Đã thanh toán" : `Còn ${5 - today.getDate()} ngày`}
               </p>
             </div>
           </button>
@@ -164,7 +173,14 @@ const StudentBills = () => {
               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <CalendarCheck size={18} className="text-blue-600" />
-                  <p className="font-bold text-slate-900">Gửi số điện/nước tháng này</p>
+                  <div>
+                    <p className="font-bold text-slate-900">Gửi số điện/nước</p>
+                    <p className="text-xs text-slate-500">
+                      Tháng {today.getMonth() === 0 ? 12 : today.getMonth()}/
+                      {today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear()}
+                      {" "}· Hạn gửi ngày 1–5/{today.getMonth() + 1}
+                    </p>
+                  </div>
                 </div>
                 <button onClick={() => { setShowMeterModal(false); setSubmitMsg(null); }}
                   className="p-1.5 hover:bg-slate-100 rounded-xl transition-colors">

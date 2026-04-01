@@ -356,15 +356,17 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }
         {invoice.meter_submitted_by && (
           <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <Zap size={12} /> Số liệu điện/nước do sinh viên gửi
+              <Zap size={12} /> Số liệu điện/nước
             </p>
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Người gửi</span>
-                <span className="font-semibold text-slate-700">{invoice.meter_submitter_name || "—"}</span>
+                <span className="text-slate-500">Nguồn</span>
+                <span className={`font-semibold ${invoice.meter_submitter_name === 'Mặc định (hệ thống)' ? 'text-amber-600' : 'text-slate-700'}`}>
+                  {invoice.meter_submitter_name || "—"}
+                </span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Thời gian gửi</span>
+                <span className="text-slate-500">Thời gian</span>
                 <span className="font-semibold text-slate-700">
                   {invoice.meter_submitted_at
                     ? new Date(invoice.meter_submitted_at).toLocaleString("vi-VN")
@@ -372,6 +374,13 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }
                 </span>
               </div>
             </div>
+          </div>
+        )}
+        {!invoice.meter_submitted_by && (
+          <div className="mb-6 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <p className="text-xs text-slate-400 italic flex items-center gap-1.5">
+              <Zap size={11} /> Chưa có số liệu điện/nước từ sinh viên
+            </p>
           </div>
         )}
 

@@ -243,18 +243,13 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             onChange: (val) => handleFilterChange(setFilterMonth, val),
             options: [
               { value: "All", label: "Tất cả tháng" },
-              { value: "2026-01", label: "Tháng 1/2026" },
-              { value: "2026-02", label: "Tháng 2/2026" },
-              { value: "2026-03", label: "Tháng 3/2026" },
-              { value: "2026-04", label: "Tháng 4/2026" },
-              { value: "2026-05", label: "Tháng 5/2026" },
-              { value: "2026-06", label: "Tháng 6/2026" },
-              { value: "2026-07", label: "Tháng 7/2026" },
-              { value: "2026-08", label: "Tháng 8/2026" },
-              { value: "2026-09", label: "Tháng 9/2026" },
-              { value: "2026-10", label: "Tháng 10/2026" },
-              { value: "2026-11", label: "Tháng 11/2026" },
-              { value: "2026-12", label: "Tháng 12/2026" },
+              ...Array.from({ length: 6 }, (_, i) => {
+                const d = new Date();
+                d.setDate(1);
+                d.setMonth(d.getMonth() - i);
+                const val = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                return { value: val, label: `Tháng ${d.getMonth() + 1}/${d.getFullYear()}` };
+              }),
             ]
           }
         ]}
