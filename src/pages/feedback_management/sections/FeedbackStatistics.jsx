@@ -1,13 +1,28 @@
 import React, { useMemo } from "react";
-import { BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle, Clock, Loader2 } from "lucide-react";
+import {
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
+import { BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle2, MessageSquare, AlertCircle } from "lucide-react";
+import StatCard from "../../../components/common/StatCard.jsx";
 
-const CATEGORY_COLORS = [
-  "bg-blue-500", "bg-purple-500", "bg-green-500", "bg-amber-500", "bg-rose-500",
-];
+// Tông màu xanh lạnh — đồng bộ với RoomAnalytics
+const BLUE = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
+
+const STATUS_COLORS = {
+  New:        "#60a5fa",   // xanh nhạt — chờ
+  Processing: "#2563eb",   // xanh vừa — đang xử lý
+  Resolved:   "#1e40af",   // xanh đậm — xong
+};
+
+const SENTIMENT_COLORS = {
+  Positive: "#3b82f6",
+  Neutral:  "#93c5fd",
+  Negative: "#1e40af",
+};
 
 const FeedbackStatistics = ({ feedbacks }) => {
   const stats = useMemo(() => {
-    const total      = feedbacks.length;
+    const total = feedbacks.length;
     const byStatus   = { New: 0, Processing: 0, Resolved: 0 };
     const byCat      = {};
     const bySentiment= { Positive: 0, Neutral: 0, Negative: 0 };
@@ -24,7 +39,19 @@ const FeedbackStatistics = ({ feedbacks }) => {
       .map(([name, count]) => ({ name, count, pct: total > 0 ? Math.round(count / total * 100) : 0 }))
       .sort((a, b) => b.count - a.count);
 
-    return { total, byStatus, bySentiment, resolveRate, catList };
+    const statusPie = [
+      { name: "Chờ xử lý",     value: byStatus.New,        color: STATUS_COLORS.New },
+      { name: "Đang xử lý",    value: byStatus.Processing,  color: STATUS_COLORS.Processing },
+      { name: "Đã giải quyết", value: byStatus.Resolved,    color: STATUS_COLORS.Resolved },
+    ].filter(d => d.value > 0);
+
+    const sentimentPie = [
+      { name: "Tích cực",  value: bySentiment.Positive, color: SENTIMENT_COLORS.Positive },
+      { name: "Trung lập", value: bySentiment.Neutral,   color: SENTIMENT_COLORS.Neutral },
+      { name: "Tiêu cực",  value: bySentiment.Negative,  color: SENTIMENT_COLORS.Negative },
+    ].filter(d => d.value > 0);
+
+    return { total, byStatus, bySentiment, resolveRate, catList, statusPie, sentimentPie };
   }, [feedbacks]);
 
   if (feedbacks.length === 0) {
@@ -38,107 +65,132 @@ const FeedbackStatistics = ({ feedbacks }) => {
 
   return (
     <div className="space-y-6">
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Tổng phản ánh",   value: stats.total,              color: "text-slate-700",  bg: "bg-white" },
-          { label: "Chờ xử lý",       value: stats.byStatus.New,       color: "text-amber-600",  bg: "bg-amber-50" },
-          { label: "Đang xử lý",      value: stats.byStatus.Processing,color: "text-blue-600",   bg: "bg-blue-50" },
-          { label: "Đã giải quyết",   value: stats.byStatus.Resolved,  color: "text-green-600",  bg: "bg-green-50" },
-        ].map(s => (
-          <div key={s.label} className={`${s.bg} rounded-2xl border border-slate-200 px-5 py-4 shadow-sm`}>
-            <p className="text-xs text-slate-500 font-medium mb-1">{s.label}</p>
-            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard variant="horizontal" icon={<MessageSquare size={24} />}  title="Tổng phản ánh"   value={stats.total}              subtitle="Tất cả trạng thái"                color="blue"   />
+        <StatCard variant="horizontal" icon={<AlertCircle size={24} />}    title="Chờ xử lý"       value={stats.byStatus.New}       subtitle={`${stats.total > 0 ? Math.round(stats.byStatus.New / stats.total * 100) : 0}% tổng số`} color="amber" alert={stats.byStatus.New > 0} />
+        <StatCard variant="horizontal" icon={<TrendingUp size={24} />}     title="Đang xử lý"      value={stats.byStatus.Processing}subtitle={`${stats.total > 0 ? Math.round(stats.byStatus.Processing / stats.total * 100) : 0}% tổng số`} color="indigo" />
+        <StatCard variant="horizontal" icon={<CheckCircle2 size={24} />}   title="Đã giải quyết"   value={stats.byStatus.Resolved}  subtitle={`Tỉ lệ ${stats.resolveRate}%`}     color="green"   />
       </div>
 
+      {/* ── Row 1: Pie trạng thái + Pie cảm xúc ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tỉ lệ giải quyết */}
+
+        {/* Pie trạng thái */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center gap-2 mb-5">
-            <CheckCircle size={18} className="text-green-600" />
-            <h3 className="font-bold text-slate-800">Tỉ lệ giải quyết</h3>
+            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+              <BarChart3 size={18} className="text-blue-700" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Phân bố trạng thái</h3>
+              <p className="text-xs text-slate-500">Tỉ lệ xử lý phản ánh</p>
+            </div>
           </div>
-          <div className="flex items-end gap-4 mb-4">
-            <p className="text-5xl font-bold text-slate-900">{stats.resolveRate}%</p>
-            <p className="text-sm text-slate-500 mb-1">{stats.byStatus.Resolved}/{stats.total} phản ánh</p>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-            <div
-              className="h-full bg-green-500 rounded-full transition-all"
-              style={{ width: `${stats.resolveRate}%` }}
-            />
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            {[
-              { label: "Chờ xử lý", value: stats.byStatus.New, color: "text-amber-600" },
-              { label: "Đang xử lý", value: stats.byStatus.Processing, color: "text-blue-600" },
-              { label: "Đã xong", value: stats.byStatus.Resolved, color: "text-green-600" },
-            ].map(s => (
-              <div key={s.label} className="bg-slate-50 rounded-xl p-3">
-                <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
-              </div>
-            ))}
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={stats.statusPie} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
+                dataKey="value" paddingAngle={3}>
+                {stats.statusPie.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(v, n) => [v, n]} />
+              <Legend iconType="circle" iconSize={10}
+                formatter={(v) => <span className="text-xs text-slate-600">{v}</span>} />
+            </PieChart>
+          </ResponsiveContainer>
+          {/* Tỉ lệ giải quyết */}
+          <div className="mt-2">
+            <div className="flex justify-between text-xs text-slate-500 mb-1">
+              <span>Tỉ lệ giải quyết</span>
+              <span className="font-bold text-blue-700">{stats.resolveRate}%</span>
+            </div>
+            <div className="w-full bg-blue-50 rounded-full h-2.5 overflow-hidden">
+              <div className="h-full bg-blue-700 rounded-full transition-all" style={{ width: `${stats.resolveRate}%` }} />
+            </div>
           </div>
         </div>
 
-        {/* Cảm xúc */}
+        {/* Pie cảm xúc */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center gap-2 mb-5">
-            <TrendingUp size={18} className="text-blue-600" />
-            <h3 className="font-bold text-slate-800">Phân tích cảm xúc</h3>
+            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+              <TrendingUp size={18} className="text-blue-700" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Phân tích cảm xúc</h3>
+              <p className="text-xs text-slate-500">Tích cực / Trung lập / Tiêu cực</p>
+            </div>
           </div>
-          <div className="space-y-4">
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={stats.sentimentPie} cx="50%" cy="50%" innerRadius={55} outerRadius={85}
+                dataKey="value" paddingAngle={3}>
+                {stats.sentimentPie.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(v, n) => [v, n]} />
+              <Legend iconType="circle" iconSize={10}
+                formatter={(v) => <span className="text-xs text-slate-600">{v}</span>} />
+            </PieChart>
+          </ResponsiveContainer>
+          {/* Breakdown bars */}
+          <div className="mt-2 space-y-2">
             {[
-              { key: "Positive", label: "Tích cực", icon: <TrendingUp size={16} className="text-green-500" />, bar: "bg-green-500" },
-              { key: "Neutral",  label: "Trung lập", icon: <Minus size={16} className="text-slate-400" />,     bar: "bg-slate-400" },
-              { key: "Negative", label: "Tiêu cực", icon: <TrendingDown size={16} className="text-red-500" />, bar: "bg-red-500" },
+              { label: "Tích cực",  key: "Positive", icon: <TrendingUp size={12} className="text-blue-400" /> },
+              { label: "Trung lập", key: "Neutral",   icon: <Minus size={12} className="text-blue-300" /> },
+              { label: "Tiêu cực",  key: "Negative",  icon: <TrendingDown size={12} className="text-blue-900" /> },
             ].map(s => {
               const count = stats.bySentiment[s.key];
               const pct   = stats.total > 0 ? Math.round(count / stats.total * 100) : 0;
               return (
-                <div key={s.key}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                      {s.icon} {s.label}
-                    </span>
-                    <span className="text-sm font-bold text-slate-600">{count} <span className="text-slate-400 font-normal">({pct}%)</span></span>
+                <div key={s.key} className="flex items-center gap-2">
+                  {s.icon}
+                  <span className="text-xs text-slate-500 w-16">{s.label}</span>
+                  <div className="flex-1 bg-blue-50 rounded-full h-1.5 overflow-hidden">
+                    <div className="h-full bg-blue-600 rounded-full" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                    <div className={`h-full ${s.bar} rounded-full transition-all`} style={{ width: `${pct}%` }} />
-                  </div>
+                  <span className="text-xs font-semibold text-slate-600 w-8 text-right">{count}</span>
                 </div>
               );
             })}
           </div>
         </div>
+      </div>
 
-        {/* Phân loại danh mục */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
-          <div className="flex items-center gap-2 mb-5">
-            <BarChart3 size={18} className="text-blue-600" />
-            <h3 className="font-bold text-slate-800">Phân loại theo danh mục</h3>
+      {/* ── Row 2: Bar chart danh mục ── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+            <BarChart3 size={18} className="text-blue-700" />
           </div>
-          <div className="space-y-4">
-            {stats.catList.map((c, i) => (
-              <div key={c.name}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-semibold text-slate-700">{c.name}</span>
-                  <span className="text-sm font-bold text-slate-600">{c.count} <span className="text-slate-400 font-normal">({c.pct}%)</span></span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                  <div
-                    className={`h-full ${CATEGORY_COLORS[i % CATEGORY_COLORS.length]} rounded-full transition-all`}
-                    style={{ width: `${c.pct}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+          <div>
+            <h3 className="font-bold text-slate-800 text-sm">Phân loại theo danh mục</h3>
+            <p className="text-xs text-slate-500">Số lượng phản ánh theo từng danh mục</p>
           </div>
         </div>
+        {/* Progress bars */}
+        <div className="mt-4 space-y-3">
+          {stats.catList.map((c, i) => (
+            <div key={c.name}>
+              <div className="flex justify-between text-xs text-slate-600 mb-1">
+                <span className="font-semibold">{c.name}</span>
+                <span className="text-slate-400">{c.count} ({c.pct}%)</span>
+              </div>
+              <div className="w-full bg-blue-50 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{ width: `${c.pct}%`, backgroundColor: BLUE[i % BLUE.length] }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
     </div>
   );
 };
