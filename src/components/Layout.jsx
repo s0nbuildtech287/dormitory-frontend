@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, LogOut, Bell, User, Lock } from "lucide-react";
+import { Menu, LogOut, Bell, User, Lock, FileText, MessageSquare, Megaphone } from "lucide-react";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "../router/index.js";
 import { UserRole } from "../utils/types.js";
 import { BACKEND_URL } from "../utils/constants.jsx";
 import * as LucideIcons from "lucide-react";
 import logoImg from "../assets/images/logo.png";
+import { useNotifications } from "../contexts/NotificationContext.jsx";
 
 /**
  * Layout Component — sidebar dùng useNavigate để cập nhật URL thật
@@ -14,14 +15,17 @@ import logoImg from "../assets/images/logo.png";
 const Layout = ({ user, onLogout, children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const notificationsRef = useRef(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { notifications, adminAlerts, unreadCount, clearUnread, clearAdminAlerts } = useNotifications();
+
+  // Dropdown items: sinh viên thấy notifications, admin thấy adminAlerts
+  const dropdownItems = user.role === UserRole.ADMIN ? adminAlerts : notifications;
 
   const menuItems = user.role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
 
@@ -214,49 +218,96 @@ const Layout = ({ user, onLogout, children }) => {
             {/* Notification Bell */}
             <div className="relative" ref={notificationsRef}>
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  if (!showNotifications) clearUnread();
+                }}
                 className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
                 title="Thông báo"
               >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </button>
 
-              {/* Notifications Dropdown */}
+              {/* Dropdown kiểu Facebook */}
               {showNotifications && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
-                  <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
-                    <h3 className="font-bold text-slate-800 text-sm">Thông báo</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{unreadCount} thông báo mới</p>
+                <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                  {/* Header */}
+                  <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <h3 className="font-bold text-slate-900 text-base">Thông báo</h3>
+                    {user.role === UserRole.ADMIN && adminAlerts.length > 0 && (
+                      <button onClick={clearAdminAlerts}
+                        className="text-xs text-blue-600 hover:underline font-semibold">
+                        Xóa tất cả
+                      </button>
+                    )}
                   </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                        <Bell size={32} className="opacity-30 mb-2" />
+
+                  {/* List */}
+                  <div className="max-h-[420px] overflow-y-auto divide-y divide-slate-50">
+                    {dropdownItems.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                        <Bell size={32} className="opacity-20 mb-2" />
                         <p className="text-sm">Không có thông báo mới</p>
                       </div>
-                    ) : (
-                      notifications.map((notif, idx) => (
-                        <div
-                          key={idx}
-                          className="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer last:border-0"
-                        >
-                          <p className="text-sm font-semibold text-slate-800 line-clamp-2">
-                            {notif.title}
-                          </p>
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                            {notif.content}
-                          </p>
-                          <p className="text-xs text-slate-400 mt-1.5">
-                            {new Date(notif.created_at).toLocaleString("vi-VN")}
-                          </p>
+                    ) : dropdownItems.slice(0, 10).map((item, idx) => {
+                      const isAdminAlert = user.role === UserRole.ADMIN;
+                      const alertIcon = isAdminAlert
+                        ? item.type === "new_registration" ? <FileText size={16} className="text-blue-600" /> : <MessageSquare size={16} className="text-amber-600" />
+                        : <Megaphone size={16} className="text-blue-600" />;
+                      const alertBg = isAdminAlert
+                        ? item.type === "new_registration" ? "bg-blue-50" : "bg-amber-50"
+                        : "bg-blue-50";
+                      const title = isAdminAlert
+                        ? item.type === "new_registration"
+                          ? `Hồ sơ mới: ${item.data?.student_name || ""}`
+                          : `Phản ánh mới: ${item.data?.category || ""}`
+                        : item.title;
+                      const desc = isAdminAlert
+                        ? item.type === "new_registration"
+                          ? `${item.data?.student_id || ""} — ${item.data?.faculty || ""}`
+                          : (item.data?.content || "").substring(0, 80)
+                        : (item.content || "").substring(0, 80);
+                      const time = new Date(item.timestamp || item.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+                      return (
+                        <div key={idx}
+                          onClick={() => {
+                            setShowNotifications(false);
+                            if (isAdminAlert) {
+                              navigate(item.type === "new_registration" ? "/registrations" : "/feedback");
+                            } else {
+                              navigate("/home");
+                            }
+                          }}
+                          className="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 cursor-pointer transition-colors">
+                          <div className={`w-9 h-9 rounded-full ${alertBg} flex items-center justify-center shrink-0 mt-0.5`}>
+                            {alertIcon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-800 line-clamp-1">{title}</p>
+                            <p className="text-xs text-slate-500 line-clamp-2 mt-0.5">{desc}</p>
+                          </div>
+                          <span className="text-[10px] text-slate-400 shrink-0 mt-1">{time}</span>
                         </div>
-                      ))
-                    )}
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        setShowNotifications(false);
+                        navigate(user.role === UserRole.ADMIN ? "/notifications" : "/home");
+                      }}
+                      className="w-full py-3 text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors">
+                      Xem tất cả thông báo
+                    </button>
                   </div>
                 </div>
               )}

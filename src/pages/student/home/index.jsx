@@ -7,6 +7,7 @@ import { getStudentNotifications } from "../../../api/apiStudent.js";
 import { usePagination } from "../../../hooks/usePagination.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import NotifDetailModal from "./NotifDetailModal.jsx";
+import { useNotifications } from "../../../contexts/NotificationContext.jsx";
 
 // ── Cấu hình từng loại thông báo ─────────────────────────────────────────
 const TYPE_CFG = {
@@ -80,6 +81,8 @@ const StudentHome = () => {
   const [starredIds, setStarredIds]       = useState(new Set());
   const [deletedIds, setDeletedIds]       = useState(new Set());
 
+  const { notifications: wsNotifs } = useNotifications();
+
   useEffect(() => {
     getStudentNotifications()
       .then((res) => {
@@ -89,6 +92,16 @@ const StudentHome = () => {
       .catch(() => setNotifications([]))
       .finally(() => setLoading(false));
   }, []);
+
+  // Merge WS notifications vào đầu danh sách (tránh trùng id)
+  useEffect(() => {
+    if (wsNotifs.length === 0) return;
+    setNotifications(prev => {
+      const existingIds = new Set(prev.map(n => n.id));
+      const newOnes = wsNotifs.filter(n => !existingIds.has(n.id));
+      return newOnes.length > 0 ? [...newOnes, ...prev] : prev;
+    });
+  }, [wsNotifs]);
 
   // Lọc bỏ đã xóa
   const visible = notifications.filter((n) => !deletedIds.has(n.id));

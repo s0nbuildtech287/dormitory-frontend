@@ -1,14 +1,11 @@
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { NavigationProvider } from "./contexts/NavigationContext.jsx";
+import { NotificationProvider } from "./contexts/NotificationContext.jsx";
 import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RouteConfig from "./router/RouteConfig.jsx";
 
-/**
- * Main App Component - Refactored
- * Simplified with Context API and custom hooks
- */
 const AppContent = () => {
   const { user, isLoading, login, logout } = useAuth();
 
@@ -25,14 +22,14 @@ const AppContent = () => {
   }
 
   return (
-    <>
+    <NotificationProvider user={user}>
       <Layout user={user} onLogout={logout}>
         <div className="animate-in fade-in duration-500">
           <RouteConfig />
         </div>
       </Layout>
       <AIChatBot />
-    </>
+    </NotificationProvider>
   );
 };
 
