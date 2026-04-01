@@ -1,176 +1,139 @@
-import React from "react";
-import { BarChart3, Star, MessageSquare, TrendingUp, AlertCircle } from "lucide-react";
+import React, { useMemo } from "react";
+import { BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle, Clock, Loader2 } from "lucide-react";
+
+const CATEGORY_COLORS = [
+  "bg-blue-500", "bg-purple-500", "bg-green-500", "bg-amber-500", "bg-rose-500",
+];
 
 const FeedbackStatistics = ({ feedbacks }) => {
-  // Calculate statistics
-  const totalFeedbacks = feedbacks.length;
-  const averageRating = feedbacks.length > 0 
-    ? (feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length).toFixed(1)
-    : 0;
+  const stats = useMemo(() => {
+    const total      = feedbacks.length;
+    const byStatus   = { New: 0, Processing: 0, Resolved: 0 };
+    const byCat      = {};
+    const bySentiment= { Positive: 0, Neutral: 0, Negative: 0 };
 
-  // Category statistics
-  const categoryStats = feedbacks.reduce((acc, f) => {
-    const existing = acc.find(item => item.category === f.category);
-    if (existing) {
-      existing.count++;
-    } else {
-      acc.push({ category: f.category, count: 1 });
-    }
-    return acc;
-  }, []).sort((a, b) => b.count - a.count);
+    feedbacks.forEach(f => {
+      if (byStatus[f.status] !== undefined) byStatus[f.status]++;
+      byCat[f.category] = (byCat[f.category] || 0) + 1;
+      if (f.sentiment && bySentiment[f.sentiment] !== undefined) bySentiment[f.sentiment]++;
+    });
 
-  // Rating distribution
-  const ratingDistribution = [5, 4, 3, 2, 1].map(rating => ({
-    rating,
-    count: feedbacks.filter(f => f.rating === rating).length,
-    percentage: feedbacks.length > 0 
-      ? Math.round((feedbacks.filter(f => f.rating === rating).length / feedbacks.length) * 100)
-      : 0
-  }));
+    const resolveRate = total > 0 ? Math.round((byStatus.Resolved / total) * 100) : 0;
 
-  // Status statistics
-  const statusStats = {
-    pending: feedbacks.filter(f => f.status === "pending").length,
-    in_progress: feedbacks.filter(f => f.status === "in_progress").length,
-    resolved: feedbacks.filter(f => f.status === "resolved").length
-  };
+    const catList = Object.entries(byCat)
+      .map(([name, count]) => ({ name, count, pct: total > 0 ? Math.round(count / total * 100) : 0 }))
+      .sort((a, b) => b.count - a.count);
+
+    return { total, byStatus, bySentiment, resolveRate, catList };
+  }, [feedbacks]);
+
+  if (feedbacks.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center py-24 text-slate-400">
+        <BarChart3 size={40} className="opacity-20 mb-3" />
+        <p className="text-sm font-semibold">Chưa có dữ liệu thống kê</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Status Report - Wrapper for 5 cards */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <BarChart3 size={20} className="text-blue-600" />
-          <h3 className="font-bold text-slate-800">Tình trạng xử lý</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {/* Total Feedbacks */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-            <p className="text-xs font-semibold text-blue-800 mb-2 uppercase tracking-wide">Tổng phản ánh</p>
-            <p className="text-2xl font-bold text-blue-600">{totalFeedbacks}</p>
-            <p className="text-[11px] text-blue-700 mt-1">Tất cả phản ánh</p>
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: "Tổng phản ánh",   value: stats.total,              color: "text-slate-700",  bg: "bg-white" },
+          { label: "Chờ xử lý",       value: stats.byStatus.New,       color: "text-amber-600",  bg: "bg-amber-50" },
+          { label: "Đang xử lý",      value: stats.byStatus.Processing,color: "text-blue-600",   bg: "bg-blue-50" },
+          { label: "Đã giải quyết",   value: stats.byStatus.Resolved,  color: "text-green-600",  bg: "bg-green-50" },
+        ].map(s => (
+          <div key={s.label} className={`${s.bg} rounded-2xl border border-slate-200 px-5 py-4 shadow-sm`}>
+            <p className="text-xs text-slate-500 font-medium mb-1">{s.label}</p>
+            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
           </div>
-
-          {/* Pending */}
-          <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border border-yellow-200">
-            <p className="text-xs font-semibold text-yellow-800 mb-2 uppercase tracking-wide">Chờ xử lý</p>
-            <p className="text-2xl font-bold text-yellow-600">{statusStats.pending}</p>
-            <p className="text-[11px] text-yellow-700 mt-1">
-              {totalFeedbacks > 0 ? Math.round((statusStats.pending / totalFeedbacks) * 100) : 0}%
-            </p>
-          </div>
-
-          {/* In Progress */}
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
-            <p className="text-xs font-semibold text-indigo-800 mb-2 uppercase tracking-wide">Đang xử lý</p>
-            <p className="text-2xl font-bold text-indigo-600">{statusStats.in_progress}</p>
-            <p className="text-[11px] text-indigo-700 mt-1">
-              {totalFeedbacks > 0 ? Math.round((statusStats.in_progress / totalFeedbacks) * 100) : 0}%
-            </p>
-          </div>
-
-          {/* Resolved */}
-          <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 border border-emerald-200">
-            <p className="text-xs font-semibold text-emerald-800 mb-2 uppercase tracking-wide">Đã giải quyết</p>
-            <p className="text-2xl font-bold text-emerald-600">{statusStats.resolved}</p>
-            <p className="text-[11px] text-emerald-700 mt-1">
-              {totalFeedbacks > 0 ? Math.round((statusStats.resolved / totalFeedbacks) * 100) : 0}%
-            </p>
-          </div>
-
-          {/* Average Rating */}
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
-            <p className="text-xs font-semibold text-amber-800 mb-2 uppercase tracking-wide">Đánh giá TB</p>
-            <p className="text-2xl font-bold text-amber-600">{averageRating}</p>
-            <p className="text-[11px] text-amber-700 mt-1">Trên 5 sao</p>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Main Report */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Category Report */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <BarChart3 size={20} className="text-blue-600" />
-            <h3 className="font-bold text-slate-800">Phân loại phản ánh</h3>
+        {/* Tỉ lệ giải quyết */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <CheckCircle size={18} className="text-green-600" />
+            <h3 className="font-bold text-slate-800">Tỉ lệ giải quyết</h3>
           </div>
-
-          <div className="space-y-4">
-            {categoryStats.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-8">Không có dữ liệu</p>
-            ) : (
-              categoryStats.map((item, idx) => {
-                const percentage = (item.count / totalFeedbacks) * 100;
-                return (
-                  <div key={idx}>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-semibold text-slate-800">{item.category}</p>
-                      <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
-                        {item.count}
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">{percentage.toFixed(1)}%</p>
-                  </div>
-                );
-              })
-            )}
+          <div className="flex items-end gap-4 mb-4">
+            <p className="text-5xl font-bold text-slate-900">{stats.resolveRate}%</p>
+            <p className="text-sm text-slate-500 mb-1">{stats.byStatus.Resolved}/{stats.total} phản ánh</p>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+            <div
+              className="h-full bg-green-500 rounded-full transition-all"
+              style={{ width: `${stats.resolveRate}%` }}
+            />
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+            {[
+              { label: "Chờ xử lý", value: stats.byStatus.New, color: "text-amber-600" },
+              { label: "Đang xử lý", value: stats.byStatus.Processing, color: "text-blue-600" },
+              { label: "Đã xong", value: stats.byStatus.Resolved, color: "text-green-600" },
+            ].map(s => (
+              <div key={s.label} className="bg-slate-50 rounded-xl p-3">
+                <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Rating Distribution */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Star size={20} className="text-yellow-500" />
-            <h3 className="font-bold text-slate-800">Phân bố đánh giá</h3>
+        {/* Cảm xúc */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <TrendingUp size={18} className="text-blue-600" />
+            <h3 className="font-bold text-slate-800">Phân tích cảm xúc</h3>
           </div>
-
           <div className="space-y-4">
-            {ratingDistribution.map((item) => (
-              <div key={item.rating}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-800">
-                      {item.rating} sao
+            {[
+              { key: "Positive", label: "Tích cực", icon: <TrendingUp size={16} className="text-green-500" />, bar: "bg-green-500" },
+              { key: "Neutral",  label: "Trung lập", icon: <Minus size={16} className="text-slate-400" />,     bar: "bg-slate-400" },
+              { key: "Negative", label: "Tiêu cực", icon: <TrendingDown size={16} className="text-red-500" />, bar: "bg-red-500" },
+            ].map(s => {
+              const count = stats.bySentiment[s.key];
+              const pct   = stats.total > 0 ? Math.round(count / stats.total * 100) : 0;
+              return (
+                <div key={s.key}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      {s.icon} {s.label}
                     </span>
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={12}
-                          className={`${
-                            i < item.rating
-                              ? "fill-yellow-400 text-yellow-500"
-                              : "text-slate-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    <span className="text-sm font-bold text-slate-600">{count} <span className="text-slate-400 font-normal">({pct}%)</span></span>
                   </div>
-                  <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
-                    {item.count}
-                  </span>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                    <div className={`h-full ${s.bar} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Phân loại danh mục */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
+          <div className="flex items-center gap-2 mb-5">
+            <BarChart3 size={18} className="text-blue-600" />
+            <h3 className="font-bold text-slate-800">Phân loại theo danh mục</h3>
+          </div>
+          <div className="space-y-4">
+            {stats.catList.map((c, i) => (
+              <div key={c.name}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-semibold text-slate-700">{c.name}</span>
+                  <span className="text-sm font-bold text-slate-600">{c.count} <span className="text-slate-400 font-normal">({c.pct}%)</span></span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      item.rating >= 4
-                        ? "bg-gradient-to-r from-emerald-500 to-green-600"
-                        : item.rating >= 3
-                        ? "bg-gradient-to-r from-yellow-500 to-amber-600"
-                        : "bg-gradient-to-r from-red-500 to-rose-600"
-                    }`}
-                    style={{ width: `${item.percentage}%` }}
+                    className={`h-full ${CATEGORY_COLORS[i % CATEGORY_COLORS.length]} rounded-full transition-all`}
+                    style={{ width: `${c.pct}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{item.percentage}%</p>
               </div>
             ))}
           </div>
@@ -179,6 +142,5 @@ const FeedbackStatistics = ({ feedbacks }) => {
     </div>
   );
 };
-
 
 export default FeedbackStatistics;
