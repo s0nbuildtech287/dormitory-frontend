@@ -352,6 +352,29 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }
           )}
         </div>
 
+        {/* Thông tin người gửi số điện/nước */}
+        {invoice.meter_submitted_by && (
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+            <p className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              <Zap size={12} /> Số liệu điện/nước do sinh viên gửi
+            </p>
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">Người gửi</span>
+                <span className="font-semibold text-slate-700">{invoice.meter_submitter_name || "—"}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">Thời gian gửi</span>
+                <span className="font-semibold text-slate-700">
+                  {invoice.meter_submitted_at
+                    ? new Date(invoice.meter_submitted_at).toLocaleString("vi-VN")
+                    : "—"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {saveError && <p className="text-xs text-rose-600 font-semibold mb-4">{saveError}</p>}
 
         {/* Actions */}

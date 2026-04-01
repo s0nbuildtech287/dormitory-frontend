@@ -102,3 +102,19 @@ export const createStudentFeedback = (data) =>
  */
 export const getStudentDisciplinary = () =>
     fetch(`${API_BASE}/disciplinary`, { headers: headers() }).then(handle);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SỐ ĐIỆN / NƯỚC
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Sinh viên gửi số điện/nước trong 5 ngày đầu tháng.
+ * @param {{ electric_end: number, water_end: number }} data
+ * @returns {Promise<Object>} { success, message, data }
+ */
+export const submitMeterReading = (data) =>
+    fetch(`${API_BASE}/invoices/meter-reading`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify(data),
+    }).then(handle);

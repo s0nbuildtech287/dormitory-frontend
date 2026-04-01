@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import {
   CreditCard, CheckCircle, Clock, AlertCircle,
-  Zap, Droplets, Home, Wifi, Trash2, Car, Receipt, BarChart2, X
+  Zap, Droplets, Home, Wifi, Trash2, Car, Receipt, BarChart2, X,
+  Send, User, CalendarCheck, Info
 } from "lucide-react";
-import { getStudentInvoices } from "../../../api/apiStudent.js";
+import { getStudentInvoices, submitMeterReading } from "../../../api/apiStudent.js";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const fmtMoney = (v) => (v != null ? `${Number(v).toLocaleString("vi-VN")} đ` : "—");
@@ -36,13 +37,23 @@ const StudentBills = () => {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
   const [selected, setSelected] = useState(null);
+  const [showMeterModal, setShowMeterModal] = useState(false);
   const [showChart, setShowChart] = useState(false);
 
-  useEffect(() => {
+  // Meter reading form state
+  const [electricEnd, setElectricEnd] = useState("");
+  const [waterEnd, setWaterEnd]       = useState("");
+  const [submitting, setSubmitting]   = useState(false);
+  const [submitMsg, setSubmitMsg]     = useState(null); // { type: "success"|"error", text }
+
+  const today = new Date();
+  const isSubmitWindow = today.getDate() <= 5; // 5 ngày đầu tháng
+
+  const loadInvoices = () => {
+    setLoading(true);
     getStudentInvoices()
       .then(res => {
         const list = Array.isArray(res?.data) ? res.data : [];
-        // Sắp xếp: quá hạn → chưa TT → đã TT, mới nhất lên đầu
         const sorted = [...list].sort((a, b) => {
           const order = { "Quá hạn": 0, "Chưa thanh toán": 1, "Đã thanh toán": 2 };
           const od = (order[a.status] ?? 9) - (order[b.status] ?? 9);
@@ -54,7 +65,30 @@ const StudentBills = () => {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadInvoices(); }, []);
+
+  const handleSubmitMeter = async (e) => {
+    e.preventDefault();
+    if (!electricEnd || !waterEnd) return;
+    setSubmitting(true);
+    setSubmitMsg(null);
+    try {
+      const res = await submitMeterReading({
+        electric_end: Number(electricEnd),
+        water_end:    Number(waterEnd),
+      });
+      setSubmitMsg({ type: "success", text: res.message || "Gửi thành công!" });
+      setElectricEnd("");
+      setWaterEnd("");
+      loadInvoices(); // reload để cập nhật hóa đơn
+    } catch (err) {
+      setSubmitMsg({ type: "error", text: err.message });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const unpaid  = invoices.filter(i => i.status === "Chưa thanh toán" || i.status === "Quá hạn");
   const overdue = invoices.filter(i => i.status === "Quá hạn");
@@ -79,8 +113,8 @@ const StudentBills = () => {
       {/* ── Cột trái: Chi tiết hóa đơn được chọn ── */}
       <div className="flex-1 min-w-0 space-y-4">
 
-        {/* Thống kê nhanh */}
-        <div className="grid grid-cols-4 gap-3">
+      {/* Thống kê nhanh */}
+        <div className="grid grid-cols-5 gap-3">
           {[
             { label: "Cần thanh toán",  value: fmtMoney(totalUnpaid), icon: CreditCard,  cls: "text-rose-600 bg-rose-50",      hi: totalUnpaid > 0 },
             { label: "Quá hạn",         value: `${overdue.length} kỳ`, icon: AlertCircle, cls: "text-orange-600 bg-orange-50",  hi: overdue.length > 0 },
@@ -94,6 +128,24 @@ const StudentBills = () => {
               </div>
             </div>
           ))}
+          {/* Card gửi số điện/nước */}
+          <button onClick={() => isSubmitWindow && setShowMeterModal(true)}
+            className={`bg-white rounded-2xl border shadow-sm p-4 flex items-center gap-3 text-left transition-all active:scale-95 ${
+              isSubmitWindow
+                ? "border-blue-200 hover:bg-blue-50/40 cursor-pointer"
+                : "border-slate-100 opacity-50 cursor-not-allowed"
+            }`}
+            title={isSubmitWindow ? "Gửi số điện/nước" : "Chỉ mở trong 5 ngày đầu tháng"}>
+            <div className={`p-2.5 rounded-xl shrink-0 ${isSubmitWindow ? "text-blue-600 bg-blue-50" : "text-slate-400 bg-slate-100"}`}>
+              <Zap size={16} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Điện / Nước</p>
+              <p className={`text-sm font-black mt-0.5 ${isSubmitWindow ? "text-blue-700" : "text-slate-400"}`}>
+                {isSubmitWindow ? `Còn ${5 - today.getDate()} ngày` : "Đã hết hạn"}
+              </p>
+            </div>
+          </button>
           {/* Card biểu đồ */}
           <button onClick={() => setShowChart(true)}
             className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3 hover:border-blue-200 hover:bg-blue-50/30 transition-all active:scale-95 text-left">
@@ -105,8 +157,68 @@ const StudentBills = () => {
           </button>
         </div>
 
-        {/* Modal biểu đồ */}
-        {showChart && (() => {
+        {/* Modal nhập số điện/nước */}
+        {showMeterModal && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <CalendarCheck size={18} className="text-blue-600" />
+                  <p className="font-bold text-slate-900">Gửi số điện/nước tháng này</p>
+                </div>
+                <button onClick={() => { setShowMeterModal(false); setSubmitMsg(null); }}
+                  className="p-1.5 hover:bg-slate-100 rounded-xl transition-colors">
+                  <X size={16} className="text-slate-500" />
+                </button>
+              </div>
+              <form onSubmit={async (e) => { await handleSubmitMeter(e); if (!submitMsg || submitMsg.type === "success") setShowMeterModal(false); }} className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 block mb-1.5 flex items-center gap-1.5">
+                      <Zap size={12} className="text-amber-500" /> Số điện cuối kỳ (kWh)
+                    </label>
+                    <input type="number" min="0" step="0.01" value={electricEnd}
+                      onChange={e => setElectricEnd(e.target.value)}
+                      placeholder="VD: 1250"
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+                      required />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 block mb-1.5 flex items-center gap-1.5">
+                      <Droplets size={12} className="text-sky-500" /> Số nước cuối kỳ (m³)
+                    </label>
+                    <input type="number" min="0" step="0.01" value={waterEnd}
+                      onChange={e => setWaterEnd(e.target.value)}
+                      placeholder="VD: 45"
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+                      required />
+                  </div>
+                </div>
+                <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <Info size={11} /> Chỉ cần 1 người trong phòng gửi. Gửi lại sẽ lấy số liệu mới nhất.
+                </p>
+                {submitMsg && (
+                  <p className={`text-xs font-semibold flex items-center gap-1.5 ${submitMsg.type === "success" ? "text-green-600" : "text-red-500"}`}>
+                    {submitMsg.type === "success" ? <CheckCircle size={13} /> : <AlertCircle size={13} />}
+                    {submitMsg.text}
+                  </p>
+                )}
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => { setShowMeterModal(false); setSubmitMsg(null); }}
+                    className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-all">
+                    Hủy
+                  </button>
+                  <button type="submit" disabled={submitting || !electricEnd || !waterEnd}
+                    className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-700 disabled:opacity-40 transition-all flex items-center justify-center gap-2">
+                    {submitting ? "Đang gửi..." : <><Send size={14} /> Gửi số liệu</>}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal biểu đồ */}        {showChart && (() => {
           const chartData = [...invoices]
             .filter(i => i.billing_month)
             .sort((a, b) => new Date(a.billing_month) - new Date(b.billing_month))
@@ -255,6 +367,19 @@ const StudentBills = () => {
             {selected.note && (
               <div className="mx-5 mb-5 bg-slate-50 border border-slate-100 rounded-xl p-3">
                 <p className="text-xs text-slate-500 italic">{selected.note}</p>
+              </div>
+            )}
+
+            {/* Thông tin người gửi số điện/nước */}
+            {selected.meter_submitted_by && (
+              <div className="mx-5 mb-5 bg-blue-50 border border-blue-100 rounded-xl p-3 flex items-start gap-2">
+                <User size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-blue-700">Số liệu điện/nước do sinh viên gửi</p>
+                  <p className="text-xs text-blue-600 mt-0.5">
+                    {selected.meter_submitter_name || "Sinh viên"} · {selected.meter_submitted_at ? new Date(selected.meter_submitted_at).toLocaleString("vi-VN") : ""}
+                  </p>
+                </div>
               </div>
             )}
           </div>
