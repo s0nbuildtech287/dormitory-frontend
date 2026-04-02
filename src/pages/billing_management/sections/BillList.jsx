@@ -155,9 +155,14 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
     const matchesBuilding = filterBuilding === "All" || bill.building === filterBuilding;
     const matchesMonth = filterMonth === "All" || (() => {
-      const bd = new Date(bill.billing_month + 'T00:00:00');
-      const formatted = `${bd.getFullYear()}-${(bd.getMonth() + 1).toString().padStart(2, '0')}`;
-      return formatted === filterMonth;
+      const bm = bill.billing_month || '';
+      if (!bm) return false;
+      // Luôn parse qua Date() local để tránh timezone shift
+      // Nếu là "YYYY-MM-DD", thêm T12:00:00 để tránh UTC midnight bị lệch ngày
+      const dateStr = bm.includes('T') ? bm : bm.substring(0, 10) + 'T12:00:00';
+      const d = new Date(dateStr);
+      const billYearMonth = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      return billYearMonth === filterMonth;
     })();
     // Ẩn hóa đơn tháng trước & đã thanh toán nếu toggle bật
     // billing_month từ PG có thể là "YYYY-MM-DD" hoặc UTC ISO "2026-01-31T17:00:00.000Z"
@@ -244,9 +249,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             options: [
               { value: "All", label: "Tất cả tháng" },
               ...Array.from({ length: 6 }, (_, i) => {
-                const d = new Date();
-                d.setDate(1);
-                d.setMonth(d.getMonth() - i);
+                const now = new Date();
+                const d = new Date(now.getFullYear(), now.getMonth() - 1 - i, 1);
                 const val = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
                 return { value: val, label: `Tháng ${d.getMonth() + 1}/${d.getFullYear()}` };
               }),
