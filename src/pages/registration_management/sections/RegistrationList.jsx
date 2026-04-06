@@ -735,29 +735,64 @@ const RegistrationList = ({
               )}
 
               {/* Evidence Images */}
-              {selectedRegDetail.evidence_images && selectedRegDetail.evidence_images.length > 0 && (
-                <div>
-                  <h4 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">📸 Ảnh minh chứng</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {selectedRegDetail.evidence_images.map((img, idx) => (
-                      <div key={idx} className="relative group overflow-hidden rounded-2xl shadow-md border border-slate-200 hover:shadow-lg transition-all">
-                        <img
-                          src={img}
-                          alt={`Evidence ${idx + 1}`}
-                          className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
-                          onClick={() => {
-                            // Open image in new tab
-                            window.open(img, "_blank");
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                          <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-bold">Nhấn xem</span>
-                        </div>
-                      </div>
-                    ))}
+              {(() => {
+                // Parse evidence_images: có thể là array, JSON string, hoặc string URL đơn
+                let imgs = selectedRegDetail.evidence_images;
+                if (typeof imgs === "string") {
+                  try { imgs = JSON.parse(imgs); } catch { imgs = [imgs]; }
+                }
+                if (!Array.isArray(imgs)) imgs = imgs ? [imgs] : [];
+                imgs = imgs.filter(Boolean);
+                if (imgs.length === 0) return null;
+
+                // Convert Drive share link → thumbnail URL (works without auth)
+                const toThumbnailUrl = (url) => {
+                  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                  if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
+                  return null;
+                };
+
+                return (
+                  <div>
+                    <h4 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">📸 Ảnh minh chứng</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {imgs.map((img, idx) => {
+                        const thumbUrl = toThumbnailUrl(img);
+                        return (
+                          <a
+                            key={idx}
+                            href={img}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="relative group overflow-hidden rounded-2xl shadow-md border border-slate-200 hover:shadow-lg transition-all block"
+                          >
+                            {thumbUrl ? (
+                              <img
+                                src={thumbUrl}
+                                alt={`Minh chứng ${idx + 1}`}
+                                className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300"
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                  e.target.nextSibling.style.display = "flex";
+                                }}
+                              />
+                            ) : null}
+                            <div
+                              style={{ display: thumbUrl ? "none" : "flex" }}
+                              className="w-full h-40 items-center justify-center bg-slate-100 rounded-2xl text-xs text-blue-600 font-semibold p-2 text-center"
+                            >
+                              🖼️ Xem ảnh minh chứng {idx + 1}
+                            </div>
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                              <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-bold">Mở Drive</span>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             <div className="sticky bottom-0 bg-slate-100 px-6 py-4 flex items-center justify-between gap-3 border-t border-slate-200">
