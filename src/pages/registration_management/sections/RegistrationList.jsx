@@ -785,15 +785,6 @@ const RegistrationList = ({
                 <button onClick={() => setSelectedRegDetail(null)} className="px-4 py-2 text-slate-700 font-semibold bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-all">
                   Đóng
                 </button>
-                <button
-                  onClick={() => {
-                    setSelectedReg(convertToCamelCase(selectedRegDetail));
-                    setSelectedRegDetail(null);
-                  }}
-                  className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 transition-all"
-                >
-                  Chỉnh sửa
-                </button>
               </div>
             </div>
           </div>
