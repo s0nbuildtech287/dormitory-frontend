@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { FileSpreadsheet, Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare } from "lucide-react";
+import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2 } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -10,7 +10,7 @@ import FilterBar from "../../../components/common/FilterBar.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
-import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration } from "../../../api/apiRegistration.js";
+import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration, importFromGoogleSheets } from "../../../api/apiRegistration.js";
 
 // Helper function to determine priority group
 const getGroupName = (year, priorityReasons) => {
@@ -82,8 +82,13 @@ const RegistrationList = ({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
-  const [composeEmail, setComposeEmail] = useState(null); // { to, subject, body, recipientCount }
-  const [sendEmailOnApprove, setSendEmailOnApprove] = useState(true); // checkbox auto-send
+  const [composeEmail, setComposeEmail] = useState(null);
+  const [sendEmailOnApprove, setSendEmailOnApprove] = useState(true);
+
+  // Google Sheets sync state
+  const [sheetUrl, setSheetUrl] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState(null); // { type: 'success'|'error', text }
 
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
@@ -212,6 +217,31 @@ const RegistrationList = ({
     });
   };
 
+  // Handler đồng bộ Google Sheets
+  const handleSyncSheets = async () => {
+    const url = sheetUrl.trim();
+    if (!url) {
+      setSyncMsg({ type: 'error', text: 'Vui lòng nhập link Google Sheets!' });
+      return;
+    }
+    if (!url.includes('docs.google.com/spreadsheets') && !/^[a-zA-Z0-9_-]{20,}$/.test(url)) {
+      setSyncMsg({ type: 'error', text: 'URL không hợp lệ. Dán đúng link Google Sheets.' });
+      return;
+    }
+    setIsSyncing(true);
+    setSyncMsg(null);
+    try {
+      const res = await importFromGoogleSheets(url);
+      setSyncMsg({ type: 'success', text: `Đồng bộ thành công ${res.data.success} hồ sơ!${res.data.failed > 0 ? ` (${res.data.failed} lỗi)` : ''}` });
+      setSheetUrl("");
+      if (onImportSuccess) onImportSuccess();
+    } catch (err) {
+      setSyncMsg({ type: 'error', text: err.message || 'Đồng bộ thất bại!' });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* KHỐI CHỨC NĂNG DỮ LIỆU ĐẦU VÀO */}
@@ -221,8 +251,11 @@ const RegistrationList = ({
           <div className="col-span-3 relative">
             <input
               type="text"
+              value={sheetUrl}
+              onChange={(e) => { setSheetUrl(e.target.value); setSyncMsg(null); }}
+              disabled={isSyncing}
               placeholder="Nhập URL Google Sheets..."
-              className="w-full h-full pl-4 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50"
+              className="w-full h-full pl-4 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm transition-all bg-slate-50/50 disabled:opacity-60"
             />
           </div>
 
@@ -238,13 +271,19 @@ const RegistrationList = ({
               setFilterScore("All");
               setFilterGender("All");
               setFilterGroup("All");
+              setSyncMsg(null);
             }}
             className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-lg shadow-slate-100 font-bold text-xs whitespace-nowrap">
             <RefreshCw size={14} className="mr-1 flex-shrink-0" /> Reset
           </button>
 
-          <button className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
-            <RotateCw size={14} className="mr-1 flex-shrink-0" /> Đồng bộ
+          <button
+            onClick={handleSyncSheets}
+            disabled={isSyncing}
+            className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap">
+            {isSyncing
+              ? <><Loader2 size={14} className="mr-1 animate-spin" /> Đang đồng bộ...</>
+              : <><RotateCw size={14} className="mr-1 flex-shrink-0" /> Đồng bộ</>}
           </button>
 
           <button
@@ -254,6 +293,17 @@ const RegistrationList = ({
             <Plus size={14} className="mr-1 flex-shrink-0" /> Thêm hồ sơ
           </button>
         </div>
+
+        {/* Thông báo kết quả đồng bộ */}
+        {syncMsg && (
+          <p className={`mt-3 text-xs font-semibold px-3 py-2 rounded-lg ${
+            syncMsg.type === 'success'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-rose-50 text-rose-700 border border-rose-200'
+          }`}>
+            {syncMsg.type === 'success' ? '✅ ' : '❌ '}{syncMsg.text}
+          </p>
+        )}
       </div>
 
       {/* THANH TÌM KIẾM VÀ LỌC */}

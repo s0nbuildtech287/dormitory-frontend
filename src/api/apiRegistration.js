@@ -435,3 +435,73 @@ export const recalculateAllScores = async () => {
     throw new Error(error.message || 'Lỗi kết nối đến server');
   }
 };
+
+/**
+ * Import registrations from Google Sheets URL
+ * @param {string} sheetUrl - URL Google Sheets
+ * @returns {Promise<Object>} Import result with success count and errors
+ */
+export const importFromGoogleSheets = async (sheetUrl) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/import/sheets`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ sheetUrl })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
+      } else if (response.status === 403) {
+        throw new Error('Bạn không có quyền thực hiện chức năng này!');
+      }
+      throw new Error(data.message || 'Đồng bộ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Get service account emails (to show admins which emails to share the sheet with)
+ * @returns {Promise<string[]>} List of service account emails
+ */
+export const getServiceAccountEmails = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/service-accounts`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải danh sách service accounts');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
