@@ -358,11 +358,19 @@ const StudentBills = () => {
               </div>
 
               <div className="p-5 space-y-4">
-                {/* QR placeholder */}
+                {/* QR VietQR động */}
                 <div className="flex flex-col items-center gap-2 py-3">
-                  <div className="w-36 h-36 bg-slate-100 rounded-2xl flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200">
-                    <QrCode size={40} className="text-slate-300" />
-                    <p className="text-[10px] text-slate-400 font-semibold">QR VietQR</p>
+                  <div className="w-40 h-40 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white flex items-center justify-center">
+                    <img
+                      src={`https://img.vietqr.io/image/VCB-1020914134-compact2.png?amount=${Math.round(selected.total_amount || 0)}&addInfo=${encodeURIComponent(selected.invoice_number || "")}&accountName=${encodeURIComponent("KTX Truong DH Thuy Loi")}`}
+                      alt="QR VietQR"
+                      className="w-full h-full object-contain"
+                      onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                    />
+                    <div style={{ display: "none" }} className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-300">
+                      <QrCode size={36} />
+                      <p className="text-[10px] font-semibold">Không tải được QR</p>
+                    </div>
                   </div>
                   <p className="text-[11px] text-slate-400">Quét mã để chuyển khoản nhanh</p>
                 </div>
