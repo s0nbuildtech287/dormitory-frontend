@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import {
   FileText, Home, Calendar, CreditCard, CheckCircle,
   Clock, AlertCircle, Building, Users, Layers, Ruler,
-  Hash, Shield, X, QrCode, Copy, Building2, BadgeCheck, Info
+  Hash, Shield, X, QrCode, Copy, Building2, BadgeCheck, Info, ExternalLink
 } from "lucide-react";
 import { getStudentContracts } from "../../../api/apiStudent.js";
+import { createVNPayPayment } from "../../../api/apiVNPay.js";
 
 const fmt      = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
@@ -74,11 +75,30 @@ const StudentContract = () => {
   const [selected, setSelected]   = useState(null);
   const [showPayModal, setShowPayModal] = useState(false);
   const [copied, setCopied]            = useState(null);
+  const [payLoading, setPayLoading]    = useState(false);
 
   const handleCopy = (text, key) => {
     navigator.clipboard.writeText(text);
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handleVNPayDeposit = async () => {
+    if (!c) return;
+    setPayLoading(true);
+    try {
+      const { paymentUrl } = await createVNPayPayment({
+        type: "deposit",
+        id: c.id,
+        amount: Number(c.deposit_amount),
+        orderInfo: `Thanh toan tien coc hop dong ${c.contract_number}`,
+      });
+      window.location.href = paymentUrl;
+    } catch (err) {
+      alert(err.message || "Không thể tạo thanh toán");
+    } finally {
+      setPayLoading(false);
+    }
   };
 
   const BANK_INFO = {
@@ -350,10 +370,18 @@ const StudentContract = () => {
                 </p>
               </div>
 
-              <button onClick={() => setShowPayModal(false)}
-                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition-all">
-                Đóng
-              </button>
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  onClick={handleVNPayDeposit}
+                  disabled={payLoading}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200">
+                  {payLoading ? "Đang xử lý..." : <><ExternalLink size={14} /> Thanh toán qua VNPay</>}
+                </button>
+                <button onClick={() => setShowPayModal(false)}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-sm transition-all">
+                  Đóng
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { useNavigationHandlers } from "../hooks/useNavigationHandlers.js";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "./index.js";
 import { UserRole } from "../utils/types.js";
 import ProfileAdmin from "../pages/profile_admin/index.jsx";
+import PaymentResult from "../pages/payment/PaymentResult.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 
 /**
@@ -78,6 +79,9 @@ const RouteConfig = () => {
       
       {/* Profile Admin Route */}
       <Route path="/profile-admin" element={<ProfileAdmin user={user} />} />
+
+      {/* Payment Result Route */}
+      <Route path="/payment/result" element={<PaymentResult />} />
       
       {/* Default redirect */}
       <Route path="/" element={<Navigate to={defaultPath} replace />} />

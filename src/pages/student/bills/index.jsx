@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import {
   CreditCard, CheckCircle, Clock, AlertCircle,
   Zap, Droplets, Home, Wifi, Trash2, Car, Receipt, BarChart2, X,
-  Send, User, CalendarCheck, Info, QrCode, Copy, Building2, BadgeCheck
+  Send, User, CalendarCheck, Info, QrCode, Copy, Building2, BadgeCheck, ExternalLink
 } from "lucide-react";
 import { getStudentInvoices, submitMeterReading } from "../../../api/apiStudent.js";
+import { createVNPayPayment } from "../../../api/apiVNPay.js";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const fmtMoney = (v) => (v != null ? `${Number(v).toLocaleString("vi-VN")} đ` : "—");
@@ -41,6 +42,7 @@ const StudentBills = () => {
   const [showChart, setShowChart] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [payLoading, setPayLoading] = useState(false);
 
   // Meter reading form state
   const [electricEnd, setElectricEnd] = useState("");
@@ -52,6 +54,24 @@ const StudentBills = () => {
     navigator.clipboard.writeText(text);
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  const handleVNPayInvoice = async () => {
+    if (!selected) return;
+    setPayLoading(true);
+    try {
+      const { paymentUrl } = await createVNPayPayment({
+        type: "invoice",
+        id: selected.id,
+        amount: Number(selected.total_amount),
+        orderInfo: `Thanh toan hoa don ${selected.invoice_number}`,
+      });
+      window.location.href = paymentUrl;
+    } catch (err) {
+      alert(err.message || "Không thể tạo thanh toán");
+    } finally {
+      setPayLoading(false);
+    }
   };
 
   const BANK_INFO = {
@@ -398,10 +418,18 @@ const StudentBills = () => {
                   </p>
                 </div>
 
-                <button onClick={() => setShowPayModal(false)}
-                  className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition-all">
-                  Đóng
-                </button>
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                    onClick={handleVNPayInvoice}
+                    disabled={payLoading}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-200">
+                    {payLoading ? "Đang xử lý..." : <><ExternalLink size={14} /> Thanh toán qua VNPay</>}
+                  </button>
+                  <button onClick={() => setShowPayModal(false)}
+                    className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-sm transition-all">
+                    Đóng
+                  </button>
+                </div>
               </div>
             </div>
           </div>
