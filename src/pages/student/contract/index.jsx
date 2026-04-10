@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   FileText, Home, Calendar, CreditCard, CheckCircle,
   Clock, AlertCircle, Building, Users, Layers, Ruler,
-  Hash, Shield
+  Hash, Shield, X, QrCode, Copy, Building2, BadgeCheck, Info
 } from "lucide-react";
 import { getStudentContracts } from "../../../api/apiStudent.js";
 
@@ -72,6 +72,21 @@ const StudentContract = () => {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
   const [selected, setSelected]   = useState(null);
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [copied, setCopied]            = useState(null);
+
+  const handleCopy = (text, key) => {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  };
+
+  const BANK_INFO = {
+    bank: "Vietcombank",
+    branch: "Chi nhánh Hà Nội",
+    account: "1234567890",
+    owner: "KTX TRƯỜNG ĐẠI HỌC THUỶ LỢI",
+  };
 
   useEffect(() => {
     getStudentContracts()
@@ -184,6 +199,13 @@ const StudentContract = () => {
                 {c.deposit_paid ? "✓ Đã đóng" : "✗ Chưa đóng"}
               </p>
             </div>
+            {!c.deposit_paid && (
+              <button
+                onClick={() => setShowPayModal(true)}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm shadow-blue-200">
+                <CreditCard size={12} /> Thanh toán
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-3 py-3">
             <div className="p-2 bg-slate-50 rounded-lg shrink-0"><FileText size={14} className="text-slate-400" /></div>
@@ -246,6 +268,97 @@ const StudentContract = () => {
           )}
         </Section>
       </div>
+      {/* Modal thanh toán tiền cọc */}
+      {showPayModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 px-6 py-5 text-white">
+              <button onClick={() => setShowPayModal(false)}
+                className="absolute top-4 right-4 p-1.5 hover:bg-white/20 rounded-xl transition-colors">
+                <X size={16} />
+              </button>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 bg-white/20 rounded-xl"><CreditCard size={18} /></div>
+                <div>
+                  <p className="font-black text-base">Thanh toán tiền cọc</p>
+                  <p className="text-blue-200 text-xs">{c.contract_number}</p>
+                </div>
+              </div>
+              <div className="bg-white/15 rounded-2xl px-4 py-3 flex items-center justify-between">
+                <span className="text-blue-100 text-sm font-semibold">Số tiền cọc</span>
+                <span className="text-white font-black text-xl">{fmtMoney(c.deposit_amount)}</span>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* QR placeholder */}
+              <div className="flex flex-col items-center gap-2 py-3">
+                <div className="w-36 h-36 bg-slate-100 rounded-2xl flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200">
+                  <QrCode size={40} className="text-slate-300" />
+                  <p className="text-[10px] text-slate-400 font-semibold">QR VietQR</p>
+                </div>
+                <p className="text-[11px] text-slate-400">Quét mã để chuyển khoản nhanh</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-slate-100" />
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">hoặc chuyển khoản thủ công</span>
+                <div className="flex-1 h-px bg-slate-100" />
+              </div>
+
+              {/* Thông tin ngân hàng */}
+              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
+                {[
+                  { label: "Ngân hàng",     value: BANK_INFO.bank,    key: "bank",    icon: Building2 },
+                  { label: "Chi nhánh",     value: BANK_INFO.branch,  key: "branch",  icon: Building2 },
+                  { label: "Số tài khoản",  value: BANK_INFO.account, key: "account", icon: CreditCard },
+                  { label: "Chủ tài khoản", value: BANK_INFO.owner,   key: "owner",   icon: Users },
+                ].map(({ label, value, key, icon: Icon }) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Icon size={13} className="text-slate-400 shrink-0" />
+                      <span className="text-xs text-slate-500 shrink-0">{label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm font-bold text-slate-800 truncate">{value}</span>
+                      <button onClick={() => handleCopy(value, key)}
+                        className="p-1 hover:bg-slate-200 rounded-lg transition-colors shrink-0">
+                        {copied === key
+                          ? <BadgeCheck size={13} className="text-emerald-500" />
+                          : <Copy size={13} className="text-slate-400" />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Nội dung chuyển khoản */}
+              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-2">Nội dung chuyển khoản</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-blue-800 font-mono">COC {c.contract_number}</p>
+                  <button onClick={() => handleCopy(`COC ${c.contract_number}`, "content")}
+                    className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors shrink-0">
+                    {copied === "content"
+                      ? <BadgeCheck size={14} className="text-emerald-500" />
+                      : <Copy size={14} className="text-blue-400" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-blue-500 mt-1.5 flex items-center gap-1">
+                  <Info size={10} /> Vui lòng ghi đúng nội dung để hệ thống xác nhận tự động.
+                </p>
+              </div>
+
+              <button onClick={() => setShowPayModal(false)}
+                className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition-all">
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
