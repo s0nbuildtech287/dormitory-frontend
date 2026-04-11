@@ -20,6 +20,13 @@ import { getRooms } from "../../api/apiRoom.js";
 import { getContracts } from "../../api/apiContract.js";
 import { getInvoices } from "../../api/apiInvoice.js";
 
+const API_BASE = "http://localhost:1234/api";
+const token = () => localStorage.getItem("token");
+const getFeedbacks = () =>
+  fetch(`${API_BASE}/feedbacks`, {
+    headers: { Authorization: `Bearer ${token()}` },
+  }).then(r => r.json());
+
 const AdminDashboard = () => {
   const [activeSubTab, setActiveSubTab] = useState("home");
   
@@ -58,9 +65,8 @@ const AdminDashboard = () => {
             setBills(invoicesData.success ? invoicesData.data : []);
             break;
           case "feedback-stats":
-            // TODO: Implement getFeedbacks API
-            // For now, feedbacks will be empty array
-            setFeedbacks([]);
+            const feedbacksData = await getFeedbacks();
+            setFeedbacks(Array.isArray(feedbacksData.data) ? feedbacksData.data : []);
             break;
           default:
             break;
