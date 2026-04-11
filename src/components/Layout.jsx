@@ -13,7 +13,8 @@ import { useNotifications } from "../contexts/NotificationContext.jsx";
  * Props: user, onLogout, children
  */
 const Layout = ({ user, onLogout, children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  // Trên mobile mặc định đóng sidebar, desktop mặc định mở
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(window.innerWidth >= 1024);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -21,6 +22,15 @@ const Layout = ({ user, onLogout, children }) => {
   const profileRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Đóng sidebar khi resize xuống mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) setIsSidebarOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const { notifications, adminAlerts, unreadCount, clearUnread, clearAdminAlerts } = useNotifications();
 
@@ -112,10 +122,18 @@ const Layout = ({ user, onLogout, children }) => {
 
   return (
     <div className="min-h-screen flex text-slate-800 bg-slate-50">
+      {/* Overlay mobile — tap ngoài để đóng sidebar */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-10 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`${isSidebarOpen ? "w-64" : "w-20"
-          } bg-slate-900 text-white transition-all duration-300 flex flex-col fixed h-full z-20 shadow-xl`}
+        className={`${isSidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:translate-x-0 lg:w-20"}
+          bg-slate-900 text-white transition-all duration-300 flex flex-col fixed h-full z-20 shadow-xl`}
       >
         {/* Logo */}
         <div className="p-5 flex items-center justify-between border-b border-slate-800">
@@ -199,13 +217,22 @@ const Layout = ({ user, onLogout, children }) => {
 
       {/* Main Content */}
       <main
-        className={`flex-1 transition-all duration-300 ${isSidebarOpen ? "ml-64" : "ml-20"
-          }`}
+        className={`flex-1 transition-all duration-300 min-w-0 ${
+          isSidebarOpen ? "lg:ml-64" : "lg:ml-20"
+        }`}
       >
         {/* Header */}
-        <header className="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
-          {/* Marquee text — chiếm phần giữa, không đè lên avatar/noti */}
-          <div className="flex-1 overflow-hidden mx-4">
+        <header className="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 shadow-sm">
+          {/* Hamburger — luôn hiện trên mobile */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors lg:hidden"
+          >
+            <Menu size={20} />
+          </button>
+
+          {/* Marquee text — ẩn trên mobile */}
+          <div className="flex-1 overflow-hidden mx-4 hidden md:block">
             <div className="flex items-center gap-3 animate-marquee-single whitespace-nowrap">
               <img src={logoImg} alt="Logo" className="h-8 w-8 shrink-0" />
               <span className="text-base font-bold text-slate-700">
@@ -235,7 +262,7 @@ const Layout = ({ user, onLogout, children }) => {
 
               {/* Dropdown kiểu Facebook */}
               {showNotifications && (
-                <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50">
                   {/* Header */}
                   <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="font-bold text-slate-900 text-base">Thông báo</h3>

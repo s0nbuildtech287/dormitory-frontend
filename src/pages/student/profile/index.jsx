@@ -91,7 +91,7 @@ const StudentProfile = ({ user }) => {
 
   if (loading) return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {[...Array(6)].map(i => <div key={i} className="h-48 bg-slate-100 rounded-2xl animate-pulse" />)}
+      {[...Array(6)].map((_, i) => <div key={i} className="h-48 bg-slate-100 rounded-2xl animate-pulse" />)}
     </div>
   );
 

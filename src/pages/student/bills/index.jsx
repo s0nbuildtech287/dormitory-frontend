@@ -152,13 +152,13 @@ const StudentBills = () => {
   );
 
   return (
-    <div className="flex gap-5 h-full" style={{ minHeight: "calc(100vh - 12rem)" }}>
+    <div className="flex flex-col lg:flex-row gap-5">
 
       {/* ── Cột trái: Chi tiết hóa đơn được chọn ── */}
       <div className="flex-1 min-w-0 space-y-4">
 
       {/* Thống kê nhanh */}
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
             { label: "Cần thanh toán",  value: fmtMoney(totalUnpaid), icon: CreditCard,  cls: "text-rose-600 bg-rose-50",      hi: totalUnpaid > 0 },
             { label: "Quá hạn",         value: `${overdue.length} kỳ`, icon: AlertCircle, cls: "text-orange-600 bg-orange-50",  hi: overdue.length > 0 },
@@ -559,7 +559,7 @@ const StudentBills = () => {
       </div>
 
       {/* ── Cột phải: Danh sách hóa đơn ── */}
-      <div className="w-72 shrink-0 flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: "calc(100vh - 12rem)" }}>
+      <div className="w-full lg:w-72 shrink-0 flex flex-col gap-2 lg:overflow-y-auto" style={{ maxHeight: "calc(100vh - 12rem)" }}>
         <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-1 mb-1">
           Lịch sử hóa đơn ({invoices.length})
         </p>
