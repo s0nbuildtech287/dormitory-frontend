@@ -3,9 +3,10 @@ import {
   User, Mail, Phone, MapPin, BookOpen, GraduationCap,
   Calendar, CreditCard, Home, Star, Shield, FileCheck,
   Hash, Users, Ruler, Building, Layers, Wifi,
-  Trash2, Car, AlertCircle, CheckCircle, Clock, ChevronRight
+  Trash2, Car, AlertCircle, CheckCircle, Clock, ChevronRight,
+  ShieldAlert, ShieldCheck, ShieldX, MinusCircle
 } from "lucide-react";
-import { getStudentProfile } from "../../../api/apiStudent.js";
+import { getStudentProfile, getStudentDisciplinary } from "../../../api/apiStudent.js";
 
 const fmt    = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
@@ -70,13 +71,20 @@ const ContractBadge = ({ status }) => {
 };
 
 const StudentProfile = ({ user }) => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [profile, setProfile]         = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState(null);
+  const [disciplinary, setDisciplinary] = useState([]);
 
   useEffect(() => {
-    getStudentProfile()
-      .then(res => setProfile(res.data))
+    Promise.all([
+      getStudentProfile(),
+      getStudentDisciplinary().catch(() => ({ data: [] })),
+    ])
+      .then(([profileRes, discRes]) => {
+        setProfile(profileRes.data);
+        setDisciplinary(Array.isArray(discRes.data) ? discRes.data : []);
+      })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -148,6 +156,96 @@ const StudentProfile = ({ user }) => {
           <InfoRow icon={Ruler}         label="Khoảng cách đến trường" value={profile?.distance ? `${profile.distance} km` : null} />
         </Section>
       </div>
+
+      {/* ── Card kỷ luật — chỉ hiện khi dưới 100 điểm ── */}
+      {(() => {
+        const score = Number(user?.conduct_score ?? 100);
+        if (score >= 100) return null;
+
+        const lost  = 100 - score;
+        const scoreCfg = score >= 80
+          ? { bar: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", label: "Khá tốt", Icon: ShieldCheck }
+          : score >= 60
+          ? { bar: "bg-amber-400",   text: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200",   label: "Trung bình", Icon: ShieldAlert }
+          : { bar: "bg-rose-500",    text: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200",    label: "Yếu", Icon: ShieldX };
+
+        const LEVEL_CFG = {
+          "Nhắc nhở":          { cls: "bg-slate-100 text-slate-600",   dot: "bg-slate-400" },
+          "Cảnh cáo":          { cls: "bg-amber-100 text-amber-700",   dot: "bg-amber-400" },
+          "Phạt tiền":         { cls: "bg-orange-100 text-orange-700", dot: "bg-orange-400" },
+          "Đình chỉ tạm thời": { cls: "bg-rose-100 text-rose-700",     dot: "bg-rose-500" },
+          "Buộc thôi ở":       { cls: "bg-red-100 text-red-800",       dot: "bg-red-600" },
+        };
+
+        // Sắp xếp mới nhất trước, chỉ lấy 3 cái
+        const recent = [...disciplinary]
+          .sort((a, b) => new Date(b.violation_date || b.created_at) - new Date(a.violation_date || a.created_at))
+          .slice(0, 3);
+
+        return (
+          <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${scoreCfg.border}`}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 bg-slate-50 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <ShieldAlert size={14} className="text-slate-400" />
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Điểm rèn luyện & Kỷ luật</p>
+              </div>
+              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${scoreCfg.bg} ${scoreCfg.text} border ${scoreCfg.border}`}>
+                {score}/100 — {scoreCfg.label}
+              </span>
+            </div>
+
+            <div className="p-5 grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Thanh điểm */}
+              <div className="lg:col-span-1 flex flex-col justify-center gap-3">
+                <div className="flex justify-between text-xs text-slate-500 font-semibold">
+                  <span>Điểm hiện tại</span>
+                  <span className={`font-black text-base ${scoreCfg.text}`}>{score}</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${scoreCfg.bar}`} style={{ width: `${score}%` }} />
+                </div>
+                <p className="text-[10px] text-rose-400 font-semibold text-center">
+                  -{lost} điểm bị trừ
+                </p>
+                {disciplinary.length > 3 && (
+                  <p className="text-[10px] text-slate-400 text-center italic">
+                    Hiển thị {recent.length}/{disciplinary.length} vi phạm gần nhất
+                  </p>
+                )}
+              </div>
+
+              {/* Danh sách vi phạm gần nhất */}
+              <div className="lg:col-span-2 space-y-2">
+                {recent.map((d, i) => {
+                  const lvl = LEVEL_CFG[d.level] || LEVEL_CFG["Nhắc nhở"];
+                  return (
+                    <div key={i} className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${lvl.dot}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-slate-800">{d.violation_type}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${lvl.cls}`}>{d.level}</span>
+                          {d.penalty_points > 0 && (
+                            <span className="text-[10px] font-bold text-rose-500">-{d.penalty_points} điểm</span>
+                          )}
+                        </div>
+                        {d.description && (
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{d.description}</p>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          {d.violation_date ? new Date(d.violation_date).toLocaleDateString("vi-VN") : "—"}
+                          {d.status && <span className="ml-2 font-semibold">{d.status}</span>}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
