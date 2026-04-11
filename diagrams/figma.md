@@ -1,0 +1,1 @@
+link figma = https://www.figma.com/design/L6rJNwMQwmQGGVJ912x3oo/%C4%90%E1%BB%92-%C3%81N-T%E1%BB%90T-NGHI%E1%BB%86P?node-id=0-1&t=FNCctPMAjfi2d1gk-1
