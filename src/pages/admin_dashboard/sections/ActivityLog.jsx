@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import Pagination from "../../../components/common/Pagination.jsx";
 import { getActivityLogs } from "../../../api/apiLog.js";
@@ -47,7 +47,7 @@ const ACTION_META = {
   ASSIGN_ROOM:            { label: "Gán phòng",               cls: "bg-blue-100 text-blue-700" },
   REVERT_CONTRACT:        { label: "Hoàn tác hợp đồng",       cls: "bg-blue-100 text-blue-700" },
   UPDATE_SETTINGS:        { label: "Cập nhật cài đặt",        cls: "bg-blue-100 text-blue-700" },
-  RECALCULATE_SCORES:     { label: "Tính lại điểm AI",        cls: "bg-blue-100 text-blue-700" },
+  RECALCULATE_SCORES:     { label: "Tính lại Điểm xét duyệt",        cls: "bg-blue-100 text-blue-700" },
 };
 
 const ENTITY_LABEL = {

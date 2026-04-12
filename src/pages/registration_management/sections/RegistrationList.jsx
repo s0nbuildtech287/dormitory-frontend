@@ -623,7 +623,7 @@ const RegistrationList = ({
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-                      <p className="text-slate-600 text-xs font-semibold mb-2">Điểm AI</p>
+                      <p className="text-slate-600 text-xs font-semibold mb-2">Điểm xét duyệt</p>
                       <p className="text-blue-900 font-black text-2xl">{selectedRegDetail.ai_score ?? 0}</p>
                     </div>
                     <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">

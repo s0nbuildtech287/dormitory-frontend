@@ -854,7 +854,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
               <Info size={16} className="text-purple-600 shrink-0 mt-0.5" />
               <div className="text-sm text-purple-700">
                 <p>
-                  <strong>Công thức tính điểm AI:</strong>
+                  <strong>Công thức tính Điểm xét duyệt:</strong>
                 </p>
                 <p className="mt-2">aiScore = (PriorityScore × W₁) + (YearScore × W₂) + (GPAScore × W₃)</p>
               </div>

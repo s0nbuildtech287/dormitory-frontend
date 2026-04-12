@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+﻿import { useState, useMemo, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../utils/types.js";
 import {
   FileSpreadsheet,
@@ -154,18 +154,18 @@ const RegistrationManagement = () => {
             </div>
           </div>
 
-          {/* BÊN PHẢI: PHÂN TÍCH AI & QUYẾT ĐỊNH QUẢN TRỊ */}
+          {/* BÊN PHẢI: PHÂN TÍCH HỆ THỐNG & QUYẾT ĐỊNH QUẢN TRỊ */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-slate-900 p-8 rounded-3xl shadow-xl text-white">
               <div className="flex items-center gap-2 mb-8">
                 <Sparkles className="text-blue-400" size={20} />
-                <h4 className="font-bold text-lg">Đánh giá của hệ thống (AI)</h4>
+                <h4 className="font-bold text-lg">Đánh giá của hệ thống</h4>
               </div>
 
               <div className="bg-white/5 border border-white/10 p-6 rounded-2xl mb-8">
                 <div className="flex justify-between items-end mb-6">
                   <div>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tổng điểm đề xuất</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tổng điểm xét duyệt</p>
                     <p className="text-5xl font-black text-blue-400">
                       {selectedReg.aiScore || 0}
                       <span className="text-xl text-slate-500 font-normal">/100</span>
@@ -196,10 +196,9 @@ const RegistrationManagement = () => {
                   <Info size={14} /> Kết luận đề xuất
                 </p>
                 <p className="text-sm text-slate-300 leading-relaxed italic">
-                  "Dựa trên các trọng số, sinh viên này {selectedReg.aiSuggestion === AISuggestionType.RECOMMENDED ? "rất cần" : "có thể"} được sắp xếp phòng do khoảng cách xa và điểm ưu tiên tốt. Hệ
-                  thống gợi ý {selectedReg.aiSuggestion?.toLowerCase()}."
+                  "Dựa trên các trọng số, sinh viên này {selectedReg.aiSuggestion === AISuggestionType.RECOMMENDED ? "rất cần" : "có thể"} được sắp xếp phòng do khoảng cách xa và điểm ưu tiên tốt. Hệ thống gợi ý {selectedReg.aiSuggestion?.toLowerCase()}."
                 </p>
-                <p className="text-[10px] text-slate-500 font-bold italic border-t border-white/5 pt-2">*AI chỉ có vai trò gợi ý, quyết định cuối cùng do quản trị viên.</p>
+                <p className="text-[10px] text-slate-500 font-bold italic border-t border-white/5 pt-2">*Hệ thống chỉ có vai trò gợi ý, quyết định cuối cùng do quản trị viên.</p>
               </div>
             </div>
 
