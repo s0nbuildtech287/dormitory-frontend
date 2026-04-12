@@ -7,6 +7,7 @@ import {
   DollarSign,
   MessageSquare,
   History,
+  Package,
 } from "lucide-react";
 import DashboardHome from "./sections/DashboardHome.jsx";
 import ActivityLog from "./sections/ActivityLog.jsx";
@@ -15,10 +16,12 @@ import RoomAnalytics from "../room_management/sections/RoomAnalytics.jsx";
 import ContractStatistics from "../contract_management/sections/ContractStatistics.jsx";
 import InvoiceStatistics from "../billing_management/sections/InvoiceStatistics.jsx";
 import FeedbackStatistics from "../feedback_management/sections/FeedbackStatistics.jsx";
+import AssetAnalytics from "../asset_management/sections/AssetAnalytics.jsx";
 import { getRegistrations } from "../../api/apiRegistration.js";
 import { getRooms } from "../../api/apiRoom.js";
 import { getContracts } from "../../api/apiContract.js";
 import { getInvoices } from "../../api/apiInvoice.js";
+import { getAssets } from "../../api/apiAsset.js";
 
 const API_BASE = "http://localhost:1234/api";
 const token = () => localStorage.getItem("token");
@@ -36,6 +39,7 @@ const AdminDashboard = () => {
   const [contracts, setContracts] = useState([]);
   const [bills, setBills] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
+  const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch data when switching to a statistics tab
@@ -68,6 +72,10 @@ const AdminDashboard = () => {
             const feedbacksData = await getFeedbacks();
             setFeedbacks(Array.isArray(feedbacksData.data) ? feedbacksData.data : []);
             break;
+          case "asset-stats":
+            const assetsData = await getAssets();
+            setAssets(Array.isArray(assetsData.data) ? assetsData.data : []);
+            break;
           default:
             break;
         }
@@ -95,7 +103,8 @@ const AdminDashboard = () => {
           { id: "contract-stats", icon: <Activity size={16} />, label: "Thống kê hợp đồng" },
           { id: "invoice-stats", icon: <DollarSign size={16} />, label: "Thống kê hóa đơn" },
           { id: "feedback-stats", icon: <MessageSquare size={16} />, label: "Thống kê phản ánh" },
-          { id: "activity-log", icon: <History size={16} />, label: "Lịch sử hoạt động" },
+          { id: "asset-stats",    icon: <Package size={16} />,      label: "Thống kê tài sản" },
+          { id: "activity-log",   icon: <History size={16} />,      label: "Lịch sử hoạt động" },
         ].map((tab, idx, arr) => (
           <React.Fragment key={tab.id}>
             <button
@@ -130,7 +139,8 @@ const AdminDashboard = () => {
             {activeSubTab === "contract-stats" && <ContractStatistics contracts={contracts} />}
             {activeSubTab === "invoice-stats" && <InvoiceStatistics bills={bills} />}
             {activeSubTab === "feedback-stats" && <FeedbackStatistics feedbacks={feedbacks} />}
-            {activeSubTab === "activity-log" && <ActivityLog />}
+            {activeSubTab === "asset-stats"    && <AssetAnalytics assets={assets} />}
+            {activeSubTab === "activity-log"   && <ActivityLog />}
           </>
         )}
       </div>
