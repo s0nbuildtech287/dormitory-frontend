@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Target, Zap, BarChart3, Info, ChevronDown, ChevronUp, AlertCircle, CheckCircle } from "lucide-react";
 import { getScoringWeights, updateScoringWeights, recalculateAllScores } from "../../../api/apiRegistration.js";
 
@@ -250,7 +250,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Policy Priority */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Rổ 1: Ưu tiên chính sách ({quotas.policy_priority}%) - {Math.round((quotas.policy_priority / 100) * quotas.totalSlots)} slots</label>
+                <label className="block text-sm font-bold text-slate-900">Nhóm 1: Ưu tiên chính sách ({quotas.policy_priority}%) - {Math.round((quotas.policy_priority / 100) * quotas.totalSlots)} slots</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -270,7 +270,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
 
               {/* Freshmen */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Rổ 2: Tân sinh viên ({quotas.freshmen}%) - {Math.round((quotas.freshmen / 100) * quotas.totalSlots)} slots</label>
+                <label className="block text-sm font-bold text-slate-900">Nhóm 2: Tân sinh viên ({quotas.freshmen}%) - {Math.round((quotas.freshmen / 100) * quotas.totalSlots)} slots</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -290,7 +290,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
 
               {/* Seniors */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Rổ 3: Sinh viên khóa cũ ({quotas.seniors}%) - {Math.round((quotas.seniors / 100) * quotas.totalSlots)} slots</label>
+                <label className="block text-sm font-bold text-slate-900">Nhóm 3: Sinh viên khóa cũ ({quotas.seniors}%) - {Math.round((quotas.seniors / 100) * quotas.totalSlots)} slots</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -324,7 +324,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
               <div>
                 <p className="font-bold text-slate-900">Cộng dồn chỉ tiêu dư (Waterfall)</p>
-                <p className="text-sm text-slate-600 mt-1">Nếu bật, số chỗ dư từ rổ trên sẽ tự động tràn xuống rổ dưới</p>
+                <p className="text-sm text-slate-600 mt-1">Nếu bật, số chỗ dư từ nhóm trên sẽ tự động tràn xuống nhóm dưới</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" checked={quotas.waterfall_enabled} onChange={(e) => setQuotas({ ...quotas, waterfall_enabled: e.target.checked })} className="sr-only peer" />
@@ -343,8 +343,8 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
               <Zap size={24} className="text-amber-600" />
             </div>
             <div className="text-left">
-              <h3 className="text-xl font-bold text-slate-900">2. Cấu hình Trọng số điểm theo Rổ</h3>
-              <p className="text-sm text-slate-500 mt-1">Thiết lập hệ số riêng cho từng rổ (W₁ + W₂ + W₃ = 1.0 cho mỗi rổ)</p>
+              <h3 className="text-xl font-bold text-slate-900">2. Cấu hình Trọng số điểm theo Nhóm</h3>
+              <p className="text-sm text-slate-500 mt-1">Thiết lập hệ số riêng cho từng nhóm (W₁ + W₂ + W₃ = 1.0 cho Mỗi nhóm)</p>
             </div>
           </div>
           {expandedSection === "weights" ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
@@ -354,7 +354,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
           <div className="px-8 pb-8 border-t border-slate-100 space-y-8">
             {/* Basket 1 Weights */}
             <div className="space-y-4">
-              <h4 className="text-lg font-bold text-rose-600 border-b border-rose-100 pb-2">Rổ 1: Chính sách ưu tiên</h4>
+              <h4 className="text-lg font-bold text-rose-600 border-b border-rose-100 pb-2">Nhóm 1: Chính sách ưu tiên</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
@@ -373,7 +373,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                     />
                     <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket1.w1_priority * 100).toFixed(0)}%</span>
                   </div>
-                  <p className="text-xs text-slate-500">Quan trọng nhất cho rổ chính sách</p>
+                  <p className="text-xs text-slate-500">Quan trọng nhất cho nhóm chính sách</p>
                 </div>
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₂: Trọng số Năm học</label>
@@ -392,7 +392,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                     />
                     <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket1.w2_year * 100).toFixed(0)}%</span>
                   </div>
-                  <p className="text-xs text-slate-500">Ít quan trọng hơn cho rổ này</p>
+                  <p className="text-xs text-slate-500">Ít quan trọng hơn cho nhóm này</p>
                 </div>
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
@@ -415,7 +415,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                 </div>
               </div>
               <div className="flex items-center justify-between bg-rose-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-rose-700">Tổng trọng số Rổ 1:</span>
+                <span className="text-sm font-medium text-rose-700">Tổng trọng số Nhóm 1:</span>
                 <span className={`font-bold ${parseFloat(basket1Total) === 1 ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {basket1Total} {parseFloat(basket1Total) === 1 ? '✓' : '✗'}
                 </span>
@@ -424,7 +424,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
 
             {/* Basket 2 Weights */}
             <div className="space-y-4">
-              <h4 className="text-lg font-bold text-blue-600 border-b border-blue-100 pb-2">Rổ 2: Tân sinh viên</h4>
+              <h4 className="text-lg font-bold text-blue-600 border-b border-blue-100 pb-2">Nhóm 2: Tân sinh viên</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
@@ -462,7 +462,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                     />
                     <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket2.w2_year * 100).toFixed(0)}%</span>
                   </div>
-                  <p className="text-xs text-slate-500">Quan trọng nhất cho rổ tân sinh viên</p>
+                  <p className="text-xs text-slate-500">Quan trọng nhất cho nhóm tân sinh viên</p>
                 </div>
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
@@ -485,7 +485,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                 </div>
               </div>
               <div className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-blue-700">Tổng trọng số Rổ 2:</span>
+                <span className="text-sm font-medium text-blue-700">Tổng trọng số Nhóm 2:</span>
                 <span className={`font-bold ${parseFloat(basket2Total) === 1 ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {basket2Total} {parseFloat(basket2Total) === 1 ? '✓' : '✗'}
                 </span>
@@ -494,7 +494,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
 
             {/* Basket 3 Weights */}
             <div className="space-y-4">
-              <h4 className="text-lg font-bold text-purple-600 border-b border-purple-100 pb-2">Rổ 3: Sinh viên khóa cũ</h4>
+              <h4 className="text-lg font-bold text-purple-600 border-b border-purple-100 pb-2">Nhóm 3: Sinh viên khóa cũ</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₁: Trọng số Ưu tiên</label>
@@ -532,7 +532,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                     />
                     <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket3.w2_year * 100).toFixed(0)}%</span>
                   </div>
-                  <p className="text-xs text-slate-500">Ít quan trọng cho rổ này</p>
+                  <p className="text-xs text-slate-500">Ít quan trọng cho nhóm này</p>
                 </div>
                 <div className="space-y-3">
                   <label className="block text-sm font-bold text-slate-900">W₃: Trọng số GPA</label>
@@ -551,11 +551,11 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                     />
                     <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">{(weights.basket3.w3_gpa * 100).toFixed(0)}%</span>
                   </div>
-                  <p className="text-xs text-slate-500">Quan trọng nhất cho rổ khóa cũ</p>
+                  <p className="text-xs text-slate-500">Quan trọng nhất cho nhóm khóa cũ</p>
                 </div>
               </div>
               <div className="flex items-center justify-between bg-purple-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-purple-700">Tổng trọng số Rổ 3:</span>
+                <span className="text-sm font-medium text-purple-700">Tổng trọng số Nhóm 3:</span>
                 <span className={`font-bold ${parseFloat(basket3Total) === 1 ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {basket3Total} {parseFloat(basket3Total) === 1 ? '✓' : '✗'}
                 </span>
@@ -571,14 +571,14 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                 </span>
               </div>
               <p className={`text-sm mt-1 ${weightsValid ? 'text-emerald-600' : 'text-rose-600'}`}>
-                Mỗi rổ phải có tổng trọng số = 1.0 để hợp lệ
+                Mỗi nhóm phải có tổng trọng số = 1.0 để hợp lệ
               </p>
             </div>
 
             <div className="p-4 bg-blue-50 rounded-xl flex items-start gap-3">
               <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
               <p className="text-sm text-blue-700">
-                <strong>Gợi ý:</strong> Tăng W₃ cho Rổ 3 nếu muốn ưu tiên sinh viên có học lực giỏi. Tăng W₁ cho Rổ 1 nếu muốn ưu tiên hoàn cảnh khó khăn.
+                <strong>Gợi ý:</strong> Tăng W₃ cho Nhóm 3 nếu muốn ưu tiên sinh viên có học lực giỏi. Tăng W₁ cho Nhóm 1 nếu muốn ưu tiên hoàn cảnh khó khăn.
               </p>
             </div>
           </div>

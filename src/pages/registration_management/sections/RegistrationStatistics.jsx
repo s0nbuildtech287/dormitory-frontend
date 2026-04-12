@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+﻿import { useMemo, useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
 import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp, CheckCircle2, Clock, XCircle, Gauge } from "lucide-react";
 import { RegistrationStatus } from "../../../utils/types.js";
@@ -113,23 +113,23 @@ const RegistrationStatistics = ({ regs }) => {
     // --- 3. BASKET ANALYTICS (from PENDING only) ---
     const basketGender = [
       {
-        name: "Rổ 1 (Chính sách)",
+        name: "Nhóm 1 (Chính sách)",
         Nam: basket1.filter((r) => r.gender === "Nam").length,
         Nữ: basket1.filter((r) => r.gender === "Nữ").length,
       },
       {
-        name: "Rổ 2 (Tân SV)",
+        name: "Nhóm 2 (Tân SV)",
         Nam: basket2.filter((r) => r.gender === "Nam").length,
         Nữ: basket2.filter((r) => r.gender === "Nữ").length,
       },
       {
-        name: "Rổ 3 (Khóa cũ)",
+        name: "Nhóm 3 (Khóa cũ)",
         Nam: basket3.filter((r) => r.gender === "Nam").length,
         Nữ: basket3.filter((r) => r.gender === "Nữ").length,
       },
     ];
 
-    // --- 3b. Priority Reasons Breakdown (Rổ 1 only - from PENDING) ---
+    // --- 3b. Priority Reasons Breakdown (Nhóm 1 only - from PENDING) ---
     const priorityCounts = {};
     basket1.forEach((r) => {
       const reasons = r.priority_reasons || "Khác";
@@ -213,9 +213,9 @@ const RegistrationStatistics = ({ regs }) => {
       countPending,
       countRejected,
       baskets: [
-        { name: "Rổ 1 (Chính sách)", count: basket1.length, color: "#e74c3c" },
-        { name: "Rổ 2 (Tân sinh viên)", count: basket2.length, color: "#3498db" },
-        { name: "Rổ 3 (Khóa cũ)", count: basket3.length, color: "#9b59b6" },
+        { name: "Nhóm 1 (Chính sách)", count: basket1.length, color: "#e74c3c" },
+        { name: "Nhóm 2 (Tân sinh viên)", count: basket2.length, color: "#3498db" },
+        { name: "Nhóm 3 (Khóa cũ)", count: basket3.length, color: "#9b59b6" },
       ],
       genderRatio: { male: maleCount, female: femaleCount },
       provinces,
@@ -337,7 +337,7 @@ const RegistrationStatistics = ({ regs }) => {
               <div className="flex items-center gap-4 px-6 py-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
                 <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Rổ 1 — Chính sách</p>
+                  <p className="text-sm font-bold text-slate-800">Nhóm 1 — Chính sách</p>
                   <p className="text-xs text-slate-400">
                     {policy_priority}% chỉ tiêu = {quotaBasket1} suất
                   </p>
@@ -367,7 +367,7 @@ const RegistrationStatistics = ({ regs }) => {
               <div className="flex items-center gap-4 px-6 py-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
                 <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Rổ 2 — Tân sinh viên</p>
+                  <p className="text-sm font-bold text-slate-800">Nhóm 2 — Tân sinh viên</p>
                   <p className="text-xs text-slate-400">
                     {freshmen}% chỉ tiêu = {quotaBasket2} suất
                   </p>
@@ -397,7 +397,7 @@ const RegistrationStatistics = ({ regs }) => {
               <div className="flex items-center gap-4 px-6 py-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0" />
                 <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Rổ 3 — Khóa cũ</p>
+                  <p className="text-sm font-bold text-slate-800">Nhóm 3 — Khóa cũ</p>
                   <p className="text-xs text-slate-400">
                     {seniors}% chỉ tiêu = {quotaBasket3} suất
                   </p>
@@ -438,27 +438,27 @@ const RegistrationStatistics = ({ regs }) => {
           <div className="bg-white p-6 rounded-2xl shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-              <h4 className="font-bold text-slate-800">Phân bổ Rổ</h4>
+              <h4 className="font-bold text-slate-800">Phân bổ Nhóm</h4>
             </div>
             <ul className="space-y-2 text-sm text-slate-700">
               <li className="flex items-start gap-2">
                 <span className="text-rose-500 mt-0.5">●</span>
                 <span>
-                  Rổ 1 chiếm <strong>{statsData.totalApproved > 0 ? ((statsData.baskets[0]?.count / statsData.totalApproved) * 100).toFixed(1) : 0}%</strong>
+                  Nhóm 1 chiếm <strong>{statsData.totalApproved > 0 ? ((statsData.baskets[0]?.count / statsData.totalApproved) * 100).toFixed(1) : 0}%</strong>
                   {statsData.baskets[0]?.count > statsData.totalApproved * 0.15 ? " (cao hơn mức khuyến nghị 12-15%)" : " (phù hợp chính sách ưu tiên)"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">●</span>
                 <span>
-                  Rổ 2 (Tân SV) có <strong>{statsData.baskets[1]?.count}</strong> hồ sơ
+                  Nhóm 2 (Tân SV) có <strong>{statsData.baskets[1]?.count}</strong> hồ sơ
                   {statsData.baskets[1]?.count > statsData.totalApproved * 0.6 ? ", cần mở rộng chỗ ở cho năm 1" : ", phù hợp với chỉ tiêu"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-0.5">●</span>
                 <span>
-                  Rổ 3 có <strong>{statsData.baskets[2]?.count}</strong> khóa cũ,
+                  Nhóm 3 có <strong>{statsData.baskets[2]?.count}</strong> khóa cũ,
                   {statsData.baskets[2]?.count < statsData.baskets[1]?.count * 0.5 ? " nhu cầu thấp hơn tân sinh viên" : " cạnh tranh cao"}
                 </span>
               </li>
@@ -493,7 +493,7 @@ const RegistrationStatistics = ({ regs }) => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-indigo-500 mt-0.5">●</span>
-                <span>Phân bổ giới tính trong Rổ 2 (Tân SV) cần ưu tiên khi bố trí phòng</span>
+                <span>Phân bổ giới tính trong Nhóm 2 (Tân SV) cần ưu tiên khi bố trí phòng</span>
               </li>
             </ul>
           </div>
@@ -536,7 +536,7 @@ const RegistrationStatistics = ({ regs }) => {
           <div className="flex items-center gap-2 mb-6">
             <Target className="text-blue-600" size={24} />
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Tương quan Nam/Nữ trong từng Rổ</h3>
+              <h3 className="text-lg font-bold text-slate-900">Tương quan Nam/Nữ trong từng nhóm</h3>
               <p className="text-sm text-slate-500">Cơ cấu giới tính theo nhóm đối tượng</p>
             </div>
           </div>
@@ -556,12 +556,12 @@ const RegistrationStatistics = ({ regs }) => {
           </div>
         </div>
 
-        {/* Priority Breakdown (Rổ 1) - Pie Chart */}
+        {/* Priority Breakdown (Nhóm 1) - Pie Chart */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="text-rose-600" size={24} />
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Cơ cấu Diện ưu tiên (Rổ 1)</h3>
+              <h3 className="text-lg font-bold text-slate-900">Cơ cấu Diện ưu tiên (Nhóm 1)</h3>
               <p className="text-sm text-slate-500">Phân loại trong nhóm chính sách</p>
             </div>
           </div>

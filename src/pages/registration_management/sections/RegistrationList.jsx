@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
 import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2 } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
@@ -664,7 +664,7 @@ const RegistrationList = ({
                             {reasoning.description && <p className="text-slate-700">{reasoning.description}</p>}
                             {reasoning.basket && (
                               <p className="text-slate-700">
-                                • Rổ: <span className="font-bold">{reasoning.basket}</span> - {reasoning.basket_name}
+                                • Nhóm: <span className="font-bold">{reasoning.basket}</span> - {reasoning.basket_name}
                               </p>
                             )}
                             {reasoning.priority_score !== undefined && (
