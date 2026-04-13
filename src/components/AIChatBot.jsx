@@ -32,11 +32,11 @@ async function getAIChatResponse(history, userText, model = "gpt-4o") {
 }
 
 // ─── ModelSelector ────────────────────────────────────────────────────────────
-const ModelSelector = ({ model, onChange }) => {
+const ModelSelector = ({ model, models, onChange }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const current = MODELS.find((m) => m.id === model) || MODELS[0];
-  const Icon = current.icon;
+  const current = models.find((m) => m.id === model) || models[0];
+  const Icon = current?.icon || Bot;
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -53,14 +53,16 @@ const ModelSelector = ({ model, onChange }) => {
         }`}
       >
         <Icon size={13} />
-        <span>{current.label}</span>
-        <span className={`${current.badgeColor} text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold`}>{current.badge}</span>
+        <span>{current?.label}</span>
+        {current?.badge && (
+          <span className={`${current.badgeColor} text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold`}>{current.badge}</span>
+        )}
         <ChevronDown size={11} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="absolute bottom-full mb-1.5 left-0 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-10 min-w-[190px]">
-          {MODELS.map((m) => {
-            const MIcon = m.icon;
+          {models.map((m) => {
+            const MIcon = m.icon || Bot;
             const isActive = m.id === model;
             return (
               <button
@@ -72,7 +74,9 @@ const ModelSelector = ({ model, onChange }) => {
               >
                 <MIcon size={14} className={isActive ? "text-white" : "text-slate-500"} />
                 <span className="flex-1 text-left font-medium">{m.label}</span>
-                <span className={`${m.badgeColor} text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold`}>{m.badge}</span>
+                {m.badge && (
+                  <span className={`${m.badgeColor} text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold`}>{m.badge}</span>
+                )}
                 {isActive && <Check size={12} className="text-white flex-shrink-0" />}
               </button>
             );
@@ -133,7 +137,30 @@ const AIChatBot = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [model, setModel] = useState("gpt-4o");
+  const [availableModels, setAvailableModels] = useState(MODELS);
   const bottomRef = useRef(null);
+
+  // Load models từ backend khi mount
+  useEffect(() => {
+    fetch("/api/ai/models")
+      .then((r) => r.json())
+      .then((data) => {
+        console.log("[AIChatBot] models từ backend:", data);
+        if (data.models?.length) {
+          const colors = ["bg-violet-500", "bg-blue-500", "bg-emerald-500", "bg-orange-500", "bg-pink-500"];
+          const iconList = [Brain, Zap, Sparkles, Zap, Brain];
+          const mapped = data.models.map((m, i) => ({
+            ...m,
+            badgeColor: colors[i % colors.length],
+            icon: iconList[i % iconList.length],
+          }));
+          console.log("[AIChatBot] mapped models:", mapped.map((m) => m.id));
+          setAvailableModels(mapped);
+          setModel(data.defaultModel || mapped[0].id);
+        }
+      })
+      .catch((err) => console.error("[AIChatBot] load models lỗi:", err));
+  }, []);
 
   useEffect(() => {
     if (open) setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
@@ -225,7 +252,7 @@ const AIChatBot = () => {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm resize-none outline-none focus:ring-2 focus:ring-slate-700 focus:border-transparent transition-all"
               />
               <div className="flex items-center justify-between mt-2">
-                <ModelSelector model={model} onChange={setModel} />
+                <ModelSelector model={model} models={availableModels} onChange={setModel} />
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isLoading}
