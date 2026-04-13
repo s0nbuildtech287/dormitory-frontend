@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, X, Bot, RotateCcw, History, Plus, Trash2, Edit2, Check, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { MessageCircle, Send, X, Bot, RotateCcw, History, Plus, Trash2, Edit2, Check, ChevronDown, Zap, Brain, Sparkles } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const QUICK_REPLIES = [
@@ -8,6 +8,71 @@ const QUICK_REPLIES = [
   "Mức phí phòng hiện tại?",
   "Cách gia hạn hợp đồng?",
 ];
+
+const MODELS = [
+  { id: "gpt-4o",       label: "GPT-4o",       badge: "Smart",  badgeColor: "bg-violet-500", icon: Brain },
+  { id: "gpt-4o-mini",  label: "GPT-4o Mini",  badge: "Fast",   badgeColor: "bg-blue-500",   icon: Zap },
+  { id: "gemini-pro",   label: "Gemini Pro",   badge: "Google", badgeColor: "bg-emerald-500", icon: Sparkles },
+];
+
+// ─── ModelSelector ────────────────────────────────────────────────────────────
+const ModelSelector = ({ model, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = MODELS.find((m) => m.id === model) || MODELS[0];
+  const Icon = current.icon;
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+          open
+            ? "border-slate-700 bg-slate-800 text-white"
+            : "border-slate-200 text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+        }`}
+      >
+        <Icon size={13} />
+        <span>{current.label}</span>
+        <span className={`${current.badgeColor} text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold`}>
+          {current.badge}
+        </span>
+        <ChevronDown size={11} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full mb-1.5 left-0 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-10 min-w-[190px]">
+          {MODELS.map((m) => {
+            const MIcon = m.icon;
+            const isActive = m.id === model;
+            return (
+              <button
+                key={m.id}
+                onClick={() => { onChange(m.id); setOpen(false); }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-xs transition-colors ${
+                  isActive ? "bg-slate-800 text-white" : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <MIcon size={14} className={isActive ? "text-white" : "text-slate-500"} />
+                <span className="flex-1 text-left font-medium">{m.label}</span>
+                <span className={`${m.badgeColor} text-white text-[9px] px-1.5 py-0.5 rounded-full font-semibold`}>
+                  {m.badge}
+                </span>
+                {isActive && <Check size={12} className="text-white flex-shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const makeWelcome = () => ({
   id: Date.now(),
@@ -24,12 +89,12 @@ const makeSession = (title) => ({
 });
 
 // ─── API helper ───────────────────────────────────────────────────────────────
-async function getAIChatResponse(history, userText) {
+async function getAIChatResponse(history, userText, model = "gpt-4o") {
   try {
     const res = await fetch("/api/ai/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userText, history }),
+      body: JSON.stringify({ message: userText, history, model }),
     });
     if (!res.ok) throw new Error("Server error");
     const data = await res.json();
@@ -213,6 +278,7 @@ const AIChatBot = () => {
   const [activeId, setActiveId] = useState(() => sessions[0]?.id);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [model, setModel] = useState("gpt-4o");
   const bottomRef = useRef(null);
 
   const activeSession = sessions.find((s) => s.id === activeId);
@@ -270,7 +336,7 @@ const AIChatBot = () => {
       .slice(-20)
       .map((m) => ({ role: m.role === "bot" ? "assistant" : "user", content: m.text }));
 
-    const reply = await getAIChatResponse(history, text);
+    const reply = await getAIChatResponse(history, text, model);
     const botMsg = { id: Date.now() + 1, role: "bot", text: reply, time: new Date() };
     updateSession(activeId, (s) => ({ messages: [...s.messages, botMsg] }));
     setIsLoading(false);
@@ -390,7 +456,8 @@ const AIChatBot = () => {
                     placeholder="Nhập câu hỏi của bạn... (Enter gửi, Shift+Enter xuống dòng)"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm resize-none outline-none focus:ring-2 focus:ring-slate-700 focus:border-transparent transition-all"
                   />
-                  <div className="flex justify-end mt-2">
+                  <div className="flex items-center justify-between mt-2">
+                    <ModelSelector model={model} onChange={setModel} />
                     <button
                       onClick={() => handleSend()}
                       disabled={!input.trim() || isLoading}
