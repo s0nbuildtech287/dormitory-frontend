@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import {
   FileText, Home, Calendar, CreditCard, CheckCircle,
   Clock, AlertCircle, Building, Users, Layers, Ruler,
-  Hash, Shield, X, QrCode, Copy, Building2, BadgeCheck, Info, ExternalLink
+  Hash, Shield, X, QrCode, Copy, Building2, BadgeCheck, Info, ExternalLink, Printer
 } from "lucide-react";
 import { getStudentContracts } from "../../../api/apiStudent.js";
 import { createVNPayPayment } from "../../../api/apiVNPay.js";
+import ContractPrintView from "./ContractPrintView.jsx";
 
 const fmt      = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
@@ -74,6 +75,7 @@ const StudentContract = () => {
   const [error, setError]         = useState(null);
   const [selected, setSelected]   = useState(null);
   const [showPayModal, setShowPayModal] = useState(false);
+  const [showPrint, setShowPrint]       = useState(false);
   const [copied, setCopied]            = useState(null);
   const [payLoading, setPayLoading]    = useState(false);
 
@@ -191,7 +193,19 @@ const StudentContract = () => {
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shrink-0 ${cfg.cls}`}>
           <StatusIcon size={12} /> {cfg.label}
         </span>
+        <button
+          onClick={() => setShowPrint(true)}
+          title="Xem & tải PDF hợp đồng"
+          className="shrink-0 flex items-center gap-1.5 px-3 py-2 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold rounded-xl transition-all border border-white/20"
+        >
+          <Printer size={14} /> Xuất PDF
+        </button>
       </div>
+
+      {/* ── Print view ── */}
+      {showPrint && (
+        <ContractPrintView contract={c} onClose={() => setShowPrint(false)} />
+      )}
 
       {/* ── Thanh tiến trình (chỉ khi Active) ── */}
       {c.status === "Active" && (
