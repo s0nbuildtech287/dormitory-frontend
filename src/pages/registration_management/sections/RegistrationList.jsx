@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2 } from "lucide-react";
+import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -10,7 +10,21 @@ import FilterBar from "../../../components/common/FilterBar.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
-import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration, importFromGoogleSheets } from "../../../api/apiRegistration.js";
+import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration, importFromGoogleSheets, validateRegistrationImages } from "../../../api/apiRegistration.js";
+
+// Badge hiển thị trạng thái xác thực ảnh Vision
+const VisionBadge = ({ status }) => {
+  const cfg = {
+    VALID:    { cls: "bg-emerald-100 text-emerald-700", label: "✅ Hợp lệ" },
+    SUSPECT:  { cls: "bg-amber-100 text-amber-700",    label: "⚠️ Nghi ngờ" },
+    INVALID:  { cls: "bg-rose-100 text-rose-700",      label: "❌ Không hợp lệ" },
+    PENDING:  { cls: "bg-slate-100 text-slate-500",    label: "⏳ Chờ xử lý" },
+    ERROR:    { cls: "bg-orange-100 text-orange-700",  label: "🔴 Lỗi" },
+  };
+  if (!status) return null;
+  const { cls, label } = cfg[status] || cfg.PENDING;
+  return <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight ${cls}`}>{label}</span>;
+};
 
 // Helper function to determine priority group
 const getGroupName = (year, priorityReasons) => {
@@ -56,6 +70,9 @@ const convertToCamelCase = (obj) => {
     aiSuggestion: obj.ai_suggestion || obj.aiSuggestion,
     aiReasoning: obj.ai_reasoning || obj.aiReasoning,
     evidenceImages: obj.evidence_images || obj.evidenceImages || [],
+    visionStatus: obj.vision_status || obj.visionStatus || null,
+    visionScore: obj.vision_score ?? obj.visionScore ?? null,
+    visionReasons: obj.vision_reasons || obj.visionReasons || [],
   };
 };
 
@@ -76,6 +93,8 @@ const RegistrationList = ({
   onRefresh,
 }) => {
   const [filterGroup, setFilterGroup] = useState("All");
+  const [filterVision, setFilterVision] = useState("All");
+  const [validatingId, setValidatingId] = useState(null);
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
   const [isConfirming, setIsConfirming] = useState(null);
   const [bulkAction, setBulkAction] = useState(null);
@@ -132,7 +151,9 @@ const RegistrationList = ({
       const regGroup = getGroupName(reg.year, reg.priority_reasons);
       const matchesGroup = filterGroup === "All" || regGroup === filterGroup;
 
-      return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup;
+      const matchesVision = filterVision === "All" || (reg.vision_status || "PENDING") === filterVision;
+
+      return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup && matchesVision;
     })
     .sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0));
 
@@ -215,6 +236,23 @@ const RegistrationList = ({
       body: "",
       recipientCount: selected.length,
     });
+  };
+
+  // Handler xác thực lại ảnh Vision
+  const handleValidateImages = async (regId) => {
+    setValidatingId(regId);
+    try {
+      await validateRegistrationImages(regId);
+      if (onRefresh) onRefresh();
+      // Cập nhật selectedRegDetail nếu đang mở
+      if (selectedRegDetail?.id === regId && onRefresh) {
+        // onRefresh sẽ reload data, selectedRegDetail sẽ được cập nhật qua regs prop
+      }
+    } catch (err) {
+      alert(err.message || "Xác thực ảnh thất bại");
+    } finally {
+      setValidatingId(null);
+    }
   };
 
   // Handler đồng bộ Google Sheets
@@ -370,6 +408,19 @@ const RegistrationList = ({
               { value: "Chính sách", label: "Chính sách" },
               { value: "Sinh viên khoá cũ", label: "Sinh viên khoá cũ" },
             ]
+          },
+          {
+            value: filterVision,
+            onChange: (val) => handleFilterChange(setFilterVision, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả ảnh" },
+              { value: "VALID", label: "✅ Ảnh hợp lệ" },
+              { value: "SUSPECT", label: "⚠️ Nghi ngờ" },
+              { value: "INVALID", label: "❌ Không hợp lệ" },
+              { value: "PENDING", label: "⏳ Chờ xử lý" },
+              { value: "ERROR", label: "🔴 Lỗi xác thực" },
+            ]
           }
         ]}
       />
@@ -449,7 +500,7 @@ const RegistrationList = ({
               header: "Trạng thái",
               align: "left",
               accessor: (reg) => (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 flex-wrap">
                   <span
                     className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
                       reg.status === RegistrationStatus.PENDING
@@ -464,6 +515,7 @@ const RegistrationList = ({
                   {reg.isFull && reg.status === RegistrationStatus.PENDING && (
                     <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tight bg-orange-100 text-orange-700 border border-orange-200">Đầy chỗ</span>
                   )}
+                  <VisionBadge status={reg.vision_status} />
                 </div>
               ),
             },
@@ -734,9 +786,8 @@ const RegistrationList = ({
                 </div>
               )}
 
-              {/* Evidence Images */}
+              {/* Evidence Images + Vision Results */}
               {(() => {
-                // Parse evidence_images: có thể là array, JSON string, hoặc string URL đơn
                 let imgs = selectedRegDetail.evidence_images;
                 if (typeof imgs === "string") {
                   try { imgs = JSON.parse(imgs); } catch { imgs = [imgs]; }
@@ -745,48 +796,91 @@ const RegistrationList = ({
                 imgs = imgs.filter(Boolean);
                 if (imgs.length === 0) return null;
 
-                // Convert Drive share link → thumbnail URL (works without auth)
+                // Mỗi phần tử có thể là string URL hoặc object { url, status, vision_score, vision_reasons }
                 const toThumbnailUrl = (url) => {
-                  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                  const match = (url || "").match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
                   if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
                   return null;
                 };
 
+                const visionStatusCfg = {
+                  VALID:   { border: "border-emerald-400", badge: "bg-emerald-100 text-emerald-700", label: "✅ Hợp lệ" },
+                  SUSPECT: { border: "border-amber-400",   badge: "bg-amber-100 text-amber-700",     label: "⚠️ Nghi ngờ" },
+                  INVALID: { border: "border-rose-500",    badge: "bg-rose-100 text-rose-700",       label: "❌ Không hợp lệ" },
+                  ERROR:   { border: "border-orange-400",  badge: "bg-orange-100 text-orange-700",   label: "🔴 Lỗi" },
+                };
+
                 return (
                   <div>
-                    <h4 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">📸 Ảnh minh chứng</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-slate-800 font-medium text-sm uppercase tracking-wider">📸 Ảnh minh chứng</h4>
+                      <div className="flex items-center gap-3">
+                        <VisionBadge status={selectedRegDetail.vision_status} />
+                        <button
+                          onClick={() => handleValidateImages(selectedRegDetail.id)}
+                          disabled={validatingId === selectedRegDetail.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+                        >
+                          {validatingId === selectedRegDetail.id
+                            ? <><Loader2 size={12} className="animate-spin" /> Đang xác thực...</>
+                            : <><ShieldCheck size={12} /> Xác thực lại ảnh</>}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Cảnh báo nếu SUSPECT hoặc INVALID */}
+                    {selectedRegDetail.vision_status === "SUSPECT" && (
+                      <div className="mb-4 p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-800 text-xs font-semibold">
+                        ⚠️ Ảnh minh chứng cần xem xét thêm. Vui lòng kiểm tra thủ công trước khi duyệt hồ sơ.
+                      </div>
+                    )}
+                    {selectedRegDetail.vision_status === "INVALID" && (
+                      <div className="mb-4 p-3 bg-rose-50 border border-rose-400 rounded-xl text-rose-800 text-xs font-semibold">
+                        ❌ Ảnh minh chứng không hợp lệ. Sinh viên có thể đã nộp ảnh không đúng yêu cầu.
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                       {imgs.map((img, idx) => {
-                        const thumbUrl = toThumbnailUrl(img);
+                        const isObj = typeof img === "object" && img !== null;
+                        const url = isObj ? img.url : img;
+                        const vStatus = isObj ? img.status : null;
+                        const vReasons = isObj ? (img.vision_reasons || []) : [];
+                        const thumbUrl = toThumbnailUrl(url);
+                        const cfg = visionStatusCfg[vStatus];
+
                         return (
-                          <a
-                            key={idx}
-                            href={img}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="relative group overflow-hidden rounded-2xl shadow-md border border-slate-200 hover:shadow-lg transition-all block"
-                          >
-                            {thumbUrl ? (
-                              <img
-                                src={thumbUrl}
-                                alt={`Minh chứng ${idx + 1}`}
-                                className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                  e.target.nextSibling.style.display = "flex";
-                                }}
-                              />
-                            ) : null}
-                            <div
-                              style={{ display: thumbUrl ? "none" : "flex" }}
-                              className="w-full h-40 items-center justify-center bg-slate-100 rounded-2xl text-xs text-blue-600 font-semibold p-2 text-center"
-                            >
-                              🖼️ Xem ảnh minh chứng {idx + 1}
-                            </div>
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-                              <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-bold">Mở Drive</span>
-                            </div>
-                          </a>
+                          <div key={idx} className={`rounded-2xl border-2 overflow-hidden shadow-sm ${cfg ? cfg.border : "border-slate-200"}`}>
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="relative group block">
+                              {thumbUrl ? (
+                                <img
+                                  src={thumbUrl}
+                                  alt={`Minh chứng ${idx + 1}`}
+                                  className="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300"
+                                  onError={(e) => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                                />
+                              ) : null}
+                              <div style={{ display: thumbUrl ? "none" : "flex" }} className="w-full h-36 items-center justify-center bg-slate-100 text-xs text-blue-600 font-semibold p-2 text-center">
+                                🖼️ Xem ảnh {idx + 1}
+                              </div>
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-bold">Mở Drive</span>
+                              </div>
+                            </a>
+                            {/* Vision result cho từng ảnh */}
+                            {vStatus && (
+                              <div className="p-2 bg-white">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black ${cfg.badge}`}>{cfg.label}</span>
+                                {vReasons.length > 0 && (
+                                  <ul className="mt-1 space-y-0.5">
+                                    {vReasons.map((r, i) => (
+                                      <li key={i} className="text-[10px] text-slate-500 leading-tight">• {r}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -796,7 +890,7 @@ const RegistrationList = ({
             </div>
 
             <div className="sticky bottom-0 bg-slate-100 px-6 py-4 flex items-center justify-between gap-3 border-t border-slate-200">
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setIsConfirming({ id: selectedRegDetail.id, status: RegistrationStatus.APPROVED })}
                   className="px-4 py-2 text-white font-semibold bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-all flex items-center gap-2"
@@ -814,6 +908,15 @@ const RegistrationList = ({
                   className="px-4 py-2 text-white font-semibold bg-red-600 rounded-lg hover:bg-red-700 transition-all flex items-center gap-2"
                 >
                   <XCircle size={16} /> Xóa
+                </button>
+                <button
+                  onClick={() => handleValidateImages(selectedRegDetail.id)}
+                  disabled={validatingId === selectedRegDetail.id}
+                  className="px-4 py-2 text-white font-semibold bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all flex items-center gap-2"
+                >
+                  {validatingId === selectedRegDetail.id
+                    ? <><Loader2 size={16} className="animate-spin" /> Đang xác thực...</>
+                    : <><ShieldCheck size={16} /> Xác thực lại ảnh</>}
                 </button>
               </div>
               <div className="flex gap-2">

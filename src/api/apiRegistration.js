@@ -505,3 +505,38 @@ export const getServiceAccountEmails = async () => {
     throw new Error(error.message || 'Lỗi kết nối đến server');
   }
 };
+
+/**
+ * Validate images for a registration using Vision API
+ * @param {string} id - Registration ID
+ * @returns {Promise<Object>} Validation result
+ */
+export const validateRegistrationImages = async (id) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}/validate-images`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Xác thực ảnh thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
