@@ -389,16 +389,6 @@ const RegistrationList = ({
             ]
           },
           {
-            value: filterGender,
-            onChange: (val) => handleFilterChange(setFilterGender, val),
-            className: "w-full",
-            options: [
-              { value: "All", label: "Tất cả giới tính" },
-              { value: "Nam", label: "Nam" },
-              { value: "Nữ", label: "Nữ" },
-            ]
-          },
-          {
             value: filterGroup,
             onChange: (val) => handleFilterChange(setFilterGroup, val),
             className: "w-full",
