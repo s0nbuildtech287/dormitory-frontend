@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Users, FileText, DoorOpen, Receipt, MessageSquare,
   Bell, TrendingUp, ArrowRight, Clock, AlertCircle,
-  CheckCircle, Calendar, Activity, Loader2,
+  Calendar, Activity, Loader2,
 } from "lucide-react";
 import StatCard from "../../../components/common/StatCard.jsx";
 import { getRegistrationStatistics } from "../../../api/apiRegistration.js";
@@ -270,42 +270,6 @@ const DashboardHome = () => {
             </div>
           </div>
 
-          {/* Alerts */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center">
-                <AlertCircle size={24} />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Cảnh báo & Công việc cần xử lý</h3>
-                <p className="text-sm text-slate-500">Các vấn đề cần chú ý</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              {stats.registrations.pending > 0 && (
-                <AlertItem icon={<FileText size={18} />} title={`${fmt(stats.registrations.pending)} hồ sơ đăng ký chờ duyệt`} description="Cần xem xét và phê duyệt" color="blue" onClick={() => navigate("/registrations")} />
-              )}
-              {stats.contracts.pending > 0 && (
-                <AlertItem icon={<Users size={18} />} title={`${fmt(stats.contracts.pending)} hợp đồng chờ gán phòng`} description="Hồ sơ đã duyệt nhưng chưa có phòng" color="purple" onClick={() => navigate("/students")} />
-              )}
-              {stats.contracts.expiring > 0 && (
-                <AlertItem icon={<Clock size={18} />} title={`${fmt(stats.contracts.expiring)} hợp đồng sắp hết hạn`} description="Trong vòng 30 ngày tới" color="amber" onClick={() => navigate("/students")} />
-              )}
-              {stats.invoices.overdue > 0 && (
-                <AlertItem icon={<Receipt size={18} />} title={`${fmt(stats.invoices.overdue)} hóa đơn quá hạn thanh toán`} description="Cần nhắc nhở sinh viên" color="red" onClick={() => navigate("/billing")} />
-              )}
-              {stats.feedbacks.pending > 0 && (
-                <AlertItem icon={<MessageSquare size={18} />} title={`${fmt(stats.feedbacks.pending)} phản ánh chờ xử lý`} description="Cần phản hồi và giải quyết" color="indigo" onClick={() => navigate("/feedbacks")} />
-              )}
-              {stats.registrations.pending === 0 && stats.contracts.pending === 0 && stats.contracts.expiring === 0 && stats.invoices.overdue === 0 && stats.feedbacks.pending === 0 && (
-                <div className="text-center py-12 text-slate-400">
-                  <CheckCircle size={64} className="mx-auto mb-4 text-green-500" />
-                  <p className="text-xl font-bold text-slate-700 mb-2">Tất cả đang ổn định! ✨</p>
-                  <p className="text-sm">Không có vấn đề cần xử lý khẩn cấp</p>
-                </div>
-              )}
-            </div>
-          </div>
         </>
       )}
     </div>
@@ -329,26 +293,5 @@ const MetricRow = ({ label, value, color, progress, alert }) => (
   </div>
 );
 
-const AlertItem = ({ icon, title, description, color, onClick }) => {
-  const colorClasses = {
-    blue: "bg-blue-50 border-blue-200 text-blue-600",
-    amber: "bg-amber-50 border-amber-200 text-amber-600",
-    red: "bg-red-50 border-red-200 text-red-600",
-    indigo: "bg-indigo-50 border-indigo-200 text-indigo-600",
-    purple: "bg-purple-50 border-purple-200 text-purple-600",
-  };
-  return (
-    <div onClick={onClick} className={`flex items-center justify-between p-4 rounded-xl border-2 ${colorClasses[color]} hover:shadow-md transition-all cursor-pointer group`}>
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-slate-200">{icon}</div>
-        <div>
-          <p className="font-bold text-slate-900">{title}</p>
-          <p className="text-xs text-slate-600">{description}</p>
-        </div>
-      </div>
-      <ArrowRight size={20} className="text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
-    </div>
-  );
-};
 
 export default DashboardHome;
