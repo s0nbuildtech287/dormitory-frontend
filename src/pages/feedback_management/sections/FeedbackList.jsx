@@ -29,6 +29,45 @@ const SENTIMENT_CFG = {
   Negative: { icon: <TrendingDown size={13} className="text-red-500" />,  label: "Tiêu cực" },
 };
 
+const SENTIMENT_BADGE = {
+  Positive: "bg-green-50 text-green-700 border-green-200",
+  Neutral:  "bg-yellow-50 text-yellow-700 border-yellow-200",
+  Negative: "bg-red-50 text-red-700 border-red-200",
+};
+
+const PRIORITY_BADGE = {
+  High:   "bg-red-50 text-red-700 border-red-200",
+  Medium: "bg-orange-50 text-orange-700 border-orange-200",
+  Low:    "bg-slate-50 text-slate-600 border-slate-200",
+};
+
+const PRIORITY_LABEL = {
+  High:   "Cao",
+  Medium: "Trung bình",
+  Low:    "Thấp",
+};
+
+const SentimentBadge = ({ value }) => {
+  if (!value) return <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Đang phân tích...</span>;
+  const cfg = SENTIMENT_CFG[value];
+  const cls = SENTIMENT_BADGE[value] || "bg-slate-50 text-slate-600 border-slate-200";
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+      {cfg?.icon}{cfg?.label || value}
+    </span>
+  );
+};
+
+const PriorityBadge = ({ value }) => {
+  if (!value) return <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Đang phân tích...</span>;
+  const cls = PRIORITY_BADGE[value] || "bg-slate-50 text-slate-600 border-slate-200";
+  return (
+    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+      {PRIORITY_LABEL[value] || value}
+    </span>
+  );
+};
+
 const fmt = (iso) => new Date(iso).toLocaleString("vi-VN", {
   day: "2-digit", month: "2-digit", year: "numeric",
   hour: "2-digit", minute: "2-digit",
@@ -41,9 +80,11 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
   const [sending, setSending]           = useState(false);
   const [deletingId, setDeletingId]     = useState(null);
   const [showModal, setShowModal]       = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // id cần xóa
   const [search, setSearch]             = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
   const [currentPage, setCurrentPage]   = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -53,6 +94,7 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
       const params = new URLSearchParams();
       if (filterStatus !== "all")   params.set("status",   filterStatus);
       if (filterCategory !== "all") params.set("category", filterCategory);
+      if (filterPriority !== "all") params.set("priority", filterPriority);
       if (search)                   params.set("search",   search);
 
       const res = await fetch(`${API}/feedbacks?${params}`, {
@@ -66,7 +108,7 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
     } finally {
       setLoading(false);
     }
-  }, [filterStatus, filterCategory, search, setFeedbacks]);
+  }, [filterStatus, filterCategory, filterPriority, search, setFeedbacks]);
 
   useEffect(() => { fetchFeedbacks(); }, [fetchFeedbacks]);
 
@@ -104,7 +146,12 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Xóa phản ánh này?")) return;
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     setDeletingId(id);
     try {
       await fetch(`${API}/feedbacks/${id}`, {
@@ -116,15 +163,6 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
     } finally {
       setDeletingId(null);
     }
-  };
-
-  const handleMarkProcessing = async (id) => {
-    await fetch(`${API}/feedbacks/${id}/status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
-      body: JSON.stringify({ status: "Processing" }),
-    });
-    fetchFeedbacks();
   };
 
   const handleStatusChange = async (id, newStatus) => {
@@ -174,6 +212,17 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
             </select>
             <ChevronDown size={13} className="text-slate-400" />
           </div>
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+            <Filter size={13} className="text-slate-400" />
+            <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)}
+              className="bg-transparent text-sm outline-none text-slate-700 cursor-pointer">
+              <option value="all">Tất cả mức độ</option>
+              <option value="High">Cao</option>
+              <option value="Medium">Trung bình</option>
+              <option value="Low">Thấp</option>
+            </select>
+            <ChevronDown size={13} className="text-slate-400" />
+          </div>
           <button onClick={fetchFeedbacks}
             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
             <RotateCcw size={15} />
@@ -190,17 +239,18 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
                 <th className="px-5 py-3.5 text-left">Danh mục</th>
                 <th className="px-5 py-3.5 text-left">Nội dung</th>
                 <th className="px-5 py-3.5 text-left">Trạng thái</th>
+                <th className="px-5 py-3.5 text-left">AI</th>
                 <th className="px-5 py-3.5 text-left">Ngày gửi</th>
                 <th className="px-5 py-3.5 text-left"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
-                <tr><td colSpan={6} className="py-16 text-center">
+                <tr><td colSpan={7} className="py-16 text-center">
                   <Loader2 size={28} className="animate-spin text-slate-300 mx-auto" />
                 </td></tr>
               ) : paginated.length === 0 ? (
-                <tr><td colSpan={6} className="py-16 text-center text-slate-400">
+                <tr><td colSpan={7} className="py-16 text-center text-slate-400">
                   <MessageSquare size={32} className="mx-auto mb-2 opacity-20" />
                   <p className="font-semibold text-sm">Không có phản ánh nào</p>
                 </td></tr>
@@ -238,6 +288,12 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
                         <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                         {cfg.label}
                       </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex flex-col gap-1">
+                        <SentimentBadge value={f.sentiment} />
+                        <PriorityBadge value={f.priority} />
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 text-xs text-slate-400 whitespace-nowrap">
                       {fmt(f.created_at)}
@@ -304,12 +360,11 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Cảm xúc</p>
-                  {selected.sentiment ? (
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700">
-                      {SENTIMENT_CFG[selected.sentiment]?.icon}
-                      {SENTIMENT_CFG[selected.sentiment]?.label || selected.sentiment}
-                    </span>
-                  ) : <span className="text-sm text-slate-400">—</span>}
+                  <SentimentBadge value={selected.sentiment} />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Mức độ ưu tiên</p>
+                  <PriorityBadge value={selected.priority} />
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Trạng thái</p>
@@ -322,7 +377,8 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
                       </span>
                     );
                   })()}
-                </div>                <div>
+                </div>
+                <div>
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Ngày gửi</p>
                   <p className="text-sm text-slate-700">{fmt(selected.created_at)}</p>
                 </div>
@@ -390,6 +446,31 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
           </div>
         )}
       </div>
+
+      {/* ── Delete Confirm Modal ── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div className="px-6 py-5 flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+                <Trash2 size={22} className="text-red-500" />
+              </div>
+              <h3 className="font-bold text-slate-800 text-base">Xóa phản ánh</h3>
+              <p className="text-sm text-slate-500">Phản ánh này sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+            </div>
+            <div className="px-6 pb-5 flex gap-3">
+              <button onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-all">
+                Hủy
+              </button>
+              <button onClick={confirmDelete}
+                className="flex-1 py-2.5 bg-red-500 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all">
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Reply Modal ── */}
       {showModal && selected && (

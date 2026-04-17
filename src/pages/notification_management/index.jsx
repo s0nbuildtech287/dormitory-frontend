@@ -135,6 +135,7 @@ const NotificationManagement = () => {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyFilter, setHistoryFilter] = useState("");
   const [deletingId, setDeletingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   /* panel */
   const [expandComposer, setExpandComposer] = useState(true);
@@ -240,7 +241,12 @@ const NotificationManagement = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xóa thông báo này?")) return;
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     setDeletingId(id);
     try {
       await deleteNotification(id);
@@ -660,6 +666,31 @@ const NotificationManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Delete Confirm Modal ── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div className="px-6 py-5 flex flex-col items-center text-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+                <Trash2 size={22} className="text-red-500" />
+              </div>
+              <h3 className="font-bold text-slate-800 text-base">Xóa thông báo</h3>
+              <p className="text-sm text-slate-500">Thông báo này sẽ bị xóa vĩnh viễn và không thể khôi phục.</p>
+            </div>
+            <div className="px-6 pb-5 flex gap-3">
+              <button onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-all">
+                Hủy
+              </button>
+              <button onClick={confirmDelete}
+                className="flex-1 py-2.5 bg-red-500 text-white rounded-xl font-semibold text-sm hover:bg-red-600 transition-all">
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

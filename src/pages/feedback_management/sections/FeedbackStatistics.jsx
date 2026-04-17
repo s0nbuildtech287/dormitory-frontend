@@ -1,9 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from "recharts";
-import { BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle2, MessageSquare, AlertCircle } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle2, MessageSquare, AlertCircle, Brain } from "lucide-react";
 import StatCard from "../../../components/common/StatCard.jsx";
+import { getAIStatistics } from "../../../api/apiFeedback.js";
 
 // Tông màu xanh lạnh — đồng bộ với RoomAnalytics
 const BLUE = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
@@ -53,6 +55,19 @@ const FeedbackStatistics = ({ feedbacks }) => {
 
     return { total, byStatus, bySentiment, resolveRate, catList, statusPie, sentimentPie };
   }, [feedbacks]);
+
+  const [aiStats, setAiStats]     = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError]     = useState(null);
+
+  useEffect(() => {
+    setAiLoading(true);
+    setAiError(null);
+    getAIStatistics()
+      .then(data => setAiStats(data))
+      .catch(err => setAiError(err.message || "Lỗi tải thống kê AI"))
+      .finally(() => setAiLoading(false));
+  }, []);
 
   if (feedbacks.length === 0) {
     return (
@@ -188,6 +203,119 @@ const FeedbackStatistics = ({ feedbacks }) => {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ── Row 3: AI Charts ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* AI Sentiment Pie */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center">
+              <Brain size={18} className="text-purple-700" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">AI Sentiment</h3>
+              <p className="text-xs text-slate-500">Phân tích cảm xúc bởi AI</p>
+            </div>
+          </div>
+          {aiLoading ? (
+            <div className="flex items-center justify-center h-40 text-slate-400 text-sm">Đang tải...</div>
+          ) : aiError ? (
+            <div className="flex items-center justify-center h-40 text-red-400 text-xs">{aiError}</div>
+          ) : aiStats?.sentimentDistribution ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: "Tích cực",  value: aiStats.sentimentDistribution.Positive || 0, color: "#22c55e" },
+                    { name: "Trung lập", value: aiStats.sentimentDistribution.Neutral  || 0, color: "#eab308" },
+                    { name: "Tiêu cực",  value: aiStats.sentimentDistribution.Negative || 0, color: "#ef4444" },
+                  ].filter(d => d.value > 0)}
+                  cx="50%" cy="50%" innerRadius={50} outerRadius={75}
+                  dataKey="value" paddingAngle={3}
+                >
+                  {[
+                    { name: "Tích cực",  value: aiStats.sentimentDistribution.Positive || 0, color: "#22c55e" },
+                    { name: "Trung lập", value: aiStats.sentimentDistribution.Neutral  || 0, color: "#eab308" },
+                    { name: "Tiêu cực",  value: aiStats.sentimentDistribution.Negative || 0, color: "#ef4444" },
+                  ].filter(d => d.value > 0).map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v, n) => [v, n]} />
+                <Legend iconType="circle" iconSize={10}
+                  formatter={(v) => <span className="text-xs text-slate-600">{v}</span>} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-40 text-slate-400 text-xs">Chưa có dữ liệu</div>
+          )}
+        </div>
+
+        {/* Top 5 Emotions Bar Chart */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+              <Brain size={18} className="text-amber-700" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Top 5 Cảm xúc</h3>
+              <p className="text-xs text-slate-500">Cảm xúc phổ biến nhất</p>
+            </div>
+          </div>
+          {aiLoading ? (
+            <div className="flex items-center justify-center h-40 text-slate-400 text-sm">Đang tải...</div>
+          ) : aiError ? (
+            <div className="flex items-center justify-center h-40 text-red-400 text-xs">{aiError}</div>
+          ) : aiStats?.topEmotions?.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={aiStats.topEmotions.slice(0, 5)} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="emotion" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-40 text-slate-400 text-xs">Chưa có dữ liệu</div>
+          )}
+        </div>
+
+        {/* High Priority Unresolved */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center">
+              <Brain size={18} className="text-red-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-sm">Ưu tiên cao chưa xử lý</h3>
+              <p className="text-xs text-slate-500">Priority=High, Status=New</p>
+            </div>
+          </div>
+          {aiLoading ? (
+            <div className="flex items-center justify-center h-40 text-slate-400 text-sm">Đang tải...</div>
+          ) : aiError ? (
+            <div className="flex items-center justify-center h-40 text-red-400 text-xs">{aiError}</div>
+          ) : aiStats?.highPriorityUnresolved?.length > 0 ? (
+            <div className="space-y-2 max-h-52 overflow-y-auto">
+              {aiStats.highPriorityUnresolved.slice(0, 10).map((item, i) => (
+                <div key={i} className="flex items-start gap-2 p-2.5 bg-red-50 rounded-xl border border-red-100">
+                  <span className="text-[10px] font-bold text-red-600 bg-red-100 px-1.5 py-0.5 rounded shrink-0 mt-0.5">
+                    #{i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-slate-700 line-clamp-1">{item.student_name || "—"}</p>
+                    <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5">{item.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-40 text-slate-400 text-xs">Không có phản ánh nào</div>
+          )}
         </div>
       </div>
 

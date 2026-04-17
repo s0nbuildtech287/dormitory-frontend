@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Menu, LogOut, Bell, User, Lock, FileText, MessageSquare, Megaphone } from "lucide-react";
+import { Menu, LogOut, Bell, User, Lock, FileText, MessageSquare, Megaphone, AlertTriangle, X as XIcon } from "lucide-react";
 import { ADMIN_ROUTES, STUDENT_ROUTES } from "../router/index.js";
 import { UserRole } from "../utils/types.js";
 import { BACKEND_URL } from "../utils/constants.jsx";
@@ -32,7 +32,7 @@ const Layout = ({ user, onLogout, children }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const { notifications, adminAlerts, unreadCount, clearUnread, clearAdminAlerts } = useNotifications();
+  const { notifications, adminAlerts, unreadCount, clearUnread, clearAdminAlerts, highPriorityToasts, dismissHighPriorityToast } = useNotifications();
 
   // Dropdown items: sinh viên thấy notifications, admin thấy adminAlerts
   const dropdownItems = user.role === UserRole.ADMIN ? adminAlerts : notifications;
@@ -306,7 +306,12 @@ const Layout = ({ user, onLogout, children }) => {
                           onClick={() => {
                             setShowNotifications(false);
                             if (isAdminAlert) {
-                              navigate(item.type === "new_registration" ? "/registrations" : "/feedback");
+                              const target = item.type === "new_registration" ? "/registrations" : "/feedback";
+                              if (location.pathname === target) {
+                                window.location.reload();
+                              } else {
+                                navigate(target);
+                              }
                             } else {
                               navigate("/home");
                             }
@@ -416,6 +421,60 @@ const Layout = ({ user, onLogout, children }) => {
           {children}
         </div>
       </main>
+
+      {/* ── High Priority Toast Container (Admin only) ── */}
+      {user.role === UserRole.ADMIN && highPriorityToasts.length > 0 && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full">
+          {highPriorityToasts.map(toast => (
+            <div key={toast.id}
+              className="bg-white border border-red-200 rounded-2xl shadow-2xl p-4 flex flex-col gap-2 animate-fade-in">
+              {/* Header */}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={18} className="text-red-500 shrink-0" />
+                  <span className="font-bold text-red-600 text-sm">Phản ánh nghiêm trọng</span>
+                </div>
+                <button onClick={() => dismissHighPriorityToast(toast.id)}
+                  className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                  <XIcon size={14} />
+                </button>
+              </div>
+              {/* Summary */}
+              {toast.data?.content && (
+                <p className="text-xs text-slate-700 line-clamp-2 leading-relaxed">
+                  {toast.data.content}
+                </p>
+              )}
+              {/* Badges */}
+              <div className="flex flex-wrap gap-1.5">
+                {toast.data?.sentiment && (
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                    toast.data.sentiment === "Positive" ? "bg-green-50 text-green-700 border-green-200" :
+                    toast.data.sentiment === "Negative" ? "bg-red-50 text-red-700 border-red-200" :
+                    "bg-yellow-50 text-yellow-700 border-yellow-200"
+                  }`}>
+                    {toast.data.sentiment === "Positive" ? "Tích cực" : toast.data.sentiment === "Negative" ? "Tiêu cực" : "Trung lập"}
+                  </span>
+                )}
+                {toast.data?.priority && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-red-50 text-red-700 border-red-200">
+                    {toast.data.priority}
+                  </span>
+                )}
+                {toast.data?.emotion && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+                    {toast.data.emotion}
+                  </span>
+                )}
+              </div>
+              {/* Timestamp */}
+              <p className="text-[10px] text-slate-400">
+                {new Date(toast.timestamp || toast.data?.created_at || Date.now()).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

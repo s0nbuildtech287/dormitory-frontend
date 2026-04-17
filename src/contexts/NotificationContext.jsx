@@ -9,6 +9,7 @@ export const NotificationProvider = ({ user, children }) => {
     const [notifications, setNotifications] = useState([]);   // thông báo từ WS (session only)
     const [adminAlerts, setAdminAlerts]     = useState([]);   // alert cho admin
     const [unreadCount, setUnreadCount]     = useState(0);
+    const [highPriorityToasts, setHighPriorityToasts] = useState([]); // toast cảnh báo high priority
     const socketRef = useRef(null);
 
     const addNotification = useCallback((notif) => {
@@ -26,6 +27,10 @@ export const NotificationProvider = ({ user, children }) => {
     const clearAdminAlerts = useCallback(() => {
         setAdminAlerts([]);
         setUnreadCount(0);
+    }, []);
+
+    const dismissHighPriorityToast = useCallback((id) => {
+        setHighPriorityToasts(prev => prev.filter(t => t.id !== id));
     }, []);
 
     useEffect(() => {
@@ -55,6 +60,14 @@ export const NotificationProvider = ({ user, children }) => {
             addAdminAlert(data);
         });
 
+        socket.on("high_priority_feedback", (data) => {
+            const toast = { ...data, id: Date.now() + Math.random() };
+            setHighPriorityToasts(prev => [toast, ...prev].slice(0, 5));
+            setTimeout(() => {
+                setHighPriorityToasts(prev => prev.filter(t => t.id !== toast.id));
+            }, 8000);
+        });
+
         socket.on("connect_error", (err) => {
             console.warn("[WS] Connect error:", err.message);
         });
@@ -72,6 +85,8 @@ export const NotificationProvider = ({ user, children }) => {
             unreadCount,
             clearUnread,
             clearAdminAlerts,
+            highPriorityToasts,
+            dismissHighPriorityToast,
         }}>
             {children}
         </NotificationContext.Provider>
