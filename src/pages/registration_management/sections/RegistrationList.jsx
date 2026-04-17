@@ -109,6 +109,18 @@ const RegistrationList = ({
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null); // { type: 'success'|'error', text }
 
+  // Auto-refresh sau khi sync để cập nhật vision_status từ background job
+  // Poll nhiều lần trong 3 phút đầu sau khi import
+  const triggerAutoRefresh = () => {
+    // Poll tại: 5s, 15s, 30s, 60s, 90s, 120s, 180s
+    const delays = [5000, 15000, 30000, 60000, 90000, 120000, 180000];
+    delays.forEach((delay) => {
+      setTimeout(() => {
+        if (onRefresh) onRefresh();
+      }, delay);
+    });
+  };
+
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
     totalSlots: 1000,
@@ -116,6 +128,15 @@ const RegistrationList = ({
     freshmen: 60,
     seniors: 30,
   });
+
+  // Auto-refresh khi user focus lại vào tab/window
+  useEffect(() => {
+    const handleFocus = () => {
+      if (onRefresh) onRefresh();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [onRefresh]);
 
   // Fetch quotas from settings when component mounts
   useEffect(() => {
@@ -270,9 +291,11 @@ const RegistrationList = ({
     setSyncMsg(null);
     try {
       const res = await importFromGoogleSheets(url);
-      setSyncMsg({ type: 'success', text: `Đồng bộ thành công ${res.data.success} hồ sơ!${res.data.failed > 0 ? ` (${res.data.failed} lỗi)` : ''}` });
+      setSyncMsg({ type: 'success', text: `Đồng bộ thành công ${res.data.success} hồ sơ!${res.data.failed > 0 ? ` (${res.data.failed} lỗi)` : ''}${res.data.visionValidation === 'processing' ? ' Đang xác thực ảnh...' : ''}` });
       setSheetUrl("");
       if (onImportSuccess) onImportSuccess();
+      // Poll refresh để cập nhật vision_status sau khi background job xong
+      triggerAutoRefresh();
     } catch (err) {
       setSyncMsg({ type: 'error', text: err.message || 'Đồng bộ thất bại!' });
     } finally {
@@ -309,6 +332,7 @@ const RegistrationList = ({
               setFilterScore("All");
               setFilterGender("All");
               setFilterGroup("All");
+              setFilterVision("All");
               setSyncMsg(null);
             }}
             className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-lg shadow-slate-100 font-bold text-xs whitespace-nowrap">
@@ -334,13 +358,23 @@ const RegistrationList = ({
 
         {/* Thông báo kết quả đồng bộ */}
         {syncMsg && (
-          <p className={`mt-3 text-xs font-semibold px-3 py-2 rounded-lg ${
+          <div className={`mt-3 flex items-center justify-between px-3 py-2 rounded-lg ${
             syncMsg.type === 'success'
               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               : 'bg-rose-50 text-rose-700 border border-rose-200'
           }`}>
-            {syncMsg.type === 'success' ? '✅ ' : '❌ '}{syncMsg.text}
-          </p>
+            <p className="text-xs font-semibold">
+              {syncMsg.type === 'success' ? '✅ ' : '❌ '}{syncMsg.text}
+            </p>
+            {syncMsg.type === 'success' && (
+              <button
+                onClick={() => { if (onRefresh) onRefresh(); }}
+                className="ml-3 flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900 underline whitespace-nowrap"
+              >
+                <RefreshCw size={11} /> Làm mới ngay
+              </button>
+            )}
+          </div>
         )}
       </div>
 
