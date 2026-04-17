@@ -18,7 +18,7 @@ const makeWelcome = () => ({
 
 async function getAIChatResponse(history, userText, model = "gpt-4o") {
   try {
-    const res = await fetch("/api/ai/chat", {
+    const res = await fetch("http://localhost:1234/api/ai/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userText, history, model }),
@@ -142,7 +142,7 @@ const AIChatBot = () => {
 
   // Load models từ backend khi mount
   useEffect(() => {
-    fetch("/api/ai/models")
+    fetch("http://localhost:1234/api/ai/models")
       .then((r) => r.json())
       .then((data) => {
         console.log("[AIChatBot] models từ backend:", data);
