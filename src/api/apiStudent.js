@@ -92,8 +92,16 @@ export const createStudentFeedback = (data) =>
         body: JSON.stringify(data),
     }).then(handle);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// KỶ LUẬT
+/**
+ * Xóa phản hồi của sinh viên.
+ * @param {string} id - feedback ID
+ * @returns {Promise<Object>} { success }
+ */
+export const deleteStudentFeedback = (id) =>
+    fetch(`${API_BASE}/feedbacks/${id}`, {
+        method: 'DELETE',
+        headers: headers(),
+    }).then(handle);
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
