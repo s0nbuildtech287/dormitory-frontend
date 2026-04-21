@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Mail, Lock, LogIn, Smartphone, ClipboardList } from "lucide-react";
+import { Mail, Lock, LogIn, Smartphone, ClipboardList, KeyRound } from "lucide-react";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
 import ktxImg from "../../assets/images/ktx.jpg";
 import tlu1Img from "../../assets/images/tlu1.jpg";
@@ -17,6 +17,7 @@ const LoginPage = ({ onLogin }) => {
   const [passwordError, setPasswordError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   // OTP inline state
   const [showOtp, setShowOtp] = useState(false);
@@ -206,6 +207,14 @@ const LoginPage = ({ onLogin }) => {
               </div>
               {passwordError && <p className="mt-1.5 text-xs text-red-500 font-medium">{passwordError}</p>}
               {error && !showOtp && <p className="mt-1.5 text-xs text-red-500 font-medium">{error}</p>}
+              {!showOtp && (
+                <div className="text-right mt-1">
+                  <button type="button" onClick={() => setShowForgot(true)}
+                    className="text-xs text-blue-500 hover:text-blue-700 transition-colors">
+                    Quên mật khẩu?
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* OTP */}
@@ -265,7 +274,204 @@ const LoginPage = ({ onLogin }) => {
 
     {/* Modal đăng ký */}
     {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
+    {/* Modal quên mật khẩu */}
+    {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
     </>
+  );
+};
+
+// ── Modal quên mật khẩu ──────────────────────────────────────────────────────
+const ForgotPasswordModal = ({ onClose }) => {
+  const [step, setStep] = useState(0); // 0: nhập email + mk mới, 1: nhập OTP
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState(null);
+  const [done, setDone] = useState(false);
+  const otpRefs = useRef([]);
+
+  useEffect(() => {
+    if (step === 1) otpRefs.current[0]?.focus();
+  }, [step]);
+
+  const handleOtpInput = (index, value) => {
+    if (!/^\d?$/.test(value)) return;
+    const next = [...otpDigits];
+    next[index] = value;
+    setOtpDigits(next);
+    setErr(null);
+    if (value && index < 5) otpRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) otpRefs.current[index - 1]?.focus();
+    if (e.key === "Enter") handleReset();
+  };
+
+  const handleOtpPaste = (e) => {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted.length === 6) {
+      setOtpDigits(pasted.split(""));
+      otpRefs.current[5]?.focus();
+    }
+  };
+
+  const handleSendOtp = async () => {
+    setErr(null);
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErr("Email không hợp lệ!"); return;
+    }
+    if (!newPassword.trim() || newPassword.length < 6) {
+      setErr("Mật khẩu mới phải có ít nhất 6 ký tự!"); return;
+    }
+    if (newPassword !== confirmPassword) {
+      setErr("Mật khẩu xác nhận không khớp!"); return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:1234/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!data.success) { setErr(data.message || "Gửi OTP thất bại!"); return; }
+      setStep(1);
+    } catch {
+      setErr("Lỗi kết nối. Thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = async () => {
+    const code = otpDigits.join("");
+    if (code.length < 6) { setErr("Vui lòng nhập đủ 6 số!"); return; }
+    setLoading(true);
+    setErr(null);
+    try {
+      const res = await fetch("http://localhost:1234/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code, newPassword }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setErr(data.message || "Đặt lại mật khẩu thất bại!");
+        setOtpDigits(["", "", "", "", "", ""]);
+        setTimeout(() => otpRefs.current[0]?.focus(), 0);
+        return;
+      }
+      setDone(true);
+    } catch {
+      setErr("Lỗi kết nối. Thử lại!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls = "w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all text-gray-800 placeholder-gray-400 text-sm";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 font-bold text-gray-800">
+            <KeyRound size={20} className="text-blue-600" />
+            Quên mật khẩu
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-all">✕</button>
+        </div>
+
+        <div className="px-6 py-6">
+          {done ? (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">✅</div>
+              <h3 className="font-bold text-gray-800 text-lg mb-2">Đặt lại mật khẩu thành công!</h3>
+              <p className="text-gray-500 text-sm mb-6">Bạn có thể đăng nhập với mật khẩu mới.</p>
+              <button onClick={onClose} className="px-8 py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition-all">
+                Đăng nhập ngay
+              </button>
+            </div>
+          ) : step === 0 ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">Nhập email tài khoản và mật khẩu mới. Mã OTP sẽ được gửi đến email để xác nhận.</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email tài khoản</label>
+                <div className="relative">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Mail size={18} /></div>
+                  <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setErr(null); }}
+                    placeholder="email@tlu.edu.vn" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Mật khẩu mới</label>
+                <div className="relative">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Lock size={18} /></div>
+                  <input type="password" value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setErr(null); }}
+                    placeholder="Ít nhất 6 ký tự" className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Xác nhận mật khẩu mới</label>
+                <div className="relative">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"><Lock size={18} /></div>
+                  <input type="password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setErr(null); }}
+                    placeholder="Nhập lại mật khẩu mới" className={inputCls} />
+                </div>
+              </div>
+              {err && <p className="text-xs text-red-500 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">{err}</p>}
+              <div className="flex gap-3 pt-1">
+                <button onClick={onClose} className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all">
+                  Hủy
+                </button>
+                <button onClick={handleSendOtp} disabled={loading}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all">
+                  {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Gửi mã OTP"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Mã OTP đã được gửi đến <span className="font-semibold text-gray-800">{email}</span>. Nhập mã để xác nhận đặt lại mật khẩu.
+              </p>
+              <div>
+                <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
+                  <Smartphone size={13} /> Mã xác thực OTP
+                </label>
+                <div className="flex gap-2 justify-between" onPaste={handleOtpPaste}>
+                  {otpDigits.map((d, i) => (
+                    <input key={i} ref={(el) => (otpRefs.current[i] = el)}
+                      type="text" inputMode="numeric" maxLength={1} value={d}
+                      onChange={(e) => handleOtpInput(i, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                      className={`w-10 h-10 text-center text-base font-bold border-2 rounded-lg outline-none transition-all
+                        ${d ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 bg-gray-50 text-gray-800"}
+                        focus:border-blue-500 focus:ring-2 focus:ring-blue-100`}
+                    />
+                  ))}
+                </div>
+              </div>
+              {err && <p className="text-xs text-red-500 font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">{err}</p>}
+              <div className="flex gap-3 pt-1">
+                <button onClick={() => { setStep(0); setOtpDigits(["","","","","",""]); setErr(null); }}
+                  className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all">
+                  ← Quay lại
+                </button>
+                <button onClick={handleReset} disabled={loading}
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all">
+                  {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Xác nhận"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
