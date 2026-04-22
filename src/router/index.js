@@ -139,6 +139,14 @@ export const STUDENT_ROUTES = [
     role: UserRole.STUDENT,
   },
   {
+    id: "news",
+    label: "Tin tức TLU",
+    path: "/news",
+    component: StudentDashboard,
+    icon: "Newspaper",
+    role: UserRole.STUDENT,
+  },
+  {
     id: "feedback",
     label: "Gửi phản ánh",
     path: "/feedback",
