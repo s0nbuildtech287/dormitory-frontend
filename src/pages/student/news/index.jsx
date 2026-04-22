@@ -62,10 +62,33 @@ const SkeletonCard = () => (
   </div>
 );
 
+const formatPublishedDate = (dateStr) => {
+  if (!dateStr) return null;
+
+  const raw = String(dateStr).trim();
+  if (!raw) return null;
+
+  // Backend có thể trả sẵn định dạng dd/mm/yyyy.
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(raw)) {
+    const [d, m, y] = raw.split("/");
+    return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return parsed.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 // ─── News Card (ngang, nhỏ gọn) ──────────────────────────────
 const NewsCard = ({ article }) => {
   const tagStyle = TAG_STYLES[article.tag] || TAG_STYLES.general;
   const [imgErr, setImgErr] = useState(false);
+  const publishedDate = formatPublishedDate(article.publishedAt);
 
   return (
     <a
@@ -93,13 +116,21 @@ const NewsCard = ({ article }) => {
       {/* Content bên phải */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
-          {/* Tag */}
-          <span
-            className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${tagStyle.bg} ${tagStyle.text} ${tagStyle.border} mb-1.5`}
-          >
-            <span className={`w-1 h-1 rounded-full ${tagStyle.dot}`} />
-            {tagStyle.label}
-          </span>
+          {/* Tag + ngày đăng từ backend */}
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <span
+              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${tagStyle.bg} ${tagStyle.text} ${tagStyle.border}`}
+            >
+              <span className={`w-1 h-1 rounded-full ${tagStyle.dot}`} />
+              {tagStyle.label}
+            </span>
+            {publishedDate && (
+              <span className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
+                <Calendar size={9} />
+                {publishedDate}
+              </span>
+            )}
+          </div>
 
           {/* Title */}
           <h3 className="font-semibold text-slate-800 text-xs leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
