@@ -15,6 +15,8 @@ import {
   Globe,
 } from "lucide-react";
 
+const PROXY_URL = "http://localhost:1234/api/news/image-proxy";
+
 // ─── Màu tag ─────────────────────────────────────────────────
 const TAG_STYLES = {
   general: {
@@ -76,7 +78,7 @@ const NewsCard = ({ article }) => {
       <div className="w-24 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden shrink-0 relative">
         {article.thumbnail && !imgErr ? (
           <img
-            src={article.thumbnail}
+            src={`${PROXY_URL}?url=${encodeURIComponent(article.thumbnail)}`}
             alt={article.title}
             onError={() => setImgErr(true)}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
