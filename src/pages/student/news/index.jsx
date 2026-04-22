@@ -16,6 +16,34 @@ import {
 } from "lucide-react";
 
 const PROXY_URL = "http://localhost:1234/api/news/image-proxy";
+const DEFAULT_NEWS_THUMBNAIL =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Default news thumbnail"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#dbeafe"/><stop offset="100%" stop-color="#bfdbfe"/></linearGradient></defs><rect width="400" height="300" fill="url(#bg)"/><rect x="88" y="52" width="224" height="196" rx="16" fill="#ffffff" stroke="#93c5fd" stroke-width="4"/><rect x="116" y="92" width="110" height="12" rx="6" fill="#2563eb"/><rect x="116" y="116" width="168" height="10" rx="5" fill="#cbd5e1"/><rect x="116" y="136" width="168" height="10" rx="5" fill="#cbd5e1"/><rect x="116" y="156" width="120" height="10" rx="5" fill="#cbd5e1"/><rect x="116" y="182" width="54" height="44" rx="8" fill="#dbeafe"/><rect x="178" y="182" width="106" height="10" rx="5" fill="#cbd5e1"/><rect x="178" y="200" width="90" height="10" rx="5" fill="#cbd5e1"/><rect x="178" y="218" width="66" height="10" rx="5" fill="#cbd5e1"/></svg>`
+  );
+
+const resolveNewsThumbnailSrc = (thumbnail) => {
+  const src = String(thumbnail || "").trim();
+  const normalized = src.toLowerCase();
+  if (!src) return DEFAULT_NEWS_THUMBNAIL;
+  if (
+    normalized.includes("placeholder") ||
+    normalized.includes("no-image") ||
+    normalized.includes("noimage") ||
+    normalized.includes("image-not-available") ||
+    normalized.includes("not-available")
+  ) {
+    return DEFAULT_NEWS_THUMBNAIL;
+  }
+  if (src.startsWith("data:image/")) return src;
+  if (src.startsWith("https://tlu.edu.vn/")) {
+    return `${PROXY_URL}?url=${encodeURIComponent(src)}`;
+  }
+  if (src.startsWith("http://") || src.startsWith("https://")) {
+    return src;
+  }
+  return DEFAULT_NEWS_THUMBNAIL;
+};
 
 // ─── Màu tag ─────────────────────────────────────────────────
 const TAG_STYLES = {
@@ -87,8 +115,12 @@ const formatPublishedDate = (dateStr) => {
 // ─── News Card (ngang, nhỏ gọn) ──────────────────────────────
 const NewsCard = ({ article }) => {
   const tagStyle = TAG_STYLES[article.tag] || TAG_STYLES.general;
-  const [imgErr, setImgErr] = useState(false);
+  const [imgSrc, setImgSrc] = useState(() => resolveNewsThumbnailSrc(article.thumbnail));
   const publishedDate = formatPublishedDate(article.publishedAt);
+
+  useEffect(() => {
+    setImgSrc(resolveNewsThumbnailSrc(article.thumbnail));
+  }, [article.thumbnail]);
 
   return (
     <a
@@ -99,18 +131,12 @@ const NewsCard = ({ article }) => {
     >
       {/* Thumbnail nhỏ bên trái */}
       <div className="w-24 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden shrink-0 relative">
-        {article.thumbnail && !imgErr ? (
-          <img
-            src={`${PROXY_URL}?url=${encodeURIComponent(article.thumbnail)}`}
-            alt={article.title}
-            onError={() => setImgErr(true)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Newspaper size={22} className="text-blue-300 opacity-60" />
-          </div>
-        )}
+        <img
+          src={imgSrc}
+          alt={article.title}
+          onError={() => setImgSrc(DEFAULT_NEWS_THUMBNAIL)}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
       </div>
 
       {/* Content bên phải */}
