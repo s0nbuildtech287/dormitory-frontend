@@ -1,0 +1,28 @@
+@startuml
+' Sequence Diagram: Login
+actor "Người dùng" as User
+participant "Frontend" as FE
+participant "AuthController" as AuthC
+participant "AuthService" as AuthS
+participant "UserDAO" as UserDAO
+database "Database" as DB
+
+User -> FE: Nhập email + mật khẩu
+User -> FE: Nhấn Đăng nhập
+FE -> AuthC: POST /api/auth/login
+AuthC -> AuthS: login(email, password, req)
+AuthS -> UserDAO: findByEmail(email)
+UserDAO -> DB: SELECT user
+DB --> UserDAO: user
+AuthS -> AuthS: So sánh mật khẩu (bcrypt)
+alt Hợp lệ
+  AuthS -> AuthS: Tạo JWT token
+  AuthS --> AuthC: {token, user}
+  AuthC --> FE: 200 OK + data
+  FE --> User: Đăng nhập thành công
+else Không hợp lệ
+  AuthS --> AuthC: Lỗi đăng nhập
+  AuthC --> FE: 400/401
+  FE --> User: Hiển thị lỗi
+end
+@enduml
