@@ -1,11 +1,11 @@
-@startuml
+@startuml "Auth Login Sequence"
 ' Sequence Diagram: Login
 actor "Người dùng" as User
-participant "Frontend" as FE
+participant "Giao diện" as FE
 participant "AuthController" as AuthC
 participant "AuthService" as AuthS
 participant "UserDAO" as UserDAO
-database "Database" as DB
+database "CSDL" as DB
 
 User -> FE: Nhập email + mật khẩu
 User -> FE: Nhấn Đăng nhập

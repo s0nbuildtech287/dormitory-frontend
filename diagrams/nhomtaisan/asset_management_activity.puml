@@ -1,0 +1,16 @@
+@startuml "Asset Management Activity"
+|Ban quản lý|
+start
+:Chọn quản lý tài sản;
+:Thêm/Sửa/Xóa tài sản;
+if (Nhập kho?) then (Có)
+  |Hệ thống|
+  :Lưu nhập kho;
+else (Xuất kho)
+  |Hệ thống|
+  :Lưu xuất kho vào phòng;
+endif
+|Ban quản lý|
+:Nhận kết quả;
+stop
+@enduml

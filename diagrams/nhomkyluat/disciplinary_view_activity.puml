@@ -1,0 +1,11 @@
+@startuml "Disciplinary View Activity"
+|Sinh viên|
+start
+:Đăng nhập;
+:Vào mục Kỷ luật;
+|Hệ thống|
+:Lấy danh sách phiếu kỷ luật;
+|Sinh viên|
+:Xem chi tiết;
+stop
+@enduml

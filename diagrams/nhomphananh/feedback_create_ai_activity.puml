@@ -1,0 +1,13 @@
+@startuml "Feedback Create AI Activity"
+|Sinh viên|
+start
+:Nhập nội dung phản ánh;
+:Nhấn gửi;
+|Hệ thống|
+:Lưu phản ánh;
+:Gọi AI phân tích sentiment;
+:Cập nhật nhãn ưu tiên/cảm xúc;
+|Sinh viên|
+:Nhận thông báo gửi thành công;
+stop
+@enduml

@@ -1,0 +1,14 @@
+@startuml "Student Notifications Feedback Activity"
+|Sinh viên|
+start
+:Vào mục Thông báo;
+|Hệ thống|
+:Lấy danh sách thông báo;
+|Sinh viên|
+:Vào mục Phản ánh đã gửi;
+|Hệ thống|
+:Lấy lịch sử phản ánh;
+|Sinh viên|
+:Xem chi tiết;
+stop
+@enduml

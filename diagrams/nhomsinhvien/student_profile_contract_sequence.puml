@@ -1,0 +1,18 @@
+@startuml "Student Profile Contract Sequence"
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "StudentController" as SC
+database "CSDL" as DB
+
+Student -> FE: Mở hồ sơ
+FE -> SC: GET /api/student/profile
+SC -> DB: SELECT profile
+DB --> SC: data
+SC --> FE: 200 OK
+
+Student -> FE: Xem hợp đồng
+FE -> SC: GET /api/student/contracts
+SC -> DB: SELECT contracts
+DB --> SC: data
+SC --> FE: 200 OK
+@enduml

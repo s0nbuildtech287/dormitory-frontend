@@ -1,0 +1,24 @@
+@startuml "Room Management Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "RoomController" as RoomC
+participant "RoomService" as RoomS
+participant "RoomDAO" as RoomDAO
+database "CSDL" as DB
+
+Admin -> FE: Tạo/Sửa/Xóa phòng
+FE -> RoomC: POST|PUT|DELETE /api/rooms
+RoomC -> RoomS: create|update|delete
+RoomS -> RoomDAO: persist changes
+RoomDAO -> DB: INSERT/UPDATE/DELETE rooms
+DB --> RoomDAO: OK
+RoomC --> FE: 200 OK
+
+Admin -> FE: Cập nhật chỉ số điện nước
+FE -> RoomC: POST /api/rooms/{id}/meter-readings
+RoomC -> RoomS: updateMeterReadings(id, electric, water)
+RoomS -> RoomDAO: update meter
+RoomDAO -> DB: UPDATE rooms
+DB --> RoomDAO: OK
+RoomC --> FE: 200 OK
+@enduml

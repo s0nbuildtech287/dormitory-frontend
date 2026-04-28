@@ -1,0 +1,24 @@
+@startuml "VNPay Payment Sequence"
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "VNPayController" as VC
+participant "VNPayService" as VS
+participant "InvoiceDAO" as IDAO
+participant "VNPay" as VNPay
+
+database "CSDL" as DB
+
+Student -> FE: Chọn hóa đơn + Thanh toán
+FE -> VC: POST /api/vnpay/create-payment
+VC -> VS: createPaymentUrl(amount, txnRef)
+VS --> VC: paymentUrl
+VC --> FE: paymentUrl
+FE -> VNPay: Redirect paymentUrl
+VNPay --> VC: GET /api/vnpay/ipn
+VC -> VS: verifySignature(params)
+VC -> IDAO: markAsPaid(invoiceId)
+IDAO -> DB: UPDATE invoices
+DB --> IDAO: OK
+VC --> VNPay: RspCode=00
+VNPay --> FE: Redirect /payment/result
+@enduml

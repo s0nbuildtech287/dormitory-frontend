@@ -1,0 +1,12 @@
+@startuml "Disciplinary Create Activity"
+|Ban quản lý|
+start
+:Chọn sinh viên + lỗi vi phạm;
+:Nhập mức độ và ghi chú;
+|Hệ thống|
+:Tạo phiếu kỷ luật;
+:Cập nhật điểm rèn luyện;
+|Ban quản lý|
+:Hoàn tất;
+stop
+@enduml

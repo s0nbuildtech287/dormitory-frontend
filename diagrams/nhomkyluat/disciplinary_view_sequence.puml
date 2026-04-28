@@ -1,0 +1,12 @@
+@startuml "Disciplinary View Sequence"
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "StudentController" as SC
+database "CSDL" as DB
+
+Student -> FE: Mở mục kỷ luật
+FE -> SC: GET /api/student/disciplinary
+SC -> DB: SELECT disciplinary by user
+DB --> SC: data
+SC --> FE: 200 OK
+@enduml

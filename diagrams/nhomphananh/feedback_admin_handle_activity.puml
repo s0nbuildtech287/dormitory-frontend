@@ -1,0 +1,19 @@
+@startuml "Feedback Admin Handle Activity"
+|Ban quản lý|
+start
+:Chọn phản ánh cần xử lý;
+:Đọc nội dung;
+if (Cập nhật trạng thái?) then (Có)
+  |Hệ thống|
+  :Lưu trạng thái + phản hồi;
+  |Ban quản lý|
+  :Hoàn tất;
+  stop
+else (Xóa)
+  |Hệ thống|
+  :Xóa phản ánh;
+  |Ban quản lý|
+  :Hoàn tất;
+  stop
+endif
+@enduml

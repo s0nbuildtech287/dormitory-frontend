@@ -1,4 +1,4 @@
-@startuml
+@startuml "Auth Login Activity"
 ' Activity Diagram: Login (User vs System)
 |Người dùng|
 start

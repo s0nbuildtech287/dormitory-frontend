@@ -1,0 +1,12 @@
+@startuml "AI Chatbot Activity"
+|Sinh viên|
+start
+:Nhập câu hỏi;
+:Nhấn gửi;
+|Hệ thống|
+:Gửi message tới AI;
+:Nhận phản hồi;
+|Sinh viên|
+:Đọc câu trả lời;
+stop
+@enduml

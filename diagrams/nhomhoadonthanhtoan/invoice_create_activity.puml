@@ -1,0 +1,13 @@
+@startuml "Invoice Create Activity"
+|Ban quản lý|
+start
+:Chọn tạo hóa đơn theo phòng;
+:Nhập tháng + chỉ số điện nước;
+|Hệ thống|
+:Kiểm tra dữ liệu;
+:Tính tiền điện/nước/phí;
+:Tạo hóa đơn;
+|Ban quản lý|
+:Nhận kết quả;
+stop
+@enduml

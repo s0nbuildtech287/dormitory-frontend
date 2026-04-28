@@ -1,0 +1,20 @@
+@startuml "Room Management Activity"
+|Ban quản lý|
+start
+:Chọn quản lý phòng;
+:Thực hiện xem/thêm/sửa/xóa;
+if (Cập nhật chỉ số?) then (Có)
+  |Hệ thống|
+  :Kiểm tra dữ liệu;
+  :Lưu chỉ số điện/nước;
+  |Ban quản lý|
+  :Nhận kết quả;
+  stop
+else (Không)
+  |Hệ thống|
+  :Lưu thay đổi phòng;
+  |Ban quản lý|
+  :Nhận kết quả;
+  stop
+endif
+@enduml

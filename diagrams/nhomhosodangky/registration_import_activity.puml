@@ -1,0 +1,21 @@
+@startuml "Registration Import Activity"
+|Ban quản lý|
+start
+:Chọn Import hồ sơ;
+:Chọn Excel hoặc Google Sheets;
+|Hệ thống|
+:Nhận file hoặc URL;
+if (Nguồn hợp lệ?) then (Có)
+  :Đọc dữ liệu;
+  :Validate mapping trường;
+  :Lưu hồ sơ vào DB;
+  |Ban quản lý|
+  :Thông báo import thành công;
+  stop
+else (Không)
+  :Thông báo lỗi định dạng/URL;
+  |Ban quản lý|
+  :Sửa nguồn và thử lại;
+  stop
+endif
+@enduml

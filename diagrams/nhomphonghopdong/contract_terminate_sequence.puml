@@ -1,0 +1,16 @@
+@startuml "Contract Terminate Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "ContractController" as CC
+participant "ContractService" as CS
+participant "StudentContractDAO" as SCDAO
+database "CSDL" as DB
+
+Admin -> FE: Chọn hợp đồng
+FE -> CC: POST /api/contracts/{id}/terminate
+CC -> CS: terminateContract(id)
+CS -> SCDAO: update status = Terminated
+SCDAO -> DB: UPDATE student_contracts
+DB --> SCDAO: OK
+CC --> FE: 200 OK
+@enduml

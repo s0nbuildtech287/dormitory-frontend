@@ -1,0 +1,16 @@
+@startuml "Invoice Create Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "InvoiceController" as IC
+participant "InvoiceService" as IS
+participant "InvoiceDAO" as IDAO
+database "CSDL" as DB
+
+Admin -> FE: Nhập roomId + month + meter readings
+FE -> IC: POST /api/invoices/from-room
+IC -> IS: createInvoiceFromRoom(roomId, month, meterReadings)
+IS -> IDAO: create invoice
+IDAO -> DB: INSERT invoices
+DB --> IDAO: OK
+IC --> FE: 201 Created
+@enduml

@@ -1,0 +1,34 @@
+@startuml "Registration Review Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "RegistrationController" as RegC
+participant "RegistrationService" as RegS
+participant "NotificationService" as NotiS
+database "CSDL" as DB
+
+== Duyệt / Từ chối ==
+Admin -> FE: Chọn hồ sơ + ghi chú
+FE -> RegC: POST /api/registrations/{id}/approve|reject
+RegC -> RegS: approveRegistration|rejectRegistration(id, note)
+RegS -> DB: UPDATE register_forms
+DB --> RegS: OK
+RegS -> NotiS: send notification
+NotiS -> DB: INSERT notifications
+RegS --> RegC: Kết quả
+RegC --> FE: 200 OK
+
+== Điều chỉnh trọng số ==
+Admin -> FE: Cập nhật scoring weights
+FE -> RegC: PUT /api/registrations/scoring-weights
+RegC -> RegS: updateScoringWeightsSettings(weights)
+RegS -> DB: UPDATE settings
+DB --> RegS: OK
+RegC --> FE: 200 OK
+
+Admin -> FE: Recalculate scores
+FE -> RegC: POST /api/registrations/recalculate-scores
+RegC -> RegS: recalculateAllScores()
+RegS -> DB: UPDATE register_forms
+DB --> RegS: OK
+RegC --> FE: 200 OK
+@enduml

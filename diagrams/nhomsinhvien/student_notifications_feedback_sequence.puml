@@ -1,0 +1,18 @@
+@startuml "Student Notifications Feedback Sequence"
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "StudentController" as SC
+database "CSDL" as DB
+
+Student -> FE: Xem thông báo
+FE -> SC: GET /api/student/notifications
+SC -> DB: SELECT notifications
+DB --> SC: data
+SC --> FE: 200 OK
+
+Student -> FE: Xem phản ánh đã gửi
+FE -> SC: GET /api/student/feedbacks
+SC -> DB: SELECT feedbacks
+DB --> SC: data
+SC --> FE: 200 OK
+@enduml

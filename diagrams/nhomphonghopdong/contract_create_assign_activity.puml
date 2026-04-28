@@ -1,0 +1,17 @@
+@startuml "Contract Create Assign Activity"
+|Ban quản lý|
+start
+:Chọn hồ sơ đã duyệt;
+:Nhập thông tin hợp đồng;
+|Hệ thống|
+:Tạo hợp đồng trạng thái Pending;
+|Ban quản lý|
+:Chọn gán phòng;
+|Hệ thống|
+:Kiểm tra phòng trống;
+:Gán phòng;
+:Cập nhật hợp đồng = Active;
+|Ban quản lý|
+:Hoàn tất;
+stop
+@enduml

@@ -1,0 +1,15 @@
+@startuml "AI Chatbot Sequence"
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "AiController" as AIC
+participant "openaiService" as AIS
+participant "OpenAI" as OpenAI
+
+Student -> FE: Nhập câu hỏi
+FE -> AIC: POST /api/ai/chat
+AIC -> AIS: createChatCompletion(messages, model)
+AIS -> OpenAI: Chat Completion API
+OpenAI --> AIS: reply
+AIS --> AIC: reply
+AIC --> FE: reply
+@enduml

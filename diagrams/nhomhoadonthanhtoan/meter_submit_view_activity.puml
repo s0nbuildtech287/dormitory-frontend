@@ -1,0 +1,13 @@
+@startuml "Meter Submit View Activity"
+|Sinh viên|
+start
+:Chọn gửi chỉ số điện nước;
+:Nhập số điện + số nước;
+|Hệ thống|
+:Kiểm tra thời gian (1-5);
+:Kiểm tra dữ liệu hợp lệ;
+:Update hóa đơn hiện tại;
+|Sinh viên|
+:Xem danh sách hóa đơn;
+stop
+@enduml

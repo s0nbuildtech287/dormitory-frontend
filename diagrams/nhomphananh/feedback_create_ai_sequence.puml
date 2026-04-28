@@ -1,0 +1,22 @@
+@startuml "Feedback Create AI Sequence"
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "FeedbackController" as FC
+participant "FeedbackService" as FS
+participant "OpenAI Service" as AI
+participant "FeedbackDAO" as FDAO
+database "CSDL" as DB
+
+Student -> FE: Nhập phản ánh
+FE -> FC: POST /api/feedbacks
+FC -> FS: createFeedback(data, userId)
+FS -> FDAO: INSERT feedback
+FDAO -> DB: INSERT feedbacks
+DB --> FDAO: OK
+FS -> AI: analyzeFeedback(content)
+AI --> FS: sentiment/priority
+FS -> FDAO: updateAIResult(id, result)
+FDAO -> DB: UPDATE feedbacks
+DB --> FDAO: OK
+FC --> FE: 201 Created
+@enduml

@@ -1,0 +1,17 @@
+@startuml "VNPay Payment Activity"
+|Sinh viên|
+start
+:Chọn hóa đơn cần thanh toán;
+:Nhấn Thanh toán VNPay;
+|Hệ thống|
+:Tạo URL thanh toán;
+|Sinh viên|
+:Chuyển sang VNPay;
+:Hoàn tất thanh toán;
+|Hệ thống|
+:Nhận IPN từ VNPay;
+:Cập nhật hóa đơn = Đã thanh toán;
+|Sinh viên|
+:Nhận kết quả thanh toán;
+stop
+@enduml

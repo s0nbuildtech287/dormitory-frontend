@@ -1,0 +1,13 @@
+@startuml "Notification Send Activity"
+|Ban quản lý|
+start
+:Nhập tiêu đề + nội dung;
+:Chọn đối tượng (ALL/STUDENTS/SPECIFIC);
+|Hệ thống|
+:Kiểm tra dữ liệu;
+:Tạo thông báo;
+:Gửi tới người nhận;
+|Ban quản lý|
+:Hoàn tất;
+stop
+@enduml

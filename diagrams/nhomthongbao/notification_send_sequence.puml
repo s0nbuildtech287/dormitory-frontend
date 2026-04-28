@@ -1,0 +1,23 @@
+@startuml "Notification Send Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "NotificationController" as NC
+participant "NotificationService" as NS
+database "CSDL" as DB
+
+alt Gửi ALL
+  Admin -> FE: Nhập nội dung
+  FE -> NC: POST /api/notifications/send-all
+  NC -> NS: sendToAllStudents(title, content)
+  NS -> DB: INSERT notifications
+  DB --> NS: OK
+  NC --> FE: 201 Created
+else Gửi SPECIFIC
+  Admin -> FE: Chọn danh sách userIds
+  FE -> NC: POST /api/notifications/send-specific
+  NC -> NS: sendToSpecificUsers(title, content, userIds)
+  NS -> DB: INSERT notifications
+  DB --> NS: OK
+  NC --> FE: 201 Created
+end
+@enduml
