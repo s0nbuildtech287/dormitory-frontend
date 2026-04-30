@@ -1,6 +1,7 @@
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import { NavigationProvider } from "./contexts/NavigationContext.jsx";
 import { NotificationProvider } from "./contexts/NotificationContext.jsx";
+import { ChatBotProvider } from "./contexts/ChatBotContext.jsx";
 import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
@@ -23,12 +24,14 @@ const AppContent = () => {
 
   return (
     <NotificationProvider user={user}>
-      <Layout user={user} onLogout={logout}>
-        <div className="animate-in fade-in duration-500">
-          <RouteConfig />
-        </div>
-      </Layout>
-      <AIChatBot />
+      <ChatBotProvider>
+        <Layout user={user} onLogout={logout}>
+          <div className="animate-in fade-in duration-500">
+            <RouteConfig />
+          </div>
+        </Layout>
+        <AIChatBot />
+      </ChatBotProvider>
     </NotificationProvider>
   );
 };

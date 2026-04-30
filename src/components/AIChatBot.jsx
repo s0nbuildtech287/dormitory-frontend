@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send, X, Bot, RotateCcw, ChevronDown, Check, Zap, Brain, Sparkles } from "lucide-react";
+import { useChatBot } from "../contexts/ChatBotContext.jsx";
 
 
 
@@ -117,7 +118,7 @@ const MessageBubble = ({ msg }) => {
             ? "bg-white border border-slate-100 text-slate-800 rounded-2xl rounded-bl-sm"
             : "bg-slate-800 text-white rounded-2xl rounded-br-sm"
         }`}>
-          {msg.text}
+          {msg.text.replace(/\*\*(.*?)\*\*/g, "$1")}
         </div>
         <p className={`text-[10px] mt-0.5 opacity-40 px-1 ${isBot ? "text-left" : "text-right"}`}>
           {msg.time.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
@@ -132,7 +133,7 @@ const MessageBubble = ({ msg }) => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const AIChatBot = () => {
-  const [open, setOpen] = useState(false);
+  const { isOpen, openChat, closeChat, pendingPrompt, clearPendingPrompt, initialMessages, clearInitialMessages } = useChatBot();
   const [messages, setMessages] = useState([makeWelcome()]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -163,8 +164,24 @@ const AIChatBot = () => {
   }, []);
 
   useEffect(() => {
-    if (open) setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
-  }, [messages, isLoading, open]);
+    if (isOpen) setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+  }, [messages, isLoading, isOpen]);
+
+  // Khi chatbot mở với pendingPrompt → điền sẵn vào input, không tự gửi
+  useEffect(() => {
+    if (isOpen && pendingPrompt) {
+      setInput(pendingPrompt);
+      clearPendingPrompt();
+    }
+  }, [isOpen, pendingPrompt]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Khi chatbot mở với initialMessages → load tin nhắn sẵn (bot đã trả lời rồi)
+  useEffect(() => {
+    if (isOpen && initialMessages) {
+      setMessages([makeWelcome(), ...initialMessages]);
+      clearInitialMessages();
+    }
+  }, [isOpen, initialMessages]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleReset = () => {
     setMessages([makeWelcome()]);
@@ -194,7 +211,7 @@ const AIChatBot = () => {
     <>
       {/* Floating Bubble */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => openChat()}
         title="Chat với AI"
         className="fixed bottom-8 right-8 z-50 w-14 h-14 rounded-full bg-slate-800 text-white shadow-2xl hover:bg-slate-700 hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center border-4 border-white/10"
       >
@@ -203,12 +220,12 @@ const AIChatBot = () => {
       </button>
 
       {/* Backdrop + Modal */}
-      {open && (
+      {isOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={(e) => e.target === e.currentTarget && setOpen(false)}
+          onClick={(e) => e.target === e.currentTarget && closeChat()}
         >
-          <div className="bg-white w-full max-w-3xl h-[82vh] max-h-[680px] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white w-full max-w-4xl h-[90vh] max-h-[820px] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
 
             {/* Header */}
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 px-5 py-3.5 flex items-center justify-between flex-shrink-0">
@@ -228,7 +245,7 @@ const AIChatBot = () => {
                 <button onClick={handleReset} title="Cuộc trò chuyện mới" className="p-1.5 rounded-lg text-white/70 hover:bg-white/10 transition-colors">
                   <RotateCcw size={16} />
                 </button>
-                <button onClick={() => setOpen(false)} title="Đóng" className="p-1.5 rounded-lg text-white/70 hover:bg-white/10 transition-colors">
+                <button onClick={closeChat} title="Đóng" className="p-1.5 rounded-lg text-white/70 hover:bg-white/10 transition-colors">
                   <X size={16} />
                 </button>
               </div>

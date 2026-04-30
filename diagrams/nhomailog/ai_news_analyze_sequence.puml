@@ -1,0 +1,51 @@
+@startuml "AI News Analyze Sequence"
+' Sequence Diagram: Phân tích bài báo bằng AI
+actor "Sinh viên" as Student
+participant "Trang Tin tức\n(StudentNews)" as NewsPage
+participant "NewsAnalyze\n(handleAnalyze)" as Handler
+participant "NewsController" as NC
+participant "TLU Website" as TLU
+participant "openaiService" as AI
+participant "ChatBot Modal\n(AIChatBot)" as ChatBot
+participant "ChatBotContext" as Ctx
+
+Student -> NewsPage: Nhấn nút "AI" trên card bài báo
+NewsPage -> Handler: handleAnalyze(article)
+Handler -> Handler: setAnalyzingUrl(article.url)\n(hiện spinner "Đang tải...")
+
+Handler -> NC: POST /api/news/analyze\n{ url, title }
+
+== Cào nội dung ==
+NC -> TLU: GET article URL\n(axios + headers)
+TLU --> NC: HTML page
+NC -> NC: cheerio.load(html)\nxóa script/nav/footer/sidebar
+NC -> NC: Trích xuất .entry-content\nhoặc fallback <p> tags
+
+== Gọi AI phân tích ==
+NC -> AI: createChatCompletion(messages, "gpt-4o-mini")
+note right of AI
+  messages = [
+    system: "Trợ lý phân tích tin tức KTX"
+    user: "Tiêu đề + Nội dung đầy đủ\n+ Yêu cầu 3 mục"
+  ]
+end note
+AI --> NC: { content: "1. Tóm tắt...\n2. Điểm nổi bật...\n3. Ý nghĩa..." }
+NC --> Handler: { success: true, analysis: "..." }
+
+== Hiển thị kết quả ==
+Handler -> Ctx: openChatWithMessages([\n  { role:"user", text:"Phân tích bài báo: [tiêu đề]" },\n  { role:"bot",  text: analysis }\n])
+Ctx -> ChatBot: isOpen=true\ninitialMessages=[user+bot]
+ChatBot -> ChatBot: setMessages([welcome, userMsg, botMsg])
+ChatBot --> Student: Modal mở — hiển thị kết quả phân tích sẵn
+
+== Hỏi thêm (tuỳ chọn) ==
+Student -> ChatBot: Nhập câu hỏi + Enter
+ChatBot -> AI: POST /api/ai/chat\n{ message, history[-20], model }
+note right of AI
+  history bao gồm toàn bộ
+  lịch sử hội thoại trong session
+  → AI hiểu ngữ cảnh bài báo
+end note
+AI --> ChatBot: reply
+ChatBot --> Student: Hiển thị câu trả lời
+@enduml

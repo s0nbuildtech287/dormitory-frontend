@@ -1,0 +1,28 @@
+@startuml "Anomaly Detect Activity"
+' Activity Diagram: Phát hiện bất thường hóa đơn điện/nước
+|Ban quản lý|
+start
+:Mở trang Quản lý hóa đơn;
+:Nhấn nút "Bất thường";
+|Hệ thống|
+:Lấy dữ liệu hóa đơn 4 tháng gần nhất;
+:Nhóm hóa đơn theo từng phòng;
+fork
+  :Tính trung bình điện 3 tháng trước;
+fork again
+  :Tính trung bình nước 3 tháng trước;
+end fork
+:So sánh tháng hiện tại với trung bình;
+if (Tăng > 50%?) then (Có)
+  :Đánh dấu bất thường;
+  :Tính % tăng + chênh lệch tiền;
+else (Không)
+  :Bỏ qua phòng này;
+endif
+:Sắp xếp theo mức độ bất thường giảm dần;
+:Trả danh sách phòng bất thường;
+|Ban quản lý|
+:Xem modal danh sách bất thường;
+:Kiểm tra từng phòng (điện/nước/tiền);
+stop
+@enduml

@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="sys" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;opacity=30;fontSize=14;fontStyle=1;verticalAlign=top;strokeWidth=1;" value="" vertex="1">
-          <mxGeometry height="1020" width="1300" x="160" y="40" as="geometry" />
+          <mxGeometry height="1220" width="1300" x="160" y="40" as="geometry" />
         </mxCell>
         <mxCell id="login" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;fontStyle=1;strokeWidth=1;" value="Đăng Nhập" vertex="1">
           <mxGeometry height="60" width="160" x="730" y="490" as="geometry" />
@@ -40,20 +40,11 @@
         <mxCell id="uc13" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Nộp hồ sơ đăng ký" vertex="1">
           <mxGeometry height="50" width="150" x="1200" y="55" as="geometry" />
         </mxCell>
-        <mxCell id="uc14" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem thông tin cá nhân" vertex="1">
+        <mxCell id="uc14" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem thông tin cá nhân &amp; Kỷ luật" vertex="1">
           <mxGeometry height="50" width="150" x="1200" y="135" as="geometry" />
         </mxCell>
-        <mxCell id="uc15" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem hợp đồng" vertex="1">
+        <mxCell id="uc15" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem &amp; Thanh toán hợp đồng" vertex="1">
           <mxGeometry height="50" width="150" x="1200" y="215" as="geometry" />
-        </mxCell>
-        <mxCell id="uc16" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Thanh toán tiền cọc" vertex="1">
-          <mxGeometry height="50" width="150" x="1200" y="295" as="geometry" />
-        </mxCell>
-        <mxCell id="uc17" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem hóa đơn cá nhân" vertex="1">
-          <mxGeometry height="50" width="150" x="1200" y="375" as="geometry" />
-        </mxCell>
-        <mxCell id="uc18" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Gửi số điện / nước" vertex="1">
-          <mxGeometry height="50" width="150" x="1200" y="455" as="geometry" />
         </mxCell>
         <mxCell id="uc19" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Thanh toán hóa đơn" vertex="1">
           <mxGeometry height="50" width="150" x="1200" y="535" as="geometry" />
@@ -63,9 +54,6 @@
         </mxCell>
         <mxCell id="uc21" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem thông báo" vertex="1">
           <mxGeometry height="50" width="150" x="1200" y="695" as="geometry" />
-        </mxCell>
-        <mxCell id="uc22" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem phiếu kỷ luật" vertex="1">
-          <mxGeometry height="50" width="150" x="1200" y="775" as="geometry" />
         </mxCell>
         <mxCell id="uc23" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Quản lý tài khoản" vertex="1">
           <mxGeometry height="50" width="150" x="1200" y="855" as="geometry" />
@@ -130,19 +118,9 @@
             <mxPoint x="1515" y="498.11320754716985" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="sr3" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc16">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1515" y="505.66037735849045" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="sr4" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc17">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1515" y="513.2075471698113" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="sr5" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc18">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1515" y="520.7547169811321" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="sr6" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc19">
@@ -158,11 +136,6 @@
         <mxCell id="sr8" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc21">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1515" y="543.3962264150944" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="sr9" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc22">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1515" y="550.9433962264152" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="sr10" edge="1" parent="1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc23">
@@ -203,13 +176,7 @@
         <mxCell id="lr2" edge="1" parent="1" source="uc15" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="lr3" edge="1" parent="1" source="uc16" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="lr4" edge="1" parent="1" source="uc17" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="lr5" edge="1" parent="1" source="uc18" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="lr6" edge="1" parent="1" source="uc19" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
@@ -219,9 +186,6 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="lr8" edge="1" parent="1" source="uc21" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="lr9" edge="1" parent="1" source="uc22" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="lr10" edge="1" parent="1" source="uc23" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
@@ -258,6 +222,69 @@
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="800" y="550" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- UC MỚI 1: Đổi mật khẩu / OTP — dùng chung 2 actor           -->
+        <!-- Đặt ở giữa, dưới "Đăng Nhập", nối với cả 2 actor            -->
+        <!-- ============================================================ -->
+        <mxCell id="uc_otp" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;strokeWidth=1;" value="Đổi mật khẩu / OTP" vertex="1">
+          <mxGeometry height="50" width="160" x="730" y="600" as="geometry" />
+        </mxCell>
+        <!-- Admin → UC OTP -->
+        <mxCell id="al_otp" edge="1" parent="1" source="_iYbHmvKF2VUrT1Tj3JW-1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc_otp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Sinh viên → UC OTP -->
+        <mxCell id="sr_otp" edge="1" parent="1" source="_iYbHmvKF2VUrT1Tj3JW-3" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc_otp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- UC MỚI 2: Sử dụng Chatbot AI — chỉ Sinh viên                -->
+        <!-- Đặt bên phải, dưới "Quản lý tài khoản" sinh viên            -->
+        <!-- ============================================================ -->
+        <mxCell id="uc_chatbot" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;strokeWidth=1;" value="Sử dụng Chatbot AI" vertex="1">
+          <mxGeometry height="50" width="150" x="1200" y="935" as="geometry" />
+        </mxCell>
+        <!-- Sinh viên → Chatbot -->
+        <mxCell id="sr_chatbot" edge="1" parent="1" source="_iYbHmvKF2VUrT1Tj3JW-3" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc_chatbot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Chatbot <<include>> Đăng nhập -->
+        <mxCell id="ll_chatbot" edge="1" parent="1" source="uc_chatbot" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- UC: Xem tin tức TLU — chỉ Sinh viên -->
+        <mxCell id="uc_news" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Xem tin tức TLU" vertex="1">
+          <mxGeometry height="50" width="150" x="1200" y="1005" as="geometry" />
+        </mxCell>
+        <mxCell id="sr_news" edge="1" parent="1" source="_iYbHmvKF2VUrT1Tj3JW-3" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc_news">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ll_news" edge="1" parent="1" source="uc_news" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============================================================ -->
+        <!-- UC MỚI 3: Phát hiện bất thường hóa đơn — chỉ Ban quản lý   -->
+        <!-- Đặt bên trái, dưới "Quản lý tài khoản" admin               -->
+        <!-- ============================================================ -->
+        <mxCell id="uc_anomaly" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;strokeWidth=1;" value="Phát hiện bất thường hóa đơn" vertex="1">
+          <mxGeometry height="50" width="150" x="297" y="975" as="geometry" />
+        </mxCell>
+        <!-- Admin → Anomaly -->
+        <mxCell id="al_anomaly" edge="1" parent="1" source="_iYbHmvKF2VUrT1Tj3JW-1" style="endArrow=none;strokeColor=#000000;strokeWidth=1;" target="uc_anomaly">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Anomaly <<include>> Đăng nhập -->
+        <mxCell id="ll_anomaly" edge="1" parent="1" source="uc_anomaly" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;" target="login" value="&lt;&lt;include&gt;&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Anomaly <<extend>> Quản lý hóa đơn -->
+        <mxCell id="ext_anomaly" edge="1" parent="1" source="uc_anomaly" style="dashed=1;endArrow=open;endFill=0;strokeWidth=1;strokeColor=#6c8ebf;" target="uc8" value="&lt;&lt;extend&gt;&gt;">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

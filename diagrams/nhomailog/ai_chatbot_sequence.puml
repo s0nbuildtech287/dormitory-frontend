@@ -1,15 +1,25 @@
 @startuml "AI Chatbot Sequence"
+' Sequence Diagram: Chatbot AI hỗ trợ sinh viên
 actor "Sinh viên" as Student
-participant "Giao diện" as FE
+participant "Giao diện\n(ChatBot)" as FE
 participant "AiController" as AIC
 participant "openaiService" as AIS
-participant "OpenAI" as OpenAI
+participant "Gemini API" as Gemini
 
-Student -> FE: Nhập câu hỏi
-FE -> AIC: POST /api/ai/chat
+Student -> FE: Nhập câu hỏi + nhấn Gửi
+FE -> AIC: POST /api/ai/chat\n{ messages[], model }
 AIC -> AIS: createChatCompletion(messages, model)
-AIS -> OpenAI: Chat Completion API
-OpenAI --> AIS: reply
-AIS --> AIC: reply
-AIC --> FE: reply
+AIS -> AIS: Gắn SYSTEM_PROMPT vào đầu messages
+AIS -> Gemini: Chat Completion request
+alt Thành công
+  Gemini --> AIS: { reply }
+  AIS --> AIC: reply
+  AIC --> FE: 200 OK + { reply }
+  FE --> Student: Hiển thị câu trả lời AI
+else Lỗi API
+  Gemini --> AIS: Error
+  AIS --> AIC: throw Error
+  AIC --> FE: 500
+  FE --> Student: Thông báo lỗi, thử lại
+end
 @enduml

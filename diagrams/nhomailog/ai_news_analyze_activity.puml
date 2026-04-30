@@ -1,0 +1,51 @@
+@startuml "AI News Analyze Activity"
+' Activity Diagram: Phân tích bài báo bằng AI
+|Sinh viên|
+start
+:Mở trang Tin tức;
+:Xem danh sách bài báo;
+:Nhấn nút "AI" trên card bài báo;
+|Hệ thống - Frontend|
+:Hiển thị trạng thái "Đang tải...";
+:Gửi yêu cầu phân tích lên backend\n(url + title);
+|Hệ thống - Backend|
+:Nhận url bài báo;
+:Kiểm tra URL hợp lệ (tlu.edu.vn);
+if (URL hợp lệ?) then (Có)
+  :Cào nội dung bài viết\n(axios + cheerio);
+  :Loại bỏ script, nav, footer, sidebar;
+  :Trích xuất nội dung chính\n(.entry-content / .post-content / <p>);
+  if (Lấy được nội dung?) then (Có)
+    :Gọi AI (GPT-4o-mini)\nvới toàn bộ nội dung bài;
+    :AI phân tích theo 3 mục:\n1. Tóm tắt\n2. Điểm nổi bật\n3. Ý nghĩa với sinh viên KTX;
+    :Trả về kết quả phân tích;
+    |Hệ thống - Frontend|
+    :Mở modal Chatbot;
+    :Hiển thị tin nhắn user:\n"Phân tích bài báo: [tiêu đề]";
+    :Hiển thị tin nhắn bot:\nKết quả phân tích từ AI;
+    |Sinh viên|
+    :Đọc kết quả phân tích;
+    if (Muốn hỏi thêm?) then (Có)
+      :Nhập câu hỏi vào ô chat;
+      :Nhấn Enter / Gửi;
+      |Hệ thống - Backend|
+      :Gọi AI với lịch sử hội thoại\n(history + câu hỏi mới);
+      :Trả lời dựa trên ngữ cảnh bài báo;
+      |Sinh viên|
+      :Đọc câu trả lời;
+    else (Không)
+      stop
+    endif
+  else (Không)
+    |Hệ thống - Frontend|
+    :Mở chatbot với prompt cơ bản\n(tiêu đề + mô tả ngắn);
+    |Sinh viên|
+    :Tự chỉnh prompt rồi gửi;
+    stop
+  endif
+else (Không)
+  |Hệ thống - Frontend|
+  :Thông báo lỗi URL;
+  stop
+endif
+@enduml

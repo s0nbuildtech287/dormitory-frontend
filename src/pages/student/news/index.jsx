@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { fetchNews, refreshNews } from "../../../api/apiNews.js";
+import { fetchNews, refreshNews, analyzeArticle } from "../../../api/apiNews.js";
 import {
   Newspaper,
   ExternalLink,
@@ -13,7 +13,9 @@ import {
   Calendar,
   Users,
   Globe,
+  Sparkles,
 } from "lucide-react";
+import { useChatBot } from "../../../contexts/ChatBotContext.jsx";
 
 const PROXY_URL = "http://localhost:1234/api/news/image-proxy";
 const DEFAULT_NEWS_THUMBNAIL =
@@ -113,31 +115,32 @@ const formatPublishedDate = (dateStr) => {
 };
 
 // ─── News Card (ngang, nhỏ gọn) ──────────────────────────────
-const NewsCard = ({ article }) => {
+const NewsCard = ({ article, onAnalyze, analyzingUrl }) => {
   const tagStyle = TAG_STYLES[article.tag] || TAG_STYLES.general;
   const [imgSrc, setImgSrc] = useState(() => resolveNewsThumbnailSrc(article.thumbnail));
   const publishedDate = formatPublishedDate(article.publishedAt);
+  const isAnalyzing = analyzingUrl === article.url;
 
   useEffect(() => {
     setImgSrc(resolveNewsThumbnailSrc(article.thumbnail));
   }, [article.thumbnail]);
 
   return (
-    <a
-      href={article.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 flex gap-3 p-3"
-    >
+    <div className="group bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200 flex gap-3 p-3 relative">
       {/* Thumbnail nhỏ bên trái */}
-      <div className="w-24 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden shrink-0 relative">
+      <a
+        href={article.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-24 h-20 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg overflow-hidden shrink-0 relative"
+      >
         <img
           src={imgSrc}
           alt={article.title}
           onError={() => setImgSrc(DEFAULT_NEWS_THUMBNAIL)}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-      </div>
+      </a>
 
       {/* Content bên phải */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -159,20 +162,46 @@ const NewsCard = ({ article }) => {
           </div>
 
           {/* Title */}
-          <h3 className="font-semibold text-slate-800 text-xs leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
-            {article.title}
-          </h3>
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <h3 className="font-semibold text-slate-800 text-xs leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
+              {article.title}
+            </h3>
+          </a>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-1.5">
           <span className="text-[10px] text-slate-400">tlu.edu.vn</span>
-          <span className="text-[10px] text-blue-500 font-medium flex items-center gap-0.5 group-hover:underline">
-            Xem <ExternalLink size={9} />
-          </span>
+          <div className="flex items-center gap-2">
+            {/* Icon phân tích AI */}
+            <button
+              onClick={(e) => { e.preventDefault(); if (!isAnalyzing) onAnalyze(article); }}
+              disabled={isAnalyzing}
+              className="flex items-center gap-1 text-[10px] text-amber-600 font-semibold hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded-full transition-colors border border-amber-200 disabled:opacity-60 disabled:cursor-wait"
+              title="Phân tích bài báo bằng AI"
+            >
+              {isAnalyzing
+                ? <RefreshCw size={9} className="animate-spin" />
+                : <Sparkles size={9} />}
+              {isAnalyzing ? "Đang tải..." : "AI"}
+            </button>
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-blue-500 font-medium flex items-center gap-0.5 hover:underline"
+            >
+              Xem <ExternalLink size={9} />
+            </a>
+          </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 
@@ -224,6 +253,40 @@ const StudentNews = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const LIMIT = 12;
+
+  const { openChat, openChatWithMessages } = useChatBot();
+  const [analyzingUrl, setAnalyzingUrl] = useState(null);
+
+  const handleAnalyze = async (article) => {
+    setAnalyzingUrl(article.url);
+    try {
+      const res = await analyzeArticle(article.url, article.title);
+      if (res.success && res.analysis) {
+        // Mở chatbot với user hỏi + bot trả lời sẵn — không nhét vào input
+        openChatWithMessages([
+          {
+            id: Date.now(),
+            role: "user",
+            text: `Phân tích bài báo: "${article.title}"`,
+            time: new Date(),
+          },
+          {
+            id: Date.now() + 1,
+            role: "bot",
+            text: res.analysis,
+            time: new Date(),
+          },
+        ]);
+      } else {
+        // Fallback: điền vào input để user tự gửi
+        openChat(`Phân tích bài báo: "${article.title}"\n${article.description || ""}`);
+      }
+    } catch {
+      openChat(`Phân tích bài báo: "${article.title}"\n${article.description || ""}`);
+    } finally {
+      setAnalyzingUrl(null);
+    }
+  };
 
   const loadNews = useCallback(async (pageNum = 1, category = "all") => {
     setLoading(true);
@@ -402,7 +465,7 @@ const StudentNews = () => {
           {/* Grid 2 cột, card nằm ngang nhỏ gọn */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {displayNews.map((article, idx) => (
-              <NewsCard key={`${article.url}-${idx}`} article={article} />
+              <NewsCard key={`${article.url}-${idx}`} article={article} onAnalyze={handleAnalyze} analyzingUrl={analyzingUrl} />
             ))}
           </div>
 

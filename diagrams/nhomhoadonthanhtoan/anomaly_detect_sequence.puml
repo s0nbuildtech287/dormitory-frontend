@@ -1,0 +1,33 @@
+@startuml "Anomaly Detect Sequence"
+' Sequence Diagram: Phát hiện bất thường hóa đơn điện/nước
+actor "Ban quản lý" as Admin
+participant "Giao diện\n(BillList)" as FE
+participant "AnomalyModal" as Modal
+participant "InvoiceController" as IC
+participant "InvoiceService" as IS
+participant "InvoiceDAO" as IDAO
+database "CSDL" as DB
+
+Admin -> FE: Nhấn nút "Bất thường"
+FE -> Modal: isOpen = true
+Modal -> IC: GET /api/invoices/anomalies
+IC -> IS: detectAnomalies()
+IS -> IDAO: getAnomalyData(4 tháng)
+IDAO -> DB: SELECT invoices JOIN rooms\nWHERE billing_month >= now - 4 months
+DB --> IDAO: rows[]
+IDAO --> IS: rows[]
+
+IS -> IS: Nhóm theo room_id
+loop Mỗi phòng
+  IS -> IS: Tách latest (tháng hiện tại)\nvà history (3 tháng trước)
+  IS -> IS: Tính avgElectric, avgWater\navgElectricAmount, avgWaterAmount
+  IS -> IS: So sánh với ngưỡng 50%
+  alt Tăng > 50%
+    IS -> IS: Thêm vào danh sách bất thường\n(kèm %, chênh lệch tiền)
+  end
+end
+IS -> IS: Sắp xếp theo mức tăng giảm dần
+IS --> IC: { total, threshold_pct, anomalies[] }
+IC --> Modal: 200 OK + data
+Modal --> Admin: Hiển thị danh sách phòng bất thường\n(điện/nước: lượng dùng + tiền + % tăng)
+@enduml

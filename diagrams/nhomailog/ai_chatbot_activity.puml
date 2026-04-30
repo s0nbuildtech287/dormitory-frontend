@@ -1,12 +1,28 @@
 @startuml "AI Chatbot Activity"
+' Activity Diagram: Chatbot AI hỗ trợ sinh viên
 |Sinh viên|
 start
+:Mở giao diện Chatbot;
 :Nhập câu hỏi;
-:Nhấn gửi;
+:Nhấn Gửi;
 |Hệ thống|
-:Gửi message tới AI;
-:Nhận phản hồi;
-|Sinh viên|
-:Đọc câu trả lời;
-stop
+:Nhận message từ sinh viên;
+:Gắn SYSTEM_PROMPT vào context;
+:Gọi Gemini API với lịch sử hội thoại;
+if (API phản hồi thành công?) then (Có)
+  :Nhận câu trả lời từ AI;
+  :Trả kết quả về giao diện;
+  |Sinh viên|
+  :Đọc câu trả lời;
+  if (Cần hỏi thêm?) then (Có)
+    :Nhập câu hỏi tiếp theo;
+  else (Không)
+    stop
+  endif
+else (Không)
+  :Trả thông báo lỗi;
+  |Sinh viên|
+  :Thử lại;
+  stop
+endif
 @enduml

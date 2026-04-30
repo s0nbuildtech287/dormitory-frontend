@@ -20,3 +20,18 @@ export const refreshNews = async () => {
   return response.json();
 };
 
+
+/**
+ * Cào nội dung bài viết TLU rồi AI phân tích luôn — trả về kết quả sẵn
+ * @param {string} url - URL bài viết tlu.edu.vn
+ * @param {string} title - Tiêu đề bài viết
+ */
+export const analyzeArticle = async (url, title) => {
+  const response = await fetch(`${API_URL}/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, title }),
+  });
+  if (!response.ok) throw new Error("Lỗi phân tích bài viết");
+  return response.json();
+};
