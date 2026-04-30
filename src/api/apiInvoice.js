@@ -187,3 +187,14 @@ export const updatePricingSettings = async (pricingData) => {
   });
   return handleResponse(response);
 };
+
+/**
+ * Phát hiện bất thường điện/nước trong hóa đơn
+ * So sánh tháng hiện tại với trung bình 3 tháng trước
+ */
+export const detectInvoiceAnomalies = async () => {
+  const response = await fetch(`${API_BASE_URL}/invoices/anomalies`, {
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};

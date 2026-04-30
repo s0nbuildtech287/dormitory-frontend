@@ -11,6 +11,7 @@ import FilterBar from "../../../components/common/FilterBar.jsx";
 import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
+import AnomalyModal from "./AnomalyModal.jsx";
 
 const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter, onNavigateToNotification }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +33,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [bulkDeleteInvoices, setBulkDeleteInvoices] = useState([]);
   const [composeEmail, setComposeEmail] = useState(null);
+  const [showAnomalyModal, setShowAnomalyModal] = useState(false);
 
   // Fetch invoices from API
   useEffect(() => {
@@ -288,8 +290,17 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       {/* Table */}
       <div className="bg-white rounded-[2rem] shadow-sm border-2 border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between">
-          <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">Bảng hóa đơn ({totalItems} kết quả)</h3>
-          
+          <div className="flex items-center gap-2">
+            <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">Bảng hóa đơn ({totalItems} kết quả)</h3>
+            {/* Nút phát hiện bất thường */}
+            <button
+              onClick={() => setShowAnomalyModal(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-700 text-xs font-bold rounded-lg transition-colors"
+              title="Phát hiện bất thường điện/nước"
+            >
+              <AlertTriangle size={13} className="text-amber-500" />
+            </button>
+          </div>
           <div className="flex items-center gap-2">
             {/* Toggle Checkbox Column Button */}
             <button
@@ -666,6 +677,12 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
         onSend={({ to, subject, body }) => {
           console.log("Gửi email:", { to, subject, body });
         }}
+      />
+
+      {/* Anomaly Detection Modal */}
+      <AnomalyModal
+        isOpen={showAnomalyModal}
+        onClose={() => setShowAnomalyModal(false)}
       />
     </div>
   );
