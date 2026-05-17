@@ -1,0 +1,42 @@
+@startuml "UC Phân rã - Xử lý phản ánh"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam ArrowColor Black
+skinparam ArrowThickness 1
+skinparam shadowing false
+
+actor "<b>Ban quản lý</b>" as Admin
+actor "<b>Sinh viên</b>" as SV
+
+usecase "<b>Gửi phản ánh mới</b>" as UC1
+usecase "<b>Phân tích cảm xúc tự động\n(OpenAI API)</b>" as UC2
+usecase "<b>Xem lịch sử phản ánh</b>" as UC3
+usecase "<b>Xóa phản ánh</b>" as UC4
+usecase "<b>Xem danh sách phản ánh</b>" as UC5
+usecase "<b>Xem chi tiết phản ánh</b>" as UC6
+usecase "<b>Cập nhật trạng thái xử lý</b>" as UC7
+usecase "<b>Phản hồi cho sinh viên</b>" as UC8
+usecase "<b>Xóa phản ánh (admin)</b>" as UC9
+usecase "<b>Phân tích lại cảm xúc</b>" as UC10
+usecase "<b>Xem thống kê phản ánh</b>" as UC11
+
+UC1 ..> UC2 : <<include>>
+
+SV --> UC1
+SV --> UC3
+SV --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+@enduml

@@ -1,0 +1,31 @@
+@startuml "UC Phân rã - Sinh viên: Theo dõi & Thanh toán hóa đơn"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor "<b>Sinh viên</b>" as SV
+actor "<b>VNPay</b>" as VNP
+
+usecase "<b>Xem danh sách hóa đơn</b>" as UC1
+usecase "<b>Xem chi tiết hóa đơn</b>" as UC2
+usecase "<b>Gửi chỉ số điện/nước</b>" as UC3
+usecase "<b>Thanh toán qua VNPay</b>" as UC4
+usecase "<b>Xem kết quả thanh toán</b>" as UC5
+usecase "<b>Xem biểu đồ chi phí theo tháng</b>" as UC6
+
+UC4 ..> UC5 : <<include>>
+
+SV --> UC1
+SV --> UC2
+SV --> UC3
+SV --> UC4
+SV --> UC6
+VNP --> UC5 : IPN callback
+@enduml

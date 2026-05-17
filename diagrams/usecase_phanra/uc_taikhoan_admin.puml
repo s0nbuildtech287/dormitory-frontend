@@ -1,0 +1,28 @@
+@startuml "UC Phân rã - Quản lý tài khoản (Admin)"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor "<b>Ban quản lý</b>" as Admin
+
+usecase "<b>Xem thông tin cá nhân</b>" as UC1
+usecase "<b>Cập nhật thông tin cá nhân</b>" as UC2
+usecase "<b>Đổi mật khẩu</b>" as UC3
+usecase "<b>Tạo tài khoản admin mới</b>" as UC4
+usecase "<b>Xem danh sách tài khoản sinh viên</b>" as UC5
+usecase "<b>Khoá / mở khoá tài khoản</b>" as UC6
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+@enduml
