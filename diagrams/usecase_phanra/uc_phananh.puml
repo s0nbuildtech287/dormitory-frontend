@@ -16,7 +16,7 @@ actor "<b>Ban quản lý</b>" as Admin
 actor "<b>Sinh viên</b>" as SV
 
 usecase "<b>Gửi phản ánh mới</b>" as UC1
-usecase "<b>Phân tích cảm xúc tự động\n(OpenAI API)" as UC2
+usecase "<b>Phân tích cảm xúc tự động\n(OpenAI API)</b>" as UC2
 usecase "<b>Xem lịch sử phản ánh</b>" as UC3
 usecase "<b>Xóa phản ánh</b>" as UC4
 usecase "<b>Xem danh sách phản ánh</b>" as UC5

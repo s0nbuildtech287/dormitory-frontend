@@ -1,0 +1,26 @@
+@startuml "Dashboard View Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "DashboardController" as DashC
+participant "DashboardService" as DashS
+database "CSDL" as DB
+
+Admin -> FE: Mở Dashboard
+FE -> DashC: GET /api/dashboard?range=...
+DashC -> DashS: getOverviewStats(range)
+DashS -> DB: SELECT thống kê tổng quan
+DB --> DashS: Kết quả
+DashS --> DashC: Tổng hợp dữ liệu
+DashC --> FE: 200 OK + dữ liệu
+FE --> Admin: Hiển thị biểu đồ
+
+== Lọc theo thời gian ==
+Admin -> FE: Chọn khoảng thời gian
+FE -> DashC: GET /api/dashboard?range=custom
+DashC -> DashS: getOverviewStats(custom)
+DashS -> DB: SELECT theo range
+DB --> DashS: Kết quả
+DashS --> DashC: Tổng hợp dữ liệu
+DashC --> FE: 200 OK + dữ liệu
+FE --> Admin: Cập nhật biểu đồ
+@enduml

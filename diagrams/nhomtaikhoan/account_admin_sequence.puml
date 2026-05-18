@@ -1,0 +1,49 @@
+@startuml "Admin Account Management Sequence"
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "AuthController" as AuthC
+participant "AuthService" as AuthS
+participant "UserController" as UserC
+participant "UserService" as UserS
+database "CSDL" as DB
+
+== Xem/Cập nhật thông tin ==
+Admin -> FE: Mở thông tin cá nhân
+FE -> UserC: GET /api/users/me
+UserC -> UserS: getProfile(adminId)
+UserS -> DB: SELECT users
+DB --> UserS: Dữ liệu
+UserS --> UserC: Thông tin
+UserC --> FE: 200 OK
+
+Admin -> FE: Cập nhật thông tin
+FE -> UserC: PUT /api/users/me
+UserC -> UserS: updateProfile(adminId, data)
+UserS -> DB: UPDATE users
+DB --> UserS: OK
+UserC --> FE: 200 OK
+
+== Đổi mật khẩu ==
+Admin -> FE: Đổi mật khẩu
+FE -> AuthC: PUT /api/auth/change-password
+AuthC -> AuthS: changePassword(adminId, old, new)
+AuthS -> DB: SELECT + UPDATE users
+DB --> AuthS: OK
+AuthC --> FE: 200 OK
+
+== Tạo admin mới ==
+Admin -> FE: Tạo admin mới
+FE -> UserC: POST /api/admins
+UserC -> UserS: createAdmin(data)
+UserS -> DB: INSERT users
+DB --> UserS: OK
+UserC --> FE: 201 Created
+
+== Bật/tắt OTP ==
+Admin -> FE: Bật/tắt OTP
+FE -> AuthC: PUT /api/auth/otp
+AuthC -> AuthS: toggleOtp(adminId, enabled)
+AuthS -> DB: UPDATE users
+DB --> AuthS: OK
+AuthC --> FE: 200 OK
+@enduml
