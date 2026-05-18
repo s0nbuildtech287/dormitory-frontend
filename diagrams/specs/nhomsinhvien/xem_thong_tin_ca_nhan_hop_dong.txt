@@ -1,0 +1,13 @@
+Mô tả: Sinh viên xem thông tin cá nhân, hợp đồng, phòng ở, kỷ luật và điểm rèn luyện.
+Tác nhân: Sinh viên.
+Các ràng buộc: Sinh viên đã đăng nhập.
+Điều kiện kích hoạt: Sinh viên mở mục hồ sơ cá nhân.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị thông tin cá nhân.
+2. Hệ thống hiển thị danh sách hợp đồng và chi tiết hợp đồng.
+3. Hệ thống hiển thị thông tin phòng đang ở và trạng thái tiền cọc.
+4. Hệ thống hiển thị lịch sử kỷ luật và điểm rèn luyện.
+Luồng rẽ nhánh:
+2.a Không có hợp đồng → hiển thị trạng thái “Chưa có hợp đồng”.
+4.a Không có vi phạm → hiển thị “Không có dữ liệu”.

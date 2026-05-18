@@ -1,0 +1,16 @@
+Mô tả: Quản lý hóa đơn (tạo/cập nhật/xóa, xác nhận thanh toán thủ công, nhắc nợ, điều chỉnh giá, thống kê).
+Tác nhân: Ban quản lý.
+Các ràng buộc: Phòng có hợp đồng đang hiệu lực; bảng giá dịch vụ đã cấu hình.
+Điều kiện kích hoạt: Admin mở mục Quản lý hóa đơn.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách hóa đơn.
+2. Actor chọn thao tác tạo/cập nhật/xóa/xác nhận thanh toán.
+3. Hệ thống kiểm tra dữ liệu và tính chi phí.
+4. Hệ thống lưu hóa đơn và cập nhật trạng thái.
+5. Hệ thống gửi nhắc nhở thanh toán (nếu cần).
+6. Hệ thống hiển thị thống kê doanh thu.
+Luồng rẽ nhánh:
+3.a Chỉ số không hợp lệ → thông báo lỗi.
+4.a Lưu thất bại → thông báo thất bại.
+5.a Gửi nhắc nhở thất bại → ghi log và thông báo.

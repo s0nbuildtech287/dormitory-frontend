@@ -1,0 +1,18 @@
+Mô tả: Quản lý hợp đồng đăng ký (tạo hợp đồng, gán phòng, kích hoạt, chấm dứt, thống kê).
+Tác nhân: Ban quản lý.
+Các ràng buộc: Hồ sơ đã duyệt; phòng còn trống; hợp đồng hợp lệ.
+Điều kiện kích hoạt: Admin mở mục Quản lý hợp đồng đăng ký.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách hợp đồng và hồ sơ đã duyệt.
+2. Actor chọn hồ sơ để tạo hợp đồng.
+3. Hệ thống tạo hợp đồng nháp.
+4. Actor gán phòng (có thể gợi ý phòng phù hợp).
+5. Hệ thống kiểm tra chỗ trống và cập nhật hợp đồng.
+6. Actor kích hoạt hợp đồng.
+7. Hệ thống cập nhật trạng thái ACTIVE và ghi nhận thống kê.
+Luồng rẽ nhánh:
+4.a Phòng đầy → thông báo và yêu cầu chọn phòng khác.
+6.a Chấm dứt hợp đồng → hệ thống cập nhật trạng thái TERMINATED.
+6.b Hoàn tác chấm dứt → hệ thống khôi phục trạng thái.
+7.a Lỗi cập nhật → thông báo thất bại.

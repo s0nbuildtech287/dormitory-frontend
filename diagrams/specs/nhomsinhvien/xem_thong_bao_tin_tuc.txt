@@ -1,0 +1,14 @@
+Mô tả: Sinh viên xem thông báo và tin tức, lọc theo danh mục, nhận thông báo realtime, phân tích bài báo bằng AI.
+Tác nhân: Sinh viên, Hệ thống (AI).
+Các ràng buộc: Sinh viên đã đăng nhập; dịch vụ AI khả dụng.
+Điều kiện kích hoạt: Sinh viên mở mục Thông báo & Tin tức.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách thông báo và tin tức.
+2. Actor chọn xem chi tiết hoặc lọc danh mục.
+3. Hệ thống nhận thông báo realtime (nếu có).
+4. Actor chọn phân tích bài báo bằng AI.
+5. Hệ thống trả kết quả phân tích/tóm tắt.
+Luồng rẽ nhánh:
+2.a Không có dữ liệu → hiển thị “Không có dữ liệu”.
+4.a AI lỗi → thông báo thất bại.

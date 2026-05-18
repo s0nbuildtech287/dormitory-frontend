@@ -1,0 +1,16 @@
+Mô tả: Sinh viên gửi phản ánh, xem lịch sử và xóa phản ánh đã gửi; hệ thống phân tích cảm xúc bằng AI.
+Tác nhân: Sinh viên, Hệ thống (AI).
+Các ràng buộc: Nội dung phản ánh không rỗng; AI service khả dụng.
+Điều kiện kích hoạt: Sinh viên mở mục Phản ánh.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị form phản ánh và lịch sử phản ánh.
+2. Actor nhập nội dung và gửi.
+3. Hệ thống lưu phản ánh vào CSDL.
+4. Hệ thống gọi AI phân tích cảm xúc.
+5. Hệ thống lưu nhãn cảm xúc/mức độ.
+6. Hệ thống thông báo gửi thành công.
+Luồng rẽ nhánh:
+2.a Nội dung không hợp lệ → thông báo lỗi.
+4.a AI lỗi → lưu phản ánh, gắn nhãn “UNKNOWN”.
+6.a Actor xóa phản ánh → hệ thống yêu cầu xác nhận và xóa.

@@ -1,0 +1,15 @@
+Mô tả: Quản lý tài sản (thêm/sửa/xóa, nhập kho, xuất kho, xem thống kê).
+Tác nhân: Ban quản lý.
+Các ràng buộc: Mã tài sản duy nhất; số lượng tồn không âm.
+Điều kiện kích hoạt: Admin mở mục tài sản.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách tài sản.
+2. Actor chọn thao tác thêm/sửa/xóa/nhập/xuất.
+3. Hệ thống kiểm tra dữ liệu và cập nhật tồn kho.
+4. Hệ thống lưu thay đổi.
+5. Hệ thống thông báo kết quả và cập nhật thống kê tài sản.
+Luồng rẽ nhánh:
+2.a Xóa tài sản đã gán phòng → thông báo không thể xóa.
+3.a Dữ liệu không hợp lệ → thông báo lỗi.
+4.a Lưu thất bại → thông báo thất bại.

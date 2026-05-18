@@ -1,0 +1,14 @@
+Mô tả: Quản lý tài khoản (Admin) gồm xem/cập nhật thông tin, đổi mật khẩu, tạo admin mới, bật/tắt OTP.
+Tác nhân: Ban quản lý.
+Các ràng buộc: Admin đã đăng nhập; quyền quản trị hợp lệ.
+Điều kiện kích hoạt: Admin mở mục Quản lý tài khoản.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị thông tin tài khoản.
+2. Actor chọn chức năng (cập nhật/đổi mật khẩu/tạo admin/bật-tắt OTP).
+3. Hệ thống kiểm tra dữ liệu.
+4. Hệ thống lưu thay đổi.
+5. Hệ thống thông báo kết quả.
+Luồng rẽ nhánh:
+3.a Dữ liệu không hợp lệ → thông báo lỗi.
+4.a Lưu thất bại → thông báo thất bại.
