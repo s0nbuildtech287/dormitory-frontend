@@ -9,11 +9,15 @@ Luồng sự kiện chính:
 3. Hệ thống kiểm tra dữ liệu và cập nhật hồ sơ.
 4. Hệ thống tính điểm xét duyệt tự động.
 5. Hệ thống (hoặc admin kích hoạt) xác thực ảnh minh chứng.
-6. Hệ thống cập nhật trạng thái hồ sơ và thông báo kết quả.
-7. Hệ thống hiển thị thống kê hồ sơ.
+6. Hệ thống cập nhật trạng thái hồ sơ.
+7. Nếu hồ sơ được duyệt, hệ thống tự động tạo tài khoản sinh viên
+	(email = email SV, mật khẩu = CCCD).
+8. Hệ thống thông báo kết quả.
+9. Hệ thống hiển thị thống kê hồ sơ.
 Luồng rẽ nhánh:
 2.a Import sai định dạng → thông báo lỗi.
 4.a Thiếu dữ liệu → tính điểm không đầy đủ, gắn cảnh báo.
 5.a Vision API lỗi → giữ trạng thái PENDING và thông báo lỗi.
 6.a Admin điều chỉnh trọng số → hệ thống cập nhật và tính lại điểm.
 6.b Duyệt/Từ chối thất bại → thông báo lỗi.
+7.a Tạo tài khoản thất bại → thông báo lỗi và ghi log.

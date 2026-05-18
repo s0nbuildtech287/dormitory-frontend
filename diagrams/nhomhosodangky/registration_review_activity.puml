@@ -6,6 +6,9 @@ start
 if (Duyệt?) then (Có)
   |Hệ thống|
   :Cập nhật trạng thái = APPROVED;
+  :Tạo tài khoản sinh viên
+  (email = email SV,
+  mật khẩu = CCCD);
   :Gửi thông báo kết quả;
   |Ban quản lý|
   :Hoàn tất duyệt;

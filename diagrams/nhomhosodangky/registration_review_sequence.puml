@@ -3,6 +3,7 @@ actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC
 participant "RegistrationService" as RegS
+participant "UserService" as UserS
 participant "NotificationService" as NotiS
 database "CSDL" as DB
 
@@ -12,6 +13,11 @@ FE -> RegC: POST /api/registrations/{id}/approve|reject
 RegC -> RegS: approveRegistration|rejectRegistration(id, note)
 RegS -> DB: UPDATE register_forms
 DB --> RegS: OK
+alt Hồ sơ được duyệt
+	RegS -> UserS: createStudentAccount(email, cccd)
+	UserS -> DB: INSERT users
+	DB --> UserS: OK
+end
 RegS -> NotiS: send notification
 NotiS -> DB: INSERT notifications
 RegS --> RegC: Kết quả
