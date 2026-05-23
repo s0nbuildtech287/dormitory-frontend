@@ -1,4 +1,4 @@
-@startuml "Contract Create Assign Sequence"
+@startuml "Contract Management Sequence"
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "ContractController" as CC
@@ -7,9 +7,10 @@ participant "RoomDAO" as RoomDAO
 participant "StudentContractDAO" as SCDAO
 database "CSDL" as DB
 
+== Tạo hợp đồng + Gán phòng ==
 Admin -> FE: Tạo hợp đồng từ hồ sơ
 FE -> CC: POST /api/contracts/from-registration
-CC -> CS: createFromRegistration(registrationId, roomId, data)
+CC -> CS: createFromRegistration(registrationId, roomId, data, depositFlag, hardcopySent)
 CS -> SCDAO: create contract (Pending)
 SCDAO -> DB: INSERT student_contracts
 DB --> SCDAO: OK
@@ -22,6 +23,15 @@ CS -> RoomDAO: check availability
 RoomDAO -> DB: SELECT room
 DB --> RoomDAO: OK
 CS -> SCDAO: update contract (Active)
+SCDAO -> DB: UPDATE student_contracts
+DB --> SCDAO: OK
+CC --> FE: 200 OK
+
+== Chấm dứt hợp đồng ==
+Admin -> FE: Chọn hợp đồng
+FE -> CC: POST /api/contracts/{id}/terminate
+CC -> CS: terminateContract(id, reason)
+CS -> SCDAO: update status = Terminated
 SCDAO -> DB: UPDATE student_contracts
 DB --> SCDAO: OK
 CC --> FE: 200 OK

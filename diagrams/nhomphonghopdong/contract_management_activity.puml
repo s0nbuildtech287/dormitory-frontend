@@ -1,0 +1,29 @@
+@startuml "Contract Management Activity"
+|Ban quản lý|
+start
+if (Thao tác?) then (Tạo hợp đồng)
+  :Chọn hồ sơ đã duyệt;
+  :Nhập thông tin hợp đồng;
+  :Tích chọn tiền cọc;
+  :Xác nhận bản cứng đã gửi;
+  |Hệ thống|
+  :Tạo hợp đồng trạng thái Pending;
+  |Ban quản lý|
+  :Chọn gán phòng;
+  |Hệ thống|
+  :Kiểm tra phòng trống;
+  :Gán phòng;
+  :Cập nhật hợp đồng = Active;
+  |Ban quản lý|
+  :Hoàn tất tạo hợp đồng;
+else (Chấm dứt hợp đồng)
+  :Chọn hợp đồng cần chấm dứt;
+  :Nhập lý do (nếu có);
+  |Hệ thống|
+  :Kiểm tra trạng thái hợp đồng;
+  :Chuyển trạng thái = Terminated;
+  |Ban quản lý|
+  :Hoàn tất chấm dứt;
+endif
+stop
+@enduml
