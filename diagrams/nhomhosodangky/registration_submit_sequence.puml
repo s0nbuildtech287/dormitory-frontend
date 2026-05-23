@@ -1,0 +1,23 @@
+@startuml "Registration Submit Sequence"
+actor "Sinh viên" as SV
+participant "Giao diện" as FE
+participant "RegistrationController" as RegC
+participant "RegistrationService" as RegS
+participant "RegisterFormDAO" as RegDAO
+database "CSDL" as DB
+
+SV -> FE: Nhập thông tin + đính kèm minh chứng
+FE -> RegC: POST /api/registrations/submit
+RegC -> RegS: submitRegistration(data)
+RegS -> RegS: validate(data)
+alt Dữ liệu hợp lệ
+  RegS -> RegDAO: create(registration)
+  RegDAO -> DB: INSERT register_forms
+  DB --> RegDAO: OK
+  RegS --> RegC: Kết quả thành công
+  RegC --> FE: 201 Created
+else Dữ liệu không hợp lệ
+  RegS --> RegC: Lỗi validation
+  RegC --> FE: 400 Bad Request
+end
+@enduml
