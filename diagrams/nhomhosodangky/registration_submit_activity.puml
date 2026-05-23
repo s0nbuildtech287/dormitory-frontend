@@ -1,4 +1,6 @@
 @startuml "Registration Submit Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Sinh viên|
 start
 :Truy cập trang đăng ký hồ sơ;

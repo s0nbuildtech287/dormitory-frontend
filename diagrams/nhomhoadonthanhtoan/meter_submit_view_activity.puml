@@ -1,4 +1,6 @@
 @startuml "Meter Submit View Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Sinh viên|
 start
 :Chọn gửi chỉ số điện nước;

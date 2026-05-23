@@ -1,4 +1,6 @@
 @startuml "Auth Login Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 ' Activity Diagram: Login (User vs System)
 |Người dùng|
 start

@@ -1,4 +1,6 @@
 @startuml "Registration Submit Sequence"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 actor "Sinh viên" as SV
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC

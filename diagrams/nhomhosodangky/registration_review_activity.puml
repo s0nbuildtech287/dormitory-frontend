@@ -1,4 +1,6 @@
 @startuml "Registration Review Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
 :Chọn hồ sơ cần duyệt;

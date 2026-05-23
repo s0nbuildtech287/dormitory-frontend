@@ -1,4 +1,6 @@
 @startuml "AI News Analyze Sequence"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 ' Sequence Diagram: Phân tích bài báo bằng AI
 actor "Sinh viên" as Student
 participant "Trang Tin tức\n(StudentNews)" as NewsPage

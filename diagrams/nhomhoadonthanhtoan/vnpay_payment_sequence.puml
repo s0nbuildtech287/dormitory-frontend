@@ -1,4 +1,6 @@
 @startuml "VNPay Payment Sequence"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
 participant "VNPayController" as VC

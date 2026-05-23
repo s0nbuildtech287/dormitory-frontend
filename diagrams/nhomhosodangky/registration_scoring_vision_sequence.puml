@@ -1,4 +1,6 @@
 @startuml "Registration Scoring Vision Sequence"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 participant "RegistrationService" as RegS
 participant "RegisterFormDAO" as RegDAO
 participant "ImageValidatorService" as VisionS

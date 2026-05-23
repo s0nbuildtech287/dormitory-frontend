@@ -1,4 +1,6 @@
 @startuml "Feedback Create AI Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Sinh viên|
 start
 :Nhập nội dung phản ánh;

@@ -1,4 +1,6 @@
 @startuml "Registration Review Sequence"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC

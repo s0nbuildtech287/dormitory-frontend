@@ -1,4 +1,6 @@
 @startuml "AI Chatbot Sequence"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 ' Sequence Diagram: Chatbot AI hỗ trợ sinh viên
 actor "Sinh viên" as Student
 participant "Giao diện\n(ChatBot)" as FE

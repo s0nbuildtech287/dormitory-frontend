@@ -1,4 +1,6 @@
 @startuml "Contract Management Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
 if (Thao tác?) then (Tạo hợp đồng)

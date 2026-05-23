@@ -1,4 +1,6 @@
 @startuml "Registration Scoring Vision Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Hệ thống|
 start
 :Nhận hồ sơ mới;

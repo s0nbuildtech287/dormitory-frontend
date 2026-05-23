@@ -1,4 +1,6 @@
 @startuml "Anomaly Detect Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 ' Activity Diagram: Phát hiện bất thường hóa đơn điện/nước
 |Ban quản lý|
 start

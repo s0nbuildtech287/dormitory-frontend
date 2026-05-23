@@ -1,4 +1,6 @@
 @startuml "VNPay Payment Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Sinh viên|
 start
 :Chọn hóa đơn cần thanh toán;

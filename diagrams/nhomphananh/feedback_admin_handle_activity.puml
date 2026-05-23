@@ -1,4 +1,6 @@
 @startuml "Feedback Admin Handle Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
 :Chọn phản ánh cần xử lý;

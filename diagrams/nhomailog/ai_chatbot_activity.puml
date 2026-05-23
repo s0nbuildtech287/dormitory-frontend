@@ -1,4 +1,6 @@
 @startuml "AI Chatbot Activity"
+skinparam defaultFontSize 18
+skinparam defaultFontName "Times New Roman"
 ' Activity Diagram: Chatbot AI hỗ trợ sinh viên
 |Sinh viên|
 start
