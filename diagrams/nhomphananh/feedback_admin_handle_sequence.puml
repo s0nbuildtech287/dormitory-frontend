@@ -1,6 +1,7 @@
 @startuml "Feedback Admin Handle Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "FeedbackController" as FC
@@ -10,7 +11,7 @@ database "CSDL" as DB
 
 Admin -> FE: Chọn phản ánh
 FE -> FC: POST /api/feedbacks/{id}/status
-FC -> FS: updateFeedbackStatus(id, status, adminResponse)
+FC -> FS: updateFeedbackStatus(args)
 FS -> FDAO: update status/response
 FDAO -> DB: UPDATE feedbacks
 DB --> FDAO: OK
@@ -18,7 +19,7 @@ FC --> FE: 200 OK
 
 Admin -> FE: Xóa phản ánh (tuỳ chọn)
 FE -> FC: DELETE /api/feedbacks/{id}
-FC -> FS: deleteFeedback(id)
+FC -> FS: deleteFeedback(args)
 FS -> FDAO: delete
 FDAO -> DB: UPDATE deleted_at
 DB --> FDAO: OK

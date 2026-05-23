@@ -1,6 +1,7 @@
 @startuml "Meter Submit View Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
 participant "StudentController" as SC
@@ -10,7 +11,7 @@ Student -> FE: Nhập chỉ số điện/nước
 FE -> SC: POST /api/student/invoices/meter-reading
 SC -> DB: SELECT hợp đồng + hóa đơn tháng trước
 DB --> SC: invoice
-SC -> DB: UPDATE invoices (electric_end, water_end, total_amount)
+SC -> DB: UPDATE invoices (args)
 DB --> SC: OK
 SC --> FE: 200 OK
 

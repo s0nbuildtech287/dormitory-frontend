@@ -1,6 +1,7 @@
 @startuml "Auth Login Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 ' Sequence Diagram: Login
 actor "Người dùng" as User
 participant "Giao diện" as FE
@@ -12,8 +13,8 @@ database "CSDL" as DB
 User -> FE: Nhập email + mật khẩu
 User -> FE: Nhấn Đăng nhập
 FE -> AuthC: POST /api/auth/login
-AuthC -> AuthS: login(email, password, req)
-AuthS -> UserDAO: findByEmail(email)
+AuthC -> AuthS: login(args)
+AuthS -> UserDAO: findByEmail(args)
 UserDAO -> DB: SELECT user
 DB --> UserDAO: user
 AuthS -> AuthS: So sánh mật khẩu (bcrypt)

@@ -1,6 +1,7 @@
 @startuml "Notification Send Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "NotificationController" as NC
@@ -10,14 +11,14 @@ database "CSDL" as DB
 alt Gửi ALL
   Admin -> FE: Nhập nội dung
   FE -> NC: POST /api/notifications/send-all
-  NC -> NS: sendToAllStudents(title, content)
+  NC -> NS: sendToAllStudents(args)
   NS -> DB: INSERT notifications
   DB --> NS: OK
   NC --> FE: 201 Created
 else Gửi SPECIFIC
   Admin -> FE: Chọn danh sách userIds
   FE -> NC: POST /api/notifications/send-specific
-  NC -> NS: sendToSpecificUsers(title, content, userIds)
+  NC -> NS: sendToSpecificUsers(args)
   NS -> DB: INSERT notifications
   DB --> NS: OK
   NC --> FE: 201 Created

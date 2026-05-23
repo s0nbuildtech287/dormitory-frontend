@@ -1,6 +1,7 @@
 @startuml "Registration Review Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC
@@ -12,11 +13,11 @@ database "CSDL" as DB
 == Duyệt / Từ chối ==
 Admin -> FE: Chọn hồ sơ + ghi chú
 FE -> RegC: POST /api/registrations/{id}/approve|reject
-RegC -> RegS: approveRegistration|rejectRegistration(id, note)
+RegC -> RegS: approveRegistration|rejectRegistration(args)
 RegS -> DB: UPDATE register_forms
 DB --> RegS: OK
 alt Hồ sơ được duyệt
-	RegS -> UserS: createStudentAccount(email, cccd)
+	RegS -> UserS: createStudentAccount(args)
 	UserS -> DB: INSERT users
 	DB --> UserS: OK
 end
@@ -28,7 +29,7 @@ RegC --> FE: 200 OK
 == Điều chỉnh trọng số ==
 Admin -> FE: Cập nhật scoring weights
 FE -> RegC: PUT /api/registrations/scoring-weights
-RegC -> RegS: updateScoringWeightsSettings(weights)
+RegC -> RegS: updateScoringWeightsSettings(args)
 RegS -> DB: UPDATE settings
 DB --> RegS: OK
 RegC --> FE: 200 OK

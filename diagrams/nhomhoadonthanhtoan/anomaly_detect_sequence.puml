@@ -1,6 +1,7 @@
 @startuml "Anomaly Detect Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 ' Sequence Diagram: Phát hiện bất thường hóa đơn điện/nước
 actor "Ban quản lý" as Admin
 participant "Giao diện\n(BillList)" as FE

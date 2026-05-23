@@ -1,38 +1,43 @@
 @startuml "Contract Management Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "ContractController" as CC
 participant "ContractService" as CS
-participant "RoomDAO" as RoomDAO
+participant "RoomAssignmentController" as RAC
+participant "RoomAssignmentService" as RAS
+participant "EmailController" as EC
+participant "EmailService" as ES
 participant "StudentContractDAO" as SCDAO
 database "CSDL" as DB
 
-== Tạo hợp đồng + Gán phòng ==
+== Tạo hợp đồng ==
 Admin -> FE: Tạo hợp đồng từ hồ sơ
 FE -> CC: POST /api/contracts/from-registration
-CC -> CS: createFromRegistration(registrationId, roomId, data, depositFlag, hardcopySent)
+CC -> CS: createFromRegistration(args)
 CS -> SCDAO: create contract (Pending)
 SCDAO -> DB: INSERT student_contracts
 DB --> SCDAO: OK
 CC --> FE: 201 Created
 
-Admin -> FE: Gán phòng
-FE -> CC: POST /api/contracts/{id}/assign-room
-CC -> CS: assignRoom(contractId, roomId)
-CS -> RoomDAO: check availability
-RoomDAO -> DB: SELECT room
-DB --> RoomDAO: OK
-CS -> SCDAO: update contract (Active)
-SCDAO -> DB: UPDATE student_contracts
-DB --> SCDAO: OK
-CC --> FE: 200 OK
+Admin -> FE: Gợi ý gán phòng
+FE -> RAC: POST /api/room-assignments/suggestions
+RAC -> RAS: getSuggestions(args)
+RAS --> RAC: suggestions
+RAC --> FE: 200 OK
+
+Admin -> FE: Gửi mail thông báo tới sinh viên
+FE -> EC: POST /api/emails/contract-notification
+EC -> ES: sendContractNotification(args)
+ES --> EC: OK
+EC --> FE: 200 OK
 
 == Chấm dứt hợp đồng ==
 Admin -> FE: Chọn hợp đồng
 FE -> CC: POST /api/contracts/{id}/terminate
-CC -> CS: terminateContract(id, reason)
+CC -> CS: terminateContract(args)
 CS -> SCDAO: update status = Terminated
 SCDAO -> DB: UPDATE student_contracts
 DB --> SCDAO: OK

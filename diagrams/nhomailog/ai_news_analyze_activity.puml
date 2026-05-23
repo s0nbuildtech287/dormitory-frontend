@@ -1,5 +1,5 @@
 @startuml "AI News Analyze Activity"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 ' Activity Diagram: Phân tích bài báo bằng AI
 |Sinh viên|

@@ -1,6 +1,7 @@
 @startuml "Asset Management Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "AssetController" as AC

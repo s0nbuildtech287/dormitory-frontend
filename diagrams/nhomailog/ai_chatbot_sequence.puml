@@ -1,6 +1,7 @@
 @startuml "AI Chatbot Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 ' Sequence Diagram: Chatbot AI hỗ trợ sinh viên
 actor "Sinh viên" as Student
 participant "Giao diện\n(ChatBot)" as FE
@@ -10,7 +11,7 @@ participant "Gemini API" as Gemini
 
 Student -> FE: Nhập câu hỏi + nhấn Gửi
 FE -> AIC: POST /api/ai/chat\n{ messages[], model }
-AIC -> AIS: createChatCompletion(messages, model)
+AIC -> AIS: createChatCompletion(args)
 AIS -> AIS: Gắn SYSTEM_PROMPT vào đầu messages
 AIS -> Gemini: Chat Completion request
 alt Thành công

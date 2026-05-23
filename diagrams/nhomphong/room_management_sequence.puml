@@ -1,6 +1,7 @@
 @startuml "Room Management Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "RoomController" as RoomC
@@ -18,7 +19,7 @@ RoomC --> FE: 200 OK
 
 Admin -> FE: Cập nhật chỉ số điện nước
 FE -> RoomC: POST /api/rooms/{id}/meter-readings
-RoomC -> RoomS: updateMeterReadings(id, electric, water)
+RoomC -> RoomS: updateMeterReadings(args)
 RoomS -> RoomDAO: update meter
 RoomDAO -> DB: UPDATE rooms
 DB --> RoomDAO: OK

@@ -1,6 +1,7 @@
 @startuml "Registration Import Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC
@@ -12,7 +13,7 @@ database "CSDL" as DB
 alt Import Excel
   Admin -> FE: Chọn file Excel
   FE -> RegC: POST /api/registrations/import/excel
-  RegC -> RegS: importFromExcel(filePath, userId)
+  RegC -> RegS: importFromExcel(args)
   RegS -> RegDAO: bulkCreate(records)
   RegDAO -> DB: INSERT registrations
   DB --> RegDAO: OK
@@ -21,7 +22,7 @@ alt Import Excel
 else Import Google Sheets
   Admin -> FE: Dán URL Google Sheets
   FE -> RegC: POST /api/registrations/import/sheets
-  RegC -> RegS: importFromGoogleSheets(url, userId)
+  RegC -> RegS: importFromGoogleSheets(args)
   RegS -> GSS: readSheet(url)
   GSS --> RegS: rows
   RegS -> RegDAO: bulkCreate(rows)

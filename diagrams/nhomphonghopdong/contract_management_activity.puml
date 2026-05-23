@@ -1,5 +1,5 @@
 @startuml "Contract Management Activity"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
@@ -10,13 +10,8 @@ if (Thao tác?) then (Tạo hợp đồng)
   |Hệ thống|
   :Tạo hợp đồng trạng thái Pending;
   |Ban quản lý|
-  :Chọn gán phòng;
-  |Hệ thống|
-  :Kiểm tra phòng trống;
-  :Gán phòng;
-  :Cập nhật hợp đồng = Active;
-  |Ban quản lý|
-  :Hoàn tất tạo hợp đồng;
+  :Gợi ý gán phòng;
+  :Gửi mail thông báo tới sinh viên;
 else (Chấm dứt hợp đồng)
   :Chọn hợp đồng cần chấm dứt;
   :Nhập lý do (nếu có);

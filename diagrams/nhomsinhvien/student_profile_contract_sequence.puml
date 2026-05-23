@@ -1,6 +1,7 @@
 @startuml "Student Profile Contract Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
 participant "StudentController" as SC

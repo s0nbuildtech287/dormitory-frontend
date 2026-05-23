@@ -1,6 +1,7 @@
 @startuml "VNPay Payment Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
 participant "VNPayController" as VC
@@ -12,13 +13,13 @@ database "CSDL" as DB
 
 Student -> FE: Chọn hóa đơn + Thanh toán
 FE -> VC: POST /api/vnpay/create-payment
-VC -> VS: createPaymentUrl(amount, txnRef)
+VC -> VS: createPaymentUrl(args)
 VS --> VC: paymentUrl
 VC --> FE: paymentUrl
 FE -> VNPay: Redirect paymentUrl
 VNPay --> VC: GET /api/vnpay/ipn
-VC -> VS: verifySignature(params)
-VC -> IDAO: markAsPaid(invoiceId)
+VC -> VS: verifySignature(args)
+VC -> IDAO: markAsPaid(args)
 IDAO -> DB: UPDATE invoices
 DB --> IDAO: OK
 VC --> VNPay: RspCode=00

@@ -1,6 +1,7 @@
 @startuml "AI News Analyze Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 ' Sequence Diagram: Phân tích bài báo bằng AI
 actor "Sinh viên" as Student
 participant "Trang Tin tức\n(StudentNews)" as NewsPage
@@ -24,7 +25,7 @@ NC -> NC: cheerio.load(html)\nxóa script/nav/footer/sidebar
 NC -> NC: Trích xuất .entry-content\nhoặc fallback <p> tags
 
 == Gọi AI phân tích ==
-NC -> AI: createChatCompletion(messages, "gpt-4o-mini")
+NC -> AI: createChatCompletion(args)
 note right of AI
   messages = [
     system: "Trợ lý phân tích tin tức KTX"
@@ -35,9 +36,9 @@ AI --> NC: { content: "1. Tóm tắt...\n2. Điểm nổi bật...\n3. Ý nghĩa
 NC --> Handler: { success: true, analysis: "..." }
 
 == Hiển thị kết quả ==
-Handler -> Ctx: openChatWithMessages([\n  { role:"user", text:"Phân tích bài báo: [tiêu đề]" },\n  { role:"bot",  text: analysis }\n])
+Handler -> Ctx: openChatWithMessages(args)
 Ctx -> ChatBot: isOpen=true\ninitialMessages=[user+bot]
-ChatBot -> ChatBot: setMessages([welcome, userMsg, botMsg])
+ChatBot -> ChatBot: setMessages(args)
 ChatBot --> Student: Modal mở — hiển thị kết quả phân tích sẵn
 
 == Hỏi thêm (tuỳ chọn) ==

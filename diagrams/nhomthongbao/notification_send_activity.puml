@@ -1,5 +1,5 @@
 @startuml "Notification Send Activity"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start

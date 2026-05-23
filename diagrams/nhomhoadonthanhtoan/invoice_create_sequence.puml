@@ -1,6 +1,7 @@
 @startuml "Invoice Create Sequence"
-skinparam defaultFontSize 18
+skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "InvoiceController" as IC
@@ -10,7 +11,7 @@ database "CSDL" as DB
 
 Admin -> FE: Nhập roomId + month + meter readings
 FE -> IC: POST /api/invoices/from-room
-IC -> IS: createInvoiceFromRoom(roomId, month, meterReadings)
+IC -> IS: createInvoiceFromRoom(args)
 IS -> IDAO: create invoice
 IDAO -> DB: INSERT invoices
 DB --> IDAO: OK

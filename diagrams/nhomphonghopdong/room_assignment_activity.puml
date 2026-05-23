@@ -1,0 +1,29 @@
+@startuml "Room Assignment Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Ban quản lý|
+start
+:Chọn hồ sơ/hợp đồng cần gán phòng;
+:Nhập tiêu chí gợi ý (giới tính, khoa, loại phòng, mức giá...);
+|Hệ thống|
+:Thu thập dữ liệu phòng;
+:Đánh giá phù hợp;
+:Tạo danh sách phòng gợi ý;
+|Ban quản lý|
+:Chọn phòng từ gợi ý;
+|Hệ thống|
+:Kiểm tra phòng trống;
+if (Còn chỗ?) then (Có)
+  :Gán phòng cho sinh viên;
+  :Cập nhật hợp đồng = Active;
+  :Cập nhật số lượng ở phòng;
+  |Ban quản lý|
+  :Hoàn tất gán phòng;
+  stop
+else (Không)
+  :Thông báo phòng đã đầy;
+  |Ban quản lý|
+  :Chọn phòng khác;
+  stop
+endif
+@enduml
