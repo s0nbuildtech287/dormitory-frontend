@@ -1,19 +1,21 @@
-Mô tả: Quản lý hợp đồng đăng ký (tạo hợp đồng, gán phòng, kích hoạt, chấm dứt, thống kê).
+Mô tả: Quản lý hợp đồng đăng ký (tạo hợp đồng Pending, gợi ý gán phòng, gửi thông báo, chấm dứt).
 Tác nhân: Ban quản lý.
-Các ràng buộc: Hồ sơ đã duyệt; phòng còn trống; hợp đồng hợp lệ.
+Các ràng buộc: Hồ sơ đã duyệt; hợp đồng hợp lệ.
 Điều kiện kích hoạt: Admin mở mục Quản lý hợp đồng đăng ký.
 Luồng sự kiện:
 Luồng sự kiện chính:
 1. Hệ thống hiển thị danh sách hợp đồng và hồ sơ đã duyệt.
 2. Actor chọn hồ sơ để tạo hợp đồng.
 3. Actor tích chọn tiền cọc và xác nhận bản cứng đã gửi.
-4. Hệ thống tạo hợp đồng nháp.
-5. Actor gán phòng (có thể gợi ý phòng phù hợp).
-6. Hệ thống kiểm tra chỗ trống và cập nhật hợp đồng.
-7. Actor kích hoạt hợp đồng.
-8. Hệ thống cập nhật trạng thái ACTIVE và ghi nhận thống kê.
+4. Hệ thống tạo hợp đồng trạng thái Pending.
+5. Actor yêu cầu gợi ý gán phòng (tham khảo trong luồng gán phòng riêng).
+6. Hệ thống trả về danh sách phòng gợi ý.
+7. Actor gửi mail thông báo tới sinh viên.
+8. Hệ thống gửi thông báo thành công.
 Luồng rẽ nhánh:
-4.a Phòng đầy → thông báo và yêu cầu chọn phòng khác.
-7.a Chấm dứt hợp đồng → hệ thống cập nhật trạng thái TERMINATED.
-7.b Hoàn tác chấm dứt → hệ thống khôi phục trạng thái.
-8.a Lỗi cập nhật → thông báo thất bại.
+4.a Lỗi tạo hợp đồng → thông báo thất bại.
+8.a Lỗi gửi mail → thông báo thất bại.
+Nhánh chấm dứt hợp đồng:
+T1. Actor chọn hợp đồng cần chấm dứt và nhập lý do (nếu có).
+T2. Hệ thống kiểm tra trạng thái và cập nhật = TERMINATED.
+T3. Hệ thống thông báo kết quả.

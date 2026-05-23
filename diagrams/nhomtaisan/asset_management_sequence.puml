@@ -15,6 +15,13 @@ AS -> DB: INSERT/UPDATE/DELETE assets
 DB --> AS: OK
 AC --> FE: 200 OK
 
+Admin -> FE: Điều chỉnh giới hạn tài sản
+FE -> AC: PUT /api/assets/limits
+AC -> AS: updateAssetLimit(args)
+AS -> DB: UPDATE asset_limits
+DB --> AS: OK
+AC --> FE: 200 OK
+
 Admin -> FE: Nhập kho
 FE -> AC: POST /api/assets/import
 AC -> AS: importAsset(data)

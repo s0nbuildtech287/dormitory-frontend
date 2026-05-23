@@ -4,7 +4,6 @@ skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
 :Chọn hồ sơ/hợp đồng cần gán phòng;
-:Nhập tiêu chí gợi ý (giới tính, khoa, loại phòng, mức giá...);
 |Hệ thống|
 :Thu thập dữ liệu phòng;
 :Đánh giá phù hợp;
