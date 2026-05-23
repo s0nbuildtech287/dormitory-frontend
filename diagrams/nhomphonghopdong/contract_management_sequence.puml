@@ -1,7 +1,7 @@
 @startuml "Contract Management Sequence"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 26
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "ContractController" as CC
