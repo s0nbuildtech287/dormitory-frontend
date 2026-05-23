@@ -1,6 +1,8 @@
 @startuml "Registration Scoring Vision Sequence"
 skinparam defaultFontSize 18
 skinparam defaultFontName "Times New Roman"
+actor "Ban quản lý" as Admin
+participant "RegistrationController" as RegC
 participant "RegistrationService" as RegS
 participant "RegisterFormDAO" as RegDAO
 participant "ImageValidatorService" as VisionS
@@ -13,8 +15,6 @@ RegDAO -> DB: INSERT register_forms
 DB --> RegDAO: OK
 
 == Xác thực ảnh (admin kích hoạt) ==
-actor "Ban quản lý" as Admin
-participant "RegistrationController" as RegC
 Admin -> RegC: POST /api/registrations/{id}/validate-images
 RegC -> RegDAO: update(vision_status=PENDING)
 RegDAO -> DB: UPDATE register_forms
