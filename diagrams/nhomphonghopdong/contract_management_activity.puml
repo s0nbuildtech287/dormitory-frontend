@@ -3,7 +3,6 @@
 start
 if (Thao tác?) then (Tạo hợp đồng)
   :Chọn hồ sơ đã duyệt;
-  :Nhập thông tin hợp đồng;
   :Tích chọn tiền cọc;
   :Xác nhận bản cứng đã gửi;
   |Hệ thống|
