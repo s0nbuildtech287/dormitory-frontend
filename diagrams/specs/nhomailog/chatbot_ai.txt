@@ -5,9 +5,9 @@ Các ràng buộc: Người dùng đã đăng nhập; dịch vụ AI khả dụn
 Luồng sự kiện:
 Luồng sự kiện chính:
 1. Hệ thống hiển thị giao diện chatbot.
-2. Actor nhập câu hỏi và gửi.
+2. Sinh viên nhập câu hỏi và gửi.
 3. Hệ thống gọi AI xử lý.
 4. Hệ thống hiển thị câu trả lời.
 Luồng rẽ nhánh:
-2.a Câu hỏi rỗng → thông báo lỗi.
-3.a AI lỗi → thông báo thất bại và gợi ý thử lại.
+2.1 Câu hỏi rỗng → thông báo lỗi.
+3.1 AI lỗi → thông báo thất bại và gợi ý thử lại.

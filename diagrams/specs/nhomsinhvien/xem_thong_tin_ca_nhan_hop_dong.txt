@@ -9,5 +9,5 @@ Luồng sự kiện chính:
 3. Hệ thống hiển thị thông tin phòng đang ở và trạng thái tiền cọc.
 4. Hệ thống hiển thị lịch sử kỷ luật và điểm rèn luyện.
 Luồng rẽ nhánh:
-2.a Không có hợp đồng → hiển thị trạng thái “Chưa có hợp đồng”.
-4.a Không có vi phạm → hiển thị “Không có dữ liệu”.
+2.1 Không có hợp đồng → hiển thị trạng thái “Chưa có hợp đồng”.
+4.1 Không có vi phạm → hiển thị “Không có dữ liệu”.

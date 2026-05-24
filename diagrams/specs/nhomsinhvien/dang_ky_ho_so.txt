@@ -5,11 +5,11 @@ Các ràng buộc: Thông tin bắt buộc đầy đủ; minh chứng hợp lệ
 Luồng sự kiện:
 Luồng sự kiện chính:
 1. Hệ thống hiển thị form đăng ký hồ sơ.
-2. Actor nhập thông tin và đính kèm minh chứng.
-3. Actor gửi hồ sơ.
+2. Sinh viên nhập thông tin và đính kèm minh chứng.
+3. Sinh viên gửi hồ sơ.
 4. Hệ thống kiểm tra dữ liệu và lưu vào CSDL.
 5. Hệ thống đặt trạng thái hồ sơ = PENDING.
 6. Hệ thống thông báo gửi thành công.
 Luồng rẽ nhánh:
-2.a Thiếu thông tin/đính kèm → thông báo lỗi.
-4.a Lưu thất bại → thông báo thất bại.
+2.1 Thiếu thông tin/đính kèm → thông báo lỗi.
+4.1 Lưu thất bại → thông báo thất bại.

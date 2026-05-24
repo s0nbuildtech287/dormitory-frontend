@@ -1,10 +1,17 @@
-@startuml "Invoice Create Activity"
+@startuml "Invoice Management Activity"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
-:Chọn tạo hóa đơn theo phòng;
-:Nhập tháng + chỉ số điện nước;
+:Mở quản lý hóa đơn;
+:Xem danh sách hóa đơn;
+:Tạo/Sửa/Xóa hóa đơn;
+:Điều chỉnh bảng giá (điện/nước/phí);
+|Hệ thống|
+:Tự động tạo hóa đơn theo phòng;
+:Tự động chuyển trạng thái theo kỳ hạn;
+|Ban quản lý|
+:Xem/kiểm tra hóa đơn tự động;
 |Hệ thống|
 :Kiểm tra dữ liệu;
 :Tính tiền điện/nước/phí;

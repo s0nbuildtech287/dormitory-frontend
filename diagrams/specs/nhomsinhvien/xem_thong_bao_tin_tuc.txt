@@ -5,10 +5,10 @@ Các ràng buộc: Sinh viên đã đăng nhập; dịch vụ AI khả dụng.
 Luồng sự kiện:
 Luồng sự kiện chính:
 1. Hệ thống hiển thị danh sách thông báo và tin tức.
-2. Actor chọn xem chi tiết hoặc lọc danh mục.
+2. Sinh viên chọn xem chi tiết hoặc lọc danh mục.
 3. Hệ thống nhận thông báo realtime (nếu có).
-4. Actor chọn phân tích bài báo bằng AI.
+4. Sinh viên chọn phân tích bài báo bằng AI.
 5. Hệ thống trả kết quả phân tích/tóm tắt.
 Luồng rẽ nhánh:
-2.a Không có dữ liệu → hiển thị “Không có dữ liệu”.
-4.a AI lỗi → thông báo thất bại.
+2.1 Không có dữ liệu → hiển thị “Không có dữ liệu”.
+4.1 AI lỗi → thông báo thất bại.

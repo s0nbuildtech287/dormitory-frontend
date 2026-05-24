@@ -1,0 +1,25 @@
+Mô tả: Quản lý tài khoản (đăng nhập/đăng xuất, quên mật khẩu qua OTP, xem/cập nhật thông tin cá nhân, đổi mật khẩu; Ban quản lý có thêm tạo tài khoản quản trị mới và bật/tắt OTP).
+Tác nhân: Ban quản lý, Sinh viên.
+Các ràng buộc: Tài khoản tồn tại, chưa bị khóa; mật khẩu hợp lệ; quyền quản trị hợp lệ đối với chức năng quản trị.
+Điều kiện kích hoạt: Ban quản lý hoặc Sinh viên mở trang đăng nhập hoặc mục Quản lý tài khoản.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị form đăng nhập.
+2. Ban quản lý hoặc Sinh viên nhập email và mật khẩu, chọn “Đăng nhập”.
+3. Hệ thống kiểm tra thông tin.
+4. Hệ thống tạo phiên/token đăng nhập.
+5. Hệ thống điều hướng vào trang chính.
+6. Hệ thống hiển thị thông tin tài khoản.
+7. Ban quản lý hoặc Sinh viên chọn chức năng (cập nhật/đổi mật khẩu).
+8. Ban quản lý có thể chọn thêm chức năng (tạo tài khoản quản trị/bật-tắt OTP).
+9. Hệ thống kiểm tra dữ liệu.
+10. Hệ thống lưu thay đổi.
+11. Hệ thống thông báo kết quả.
+Luồng rẽ nhánh:
+2.1 Ban quản lý/Sinh viên hủy thao tác → hệ thống giữ nguyên trang.
+3.1 Thông tin không hợp lệ → hệ thống thông báo lỗi.
+3.2 Tài khoản bị khóa → hệ thống thông báo và từ chối đăng nhập.
+4.1 Lỗi hệ thống → thông báo thất bại, yêu cầu thử lại.
+2.2 Ban quản lý/Sinh viên chọn “Quên mật khẩu” → hệ thống gửi OTP và cho phép đặt lại mật khẩu.
+9.1 Dữ liệu không hợp lệ → thông báo lỗi.
+10.1 Lưu thất bại → thông báo thất bại.

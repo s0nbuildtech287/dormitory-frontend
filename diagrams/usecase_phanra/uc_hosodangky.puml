@@ -22,19 +22,24 @@ usecase "<b>Nhập hồ sơ thủ công</b>" as UC3
 usecase "<b>Import từ file Excel</b>" as UC4
 usecase "<b>Import từ Google Sheets</b>" as UC5
 usecase "<b>Tính điểm xét duyệt tự động</b>" as UC6
-usecase "<b>Xác thực ảnh minh chứng\n(Google Vision API)</b>" as UC7
+usecase "<>Xác thực ảnh minh chứng\n(Google Vision API)" as UC7
 usecase "<b>Điều chỉnh trọng số điểm</b>" as UC8
 usecase "<b>Tính lại điểm toàn bộ hồ sơ</b>" as UC9
 usecase "<b>Duyệt hồ sơ</b>" as UC10
 usecase "<b>Từ chối hồ sơ</b>" as UC11
 usecase "<b>Xóa hồ sơ</b>" as UC12
 usecase "<b>Xem thống kê hồ sơ</b>" as UC13
+usecase "<b>Gửi thông báo kết quả</b>" as UC14
+usecase "<b>Tạo tài khoản sinh viên</b>" as UC15
 
 UC3 ..> UC6 : <<include>>
 UC4 ..> UC6 : <<include>>
 UC5 ..> UC6 : <<include>>
 UC6 ..> UC7 : <<extend>>
 UC8 ..> UC9 : <<include>>
+UC10 ..> UC14 : <<include>>
+UC11 ..> UC14 : <<include>>
+UC10 ..> UC15 : <<include>>
 
 Admin --> UC1
 Admin --> UC2

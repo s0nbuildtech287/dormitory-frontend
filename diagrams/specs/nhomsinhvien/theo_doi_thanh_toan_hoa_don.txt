@@ -5,13 +5,13 @@ Các ràng buộc: Hợp đồng đang hiệu lực; hóa đơn chưa thanh toá
 Luồng sự kiện:
 Luồng sự kiện chính:
 1. Hệ thống hiển thị danh sách hóa đơn và form nhập chỉ số.
-2. Actor nhập chỉ số và gửi.
+2. Sinh viên nhập chỉ số và gửi.
 3. Hệ thống kiểm tra và cập nhật hóa đơn.
-4. Actor chọn hóa đơn và thanh toán qua VNPay.
+4. Sinh viên chọn hóa đơn và thanh toán qua VNPay.
 5. VNPay xử lý giao dịch và gửi callback.
 6. Hệ thống cập nhật trạng thái hóa đơn và hiển thị kết quả.
 Luồng rẽ nhánh:
-2.a Quá hạn nộp chỉ số → thông báo từ chối.
-3.a Chỉ số không hợp lệ → thông báo lỗi.
-4.a Tạo link thanh toán thất bại → thông báo lỗi.
-5.a Thanh toán bị hủy/thất bại → cập nhật trạng thái FAILED.
+2.1 Quá hạn nộp chỉ số → thông báo từ chối.
+3.1 Chỉ số không hợp lệ → thông báo lỗi.
+4.1 Tạo link thanh toán thất bại → thông báo lỗi.
+5.1 Thanh toán bị hủy/thất bại → cập nhật trạng thái FAILED.

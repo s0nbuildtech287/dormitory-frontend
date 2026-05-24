@@ -1,19 +1,67 @@
-@startuml "Invoice Create Sequence"
+@startuml "Invoice Management Sequence"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 28
 actor "Ban quản lý" as Admin
+actor "Scheduler" as Cron
 participant "Giao diện" as FE
 participant "InvoiceController" as IC
 participant "InvoiceService" as IS
 participant "InvoiceDAO" as IDAO
 database "CSDL" as DB
 
-Admin -> FE: Nhập roomId + month + meter readings
-FE -> IC: POST /api/invoices/from-room
-IC -> IS: createInvoiceFromRoom(args)
+Admin -> FE: Xem danh sách hóa đơn
+FE -> IC: GET /api/invoices
+IC -> IS: getInvoices(filters)
+IS -> IDAO: query invoices
+IDAO -> DB: SELECT invoices
+DB --> IDAO: rows
+IC --> FE: 200 OK
+
+Admin -> FE: Tạo hóa đơn thủ công
+FE -> IC: POST /api/invoices
+IC -> IS: createInvoice(args)
 IS -> IDAO: create invoice
 IDAO -> DB: INSERT invoices
 DB --> IDAO: OK
 IC --> FE: 201 Created
+
+Admin -> FE: Sửa hóa đơn
+FE -> IC: PUT /api/invoices/{id}
+IC -> IS: updateInvoice(args)
+IS -> IDAO: update invoice
+IDAO -> DB: UPDATE invoices
+DB --> IDAO: OK
+IC --> FE: 200 OK
+
+Admin -> FE: Xóa hóa đơn
+FE -> IC: DELETE /api/invoices/{id}
+IC -> IS: deleteInvoice(args)
+IS -> IDAO: delete invoice
+IDAO -> DB: UPDATE invoices (deleted_at)
+DB --> IDAO: OK
+IC --> FE: 200 OK
+
+Admin -> FE: Điều chỉnh bảng giá
+FE -> IC: PUT /api/invoices/pricing-settings
+IC -> IS: updatePricingSettings(args)
+IS -> IDAO: update pricing settings
+IDAO -> DB: UPDATE settings
+DB --> IDAO: OK
+IC --> FE: 200 OK
+
+== Hệ thống tự tạo hóa đơn theo phòng ==
+Cron -> IS: createInvoicesForAllRooms()
+IS -> IDAO: query rooms + meter readings
+IDAO -> DB: SELECT rooms + meter_readings
+DB --> IDAO: data
+IS -> IDAO: create invoices
+IDAO -> DB: INSERT invoices
+DB --> IDAO: OK
+
+== Hệ thống tự cập nhật trạng thái ==
+Cron -> IS: updateOverdueInvoices()
+IS -> IDAO: update overdue status
+IDAO -> DB: UPDATE invoices (status)
+DB --> IDAO: OK
 @enduml
