@@ -41,22 +41,4 @@ alt Sửa quy định
 end
 DC --> FE: 200 OK
 
-== Vô hiệu hóa/Kích hoạt quy định ==
-Admin -> FE: Đổi trạng thái quy định
-FE -> DC: PATCH /api/disciplinary/rules/{id}/status
-DC -> DS: toggleRuleStatus(id)
-DS -> DDAO: update status
-DDAO -> DB: UPDATE violation_rules (is_active)
-DB --> DDAO: OK
-DC --> FE: 200 OK
-
-== Xem thống kê ==
-Admin -> FE: Xem thống kê vi phạm
-FE -> DC: GET /api/disciplinary/statistics
-DC -> DS: getStatistics(filters)
-DS -> DDAO: query statistics
-DDAO -> DB: SELECT + GROUP BY
-DB --> DDAO: stats
-DC --> FE: 200 OK
-
 @enduml

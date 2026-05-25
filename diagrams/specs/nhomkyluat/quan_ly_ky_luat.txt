@@ -1,36 +1,20 @@
-Mô tả: Quản lý kỷ luật (lập/cập nhật/xóa phiếu vi phạm, trừ điểm, cảnh báo, quản lý quy định).
+Mô tả: Quản lý kỷ luật (xem/tạo/sửa/xóa phiếu vi phạm, quản lý quy định, trừ điểm, cảnh báo, thống kê).
 Tác nhân: Ban quản lý.
 Các ràng buộc: Sinh viên tồn tại; mức điểm trừ hợp lệ; quy định vi phạm đã được cấu hình.
 Điều kiện kích hoạt: Ban quản lý mở mục Quản lý kỷ luật.
-
 Luồng sự kiện:
-
-A. Quản lý phiếu vi phạm:
-1. Ban quản lý xem danh sách phiếu vi phạm (có thể lọc theo sinh viên, loại vi phạm, thời gian).
-2. Ban quản lý tạo phiếu vi phạm mới:
-   - Chọn sinh viên
-   - Chọn loại vi phạm từ danh sách quy định
-   - Nhập mô tả chi tiết
-   - Hệ thống tự động tính điểm trừ theo quy định
-3. Ban quản lý có thể sửa/xóa phiếu vi phạm.
-4. Hệ thống tự động trừ điểm rèn luyện của sinh viên.
-5. Hệ thống gửi cảnh báo email khi sinh viên đạt ngưỡng vi phạm nghiêm trọng.
-
-B. Quản lý quy định kỷ luật (Tab Bảng quy định):
-1. Ban quản lý xem danh sách các quy định vi phạm.
-2. Ban quản lý có thể:
-   - Thêm quy định mới (tên vi phạm, mức điểm trừ, mô tả)
-   - Chỉnh sửa điểm trừ của quy định hiện có
-   - Vô hiệu hóa/kích hoạt quy định
-3. Hệ thống lưu thay đổi và áp dụng cho các phiếu vi phạm mới.
-
-C. Thống kê và báo cáo:
-1. Hệ thống hiển thị thống kê vi phạm theo sinh viên, phòng, loại vi phạm.
-2. Hệ thống cảnh báo danh sách sinh viên có nguy cơ bị xử lý kỷ luật.
-
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách phiếu vi phạm (có thể lọc theo sinh viên, loại vi phạm, thời gian).
+2. Ban quản lý chọn thao tác (tạo/sửa/xóa phiếu vi phạm).
+3. Khi tạo phiếu: Ban quản lý chọn sinh viên, chọn loại vi phạm từ danh sách quy định, nhập mô tả chi tiết.
+4. Hệ thống tự động tính điểm trừ theo quy định.
+5. Hệ thống lưu phiếu vi phạm và trừ điểm rèn luyện của sinh viên.
+6. Hệ thống gửi email cảnh báo khi sinh viên đạt ngưỡng vi phạm nghiêm trọng.
+7. Ban quản lý có thể chuyển sang tab Bảng quy định để xem/thêm/sửa quy định vi phạm (tên vi phạm, mức điểm trừ, mô tả).
+8. Hệ thống hiển thị thống kê vi phạm theo sinh viên, phòng, loại vi phạm và danh sách sinh viên có nguy cơ bị xử lý kỷ luật.
 Luồng rẽ nhánh:
-A.2.1 Dữ liệu không hợp lệ → thông báo lỗi.
-A.4.1 Lưu thất bại → thông báo thất bại, rollback điểm.
-A.5.1 Gửi email thất bại → ghi log, hiển thị cảnh báo cho admin.
-B.2.1 Quy định trùng tên → thông báo lỗi.
-B.3.1 Lưu thất bại → thông báo thất bại.
+3.1 Dữ liệu không hợp lệ → thông báo lỗi.
+5.1 Lưu thất bại → thông báo thất bại, rollback điểm.
+6.1 Gửi email thất bại → ghi log, hiển thị cảnh báo cho admin.
+7.1 Quy định trùng tên → thông báo lỗi.
+7.2 Lưu quy định thất bại → thông báo thất bại.
