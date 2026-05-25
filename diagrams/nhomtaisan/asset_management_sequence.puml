@@ -21,18 +21,4 @@ AC -> AS: updateAssetLimit(args)
 AS -> DB: UPDATE asset_limits
 DB --> AS: OK
 AC --> FE: 200 OK
-
-Admin -> FE: Nhập kho
-FE -> AC: POST /api/assets/import
-AC -> AS: importAsset(data)
-AS -> DB: INSERT asset_imports
-DB --> AS: OK
-AC --> FE: 201 Created
-
-Admin -> FE: Xuất kho vào phòng
-FE -> AC: POST /api/assets/export
-AC -> AS: exportAsset(data)
-AS -> DB: INSERT asset_exports
-DB --> AS: OK
-AC --> FE: 201 Created
 @enduml

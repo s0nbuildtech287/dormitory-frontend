@@ -9,7 +9,7 @@ start
 :Hiển thị danh sách tài sản;
 
 |Ban quản lý|
-:Chọn thao tác\n(Thêm/Sửa/Xóa/Nhập/Xuất/\nĐiều chỉnh giới hạn);
+:Chọn thao tác\n(Thêm/Sửa/Xóa/\nĐiều chỉnh giới hạn);
 
 if (Thao tác xóa?) then (Có)
   |Hệ thống|
@@ -26,7 +26,6 @@ if (Dữ liệu hợp lệ?) then (Không)
   :Thông báo lỗi;
   stop
 else (Có)
-  :Cập nhật tồn kho;
   :Lưu thay đổi;
   
   if (Lưu thành công?) then (Không)

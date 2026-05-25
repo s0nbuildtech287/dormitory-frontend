@@ -1,0 +1,26 @@
+@startuml "Asset Import Export Sequence"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "AssetController" as AC
+participant "AssetService" as AS
+database "CSDL" as DB
+
+== Nhập kho ==
+Admin -> FE: Nhập kho
+FE -> AC: POST /api/assets/import
+AC -> AS: importAsset(args)
+AS -> DB: INSERT asset_imports
+DB --> AS: OK
+AC --> FE: 201 Created
+
+== Xuất kho ==
+Admin -> FE: Xuất kho vào phòng
+FE -> AC: POST /api/assets/export
+AC -> AS: exportAsset(args)
+AS -> DB: INSERT asset_exports
+DB --> AS: OK
+AC --> FE: 201 Created
+@enduml
