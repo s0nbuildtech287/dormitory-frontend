@@ -10,45 +10,14 @@ participant "InvoiceService" as IS
 participant "InvoiceDAO" as IDAO
 database "CSDL" as DB
 
-Admin -> FE: Xem danh sách hóa đơn
-FE -> IC: GET /api/invoices
-IC -> IS: getInvoices(filters)
-IS -> IDAO: query invoices
-IDAO -> DB: SELECT invoices
-DB --> IDAO: rows
-IC --> FE: 200 OK
-
-Admin -> FE: Tạo hóa đơn thủ công
-FE -> IC: POST /api/invoices
-IC -> IS: createInvoice(args)
-IS -> IDAO: create invoice
-IDAO -> DB: INSERT invoices
-DB --> IDAO: OK
-IC --> FE: 201 Created
-
-Admin -> FE: Sửa hóa đơn
-FE -> IC: PUT /api/invoices/{id}
-IC -> IS: updateInvoice(args)
-IS -> IDAO: update invoice
-IDAO -> DB: UPDATE invoices
-DB --> IDAO: OK
-IC --> FE: 200 OK
-
-Admin -> FE: Xóa hóa đơn
-FE -> IC: DELETE /api/invoices/{id}
-IC -> IS: deleteInvoice(args)
-IS -> IDAO: delete invoice
-IDAO -> DB: UPDATE invoices (deleted_at)
-DB --> IDAO: OK
-IC --> FE: 200 OK
-
-Admin -> FE: Điều chỉnh bảng giá
-FE -> IC: PUT /api/invoices/pricing-settings
-IC -> IS: updatePricingSettings(args)
-IS -> IDAO: update pricing settings
-IDAO -> DB: UPDATE settings
-DB --> IDAO: OK
-IC --> FE: 200 OK
+== Quản lý hóa đơn và bảng giá ==
+Admin -> FE: Xem/Tạo/Sửa/Xóa hóa đơn\nhoặc điều chỉnh bảng giá
+FE -> IC: API request (GET/POST/PUT/DELETE)
+IC -> IS: Xử lý nghiệp vụ
+IS -> IDAO: Thao tác CSDL
+IDAO -> DB: Query/Insert/Update/Delete
+DB --> IDAO: Kết quả
+IC --> FE: Response
 
 == Hệ thống tự tạo hóa đơn theo phòng ==
 Cron -> IS: createInvoicesForAllRooms()
