@@ -3,15 +3,41 @@ skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
-:Chọn quản lý tài sản;
-:Thêm/Sửa/Xóa/Điều chỉnh chỉ số/giới hạn tài sản;
-if (Nhập kho?) then (Có)
+:Mở mục tài sản;
+
+|Hệ thống|
+:Hiển thị danh sách tài sản;
+
+|Ban quản lý|
+:Chọn thao tác\n(Thêm/Sửa/Xóa/Nhập/Xuất/\nĐiều chỉnh giới hạn);
+
+if (Thao tác xóa?) then (Có)
   |Hệ thống|
-  :Lưu nhập kho;
-else (Xuất kho)
-  |Hệ thống|
-  :Lưu xuất kho vào phòng;
+  if (Tài sản đã gán phòng?) then (Có)
+    :Thông báo không thể xóa;
+    stop
+  endif
 endif
+
+|Hệ thống|
+:Kiểm tra dữ liệu;
+
+if (Dữ liệu hợp lệ?) then (Không)
+  :Thông báo lỗi;
+  stop
+else (Có)
+  :Cập nhật tồn kho;
+  :Lưu thay đổi;
+  
+  if (Lưu thành công?) then (Không)
+    :Thông báo thất bại;
+    stop
+  else (Có)
+    :Thông báo kết quả;
+    :Cập nhật thống kê tài sản;
+  endif
+endif
+
 |Ban quản lý|
 :Nhận kết quả;
 stop

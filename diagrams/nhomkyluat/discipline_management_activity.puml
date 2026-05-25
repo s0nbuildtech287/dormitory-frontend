@@ -6,31 +6,28 @@ skinparam defaultFontName "Times New Roman"
 start
 :Mở quản lý kỷ luật;
 
+|Hệ thống|
+:Hiển thị danh sách phiếu vi phạm;
+
+|Ban quản lý|
 if (Chọn tab?) then (Phiếu vi phạm)
-  :Xem danh sách phiếu vi phạm;
-  :Tạo/Sửa/Xóa phiếu;
+  :Tạo/Sửa/Xóa phiếu vi phạm;
   |Hệ thống|
-  :Tính điểm trừ tự động;
-  :Cập nhật điểm rèn luyện;
+  :Tính điểm trừ, lưu phiếu\ncập nhật điểm rèn luyện;
   if (Đạt ngưỡng cảnh báo?) then (Có)
     :Gửi email cảnh báo;
   else (Không)
   endif
-  
-elseif (Bảng quy định) then
-  :Xem danh sách quy định;
-  :Thêm/Sửa/Vô hiệu hóa quy định;
+elseif (Chọn tab?) then (Bảng quy định)
+  :Thêm/Sửa quy định vi phạm;
   |Hệ thống|
-  :Lưu thay đổi quy định;
-  :Ghi log thay đổi;
-  
+  :Lưu quy định, ghi log;
 else (Thống kê)
   |Hệ thống|
-  :Hiển thị thống kê vi phạm;
-  :Hiển thị danh sách cảnh báo;
+  :Hiển thị thống kê vi phạm\nvà danh sách cảnh báo;
+  |Ban quản lý|
 endif
 
-|Ban quản lý|
 :Nhận kết quả;
 stop
 @enduml
