@@ -8,7 +8,11 @@ start
 |Hệ thống|
 :Kiểm tra dữ liệu;
 :Tạo thông báo;
-:Gửi tới người nhận;
+:Emit realtime qua socket.io;
+:Gửi tới người nhận (qua socket);
+|Client (Sinh viên)|
+ :Nhận event "notification";
+ :Hiển thị thông báo mới;
 |Ban quản lý|
 :Hoàn tất;
 stop

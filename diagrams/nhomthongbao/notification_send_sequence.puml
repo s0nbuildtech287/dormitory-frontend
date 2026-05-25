@@ -6,7 +6,14 @@ actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "NotificationController" as NC
 participant "NotificationService" as NS
+participant "Socket.io" as WS
+participant "Giao diện Sinh viên" as Student
 database "CSDL" as DB
+
+note over Student,WS
+Client kết nối socket.io kèm JWT,
+server join room theo role/userId.
+end note
 
 alt Gửi ALL
   Admin -> FE: Nhập nội dung
@@ -14,6 +21,8 @@ alt Gửi ALL
   NC -> NS: sendToAllStudents(args)
   NS -> DB: INSERT notifications
   DB --> NS: OK
+  NS -> WS: emitNotification(notification)
+  WS -> Student: "notification" event
   NC --> FE: 201 Created
 else Gửi SPECIFIC
   Admin -> FE: Chọn danh sách userIds
@@ -21,6 +30,8 @@ else Gửi SPECIFIC
   NC -> NS: sendToSpecificUsers(args)
   NS -> DB: INSERT notifications
   DB --> NS: OK
+  NS -> WS: emitNotification(notification)
+  WS -> Student: "notification" event
   NC --> FE: 201 Created
 end
 @enduml
