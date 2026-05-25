@@ -1,4 +1,4 @@
-@startuml "Student Notifications Feedback Sequence"
+@startuml "Student Notifications Sequence"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 22
@@ -13,9 +13,15 @@ SC -> DB: SELECT notifications
 DB --> SC: data
 SC --> FE: 200 OK
 
-Student -> FE: Xem phản ánh đã gửi
-FE -> SC: GET /api/student/feedbacks
-SC -> DB: SELECT feedbacks
+Student -> FE: Xem chi tiết thông báo
+FE -> SC: GET /api/student/notifications/{id}
+SC -> DB: SELECT notification by id
 DB --> SC: data
+SC --> FE: 200 OK
+
+Student -> FE: Đánh dấu đã đọc
+FE -> SC: PUT /api/student/notifications/{id}/read
+SC -> DB: UPDATE notifications (read_at)
+DB --> SC: OK
 SC --> FE: 200 OK
 @enduml

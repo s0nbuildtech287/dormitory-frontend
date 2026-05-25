@@ -1,0 +1,21 @@
+@startuml "Student News Sequence"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "NewsController" as NC
+database "CSDL" as DB
+
+Student -> FE: Xem danh sách tin TLU
+FE -> NC: GET /api/news
+NC -> DB: SELECT news
+DB --> NC: data
+NC --> FE: 200 OK
+
+Student -> FE: Xem chi tiết tin
+FE -> NC: GET /api/news/{id}
+NC -> DB: SELECT news by id
+DB --> NC: data
+NC --> FE: 200 OK
+@enduml

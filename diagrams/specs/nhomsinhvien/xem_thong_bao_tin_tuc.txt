@@ -1,14 +1,21 @@
-Mô tả: Sinh viên xem thông báo và tin tức, lọc theo danh mục, nhận thông báo realtime, phân tích bài báo bằng AI.
+Mô tả: Sinh viên xem thông báo từ Ban quản lý và xem tin tức TLU; có thể phân tích bài báo bằng AI.
 Tác nhân: Sinh viên, Hệ thống (AI).
 Các ràng buộc: Sinh viên đã đăng nhập; dịch vụ AI khả dụng.
-Điều kiện kích hoạt: Sinh viên mở mục Thông báo & Tin tức.
+Điều kiện kích hoạt: Sinh viên mở mục Thông báo hoặc mục Tin tức.
 Luồng sự kiện:
 Luồng sự kiện chính:
-1. Hệ thống hiển thị danh sách thông báo và tin tức.
-2. Sinh viên chọn xem chi tiết hoặc lọc danh mục.
-3. Hệ thống nhận thông báo realtime (nếu có).
-4. Sinh viên chọn phân tích bài báo bằng AI.
-5. Hệ thống trả kết quả phân tích/tóm tắt.
+1. Hệ thống hiển thị danh sách thông báo từ Ban quản lý.
+2. Sinh viên chọn thông báo để xem chi tiết.
+3. Hệ thống hiển thị nội dung thông báo.
+4. Sinh viên đánh dấu đã đọc (nếu cần).
+Luồng phụ: Xem tin tức TLU
+4.1 Hệ thống hiển thị danh sách tin TLU.
+4.2 Sinh viên chọn tin để xem chi tiết.
+4.3 Hệ thống hiển thị nội dung tin.
+Luồng phụ: Phân tích bài báo bằng AI
+4.4 Sinh viên chọn phân tích bài báo bằng AI.
+4.5 Hệ thống trả kết quả phân tích/tóm tắt.
 Luồng rẽ nhánh:
-2.1 Không có dữ liệu → hiển thị “Không có dữ liệu”.
-4.1 AI lỗi → thông báo thất bại.
+1.1 Không có thông báo → hiển thị “Không có dữ liệu”.
+4.1.1 Không có tin → hiển thị “Không có dữ liệu”.
+4.5.1 AI lỗi → thông báo thất bại.
