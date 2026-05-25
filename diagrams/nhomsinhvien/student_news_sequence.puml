@@ -5,17 +5,31 @@ skinparam sequenceMessageSize 22
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
 participant "NewsController" as NC
-database "CSDL" as DB
+participant "NewsService" as NS
+participant "TLU Website" as TLU
+participant "Image Proxy" as Proxy
+database "Cache" as Cache
 
 Student -> FE: Xem danh sách tin TLU
 FE -> NC: GET /api/news
-NC -> DB: SELECT news
-DB --> NC: data
+NC -> NS: getNews()
+alt Cache còn hạn
+	NS -> Cache: Read cached news
+	Cache --> NS: data
+else Cache hết hạn
+	NS -> TLU: GET các trang tin
+	TLU --> NS: HTML
+	NS -> NS: Cào & trích xuất tin
+	NS -> Cache: Save cached news
+end
+NS --> NC: data
 NC --> FE: 200 OK
 
+FE -> Proxy: GET /api/news/image-proxy?url=...
+Proxy -> TLU: GET image (Referer TLU)
+TLU --> Proxy: image bytes
+Proxy --> FE: image
+
 Student -> FE: Xem chi tiết tin
-FE -> NC: GET /api/news/{id}
-NC -> DB: SELECT news by id
-DB --> NC: data
-NC --> FE: 200 OK
+FE -> FE: Hiển thị chi tiết từ dữ liệu đã tải
 @enduml
