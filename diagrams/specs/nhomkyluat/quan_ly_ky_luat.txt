@@ -1,15 +1,36 @@
-Mô tả: Quản lý kỷ luật (lập/cập nhật/xóa phiếu vi phạm, trừ điểm, cảnh báo, thống kê).
+Mô tả: Quản lý kỷ luật (lập/cập nhật/xóa phiếu vi phạm, trừ điểm, cảnh báo, quản lý quy định).
 Tác nhân: Ban quản lý.
-Các ràng buộc: Sinh viên tồn tại; mức điểm trừ hợp lệ.
+Các ràng buộc: Sinh viên tồn tại; mức điểm trừ hợp lệ; quy định vi phạm đã được cấu hình.
 Điều kiện kích hoạt: Ban quản lý mở mục Quản lý kỷ luật.
+
 Luồng sự kiện:
-Luồng sự kiện chính:
-1. Ban quản lý nhập thông tin vi phạm hoặc chọn phiếu cần cập nhật.
-2. Hệ thống lưu phiếu vi phạm.
-3. Hệ thống tự động trừ điểm rèn luyện.
-4. Hệ thống gửi cảnh báo khi đến ngưỡng vi phạm.
-5. Hệ thống hiển thị thống kê vi phạm.
+
+A. Quản lý phiếu vi phạm:
+1. Ban quản lý xem danh sách phiếu vi phạm (có thể lọc theo sinh viên, loại vi phạm, thời gian).
+2. Ban quản lý tạo phiếu vi phạm mới:
+   - Chọn sinh viên
+   - Chọn loại vi phạm từ danh sách quy định
+   - Nhập mô tả chi tiết
+   - Hệ thống tự động tính điểm trừ theo quy định
+3. Ban quản lý có thể sửa/xóa phiếu vi phạm.
+4. Hệ thống tự động trừ điểm rèn luyện của sinh viên.
+5. Hệ thống gửi cảnh báo email khi sinh viên đạt ngưỡng vi phạm nghiêm trọng.
+
+B. Quản lý quy định kỷ luật (Tab Bảng quy định):
+1. Ban quản lý xem danh sách các quy định vi phạm.
+2. Ban quản lý có thể:
+   - Thêm quy định mới (tên vi phạm, mức điểm trừ, mô tả)
+   - Chỉnh sửa điểm trừ của quy định hiện có
+   - Vô hiệu hóa/kích hoạt quy định
+3. Hệ thống lưu thay đổi và áp dụng cho các phiếu vi phạm mới.
+
+C. Thống kê và báo cáo:
+1. Hệ thống hiển thị thống kê vi phạm theo sinh viên, phòng, loại vi phạm.
+2. Hệ thống cảnh báo danh sách sinh viên có nguy cơ bị xử lý kỷ luật.
+
 Luồng rẽ nhánh:
-1.1 Dữ liệu không hợp lệ → thông báo lỗi.
-2.1 Lưu thất bại → thông báo thất bại.
-4.1 Gửi email thất bại → ghi log và thông báo.
+A.2.1 Dữ liệu không hợp lệ → thông báo lỗi.
+A.4.1 Lưu thất bại → thông báo thất bại, rollback điểm.
+A.5.1 Gửi email thất bại → ghi log, hiển thị cảnh báo cho admin.
+B.2.1 Quy định trùng tên → thông báo lỗi.
+B.3.1 Lưu thất bại → thông báo thất bại.

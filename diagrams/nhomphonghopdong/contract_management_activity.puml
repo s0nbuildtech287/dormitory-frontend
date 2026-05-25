@@ -3,6 +3,7 @@ skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
+:Chọn quản lý hợp đồng;
 if (Thao tác?) then (Tạo hợp đồng)
   :Chọn hồ sơ đã duyệt;
   :Tích chọn tiền cọc;

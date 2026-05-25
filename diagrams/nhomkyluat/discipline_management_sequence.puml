@@ -1,0 +1,62 @@
+@startuml "Discipline Management Sequence"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 28
+
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "DisciplinaryController" as DC
+participant "DisciplinaryService" as DS
+participant "DisciplinaryDAO" as DDAO
+participant "EmailService" as Email
+database "CSDL" as DB
+
+== Quản lý phiếu vi phạm ==
+Admin -> FE: Xem/Tạo/Sửa/Xóa phiếu
+FE -> DC: GET|POST|PUT|DELETE /api/disciplinary
+DC -> DS: CRUD operations
+DS -> DDAO: query/create/update/delete
+DDAO -> DB: SELECT/INSERT/UPDATE disciplinary_records
+DB --> DDAO: OK
+DS -> DDAO: updateConductScore(student_id)
+DDAO -> DB: UPDATE students (conduct_score)
+DB --> DDAO: OK
+alt Đạt ngưỡng cảnh báo
+  DS -> Email: sendWarningEmail(student)
+  Email --> DS: OK
+end
+DC --> FE: 200 OK
+
+== Quản lý quy định vi phạm ==
+Admin -> FE: Xem/Thêm/Sửa quy định
+FE -> DC: GET|POST|PUT /api/disciplinary/rules
+DC -> DS: getRules|createRule|updateRule
+DS -> DDAO: query/create/update rules
+DDAO -> DB: SELECT/INSERT/UPDATE violation_rules
+DB --> DDAO: OK
+alt Sửa quy định
+  DS -> DDAO: logChange(rule_id)
+  DDAO -> DB: INSERT rule_change_logs
+  DB --> DDAO: OK
+end
+DC --> FE: 200 OK
+
+== Vô hiệu hóa/Kích hoạt quy định ==
+Admin -> FE: Đổi trạng thái quy định
+FE -> DC: PATCH /api/disciplinary/rules/{id}/status
+DC -> DS: toggleRuleStatus(id)
+DS -> DDAO: update status
+DDAO -> DB: UPDATE violation_rules (is_active)
+DB --> DDAO: OK
+DC --> FE: 200 OK
+
+== Xem thống kê ==
+Admin -> FE: Xem thống kê vi phạm
+FE -> DC: GET /api/disciplinary/statistics
+DC -> DS: getStatistics(filters)
+DS -> DDAO: query statistics
+DDAO -> DB: SELECT + GROUP BY
+DB --> DDAO: stats
+DC --> FE: 200 OK
+
+@enduml
