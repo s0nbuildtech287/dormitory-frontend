@@ -4,51 +4,30 @@ skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 22
 ' Sequence Diagram: Phân tích bài báo bằng AI
 actor "Sinh viên" as Student
-participant "Trang Tin tức\n(StudentNews)" as NewsPage
-participant "NewsAnalyze\n(handleAnalyze)" as Handler
+participant "Trang Tin tức" as NewsPage
+participant "FE Handler" as Handler
 participant "NewsController" as NC
 participant "TLU Website" as TLU
 participant "openaiService" as AI
-participant "ChatBot Modal\n(AIChatBot)" as ChatBot
-participant "ChatBotContext" as Ctx
+participant "ChatBot Modal" as ChatBot
 
-Student -> NewsPage: Nhấn nút "AI" trên card bài báo
-NewsPage -> Handler: handleAnalyze(article)
-Handler -> Handler: setAnalyzingUrl(article.url)\n(hiện spinner "Đang tải...")
+Student -> NewsPage: Nhấn "AI" trên bài báo
+NewsPage -> Handler: handleAnalyze(url, title)
+Handler -> NC: POST /api/news/analyze
 
-Handler -> NC: POST /api/news/analyze\n{ url, title }
+NC -> TLU: GET bài báo
+TLU --> NC: HTML
+NC -> NC: Trích xuất nội dung chính
+NC -> AI: Phân tích (tóm tắt/điểm nổi bật/ý nghĩa)
+AI --> NC: Kết quả phân tích
+NC --> Handler: analysis
 
-== Cào nội dung ==
-NC -> TLU: GET article URL\n(axios + headers)
-TLU --> NC: HTML page
-NC -> NC: cheerio.load(html)\nxóa script/nav/footer/sidebar
-NC -> NC: Trích xuất .entry-content\nhoặc fallback <p> tags
-
-== Gọi AI phân tích ==
-NC -> AI: createChatCompletion(args)
-note right of AI
-  messages = [
-    system: "Trợ lý phân tích tin tức KTX"
-    user: "Tiêu đề + Nội dung đầy đủ\n+ Yêu cầu 3 mục"
-  ]
-end note
-AI --> NC: { content: "1. Tóm tắt...\n2. Điểm nổi bật...\n3. Ý nghĩa..." }
-NC --> Handler: { success: true, analysis: "..." }
-
-== Hiển thị kết quả ==
-Handler -> Ctx: openChatWithMessages(args)
-Ctx -> ChatBot: isOpen=true\ninitialMessages=[user+bot]
-ChatBot -> ChatBot: setMessages(args)
-ChatBot --> Student: Modal mở — hiển thị kết quả phân tích sẵn
+Handler -> ChatBot: Mở modal + hiển thị kết quả
+ChatBot --> Student: Đọc kết quả
 
 == Hỏi thêm (tuỳ chọn) ==
-Student -> ChatBot: Nhập câu hỏi + Enter
-ChatBot -> AI: POST /api/ai/chat\n{ message, history[-20], model }
-note right of AI
-  history bao gồm toàn bộ
-  lịch sử hội thoại trong session
-  → AI hiểu ngữ cảnh bài báo
-end note
-AI --> ChatBot: reply
+Student -> ChatBot: Nhập câu hỏi
+ChatBot -> AI: Gọi AI theo ngữ cảnh
+AI --> ChatBot: Trả lời
 ChatBot --> Student: Hiển thị câu trả lời
 @enduml

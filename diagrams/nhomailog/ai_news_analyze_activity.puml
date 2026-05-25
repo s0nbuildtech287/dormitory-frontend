@@ -1,46 +1,34 @@
 @startuml "AI News Analyze Activity"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 28
 skinparam defaultFontName "Times New Roman"
 ' Activity Diagram: Phân tích bài báo bằng AI
 |Sinh viên|
 start
-:Mở trang Tin tức;
-:Xem danh sách bài báo;
-:Nhấn nút "AI" trên card bài báo;
+:Mở Tin tức → chọn bài → nhấn "AI";
 |Hệ thống - Frontend|
-:Hiển thị trạng thái "Đang tải...";
-:Gửi yêu cầu phân tích lên backend\n(url + title);
+:Gửi yêu cầu phân tích (url + title);
 |Hệ thống - Backend|
-:Nhận url bài báo;
-:Kiểm tra URL hợp lệ (tlu.edu.vn);
+:Kiểm tra URL hợp lệ;
 if (URL hợp lệ?) then (Có)
-  :Cào nội dung bài viết\n(axios + cheerio);
-  :Loại bỏ script, nav, footer, sidebar;
-  :Trích xuất nội dung chính\n(.entry-content / .post-content / <p>);
-  if (Lấy được nội dung?) then (Có)
-    :Gọi AI (GPT-4o-mini)\nvới toàn bộ nội dung bài;
-    :AI phân tích theo 3 mục:\n1. Tóm tắt\n2. Điểm nổi bật\n3. Ý nghĩa với sinh viên KTX;
-    :Trả về kết quả phân tích;
+  :Cào & trích xuất nội dung chính;
+  if (Có nội dung?) then (Có)
+    :Gọi AI phân tích\n(tóm tắt/điểm nổi bật/ý nghĩa);
     |Hệ thống - Frontend|
-    :Mở modal Chatbot;
-    :Hiển thị tin nhắn user:\n"Phân tích bài báo: [tiêu đề]";
-    :Hiển thị tin nhắn bot:\nKết quả phân tích từ AI;
+    :Mở modal Chatbot + hiển thị kết quả;
     |Sinh viên|
-    :Đọc kết quả phân tích;
-    if (Muốn hỏi thêm?) then (Có)
-      :Nhập câu hỏi vào ô chat;
-      :Nhấn Enter / Gửi;
+    if (Hỏi thêm?) then (Có)
+      :Nhập câu hỏi;
       |Hệ thống - Backend|
-      :Gọi AI với lịch sử hội thoại\n(history + câu hỏi mới);
-      :Trả lời dựa trên ngữ cảnh bài báo;
+      :Gọi AI theo ngữ cảnh bài báo;
       |Sinh viên|
       :Đọc câu trả lời;
+      stop
     else (Không)
       stop
     endif
   else (Không)
     |Hệ thống - Frontend|
-    :Mở chatbot với prompt cơ bản\n(tiêu đề + mô tả ngắn);
+    :Mở chatbot với prompt cơ bản;
     |Sinh viên|
     :Tự chỉnh prompt rồi gửi;
     stop
