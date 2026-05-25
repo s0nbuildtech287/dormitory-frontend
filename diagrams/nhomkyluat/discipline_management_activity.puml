@@ -1,4 +1,4 @@
-@startuml "Discipline Management Activity"
+﻿@startuml "Discipline Management Activity"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 
@@ -25,9 +25,9 @@ elseif (Chọn tab?) then (Bảng quy định)
 else (Thống kê)
   |Hệ thống|
   :Hiển thị thống kê vi phạm\nvà danh sách cảnh báo;
-  |Ban quản lý|
 endif
 
+|Ban quản lý|
 :Nhận kết quả;
 stop
 @enduml
