@@ -1,5 +1,5 @@
 @startuml "Room Assignment Activity"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 26s
 skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
