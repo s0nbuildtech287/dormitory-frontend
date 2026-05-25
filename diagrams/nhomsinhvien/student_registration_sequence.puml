@@ -1,0 +1,32 @@
+@startuml "Student Registration Sequence"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
+actor "Sinh viên" as SV
+participant "Giao diện" as FE
+participant "RegistrationController" as RegC
+participant "RegistrationService" as RegS
+participant "RegisterFormDAO" as RegDAO
+database "CSDL" as DB
+participant "Socket.io" as WS
+participant "ImageValidatorService" as Vision
+
+SV -> FE: Mở form đăng ký
+SV -> FE: Nhập thông tin + đính kèm minh chứng
+FE -> FE: Kiểm tra bắt buộc (frontend)
+FE -> RegC: POST /api/registrations
+RegC -> RegS: createRegistration(data)
+RegS -> RegS: Validate + tính điểm AI
+alt Dữ liệu hợp lệ
+  RegS -> RegDAO: create(registration)
+  RegDAO -> DB: INSERT register_forms
+  DB --> RegDAO: OK
+  RegS -> WS: emitAdminAlert("new_registration")
+  RegS -> Vision: validateRegistrationImages(registrationId)
+  RegS --> RegC: Kết quả thành công
+  RegC --> FE: 201 Created
+else Dữ liệu không hợp lệ
+  RegS --> RegC: Validation error
+  RegC --> FE: 400 Bad Request
+end
+@enduml
