@@ -1,0 +1,48 @@
+@startuml "Invoice Payment Sequence"
+skinparam defaultFontSize 28
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 28
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "VNPayController" as VC
+participant "VNPayService" as VS
+participant "InvoiceDAO" as IDAO
+participant "VNPay" as VNPay
+participant "PaymentController" as PC
+participant "PaymentService" as PS
+participant "Ngân hàng" as Bank
+
+database "CSDL" as DB
+
+Student -> FE: Chọn hóa đơn + Chọn phương thức
+alt VNPay
+	FE -> VC: POST /api/vnpay/create-payment
+	VC -> VS: createPaymentUrl(args)
+	VS --> VC: paymentUrl
+	VC --> FE: paymentUrl
+	FE -> VNPay: Redirect paymentUrl
+	VNPay --> VC: GET /api/vnpay/ipn
+	VC -> VS: verifySignature(args)
+	VC -> IDAO: markAsPaid(args)
+	IDAO -> DB: UPDATE invoices
+	DB --> IDAO: OK
+	VC --> VNPay: RspCode=00
+	VNPay --> FE: Redirect /payment/result
+else Chuyển khoản ngân hàng
+	FE -> PC: POST /api/payments/bank-transfer
+	PC -> PS: createBankTransferRequest(args)
+	PS -> IDAO: get invoice details
+	IDAO -> DB: SELECT invoice
+	DB --> IDAO: invoice
+	PS --> PC: bank transfer info
+	PC --> FE: Thông tin chuyển khoản
+
+	Student -> Bank: Thực hiện chuyển khoản
+	Bank --> PS: Thông báo giao dịch/đối soát
+	PS -> IDAO: markAsPaid(args)
+	IDAO -> DB: UPDATE invoices
+	DB --> IDAO: OK
+	PS --> PC: OK
+	PC --> FE: 200 OK
+end
+@enduml

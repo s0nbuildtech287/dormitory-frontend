@@ -14,20 +14,26 @@ skinparam actor {
 
 actor "<b>Sinh viên</b>" as SV
 actor "<b>VNPay</b>" as VNP
+actor "<b>Ngân hàng</b>" as Bank
 
 usecase "<b>Xem danh sách hóa đơn</b>" as UC1
 usecase "<b>Xem chi tiết hóa đơn</b>" as UC2
 usecase "<b>Gửi chỉ số điện/nước</b>" as UC3
 usecase "<b>Thanh toán qua VNPay</b>" as UC4
-usecase "<b>Xem kết quả thanh toán</b>" as UC5
-usecase "<b>Xem biểu đồ chi phí theo tháng</b>" as UC6
+usecase "<b>Chuyển khoản ngân hàng</b>" as UC5
+usecase "<b>Xem kết quả thanh toán</b>" as UC6
+usecase "<b>Xem biểu đồ chi phí theo tháng</b>" as UC7
 
 UC4 ..> UC5 : <<include>>
+UC5 ..> UC6 : <<include>>
+UC4 ..> UC6 : <<include>>
 
 SV --> UC1
 SV --> UC2
 SV --> UC3
 SV --> UC4
-SV --> UC6
-VNP --> UC5 : IPN callback
+SV --> UC5
+SV --> UC7
+VNP --> UC6 : IPN callback
+Bank --> UC6 : Đối soát giao dịch
 @enduml

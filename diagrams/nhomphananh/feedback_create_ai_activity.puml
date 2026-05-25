@@ -8,7 +8,7 @@ start
 |Hệ thống|
 :Lưu phản ánh;
 :Gọi AI phân tích sentiment;
-:Cập nhật nhãn ưu tiên/cảm xúc;
+:Cập nhật nhãn ưu tiên/cảm xúc phía ban quản lý;
 |Sinh viên|
 :Nhận thông báo gửi thành công;
 stop

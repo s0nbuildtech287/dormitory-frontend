@@ -10,7 +10,7 @@ start
 |Hệ thống|
 :Nhận message từ sinh viên;
 :Gắn SYSTEM_PROMPT vào context;
-:Gọi Gemini API với lịch sử hội thoại;
+:Gọi OpenAI API với lịch sử hội thoại;
 if (API phản hồi thành công?) then (Có)
   :Nhận câu trả lời từ AI;
   :Trả kết quả về giao diện;
