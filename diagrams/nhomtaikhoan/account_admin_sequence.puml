@@ -1,7 +1,7 @@
 @startuml "Admin Account Management Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 28
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 28
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "AuthController" as AuthC

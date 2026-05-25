@@ -4,11 +4,9 @@ Các ràng buộc: Người dùng đã đăng nhập; có quyền xem thống k�
 Điều kiện kích hoạt: Ban quản lý mở mục Dashboard.
 Luồng sự kiện:
 Luồng sự kiện chính:
-1. Hệ thống kiểm tra quyền truy cập.
-2. Hệ thống truy vấn dữ liệu tổng quan và thống kê.
-3. Hệ thống tổng hợp và hiển thị biểu đồ.
-4. Ban quản lý chọn bộ lọc thời gian (nếu cần).
-5. Hệ thống cập nhật biểu đồ theo bộ lọc.
+1. Hệ thống truy vấn dữ liệu tổng quan và thống kê.
+2. Hệ thống tổng hợp và hiển thị biểu đồ.
+3. Ban quản lý chọn bộ lọc ở mỗi biểu đồ (nếu cần).
+4. Hệ thống cập nhật dữ liệu theo bộ lọc.
 Luồng rẽ nhánh:
-1.1 Không đủ quyền → thông báo từ chối.
 2.1 Lỗi truy vấn → thông báo thất bại.

@@ -6,13 +6,12 @@ start
 :Đăng nhập hệ thống;
 :Chọn mục Dashboard & Thống kê;
 |Hệ thống|
-:Kiểm tra quyền truy cập;
 :Truy vấn số liệu tổng quan;
 :Truy vấn thống kê hồ sơ/phòng/hóa đơn/phản ánh/tài sản;
 :Kết hợp và tổng hợp dữ liệu;
 |Ban quản lý|
 :Quan sát biểu đồ và số liệu;
-:Chọn bộ lọc thời gian (nếu cần);
+:Chọn bộ lọc (nếu cần);
 |Hệ thống|
 :Cập nhật dữ liệu theo bộ lọc;
 |Ban quản lý|

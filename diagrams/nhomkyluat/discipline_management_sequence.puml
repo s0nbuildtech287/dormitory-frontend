@@ -1,5 +1,5 @@
 @startuml "Discipline Management Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 28
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 28
 
