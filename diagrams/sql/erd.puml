@@ -1,5 +1,5 @@
 @startuml "ERD - Dormitory System"
-skinparam defaultFontSize 26
+skinparam defaultFontSize 30
 skinparam defaultFontName "Times New Roman"
 skinparam linetype ortho
 skinparam nodesep 55
@@ -16,7 +16,7 @@ hide circle
 left to right direction
 
 entity "<b>Users</b>" as users {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
   email : VARCHAR
   password : VARCHAR
@@ -27,26 +27,26 @@ entity "<b>Users</b>" as users {
 }
 
 entity "<b>Settings</b>" as settings {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
   category : VARCHAR
   name : VARCHAR
   value : JSONB
-  updated_by : VARCHAR
+  # updated_by : VARCHAR
 }
 
 entity "<b>Register Forms</b>" as register_forms {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
   student_name : VARCHAR
   student_id : VARCHAR
   student_email : VARCHAR
   status : registration_status
-  reviewed_by : VARCHAR
+  # reviewed_by : VARCHAR
 }
 
 entity "<b>Rooms</b>" as rooms {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
   room_number : VARCHAR
   building : VARCHAR
@@ -57,71 +57,71 @@ entity "<b>Rooms</b>" as rooms {
 }
 
 entity "<b>Student Contracts</b>" as student_contracts {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
-  user_id : VARCHAR
-  room_id : VARCHAR
-  register_form_id : VARCHAR
+  # user_id : VARCHAR
+  # room_id : VARCHAR
+  # register_form_id : VARCHAR
   status : contract_status
-  created_by : VARCHAR
+  # created_by : VARCHAR
 }
 
 entity "<b>Invoices</b>" as invoices {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
-  room_id : VARCHAR
+  # room_id : VARCHAR
   invoice_number : VARCHAR
   billing_month : DATE
   status : bill_status
-  created_by : VARCHAR
-  meter_submitted_by : VARCHAR
+  # created_by : VARCHAR
+  # meter_submitted_by : VARCHAR
 }
 
 entity "<b>Notifications</b>" as notifications {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
   title : VARCHAR
   type : notification_type
   target_audience : target_audience
-  created_by : VARCHAR
+  # created_by : VARCHAR
 }
 
 entity "<b>Feedbacks</b>" as feedbacks {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
-  user_id : VARCHAR
-  room_id : VARCHAR
+  # user_id : VARCHAR
+  # room_id : VARCHAR
   category : feedback_category
   status : feedback_status
 }
 
 entity "<b>Assets</b>" as assets {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
   asset_code : VARCHAR
   name : VARCHAR
   category_name : VARCHAR
-  room_id : VARCHAR
+  # room_id : VARCHAR
   status : asset_status
-  created_by : VARCHAR
+  # created_by : VARCHAR
 }
 
 entity "<b>Disciplinary Records</b>" as disciplinary_records {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
-  user_id : VARCHAR
-  room_id : VARCHAR
-  contract_id : VARCHAR
+  # user_id : VARCHAR
+  # room_id : VARCHAR
+  # contract_id : VARCHAR
   violation_type : violation_type
   status : disciplinary_status
-  reported_by : VARCHAR
-  handled_by : VARCHAR
+  # reported_by : VARCHAR
+  # handled_by : VARCHAR
 }
 
 entity "<b>Log System</b>" as log_system {
-  id : VARCHAR
+  🔑 id : VARCHAR
   --
-  user_id : VARCHAR
+  # user_id : VARCHAR
   action : VARCHAR
   entity_type : VARCHAR
   entity_id : VARCHAR
