@@ -1,0 +1,267 @@
+Mo ta thuoc tinh cac bang (theo schema.sql)
+
+Bang: users
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh nguoi dung |
+| email | VARCHAR(100) | Email dang nhap (unique) |
+| password | VARCHAR(255) | Mat khau da ma hoa |
+| full_name | VARCHAR(100) | Ho ten |
+| role | user_role | Vai tro (ADMIN/STUDENT) |
+| phone | VARCHAR(20) | So dien thoai |
+| avatar | VARCHAR(255) | Anh dai dien |
+| is_active | BOOLEAN | Trang thai tai khoan |
+| last_login | TIMESTAMP | Lan dang nhap gan nhat |
+| conduct_score | INTEGER | Diem ren luyen |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+| deleted_at | TIMESTAMP | Soft delete |
+
+Bang: settings
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| category | VARCHAR(50) | Nhom cau hinh |
+| name | VARCHAR(100) | Ten cau hinh |
+| value | JSONB | Gia tri cau hinh |
+| description | TEXT | Mo ta |
+| is_active | BOOLEAN | Bat/tat cau hinh |
+| updated_by | VARCHAR(50) | Nguoi cap nhat |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: register_forms
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| student_name | VARCHAR(100) | Ho ten sinh vien |
+| student_id | VARCHAR(50) | Ma sinh vien |
+| student_email | VARCHAR(100) | Email sinh vien |
+| phone_number | VARCHAR(20) | So dien thoai |
+| gender | gender_type | Gioi tinh |
+| dob | DATE | Ngay sinh |
+| cccd | VARCHAR(20) | So CCCD |
+| address | TEXT | Dia chi |
+| faculty | VARCHAR(100) | Khoa |
+| major | VARCHAR(100) | Chuyen nganh |
+| class | VARCHAR(50) | Lop |
+| year | INTEGER | Nam hoc |
+| gpa | DECIMAL(3,2) | Diem GPA |
+| distance | INTEGER | Khoang cach (km) |
+| priority_reasons | TEXT | Ly do uu tien |
+| status | registration_status | Trang thai ho so |
+| ai_suggestion | ai_suggestion_type | Goi y xet duyet |
+| ai_score | INTEGER | Diem xet duyet |
+| ai_reasoning | JSONB | Chi tiet tinh diem |
+| evidence_images | JSONB | Anh minh chung |
+| vision_status | VARCHAR(20) | Trang thai xac thuc anh |
+| vision_score | DECIMAL(4,3) | Diem tin cay |
+| vision_reasons | JSONB | Ly do phan loai anh |
+| note | TEXT | Ghi chu |
+| reviewed_by | VARCHAR(50) | Nguoi duyet |
+| reviewed_at | TIMESTAMP | Thoi diem duyet |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: rooms
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| room_number | VARCHAR(20) | So phong |
+| building | VARCHAR(20) | Toa nha |
+| floor | INTEGER | Tang |
+| capacity | INTEGER | Suc chua |
+| current_occupancy | INTEGER | So nguoi dang o |
+| gender_type | gender_type | Gioi tinh phong |
+| rent_price | DECIMAL(10,2) | Gia phong |
+| garbage_fee | DECIMAL(10,2) | Phi rac |
+| internet_fee | DECIMAL(10,2) | Phi internet |
+| parking_fee | DECIMAL(10,2) | Phi gui xe |
+| electric_meter_reading | DECIMAL(10,2) | Chi so dien |
+| water_meter_reading | DECIMAL(10,2) | Chi so nuoc |
+| status | room_status | Trang thai phong |
+| maintenance_reason | TEXT | Ly do bao tri |
+| area | DECIMAL(5,2) | Dien tich |
+| qr_code | VARCHAR(255) | Ma QR |
+| last_inspection_date | DATE | Ngay kiem tra cuoi |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: student_contracts
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| user_id | VARCHAR(50) | Sinh vien |
+| room_id | VARCHAR(50) | Phong (co the NULL) |
+| register_form_id | VARCHAR(50) | Ho so dang ky |
+| contract_number | VARCHAR(50) | So hop dong |
+| start_date | DATE | Ngay bat dau |
+| end_date | DATE | Ngay ket thuc |
+| rent_price | DECIMAL(10,2) | Gia thue |
+| deposit_amount | DECIMAL(10,2) | Tien coc |
+| deposit_paid | BOOLEAN | Da dong coc |
+| hard_copy_received | BOOLEAN | Da nhan ban cung |
+| email_sent_at | TIMESTAMP | Thoi diem gui email |
+| status | contract_status | Trang thai hop dong |
+| snapshot_student_id | VARCHAR(50) | Ma SV snapshot |
+| snapshot_cccd | VARCHAR(20) | CCCD snapshot |
+| snapshot_gender | gender_type | Gioi tinh snapshot |
+| snapshot_year | INTEGER | Nam hoc snapshot |
+| snapshot_faculty | VARCHAR(100) | Khoa snapshot |
+| snapshot_phone | VARCHAR(20) | SDT snapshot |
+| terms_conditions | TEXT | Dieu khoan |
+| signed_at | TIMESTAMP | Thoi diem ky |
+| termination_reason | TEXT | Ly do cham dut |
+| created_by | VARCHAR(50) | Nguoi tao |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: invoices
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| room_id | VARCHAR(50) | Phong |
+| invoice_number | VARCHAR(50) | So hoa don |
+| billing_month | DATE | Ky tinh tien |
+| rent_per_person | DECIMAL(10,2) | Gia thue/nguoi |
+| occupancy | INTEGER | So nguoi o |
+| rent_amount | DECIMAL(10,2) | Tien phong |
+| electric_start | DECIMAL(10,2) | Dien dau ky |
+| electric_end | DECIMAL(10,2) | Dien cuoi ky |
+| electric_rate | DECIMAL(10,2) | Don gia dien |
+| electric_amount | DECIMAL(10,2) | Tien dien |
+| water_start | DECIMAL(10,2) | Nuoc dau ky |
+| water_end | DECIMAL(10,2) | Nuoc cuoi ky |
+| water_rate | DECIMAL(10,2) | Don gia nuoc |
+| water_amount | DECIMAL(10,2) | Tien nuoc |
+| garbage_fee | DECIMAL(10,2) | Phi rac |
+| internet_fee | DECIMAL(10,2) | Phi internet |
+| parking_fee_per_vehicle | DECIMAL(10,2) | Phi gui xe/xe |
+| parking_count | INTEGER | So xe |
+| parking_fee | DECIMAL(10,2) | Phi gui xe |
+| service_fees | DECIMAL(10,2) | Tong phi dich vu |
+| discount_amount | DECIMAL(10,2) | Giam gia |
+| penalty_amount | DECIMAL(10,2) | Phat tre han |
+| total_amount | DECIMAL(10,2) | Tong tien |
+| status | bill_status | Trang thai hoa don |
+| due_date | DATE | Han thanh toan |
+| paid_at | TIMESTAMP | Thoi diem thanh toan |
+| payment_method | VARCHAR(50) | Phuong thuc thanh toan |
+| payment_reference | VARCHAR(100) | Ma tham chieu |
+| note | TEXT | Ghi chu |
+| created_by | VARCHAR(50) | Nguoi tao |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+| deleted_at | TIMESTAMP | Soft delete |
+| meter_submitted_by | VARCHAR(50) | Nguoi gui chi so |
+| meter_submitted_at | TIMESTAMP | Thoi diem gui |
+| meter_submitter_name | VARCHAR(100) | Ten nguoi gui |
+
+Bang: notifications
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| title | VARCHAR(200) | Tieu de |
+| content | TEXT | Noi dung |
+| type | notification_type | Loai thong bao |
+| target_audience | target_audience | Doi tuong nhan |
+| target_users | JSONB | Danh sach userIds |
+| priority | INTEGER | Do uu tien |
+| attachment_url | VARCHAR(255) | Tep dinh kem |
+| created_by | VARCHAR(50) | Nguoi tao |
+| is_published | BOOLEAN | Da xuat ban |
+| published_at | TIMESTAMP | Thoi diem xuat ban |
+| expires_at | TIMESTAMP | Het hieu luc |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: feedbacks
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| user_id | VARCHAR(50) | Sinh vien gui |
+| room_id | VARCHAR(50) | Phong |
+| category | feedback_category | Danh muc |
+| content | TEXT | Noi dung |
+| images | JSONB | Anh minh chung |
+| sentiment | feedback_sentiment | Cam xuc |
+| sentiment_score | FLOAT | Diem cam xuc |
+| priority | VARCHAR(10) | Muc do uu tien |
+| ai_summary | TEXT | Tom tat AI |
+| keywords | TEXT[] | Tu khoa |
+| emotion | VARCHAR(50) | Cam xuc chi tiet |
+| status | feedback_status | Trang thai phan hoi |
+| admin_response | TEXT | Phan hoi admin |
+| resolved_by | VARCHAR(50) | Nguoi xu ly |
+| resolved_at | TIMESTAMP | Thoi diem xu ly |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: assets
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| asset_code | VARCHAR(50) | Ma tai san |
+| name | VARCHAR(200) | Ten tai san |
+| category_name | VARCHAR(100) | Danh muc |
+| unit | VARCHAR(20) | Don vi |
+| room_id | VARCHAR(50) | Phong |
+| location | VARCHAR(100) | Vi tri |
+| quantity | INTEGER | So luong |
+| status | asset_status | Trang thai |
+| purchase_date | DATE | Ngay mua |
+| purchase_price | DECIMAL(12,2) | Gia mua |
+| supplier | VARCHAR(200) | Nha cung cap |
+| specifications | JSONB | Thong so |
+| qr_code | VARCHAR(255) | Ma QR |
+| description | TEXT | Mo ta |
+| note | TEXT | Ghi chu |
+| created_by | VARCHAR(50) | Nguoi tao |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: disciplinary_records
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| user_id | VARCHAR(50) | Sinh vien vi pham |
+| room_id | VARCHAR(50) | Phong |
+| contract_id | VARCHAR(50) | Hop dong |
+| violation_type | violation_type | Loai vi pham |
+| violation_date | TIMESTAMP | Thoi diem vi pham |
+| description | TEXT | Mo ta vi pham |
+| evidence | JSONB | Bang chung |
+| disciplinary_level | disciplinary_level | Muc ky luat |
+| penalty_amount | DECIMAL(10,2) | Tien phat |
+| penalty_paid | BOOLEAN | Da dong phat |
+| score_deducted | INTEGER | Diem bi tru |
+| violation_count | INTEGER | So lan vi pham |
+| email_sent | BOOLEAN | Da gui email |
+| email_sent_at | TIMESTAMP | Thoi diem gui |
+| decision_number | VARCHAR(50) | So quyet dinh |
+| decision_content | TEXT | Noi dung quyet dinh |
+| effective_date | DATE | Ngay hieu luc |
+| expiry_date | DATE | Ngay het hieu luc |
+| status | disciplinary_status | Trang thai |
+| appeal_content | TEXT | Noi dung khieu nai |
+| appeal_date | TIMESTAMP | Thoi diem khieu nai |
+| appeal_response | TEXT | Phan hoi khieu nai |
+| appeal_resolved_at | TIMESTAMP | Thoi diem giai quyet |
+| reported_by | VARCHAR(50) | Nguoi bao cao |
+| handled_by | VARCHAR(50) | Nguoi xu ly |
+| note | TEXT | Ghi chu |
+| created_at | TIMESTAMP | Ngay tao |
+| updated_at | TIMESTAMP | Ngay cap nhat |
+
+Bang: log_system
+| Ten cot | Thuoc tinh | Mo ta |
+|---|---|---|
+| id | VARCHAR(50) | Khoa chinh |
+| user_id | VARCHAR(50) | Nguoi thao tac |
+| action | VARCHAR(100) | Hanh dong |
+| entity_type | VARCHAR(50) | Bang anh huong |
+| entity_id | VARCHAR(50) | Ban ghi anh huong |
+| old_value | JSONB | Gia tri cu |
+| new_value | JSONB | Gia tri moi |
+| ip_address | VARCHAR(45) | IP |
+| user_agent | TEXT | Thong tin trinh duyet |
+| created_at | TIMESTAMP | Thoi diem tao |
