@@ -1,5 +1,5 @@
 @startuml "ERD - Dormitory System"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 26
 skinparam defaultFontName "Times New Roman"
 skinparam linetype ortho
 skinparam nodesep 55
@@ -9,13 +9,13 @@ skinparam entity {
   BorderColor #000000
   FontColor #1F2937
   AttributeFontColor #0F172A
-  HeaderBackgroundColor #E8EEF6
-  HeaderFontColor #0B1F3A
+  HeaderBackgroundColor #C7D2EA
+  HeaderFontColor #0A1020
 }
 hide circle
 left to right direction
 
-entity "<b>users</b>" as users {
+entity "<b>Users</b>" as users {
   id : VARCHAR
   --
   email : VARCHAR
@@ -26,7 +26,7 @@ entity "<b>users</b>" as users {
   is_active : BOOLEAN
 }
 
-entity "<b>settings</b>" as settings {
+entity "<b>Settings</b>" as settings {
   id : VARCHAR
   --
   category : VARCHAR
@@ -35,7 +35,7 @@ entity "<b>settings</b>" as settings {
   updated_by : VARCHAR
 }
 
-entity "<b>register_forms</b>" as register_forms {
+entity "<b>Register Forms</b>" as register_forms {
   id : VARCHAR
   --
   student_name : VARCHAR
@@ -45,7 +45,7 @@ entity "<b>register_forms</b>" as register_forms {
   reviewed_by : VARCHAR
 }
 
-entity "<b>rooms</b>" as rooms {
+entity "<b>Rooms</b>" as rooms {
   id : VARCHAR
   --
   room_number : VARCHAR
@@ -56,7 +56,7 @@ entity "<b>rooms</b>" as rooms {
   status : room_status
 }
 
-entity "<b>student_contracts</b>" as student_contracts {
+entity "<b>Student Contracts</b>" as student_contracts {
   id : VARCHAR
   --
   user_id : VARCHAR
@@ -66,7 +66,7 @@ entity "<b>student_contracts</b>" as student_contracts {
   created_by : VARCHAR
 }
 
-entity "<b>invoices</b>" as invoices {
+entity "<b>Invoices</b>" as invoices {
   id : VARCHAR
   --
   room_id : VARCHAR
@@ -77,7 +77,7 @@ entity "<b>invoices</b>" as invoices {
   meter_submitted_by : VARCHAR
 }
 
-entity "<b>notifications</b>" as notifications {
+entity "<b>Notifications</b>" as notifications {
   id : VARCHAR
   --
   title : VARCHAR
@@ -86,7 +86,7 @@ entity "<b>notifications</b>" as notifications {
   created_by : VARCHAR
 }
 
-entity "<b>feedbacks</b>" as feedbacks {
+entity "<b>Feedbacks</b>" as feedbacks {
   id : VARCHAR
   --
   user_id : VARCHAR
@@ -95,7 +95,7 @@ entity "<b>feedbacks</b>" as feedbacks {
   status : feedback_status
 }
 
-entity "<b>assets</b>" as assets {
+entity "<b>Assets</b>" as assets {
   id : VARCHAR
   --
   asset_code : VARCHAR
@@ -106,7 +106,7 @@ entity "<b>assets</b>" as assets {
   created_by : VARCHAR
 }
 
-entity "<b>disciplinary_records</b>" as disciplinary_records {
+entity "<b>Disciplinary Records</b>" as disciplinary_records {
   id : VARCHAR
   --
   user_id : VARCHAR
@@ -118,7 +118,7 @@ entity "<b>disciplinary_records</b>" as disciplinary_records {
   handled_by : VARCHAR
 }
 
-entity "<b>log_system</b>" as log_system {
+entity "<b>Log System</b>" as log_system {
   id : VARCHAR
   --
   user_id : VARCHAR
