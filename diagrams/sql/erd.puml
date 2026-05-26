@@ -1,0 +1,176 @@
+@startuml "ERD - Dormitory System"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 45
+skinparam entity {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #1F2937
+  AttributeFontColor #0F172A
+  HeaderBackgroundColor #E8EEF6
+  HeaderFontColor #0B1F3A
+}
+hide circle
+left to right direction
+
+entity "<b>users</b>" as users {
+  id : VARCHAR
+  --
+  email : VARCHAR
+  password : VARCHAR
+  full_name : VARCHAR
+  role : user_role
+  phone : VARCHAR
+  is_active : BOOLEAN
+}
+
+entity "<b>settings</b>" as settings {
+  id : VARCHAR
+  --
+  category : VARCHAR
+  name : VARCHAR
+  value : JSONB
+  updated_by : VARCHAR
+}
+
+entity "<b>register_forms</b>" as register_forms {
+  id : VARCHAR
+  --
+  student_name : VARCHAR
+  student_id : VARCHAR
+  student_email : VARCHAR
+  status : registration_status
+  reviewed_by : VARCHAR
+}
+
+entity "<b>rooms</b>" as rooms {
+  id : VARCHAR
+  --
+  room_number : VARCHAR
+  building : VARCHAR
+  floor : INTEGER
+  capacity : INTEGER
+  gender_type : gender_type
+  status : room_status
+}
+
+entity "<b>student_contracts</b>" as student_contracts {
+  id : VARCHAR
+  --
+  user_id : VARCHAR
+  room_id : VARCHAR
+  register_form_id : VARCHAR
+  status : contract_status
+  created_by : VARCHAR
+}
+
+entity "<b>invoices</b>" as invoices {
+  id : VARCHAR
+  --
+  room_id : VARCHAR
+  invoice_number : VARCHAR
+  billing_month : DATE
+  status : bill_status
+  created_by : VARCHAR
+  meter_submitted_by : VARCHAR
+}
+
+entity "<b>notifications</b>" as notifications {
+  id : VARCHAR
+  --
+  title : VARCHAR
+  type : notification_type
+  target_audience : target_audience
+  created_by : VARCHAR
+}
+
+entity "<b>feedbacks</b>" as feedbacks {
+  id : VARCHAR
+  --
+  user_id : VARCHAR
+  room_id : VARCHAR
+  category : feedback_category
+  status : feedback_status
+}
+
+entity "<b>assets</b>" as assets {
+  id : VARCHAR
+  --
+  asset_code : VARCHAR
+  name : VARCHAR
+  category_name : VARCHAR
+  room_id : VARCHAR
+  status : asset_status
+  created_by : VARCHAR
+}
+
+entity "<b>disciplinary_records</b>" as disciplinary_records {
+  id : VARCHAR
+  --
+  user_id : VARCHAR
+  room_id : VARCHAR
+  contract_id : VARCHAR
+  violation_type : violation_type
+  status : disciplinary_status
+  reported_by : VARCHAR
+  handled_by : VARCHAR
+}
+
+entity "<b>log_system</b>" as log_system {
+  id : VARCHAR
+  --
+  user_id : VARCHAR
+  action : VARCHAR
+  entity_type : VARCHAR
+  entity_id : VARCHAR
+}
+
+' Hidden spacers to improve label clearance
+entity " " as SpacerRoomAsset
+entity " " as SpacerContractDiscipline
+hide SpacerRoomAsset
+hide SpacerContractDiscipline
+
+' Layout hints for balanced alignment
+users -[hidden]-> register_forms
+register_forms -[hidden]-> rooms
+rooms -[hidden]-> invoices
+
+settings -[hidden]-> student_contracts
+student_contracts -[hidden]-> notifications
+notifications -[hidden]-> feedbacks
+
+assets -[hidden]-> disciplinary_records
+disciplinary_records -[hidden]-> log_system
+
+register_forms -[hidden]-> student_contracts
+rooms -right[hidden]-> assets
+invoices -right[hidden]-> assets
+rooms -right[hidden]-> SpacerRoomAsset
+SpacerRoomAsset -right[hidden]-> assets
+
+users ||--o{ student_contracts
+users ||--o{ notifications
+users ||--o{ feedbacks
+users ||--o{ assets
+users ||--o{ disciplinary_records
+users ||--o{ disciplinary_records
+users ||--o{ disciplinary_records
+users ||--o{ settings
+users ||--o{ invoices
+users ||--o{ invoices
+users ||--o{ log_system
+users ||--o{ register_forms
+
+rooms ||--o{ student_contracts
+rooms ||--o{ invoices
+rooms ||--o{ feedbacks
+rooms ||--o{ assets
+
+register_forms ||--o| student_contracts
+student_contracts ||--o{ disciplinary_records
+student_contracts -down[hidden]-> SpacerContractDiscipline
+SpacerContractDiscipline -down[hidden]-> disciplinary_records
+@enduml
