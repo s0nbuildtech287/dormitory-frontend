@@ -184,7 +184,8 @@ Asset -[hidden]-> DisciplinaryRecord
 DisciplinaryRecord -[hidden]-> LogSystem
 
 RegisterForm -[hidden]-> StudentContract
-Room -[hidden]-> Asset
+Room -right[hidden]-> Asset
+Invoice -right[hidden]-> Asset
 
 User "1" -- "0..*" StudentContract : user_id
 User "1" -- "0..*" Notification : created_by
