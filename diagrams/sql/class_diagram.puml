@@ -3,8 +3,8 @@ skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
-skinparam nodesep 40
-skinparam ranksep 30
+skinparam nodesep 55
+skinparam ranksep 45
 left to right direction
 
 class "User" as User {
@@ -171,6 +171,12 @@ class "LogSystem" as LogSystem {
   +findByUser()
 }
 
+' Hidden spacers to improve label clearance
+class " " as SpacerRoomAsset
+class " " as SpacerContractDiscipline
+hide SpacerRoomAsset
+hide SpacerContractDiscipline
+
 ' Layout hints for balanced alignment
 User -[hidden]-> RegisterForm
 RegisterForm -[hidden]-> Room
@@ -186,6 +192,8 @@ DisciplinaryRecord -[hidden]-> LogSystem
 RegisterForm -[hidden]-> StudentContract
 Room -right[hidden]-> Asset
 Invoice -right[hidden]-> Asset
+Room -right[hidden]-> SpacerRoomAsset
+SpacerRoomAsset -right[hidden]-> Asset
 
 User "1" -- "0..*" StudentContract : user_id
 User "1" -- "0..*" Notification : created_by
@@ -203,8 +211,10 @@ User "1" -- "0..*" RegisterForm : reviewed_by
 Room "1" -- "0..*" StudentContract : room_id
 Room "1" -- "0..*" Invoice : room_id
 Room "1" -- "0..*" Feedback : room_id
-Room "1" -- "0..*" Asset : room_id
+Room "1" -right- "0..*" Asset : room_id
 
 RegisterForm "1" -- "0..1" StudentContract : register_form_id
-StudentContract "1" -- "0..*" DisciplinaryRecord : contract_id
+StudentContract "1" -down- "0..*" DisciplinaryRecord : contract_id
+StudentContract -down[hidden]-> SpacerContractDiscipline
+SpacerContractDiscipline -down[hidden]-> DisciplinaryRecord
 @enduml
