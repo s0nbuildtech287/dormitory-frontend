@@ -1,0 +1,209 @@
+@startuml "Class Diagram - Dormitory System"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 30
+left to right direction
+
+class "User" as User {
+  id: VARCHAR
+  email: VARCHAR
+  full_name: VARCHAR
+  role: user_role
+  phone: VARCHAR
+  is_active: BOOLEAN
+  conduct_score: INTEGER
+  --
+  +create()
+  +update()
+  +findByEmail()
+  +findById()
+}
+
+class "Setting" as Setting {
+  id: VARCHAR
+  category: VARCHAR
+  name: VARCHAR
+  value: JSONB
+  updated_by: VARCHAR
+  --
+  +create()
+  +update()
+  +findByCategory()
+  +findByName()
+}
+
+class "RegisterForm" as RegisterForm {
+  id: VARCHAR
+  student_name: VARCHAR
+  student_id: VARCHAR
+  student_email: VARCHAR
+  status: registration_status
+  ai_score: INTEGER
+  ai_suggestion: ai_suggestion_type
+  --
+  +create()
+  +update()
+  +updateStatus()
+  +findById()
+  +findByStudentId()
+}
+
+class "Room" as Room {
+  id: VARCHAR
+  room_number: VARCHAR
+  building: VARCHAR
+  floor: INTEGER
+  capacity: INTEGER
+  gender_type: gender_type
+  status: room_status
+  --
+  +create()
+  +update()
+  +updateStatus()
+  +findById()
+}
+
+class "StudentContract" as StudentContract {
+  id: VARCHAR
+  user_id: VARCHAR
+  room_id: VARCHAR
+  register_form_id: VARCHAR
+  status: contract_status
+  start_date: DATE
+  end_date: DATE
+  --
+  +create()
+  +update()
+  +findById()
+  +findOne()
+}
+
+class "Invoice" as Invoice {
+  id: VARCHAR
+  room_id: VARCHAR
+  invoice_number: VARCHAR
+  billing_month: DATE
+  total_amount: DECIMAL
+  status: bill_status
+  due_date: DATE
+  created_by: VARCHAR
+  --
+  +create()
+  +update()
+  +updateStatus()
+  +findById()
+}
+
+class "Notification" as Notification {
+  id: VARCHAR
+  title: VARCHAR
+  type: notification_type
+  target_audience: target_audience
+  created_by: VARCHAR
+  is_published: BOOLEAN
+  --
+  +create()
+  +update()
+  +findById()
+  +getPublished()
+  +getForUser()
+}
+
+class "Feedback" as Feedback {
+  id: VARCHAR
+  user_id: VARCHAR
+  room_id: VARCHAR
+  category: feedback_category
+  status: feedback_status
+  priority: VARCHAR
+  --
+  +create()
+  +update()
+  +updateStatus()
+  +findById()
+}
+
+class "Asset" as Asset {
+  id: VARCHAR
+  asset_code: VARCHAR
+  name: VARCHAR
+  category_name: VARCHAR
+  room_id: VARCHAR
+  status: asset_status
+  quantity: INTEGER
+  created_by: VARCHAR
+  --
+  +create()
+  +update()
+  +findById()
+  +search()
+}
+
+class "DisciplinaryRecord" as DisciplinaryRecord {
+  id: VARCHAR
+  user_id: VARCHAR
+  room_id: VARCHAR
+  contract_id: VARCHAR
+  violation_type: violation_type
+  disciplinary_level: disciplinary_level
+  status: disciplinary_status
+  penalty_amount: DECIMAL
+  --
+  +create()
+  +update()
+  +updateStatus()
+  +findById()
+}
+
+class "LogSystem" as LogSystem {
+  id: VARCHAR
+  user_id: VARCHAR
+  action: VARCHAR
+  entity_type: VARCHAR
+  entity_id: VARCHAR
+  created_at: TIMESTAMP
+  --
+  +log()
+  +findByEntity()
+  +findByUser()
+}
+
+' Layout hints for balanced alignment
+User -[hidden]-> RegisterForm
+RegisterForm -[hidden]-> Room
+Room -[hidden]-> Invoice
+
+Setting -[hidden]-> StudentContract
+StudentContract -[hidden]-> Notification
+Notification -[hidden]-> Feedback
+
+Asset -[hidden]-> DisciplinaryRecord
+DisciplinaryRecord -[hidden]-> LogSystem
+
+RegisterForm -[hidden]-> StudentContract
+Room -[hidden]-> Asset
+
+User "1" -- "0..*" StudentContract : user_id
+User "1" -- "0..*" Notification : created_by
+User "1" -- "0..*" Feedback : user_id
+User "1" -- "0..*" Asset : created_by
+User "1" -- "0..*" DisciplinaryRecord : user_id
+User "1" -- "0..*" DisciplinaryRecord : reported_by
+User "1" -- "0..*" DisciplinaryRecord : handled_by
+User "1" -- "0..*" Setting : updated_by
+User "1" -- "0..*" Invoice : created_by
+User "1" -- "0..*" Invoice : meter_submitted_by
+User "1" -- "0..*" LogSystem : user_id
+User "1" -- "0..*" RegisterForm : reviewed_by
+
+Room "1" -- "0..*" StudentContract : room_id
+Room "1" -- "0..*" Invoice : room_id
+Room "1" -- "0..*" Feedback : room_id
+Room "1" -- "0..*" Asset : room_id
+
+RegisterForm "1" -- "0..1" StudentContract : register_form_id
+StudentContract "1" -- "0..*" DisciplinaryRecord : contract_id
+@enduml
