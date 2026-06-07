@@ -16,8 +16,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useChatBot } from "../../../contexts/ChatBotContext.jsx";
+import { API_BASE_URL } from "../../../config/api.js";
 
-const PROXY_URL = "http://localhost:1234/api/news/image-proxy";
+const PROXY_URL = `${API_BASE_URL}/news/image-proxy`;
 const DEFAULT_NEWS_THUMBNAIL =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(

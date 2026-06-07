@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send, X, Bot, RotateCcw, ChevronDown, Check, Zap, Brain, Sparkles } from "lucide-react";
 import { useChatBot } from "../contexts/ChatBotContext.jsx";
+import { API_BASE_URL } from "../config/api.js";
 
 
 
@@ -19,7 +20,7 @@ const makeWelcome = () => ({
 
 async function getAIChatResponse(history, userText, model = "gpt-4o") {
   try {
-    const res = await fetch("http://localhost:1234/api/ai/chat", {
+    const res = await fetch(`${API_BASE_URL}/ai/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userText, history, model }),
@@ -143,7 +144,7 @@ const AIChatBot = () => {
 
   // Load models từ backend khi mount
   useEffect(() => {
-    fetch("http://localhost:1234/api/ai/models")
+    fetch(`${API_BASE_URL}/ai/models`)
       .then((r) => r.json())
       .then((data) => {
         console.log("[AIChatBot] models từ backend:", data);

@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:1234/api/news";
+import { API_BASE_URL } from "../config/api.js";
+
+const API_URL = `${API_BASE_URL}/news`;
 
 /**
  * Lấy danh sách tin tức từ TLU

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Mail, Lock, LogIn, Smartphone, ClipboardList, KeyRound } from "lucide-react";
 import { adminLogin, saveAuthToken, saveCurrentUser } from "../../api/apiAuth.js";
+import { API_BASE_URL } from "../../config/api.js";
 import ktxImg from "../../assets/images/ktx.jpg";
 import tlu1Img from "../../assets/images/tlu1.jpg";
 import tlu2Img from "../../assets/images/tlu2.jpg";
@@ -62,7 +63,7 @@ const LoginPage = ({ onLogin }) => {
     const code = otpDigits.join("");
     if (code.length < 6) { setOtpError("Vui lòng nhập đủ 6 số!"); return; }
     try {
-      const res = await fetch("http://localhost:1234/api/auth/verify-otp", {
+      const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: pendingAuth.user.email, code }),
@@ -121,7 +122,7 @@ const LoginPage = ({ onLogin }) => {
           setPendingAuth({ token: data.data.token, user });
           setOtpDigits(["", "", "", "", "", ""]);
           setOtpError(null);
-          await fetch("http://localhost:1234/api/auth/send-otp", {
+          await fetch(`${API_BASE_URL}/auth/send-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: user.email }),
@@ -331,7 +332,7 @@ const ForgotPasswordModal = ({ onClose }) => {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:1234/api/auth/forgot-password", {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -352,7 +353,7 @@ const ForgotPasswordModal = ({ onClose }) => {
     setLoading(true);
     setErr(null);
     try {
-      const res = await fetch("http://localhost:1234/api/auth/reset-password", {
+      const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code, newPassword }),
@@ -521,7 +522,7 @@ const RegisterModal = ({ onClose }) => {
   const submit = async () => {
     setSubmitting(true); setErr(null);
     try {
-      const res = await fetch("http://localhost:1234/api/registrations", {
+      const res = await fetch(`${API_BASE_URL}/registrations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

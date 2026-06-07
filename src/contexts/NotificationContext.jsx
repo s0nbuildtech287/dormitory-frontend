@@ -1,9 +1,8 @@
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { io } from "socket.io-client";
+import { SOCKET_URL } from "../config/api.js";
 
 const NotificationContext = createContext(null);
-
-const SOCKET_URL = "http://localhost:1234";
 
 export const NotificationProvider = ({ user, children }) => {
     const [notifications, setNotifications] = useState([]);   // thông báo từ WS (session only)

@@ -5,8 +5,9 @@ import {
   Cpu, HelpCircle, TrendingUp, TrendingDown, Minus, Filter,
 } from "lucide-react";
 import Pagination from "../../../components/common/Pagination.jsx";
+import { API_BASE_URL } from "../../../config/api.js";
 
-const API = "http://localhost:1234/api";
+const API = API_BASE_URL;
 const token = () => localStorage.getItem("token");
 
 const CATEGORY_ICON = {

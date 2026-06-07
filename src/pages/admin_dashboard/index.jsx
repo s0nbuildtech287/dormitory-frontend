@@ -22,8 +22,9 @@ import { getRooms } from "../../api/apiRoom.js";
 import { getContracts } from "../../api/apiContract.js";
 import { getInvoices } from "../../api/apiInvoice.js";
 import { getAssets } from "../../api/apiAsset.js";
+import { API_BASE_URL } from "../../config/api.js";
 
-const API_BASE = "http://localhost:1234/api";
+const API_BASE = API_BASE_URL;
 const token = () => localStorage.getItem("token");
 const getFeedbacks = () =>
   fetch(`${API_BASE}/feedbacks`, {

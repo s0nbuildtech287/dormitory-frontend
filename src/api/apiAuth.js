@@ -3,7 +3,7 @@
  * Centralized API calls for auth-related operations
  */
 
-const API_BASE_URL = 'http://localhost:1234/api';
+import { API_BASE_URL } from "../config/api.js";
 
 /**
  * Admin login

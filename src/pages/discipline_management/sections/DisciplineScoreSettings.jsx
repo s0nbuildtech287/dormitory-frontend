@@ -3,8 +3,9 @@ import {
   Shield, Save, RotateCcw, CheckCircle, AlertCircle,
   Volume2, Package, Droplets, Zap, Home, FileWarning, HelpCircle, Mail
 } from "lucide-react";
+import { API_BASE_URL } from "../../../config/api.js";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:1234/api";
+const API_BASE = API_BASE_URL;
 
 // Cấu hình mặc định (mirror disciplinaryConfig.js)
 const DEFAULT_CONFIG = {

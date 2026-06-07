@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:1234/api/vnpay";
+import { API_BASE_URL } from "../config/api.js";
+
+const API_BASE = `${API_BASE_URL}/vnpay`;
 
 const token = () => localStorage.getItem("token");
 const headers = () => ({

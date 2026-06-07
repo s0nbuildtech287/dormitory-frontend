@@ -11,8 +11,8 @@ import { getRoomStatistics } from "../../../api/apiRoom.js";
 import { getContractStats, getExpiringContracts } from "../../../api/apiContract.js";
 import { getInvoiceStatistics } from "../../../api/apiInvoice.js";
 import { getAllNotifications } from "../../../api/apiNotification.js";
+import { API_BASE_URL } from "../../../config/api.js";
 
-const API_BASE_URL = "http://localhost:1234/api";
 const authHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${localStorage.getItem("token")}`,
