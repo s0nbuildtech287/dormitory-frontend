@@ -138,6 +138,106 @@ export const createRoom = async (roomData) => {
 };
 
 /**
+ * Get room structure metadata
+ * @returns {Promise<Object>} Response with buildings/floors metadata
+ */
+export const getRoomStructure = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/meta/structure`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải cấu trúc tòa và tầng');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching room structure:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create many rooms for one floor
+ * @param {Object} payload
+ * @returns {Promise<Object>}
+ */
+export const createFloorRooms = async (payload) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/batch/floor`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi khởi tạo phòng cho tầng');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error creating floor rooms:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create many rooms for one building
+ * @param {Object} payload
+ * @returns {Promise<Object>}
+ */
+export const createBuildingRooms = async (payload) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/batch/building`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi khởi tạo phòng cho tòa');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error creating building rooms:', error);
+    throw error;
+  }
+};
+
+/**
  * Update room
  * @param {string} roomId - Room ID
  * @param {Object} roomData - Room data to update
