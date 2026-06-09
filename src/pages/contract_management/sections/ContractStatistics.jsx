@@ -189,10 +189,10 @@ const ContractStatistics = ({ contracts = [] }) => {
         color: COLORS[i % COLORS.length],
       })),
       cohortStats: [
-        { name: "Tân sinh viên", value: cohortCounts.freshmen, color: "#2563eb" },
-        { name: "Lưu sinh viên", value: cohortCounts.returning_students, color: "#f59e0b" },
-        { name: "Chính sách", value: cohortCounts.policy, color: "#10b981" },
-        { name: "Quốc tế", value: cohortCounts.international, color: "#8b5cf6" },
+        { name: "Tân sinh viên", value: cohortCounts.freshmen, color: "#1d4ed8" },
+        { name: "Lưu sinh viên", value: cohortCounts.returning_students, color: "#2563eb" },
+        { name: "Chính sách", value: cohortCounts.policy, color: "#3b82f6" },
+        { name: "Quốc tế", value: cohortCounts.international, color: "#60a5fa" },
       ].filter((item) => item.value > 0),
       genderDist: [
         { name: "Nam", value: safe.filter((c) => c.snapshot_gender === "Nam").length, color: CHART_COLORS.primary },
