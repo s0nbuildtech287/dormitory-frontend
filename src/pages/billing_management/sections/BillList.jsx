@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle, Ban, Square, CheckSquare } from "lucide-react";
 import { getInvoices, deleteInvoice } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
@@ -12,6 +12,7 @@ import InvoiceDetailModal from "./InvoiceDetailModal.jsx";
 import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import AnomalyModal from "./AnomalyModal.jsx";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter, onNavigateToNotification }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,6 +35,9 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   const [bulkDeleteInvoices, setBulkDeleteInvoices] = useState([]);
   const [composeEmail, setComposeEmail] = useState(null);
   const [showAnomalyModal, setShowAnomalyModal] = useState(false);
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
+
+  const uniqueBuildings = [...new Set((Array.isArray(bills) ? bills : []).map((bill) => bill.building).filter(Boolean))].sort();
 
   // Fetch invoices from API
   useEffect(() => {
@@ -229,10 +233,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             onChange: (val) => handleFilterChange(setFilterBuilding, val),
             options: [
               { value: "All", label: "Tất cả tòa" },
-              { value: "A", label: "Tòa A" },
-              { value: "B", label: "Tòa B" },
-              { value: "C", label: "Tòa C" },
-              { value: "D", label: "Tòa D" },
+              ...uniqueBuildings.map((building) => ({ value: building, label: getBuildingLabel(building) })),
             ]
           },
           {
@@ -327,7 +328,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
               header: "Phòng",
               align: "center",
               width: showCheckboxColumn ? "w-[12%]" : "w-[13%]",
-              accessor: (bill) => <span className="text-slate-700 text-xs font-bold">{bill.building}-{bill.room_number}</span>,
+              accessor: (bill) => <span className="text-slate-700 text-xs font-bold">{getRoomLabel(bill.building, bill.room_number)}</span>,
             },
             {
               header: "Sinh viên",
@@ -484,7 +485,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-900">
-                Sinh viên phòng {selectedRoomStudents.building}-{selectedRoomStudents.room_number}
+                Sinh viên phòng {getRoomLabel(selectedRoomStudents.building, selectedRoomStudents.room_number)}
               </h3>
               <button
                 onClick={() => setSelectedRoomStudents(null)}

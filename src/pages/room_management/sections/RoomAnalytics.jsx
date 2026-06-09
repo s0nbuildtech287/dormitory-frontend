@@ -1,11 +1,13 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import { Building2, Home, Users, DoorOpen, CheckCircle2, AlertCircle, TrendingUp, LayoutGrid } from "lucide-react";
 import StatCard from "../../../components/common/StatCard.jsx";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const BUILDING_COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"];
 
 const RoomAnalytics = ({ rooms }) => {
+  const { buildingNames } = useBuildingDisplayNames();
   const stats = useMemo(() => {
     const safeRooms = Array.isArray(rooms) ? rooms : [];
     if (safeRooms.length === 0) {
@@ -38,7 +40,7 @@ const RoomAnalytics = ({ rooms }) => {
     const buildingMap = {};
     safeRooms.forEach((r) => {
       const b = r.building || "Khác";
-      if (!buildingMap[b]) buildingMap[b] = { name: `Tòa ${b}`, rooms: 0, capacity: 0, occupancy: 0, empty: 0, occupied: 0, full: 0 };
+      if (!buildingMap[b]) buildingMap[b] = { code: b, name: buildingNames[b] || `Tòa ${b}`, rooms: 0, capacity: 0, occupancy: 0, empty: 0, occupied: 0, full: 0 };
       buildingMap[b].rooms++;
       buildingMap[b].capacity += r.capacity || 0;
       buildingMap[b].occupancy += r.currentOccupancy || 0;
@@ -101,7 +103,7 @@ const RoomAnalytics = ({ rooms }) => {
       topBuilding,
       mostEmptyBuilding,
     };
-  }, [rooms]);
+  }, [buildingNames, rooms]);
 
 
   const pieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {

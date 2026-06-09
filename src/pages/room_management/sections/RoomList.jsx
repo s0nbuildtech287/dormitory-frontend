@@ -12,6 +12,7 @@ import InvoiceDetailModal from "../../billing_management/sections/InvoiceDetailM
 import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import { deleteRoom } from "../../../api/apiRoom.js";
 import { getInvoices } from "../../../api/apiInvoice.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const RESERVED_FOR_CONFIG = {
   general: { label: "Phòng chung", cls: "bg-slate-100 text-slate-700" },
@@ -62,6 +63,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [filterFloor, setFilterFloor] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterReservedFor, setFilterReservedFor] = useState("All");
+  const { getBuildingLabel } = useBuildingDisplayNames();
 
   // Modal states
   const [selectedRoomDetail, setSelectedRoomDetail] = useState(null);
@@ -297,7 +299,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             className: "col-span-1",
             options: [
               { value: "All", label: "Tất cả tòa" },
-              ...uniqueBuildings.map((b) => ({ value: b, label: `Tòa ${b}` })),
+              ...uniqueBuildings.map((b) => ({ value: b, label: getBuildingLabel(b) })),
             ]
           },
           {
@@ -386,7 +388,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               width: "w-[15%]",
               accessor: (room) => (
                 <span className="text-xs font-semibold text-slate-900">
-                  Tòa {room.building} - Tầng {room.floor}
+                  {getBuildingLabel(room.building)} - Tầng {room.floor}
                 </span>
               ),
             },
@@ -695,7 +697,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             <div className="flex justify-between items-start mb-5">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  Biểu đồ hóa đơn — Phòng {chartRoom.building}-{chartRoom.room_number}
+                  Biểu đồ hóa đơn — Phòng {getBuildingLabel(chartRoom.building)} - {chartRoom.room_number}
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">Tổng tiền theo từng tháng</p>
               </div>
@@ -865,7 +867,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                 </div>
                 <div className="text-xs text-orange-700 space-y-1">
                   <p><strong>Phòng:</strong> {maintenanceReasonModal.room.room_number}</p>
-                  <p><strong>Tòa:</strong> {maintenanceReasonModal.room.building} - Tầng {maintenanceReasonModal.room.floor}</p>
+                  <p><strong>Tòa:</strong> {getBuildingLabel(maintenanceReasonModal.room.building)} - Tầng {maintenanceReasonModal.room.floor}</p>
                 </div>
               </div>
 
