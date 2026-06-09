@@ -955,7 +955,7 @@ const AddRecordModal = ({ onClose, onCreated }) => {
             <input
               value={roomId}
               onChange={(event) => setRoomId(event.target.value)}
-              placeholder="VD: room-001"
+              placeholder="VD: room-100-A-1"
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:ring-4 focus:ring-red-50"
             />
           </div>

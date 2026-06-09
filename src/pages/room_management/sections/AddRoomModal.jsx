@@ -23,6 +23,26 @@ const basePricing = {
   status: "Active",
 };
 
+const formatRoomCode = (sequence, building, floor) => `room-${sequence}-${building}-${floor}`;
+
+const extractSequence = (roomNumber, building, floor) => {
+  const match = /^room-(\d+)-([^-]+)-(\d+)$/i.exec(String(roomNumber || "").trim());
+  if (!match) return null;
+  const [, sequence, roomBuilding, roomFloor] = match;
+  if (roomBuilding?.toUpperCase() !== String(building || "").toUpperCase()) return null;
+  if (Number(roomFloor) !== Number(floor)) return null;
+  return Number(sequence);
+};
+
+const getNextSequenceFromRooms = (rooms, building, floor, fallbackStart = 100) => {
+  const sequences = (Array.isArray(rooms) ? rooms : [])
+    .map((room) => extractSequence(room.room_number, building, floor))
+    .filter((value) => Number.isFinite(value));
+
+  if (sequences.length === 0) return fallbackStart;
+  return Math.max(...sequences) + 1;
+};
+
 const initialState = {
   mode: MODES.ROOM,
   building: "",
@@ -31,7 +51,7 @@ const initialState = {
   rooms_count: 10,
   floors_count: 5,
   rooms_per_floor: 10,
-  room_start_number: 1,
+  room_start_number: 100,
   start_floor: 1,
   ...basePricing,
 };
@@ -54,7 +74,7 @@ function buildRoomPreview(form) {
     {
       building: form.building,
       floor: Number(form.floor),
-      room_number: form.room_number || `${form.building}${form.floor}${String(1).padStart(2, "0")}`,
+      room_number: form.room_number || formatRoomCode(100, form.building, Number(form.floor)),
     },
   ];
 }
@@ -68,7 +88,7 @@ function buildFloorPreview(form) {
   return Array.from({ length: count }, (_, index) => ({
     building: form.building,
     floor,
-    room_number: `${form.building}${floor}${String(start + index).padStart(2, "0")}`,
+    room_number: formatRoomCode(start + index, form.building, floor),
   }));
 }
 
@@ -86,7 +106,7 @@ function buildBuildingPreview(form) {
       preview.push({
         building: form.building,
         floor,
-        room_number: `${form.building}${floor}${String(startNumber + roomIndex).padStart(2, "0")}`,
+        room_number: formatRoomCode(startNumber + roomIndex, form.building, floor),
       });
     }
   }
@@ -107,14 +127,14 @@ function validateForm(form, existingRoomNumbers) {
   if (form.mode === MODES.FLOOR) {
     if (!Number(form.floor) || Number(form.floor) <= 0) return "Vui lòng nhập tầng hợp lệ.";
     if (!Number(form.rooms_count) || Number(form.rooms_count) <= 0) return "Số phòng của tầng phải lớn hơn 0.";
-    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Số bắt đầu của phòng phải lớn hơn 0.";
+    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Sequence bắt đầu phải lớn hơn 0.";
   }
 
   if (form.mode === MODES.BUILDING) {
     if (!Number(form.floors_count) || Number(form.floors_count) <= 0) return "Số tầng phải lớn hơn 0.";
     if (!Number(form.rooms_per_floor) || Number(form.rooms_per_floor) <= 0) return "Số phòng mỗi tầng phải lớn hơn 0.";
     if (!Number(form.start_floor) || Number(form.start_floor) <= 0) return "Tầng bắt đầu phải lớn hơn 0.";
-    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Số bắt đầu của phòng phải lớn hơn 0.";
+    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Sequence bắt đầu phải lớn hơn 0.";
   }
 
   return "";
@@ -171,9 +191,13 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
     if (!form.building || !form.floor) return;
     if (form.room_number) return;
 
-    const suggested = `${form.building}${form.floor}${String(1).padStart(2, "0")}`;
+    const suggested = formatRoomCode(
+      getNextSequenceFromRooms(rooms, form.building, Number(form.floor), 100),
+      form.building,
+      Number(form.floor)
+    );
     setForm((prev) => ({ ...prev, room_number: suggested }));
-  }, [form.mode, form.building, form.floor, form.room_number]);
+  }, [form.mode, form.building, form.floor, form.room_number, rooms]);
 
   const preview = useMemo(() => {
     if (form.mode === MODES.ROOM) return buildRoomPreview(form);
@@ -389,7 +413,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
               {form.mode === MODES.ROOM ? (
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Mã phòng *</label>
-                  <input value={form.room_number} onChange={(e) => handleChange("room_number", e.target.value.toUpperCase())} className={inputClass} placeholder="Ví dụ: A301" />
+                  <input value={form.room_number} onChange={(e) => handleChange("room_number", e.target.value.toUpperCase())} className={inputClass} placeholder="Ví dụ: room-101-A-10" />
                 </div>
               ) : (
                 <>
@@ -398,7 +422,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                     <input type="number" min="1" value={form.rooms_count} onChange={(e) => handleChange("rooms_count", e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Số bắt đầu phòng *</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Sequence bắt đầu *</label>
                     <input type="number" min="1" value={form.room_start_number} onChange={(e) => handleChange("room_start_number", e.target.value)} className={inputClass} />
                   </div>
                   <div>
@@ -428,7 +452,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                 <input type="number" min="1" value={form.start_floor} onChange={(e) => handleChange("start_floor", e.target.value)} className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Số bắt đầu phòng *</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Sequence bắt đầu *</label>
                 <input type="number" min="1" value={form.room_start_number} onChange={(e) => handleChange("room_start_number", e.target.value)} className={inputClass} />
               </div>
             </div>
