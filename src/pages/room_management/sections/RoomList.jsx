@@ -13,11 +13,19 @@ import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx"
 import { deleteRoom } from "../../../api/apiRoom.js";
 import { getInvoices } from "../../../api/apiInvoice.js";
 
+const RESERVED_FOR_CONFIG = {
+  general: { label: "Phòng chung", cls: "bg-slate-100 text-slate-700" },
+  freshmen: { label: "Khu tân sinh viên", cls: "bg-blue-100 text-blue-700" },
+  returning_students: { label: "Khu lưu sinh viên", cls: "bg-amber-100 text-amber-700" },
+  international: { label: "Khu quốc tế", cls: "bg-violet-100 text-violet-700" },
+};
+
 const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom, onNavigateToContract, onNavigateToInvoice }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBuilding, setFilterBuilding] = useState("All");
   const [filterFloor, setFilterFloor] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [filterReservedFor, setFilterReservedFor] = useState("All");
 
   // Modal states
   const [selectedRoomDetail, setSelectedRoomDetail] = useState(null);
@@ -200,6 +208,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const matchesBuilding = filterBuilding === "All" || r.building === filterBuilding;
     const matchesFloor = filterFloor === "All" || r.floor === parseInt(filterFloor);
     const matchesSearch = r.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || r.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesReservedFor = filterReservedFor === "All" || (r.reserved_for || "general") === filterReservedFor;
 
     let matchesStatus = true;
     if (filterStatus === "Maintenance") matchesStatus = r.status === "Maintenance";
@@ -207,7 +216,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     else if (filterStatus === "Occupied") matchesStatus = r.currentOccupancy > 0 && r.currentOccupancy < r.capacity;
     else if (filterStatus === "Empty") matchesStatus = r.currentOccupancy === 0;
 
-    return matchesBuilding && matchesFloor && matchesSearch && matchesStatus;
+    return matchesBuilding && matchesFloor && matchesSearch && matchesStatus && matchesReservedFor;
   });
 
   // Hooks
@@ -264,14 +273,27 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               { value: "Full", label: "Đã đầy" },
               { value: "Maintenance", label: "Bảo trì" },
             ]
+          },
+          {
+            value: filterReservedFor,
+            onChange: setFilterReservedFor,
+            className: "col-span-1",
+            options: [
+              { value: "All", label: "Mọi loại phòng" },
+              { value: "general", label: "Phòng chung" },
+              { value: "freshmen", label: "Khu tân sinh viên" },
+              { value: "returning_students", label: "Khu lưu sinh viên" },
+              { value: "international", label: "Khu quốc tế" },
+            ]
           }
         ]}
-        hasActiveFilter={searchTerm !== "" || filterBuilding !== "All" || filterFloor !== "All" || filterStatus !== "All"} 
+        hasActiveFilter={searchTerm !== "" || filterBuilding !== "All" || filterFloor !== "All" || filterStatus !== "All" || filterReservedFor !== "All"} 
         onReset={() => {
           setSearchTerm("");
           setFilterBuilding("All");
           setFilterFloor("All");
           setFilterStatus("All");
+          setFilterReservedFor("All");
         }}
         customFilters={
           <button
@@ -321,9 +343,23 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               ),
             },
             {
-              header: "Sinh viên",
+              header: "Đối tượng",
               align: "center",
               width: "w-[14%]",
+              accessor: (room) => {
+                const reservedKey = room.reserved_for || "general";
+                const cfg = RESERVED_FOR_CONFIG[reservedKey] || RESERVED_FOR_CONFIG.general;
+                return (
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${cfg.cls}`}>
+                    {cfg.label}
+                  </span>
+                );
+              },
+            },
+            {
+              header: "Sinh viên",
+              align: "center",
+              width: "w-[13%]",
               accessor: (room) => (
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-xs font-semibold text-slate-700">
@@ -342,7 +378,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Hóa đơn",
               align: "center",
-              width: "w-[14%]",
+              width: "w-[13%]",
               accessor: (room) => (
                 <div className="flex items-center justify-center gap-1">
                   <button
@@ -368,7 +404,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "TT thanh toán",
               align: "center",
-              width: "w-[15%]",
+              width: "w-[14%]",
               accessor: (room) => (
                 <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs font-black">Chờ</span>
               ),
@@ -376,7 +412,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Trạng thái",
               align: "center",
-              width: "w-[15%]",
+              width: "w-[14%]",
               accessor: (room) => (
                 <div className="flex items-center justify-center gap-1.5">
                   <span

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare, RotateCcw } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
@@ -16,10 +16,48 @@ const STATUS_CONFIG = {
   Terminated: { label: "Chấm dứt", cls: "bg-rose-100 text-rose-700", icon: <XCircle size={11} /> },
 };
 
+const normalizeText = (value) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const hasAnyKeyword = (value, keywords = []) => {
+  const text = normalizeText(value);
+  return keywords.some((keyword) => text.includes(normalizeText(keyword)));
+};
+
+const POLICY_KEYWORDS = [
+  "ho ngheo",
+  "can ngheo",
+  "thuong binh",
+  "liet sy",
+  "khuyet tat",
+  "hoan canh kho khan dac biet",
+  "vung sau",
+  "vung xa",
+  "hai dao",
+  "vung co dieu kien kinh te dac biet kho khan",
+  "giay xac nhan uu tien",
+  "uu tien khac",
+  "chinh sach",
+];
+
+const INTERNATIONAL_KEYWORDS = [
+  "luu hoc sinh",
+  "quoc te",
+  "nuoc ngoai",
+  "du hoc sinh",
+  "du hoc",
+  "lao",
+  "campuchia",
+];
+
 const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract, onAutoAssign, initialFilter }) => {
   const [searchTerm, setSearchTerm] = useState(initialFilter?.searchTerm || "");
   const [filterStatus, setFilterStatus] = useState(initialFilter?.filterStatus || "All");
   const [filterGender, setFilterGender] = useState(initialFilter?.filterGender || "All");
+  const [filterCohort, setFilterCohort] = useState(initialFilter?.filterCohort || "All");
   const [dateFrom, setDateFrom] = useState(initialFilter?.dateFrom || "");
   const [dateTo, setDateTo] = useState(initialFilter?.dateTo || "");
   // Track email sent locally (chưa dùng backend)
@@ -31,6 +69,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
       if (initialFilter.searchTerm !== undefined) setSearchTerm(initialFilter.searchTerm);
       if (initialFilter.filterStatus !== undefined) setFilterStatus(initialFilter.filterStatus);
       if (initialFilter.filterGender !== undefined) setFilterGender(initialFilter.filterGender);
+      if (initialFilter.filterCohort !== undefined) setFilterCohort(initialFilter.filterCohort);
       if (initialFilter.dateFrom !== undefined) setDateFrom(initialFilter.dateFrom);
       if (initialFilter.dateTo !== undefined) setDateTo(initialFilter.dateTo);
     }
@@ -59,13 +98,22 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                       filterStatus === "hardcopy_not" ? !c.hard_copy_received :
                         true;
     const matchGender = filterGender === "All" || c.snapshot_gender === filterGender;
-    
-    // Lọc theo ngày đăng ký hợp đồng (created_at)
+    const cohortYear = Number(c.snapshot_year ?? c.rf_year);
+    const priorityReasons = c.rf_priority_reasons || c.priority_reasons || "";
+    const isPolicy = hasAnyKeyword(priorityReasons, POLICY_KEYWORDS);
+    const isInternational = hasAnyKeyword(priorityReasons, INTERNATIONAL_KEYWORDS);
+    const matchCohort =
+      filterCohort === "All" ||
+      (filterCohort === "freshmen" && cohortYear === 1) ||
+      (filterCohort === "returning_students" && cohortYear >= 2) ||
+      (filterCohort === "policy" && isPolicy) ||
+      (filterCohort === "international" && isInternational);
+
     const contractDate = c.created_at ? new Date(c.created_at) : null;
     const matchDateFrom = !dateFrom || (contractDate && contractDate >= new Date(dateFrom));
     const matchDateTo = !dateTo || (contractDate && contractDate <= new Date(dateTo + "T23:59:59"));
-    
-    return matchSearch && matchStatus && matchGender && matchDateFrom && matchDateTo;
+
+    return matchSearch && matchStatus && matchGender && matchCohort && matchDateFrom && matchDateTo;
   });
 
   // Hooks
@@ -109,12 +157,13 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     setSearchTerm("");
     setFilterStatus("All");
     setFilterGender("All");
+    setFilterCohort("All");
     setDateFrom("");
     setDateTo("");
     pagination.goToPage(1);
   };
 
-  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterGender !== "All" || dateFrom || dateTo;
+  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterGender !== "All" || filterCohort !== "All" || dateFrom || dateTo;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -162,11 +211,25 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
               <option value="Nữ">Nữ</option>
             </select>
 
+            {/* Xem nhanh theo nhóm */}
+            <select
+              value={filterCohort}
+              onChange={(e) => handleFilterChange(setFilterCohort, e.target.value)}
+              className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              title="Xem nhanh theo nhóm sinh viên"
+            >
+              <option value="All">Tất cả nhóm</option>
+              <option value="freshmen">Tân sinh viên</option>
+              <option value="returning_students">Lưu sinh viên</option>
+              <option value="policy">Chính sách</option>
+              <option value="international">Nước ngoài</option>
+            </select>
+
             {/* Ngày từ */}
             <input
               type="date"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }}
+              onChange={(e) => handleFilterChange(setDateFrom, e.target.value)}
               className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
               title="Ngày đăng ký HĐ từ"
             />
@@ -175,7 +238,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             <input
               type="date"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }}
+              onChange={(e) => handleFilterChange(setDateTo, e.target.value)}
               className="flex-1 text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
               title="Ngày đăng ký HĐ đến"
             />
@@ -186,7 +249,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
         actionButtons={
           <>
             <button
-              onClick={() => setCurrentPage(1)}
+              onClick={() => pagination.goToPage(1)}
               className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
             >
               Áp dụng
@@ -479,3 +542,5 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 };
 
 export default StudentList;
+
+
