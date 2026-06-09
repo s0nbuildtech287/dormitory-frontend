@@ -14,6 +14,43 @@ const CHART_COLORS = {
   info: "#93c5fd",       // Xanh nhạt
 };
 
+const normalizeText = (value) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const hasAnyKeyword = (value, keywords = []) => {
+  const text = normalizeText(value);
+  return keywords.some((keyword) => text.includes(normalizeText(keyword)));
+};
+
+const POLICY_KEYWORDS = [
+  "ho ngheo",
+  "can ngheo",
+  "thuong binh",
+  "liet sy",
+  "khuyet tat",
+  "hoan canh kho khan dac biet",
+  "vung sau",
+  "vung xa",
+  "hai dao",
+  "vung co dieu kien kinh te dac biet kho khan",
+  "giay xac nhan uu tien",
+  "uu tien khac",
+  "chinh sach",
+];
+
+const INTERNATIONAL_KEYWORDS = [
+  "luu hoc sinh",
+  "quoc te",
+  "nuoc ngoai",
+  "du hoc sinh",
+  "du hoc",
+  "lao",
+  "campuchia",
+];
+
 const ContractStatistics = ({ contracts = [] }) => {
   const [expiryDays, setExpiryDays] = useState(45);
   const [expiredDays, setExpiredDays] = useState(45);
@@ -58,6 +95,27 @@ const ContractStatistics = ({ contracts = [] }) => {
       acc[k] = (acc[k] || 0) + 1;
       return acc;
     }, {});
+
+    const cohortCounts = safe.reduce((acc, c) => {
+      const year = Number(c.snapshot_year || c.rf_year);
+      const priorityReasons = c.rf_priority_reasons || c.priority_reasons || "";
+      const isPolicy = hasAnyKeyword(priorityReasons, POLICY_KEYWORDS);
+      const isInternational = hasAnyKeyword(priorityReasons, INTERNATIONAL_KEYWORDS);
+
+      if (isInternational) {
+        acc.international += 1;
+      } else if (isPolicy) {
+        acc.policy += 1;
+      } else if (year === 1) {
+        acc.freshmen += 1;
+      } else if (year >= 2) {
+        acc.returning_students += 1;
+      } else {
+        acc.unknown += 1;
+      }
+
+      return acc;
+    }, { freshmen: 0, returning_students: 0, policy: 0, international: 0, unknown: 0 });
 
     const statusCounts = [
       { name: "Chờ phòng", value: safe.filter((c) => c.status === "Pending").length, color: "#f59e0b" },
@@ -130,6 +188,12 @@ const ContractStatistics = ({ contracts = [] }) => {
         value: yearCounts[name],
         color: COLORS[i % COLORS.length],
       })),
+      cohortStats: [
+        { name: "Tân sinh viên", value: cohortCounts.freshmen, color: "#2563eb" },
+        { name: "Lưu sinh viên", value: cohortCounts.returning_students, color: "#f59e0b" },
+        { name: "Chính sách", value: cohortCounts.policy, color: "#10b981" },
+        { name: "Quốc tế", value: cohortCounts.international, color: "#8b5cf6" },
+      ].filter((item) => item.value > 0),
       genderDist: [
         { name: "Nam", value: safe.filter((c) => c.snapshot_gender === "Nam").length, color: CHART_COLORS.primary },
         { name: "Nữ", value: safe.filter((c) => c.snapshot_gender === "Nữ").length, color: CHART_COLORS.info },
@@ -568,7 +632,7 @@ const ContractStatistics = ({ contracts = [] }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gender distribution */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
@@ -591,6 +655,36 @@ const ContractStatistics = ({ contracts = [] }) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+        </div>
+
+        {/* Cơ cấu đối tượng */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-2 h-2 rounded-full bg-sky-500" />
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Cơ cấu đối tượng</h3>
+              <p className="text-sm text-slate-500">Phân bổ theo tân sinh viên, lưu sinh viên, chính sách và quốc tế</p>
+            </div>
+          </div>
+          {analysisData.cohortStats.length > 0 ? (
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analysisData.cohortStats} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: "bold", fill: "#1e293b" }} />
+                  <YAxis tick={{ fontWeight: "bold", fill: "#1e293b" }} />
+                  <Tooltip contentStyle={{ borderRadius: "8px", fontWeight: "bold" }} />
+                  <Bar dataKey="value" name="Sinh viên" radius={[5, 5, 0, 0]}>
+                    {analysisData.cohortStats.map((entry) => (
+                      <Cell key={`cell-cohort-${entry.name}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-slate-400">Chưa có dữ liệu</div>
+          )}
         </div>
 
         {/* Faculty distribution */}
