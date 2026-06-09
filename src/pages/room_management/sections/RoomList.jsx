@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
@@ -19,6 +19,42 @@ const RESERVED_FOR_CONFIG = {
   returning_students: { label: "Khu lưu sinh viên", cls: "bg-amber-100 text-amber-700" },
   international: { label: "Khu quốc tế", cls: "bg-violet-100 text-violet-700" },
 };
+const normalizeText = (value) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const hasAnyKeyword = (value, keywords = []) => {
+  const text = normalizeText(value);
+  return keywords.some((keyword) => text.includes(normalizeText(keyword)));
+};
+
+const POLICY_KEYWORDS = [
+  "ho ngheo",
+  "can ngheo",
+  "thuong binh",
+  "liet sy",
+  "khuyet tat",
+  "hoan canh kho khan dac biet",
+  "vung sau",
+  "vung xa",
+  "hai dao",
+  "vung co dieu kien kinh te dac biet kho khan",
+  "giay xac nhan uu tien",
+  "uu tien khac",
+  "chinh sach",
+];
+
+const INTERNATIONAL_KEYWORDS = [
+  "luu hoc sinh",
+  "quoc te",
+  "nuoc ngoai",
+  "du hoc sinh",
+  "du hoc",
+  "lao",
+  "campuchia",
+];
 
 const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom, onNavigateToContract, onNavigateToInvoice }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -208,7 +244,18 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const matchesBuilding = filterBuilding === "All" || r.building === filterBuilding;
     const matchesFloor = filterFloor === "All" || r.floor === parseInt(filterFloor);
     const matchesSearch = r.room_number?.toLowerCase().includes(searchTerm.toLowerCase()) || r.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesReservedFor = filterReservedFor === "All" || (r.reserved_for || "general") === filterReservedFor;
+    const students = Array.isArray(r.students) ? r.students : [];
+    const hasFreshmen = students.some((s) => Number(s.snapshot_year) === 1);
+    const hasReturningStudents = students.some((s) => Number(s.snapshot_year) >= 2);
+    const hasPolicyStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, POLICY_KEYWORDS));
+    const hasInternationalStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, INTERNATIONAL_KEYWORDS));
+    const matchesReservedFor =
+      filterReservedFor === "All" ||
+      filterReservedFor === "general" ||
+      (filterReservedFor === "freshmen" && hasFreshmen) ||
+      (filterReservedFor === "returning_students" && hasReturningStudents) ||
+      (filterReservedFor === "policy" && hasPolicyStudent) ||
+      (filterReservedFor === "international" && hasInternationalStudent);
 
     let matchesStatus = true;
     if (filterStatus === "Maintenance") matchesStatus = r.status === "Maintenance";
@@ -279,11 +326,12 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             onChange: setFilterReservedFor,
             className: "col-span-1",
             options: [
-              { value: "All", label: "Mọi loại phòng" },
+              { value: "All", label: "Tất cả phòng" },
               { value: "general", label: "Phòng chung" },
-              { value: "freshmen", label: "Khu tân sinh viên" },
-              { value: "returning_students", label: "Khu lưu sinh viên" },
-              { value: "international", label: "Khu quốc tế" },
+              { value: "freshmen", label: "Có tân sinh viên" },
+              { value: "returning_students", label: "Có lưu sinh viên" },
+              { value: "policy", label: "Có chính sách" },
+              { value: "international", label: "Có nước ngoài" },
             ]
           }
         ]}
@@ -343,16 +391,31 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               ),
             },
             {
-              header: "Đối tượng",
+              header: "Nhóm đang ở",
               align: "center",
-              width: "w-[14%]",
+              width: "w-[18%]",
               accessor: (room) => {
-                const reservedKey = room.reserved_for || "general";
-                const cfg = RESERVED_FOR_CONFIG[reservedKey] || RESERVED_FOR_CONFIG.general;
+                const students = Array.isArray(room.students) ? room.students : [];
+                const hasFreshmen = students.some((s) => Number(s.snapshot_year) === 1);
+                const hasReturningStudents = students.some((s) => Number(s.snapshot_year) >= 2);
+                const hasPolicyStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, POLICY_KEYWORDS));
+                const hasInternationalStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, INTERNATIONAL_KEYWORDS));
+
+                const badges = [];
+                if (hasFreshmen) badges.push(RESERVED_FOR_CONFIG.freshmen);
+                if (hasReturningStudents) badges.push(RESERVED_FOR_CONFIG.returning_students);
+                if (hasPolicyStudent) badges.push({ label: "Có chính sách", cls: "bg-emerald-100 text-emerald-700" });
+                if (hasInternationalStudent) badges.push(RESERVED_FOR_CONFIG.international);
+                if (badges.length === 0) badges.push(RESERVED_FOR_CONFIG.general);
+
                 return (
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${cfg.cls}`}>
-                    {cfg.label}
-                  </span>
+                  <div className="flex flex-wrap items-center justify-center gap-1">
+                    {badges.map((badge) => (
+                      <span key={badge.label} className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    ))}
+                  </div>
                 );
               },
             },
@@ -911,3 +974,5 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 };
 
 export default RoomList;
+
+
