@@ -15,9 +15,9 @@ import { getInvoices } from "../../../api/apiInvoice.js";
 
 const RESERVED_FOR_CONFIG = {
   general: { label: "Phòng chung", cls: "bg-slate-100 text-slate-700" },
-  freshmen: { label: "Khu tân sinh viên", cls: "bg-blue-100 text-blue-700" },
-  returning_students: { label: "Khu lưu sinh viên", cls: "bg-amber-100 text-amber-700" },
-  international: { label: "Khu quốc tế", cls: "bg-violet-100 text-violet-700" },
+  freshmen: { label: "Tân sinh viên", cls: "bg-blue-100 text-blue-700" },
+  returning_students: { label: "Lưu sinh viên", cls: "bg-amber-100 text-amber-700" },
+  international: { label: "Quốc tế", cls: "bg-violet-100 text-violet-700" },
 };
 const normalizeText = (value) =>
   String(value ?? "")
@@ -328,10 +328,10 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             options: [
               { value: "All", label: "Tất cả phòng" },
               { value: "general", label: "Phòng chung" },
-              { value: "freshmen", label: "Có tân sinh viên" },
-              { value: "returning_students", label: "Có lưu sinh viên" },
-              { value: "policy", label: "Có chính sách" },
-              { value: "international", label: "Có nước ngoài" },
+              { value: "freshmen", label: "Tân sinh viên" },
+              { value: "returning_students", label: "Lưu sinh viên" },
+              { value: "policy", label: "Chính sách" },
+              { value: "international", label: "Quốc tế" },
             ]
           }
         ]}
