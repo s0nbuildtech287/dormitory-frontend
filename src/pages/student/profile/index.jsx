@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { getStudentProfile, getStudentDisciplinary } from "../../../api/apiStudent.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
-import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const fmt    = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");

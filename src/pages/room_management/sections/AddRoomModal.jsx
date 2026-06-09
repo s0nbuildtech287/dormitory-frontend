@@ -390,20 +390,23 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
             {form.mode === MODES.ROOM && (
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tầng *</label>
-                <input
-                  list="floor-options"
-                  type="number"
-                  min="1"
-                  value={form.floor}
-                  onChange={(e) => handleChange("floor", e.target.value)}
-                  placeholder="Ví dụ: 3"
-                  className={inputClass}
-                />
-                <datalist id="floor-options">
-                  {existingFloors.map((floor) => (
-                    <option key={floor} value={floor} />
-                  ))}
-                </datalist>
+                {existingFloors.length > 0 ? (
+                  <select value={form.floor} onChange={(e) => handleChange("floor", e.target.value)} className={inputClass}>
+                    <option value="">Chọn tầng</option>
+                    {existingFloors.map((floor) => (
+                      <option key={floor} value={floor}>{floor}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.floor}
+                    onChange={(e) => handleChange("floor", e.target.value)}
+                    placeholder="Ví dụ: 3"
+                    className={inputClass}
+                  />
+                )}
                 <p className="text-xs text-slate-400 mt-1">Tạo 1 phòng đơn lẻ trong tòa và tầng đã chọn.</p>
               </div>
             )}
@@ -411,7 +414,16 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
             {form.mode === MODES.FLOOR && (
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Tầng *</label>
-                <input type="number" min="1" value={form.floor} onChange={(e) => handleChange("floor", e.target.value)} className={inputClass} />
+                {existingFloors.length > 0 ? (
+                  <select value={form.floor} onChange={(e) => handleChange("floor", e.target.value)} className={inputClass}>
+                    <option value="">Chọn tầng</option>
+                    {existingFloors.map((floor) => (
+                      <option key={floor} value={floor}>{floor}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input type="number" min="1" value={form.floor} onChange={(e) => handleChange("floor", e.target.value)} className={inputClass} />
+                )}
                 <p className="text-xs text-slate-400 mt-1">Khởi tạo nhiều phòng trong cùng 1 tầng.</p>
               </div>
             )}

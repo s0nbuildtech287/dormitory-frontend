@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
@@ -239,7 +239,12 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
   // Dynamic filter options from data
   const uniqueBuildings = [...new Set(safeRooms.map((r) => r.building).filter(Boolean))].sort();
-  const uniqueFloors = [...new Set(safeRooms.map((r) => r.floor).filter(Boolean))].sort((a, b) => a - b);
+  const uniqueFloors = [...new Set(safeRooms.filter((r) => filterBuilding === "All" || r.building === filterBuilding).map((r) => r.floor).filter(Boolean))].sort((a, b) => a - b);
+  useEffect(() => {
+    if (filterFloor !== "All" && !uniqueFloors.includes(Number(filterFloor))) {
+      setFilterFloor("All");
+    }
+  }, [filterFloor, uniqueFloors]);
 
   // Filter and pagination logic
   const filteredRooms = safeRooms.filter((r) => {
