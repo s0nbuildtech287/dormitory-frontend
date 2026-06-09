@@ -2,6 +2,7 @@
 import { Package, Wrench, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Save, RotateCcw, ArrowLeftRight } from "lucide-react";
 import { getAssets, getAssetsByRoom, createAsset, updateAsset } from "../../../api/apiAsset.js";
 import { getRooms } from "../../../api/apiRoom.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 // Toggle switch helper
 const Toggle = ({ checked, onChange }) => (
@@ -36,6 +37,7 @@ const Section = ({ id, expanded, onToggle, icon: Icon, iconBg, iconColor, title,
 );
 
 const AssetSettings = ({ onRefresh }) => {
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
   const [expandedSection, setExpandedSection] = useState("limits");
   const [saveStatus, setSaveStatus] = useState(null);
 
@@ -491,7 +493,7 @@ const AssetSettings = ({ onRefresh }) => {
           >
             <option value="">-- Chọn tòa --</option>
             {uniqueBuildings.map((b) => (
-              <option key={b} value={b}>Tòa {b}</option>
+              <option key={b} value={b}>{getBuildingLabel(b)}</option>
             ))}
           </select>
 
@@ -670,7 +672,7 @@ const AssetSettings = ({ onRefresh }) => {
               <option value="">-- Chọn phòng nguồn --</option>
               {rooms.map((r) => (
                 <option key={r.id} value={r.id}>
-                  Tòa {r.building} - {r.room_number}
+                  {getRoomLabel(r.building, r.room_number)}
                 </option>
               ))}
             </select>
@@ -686,7 +688,7 @@ const AssetSettings = ({ onRefresh }) => {
               <option value="">-- Chọn phòng đích --</option>
               {rooms.filter(r => r.id !== transferFrom).map((r) => (
                 <option key={r.id} value={r.id}>
-                  Tòa {r.building} - {r.room_number}
+                  {getRoomLabel(r.building, r.room_number)}
                 </option>
               ))}
             </select>

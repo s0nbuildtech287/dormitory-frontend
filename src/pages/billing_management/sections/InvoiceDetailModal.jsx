@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { X, Receipt, Home, Zap, Droplet, Wifi, Car, Trash2, Printer, ArrowRight, Pencil, Save, RotateCcw } from "lucide-react";
 import { updateInvoice } from "../../../api/apiInvoice.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const fmt = (v) => Math.round(v || 0).toLocaleString("vi-VN");
 
 const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -155,7 +157,7 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="p-3 bg-slate-50 rounded-xl">
             <p className="text-xs text-slate-500 mb-1">Phòng</p>
-            <p className="text-sm font-bold text-slate-900">{invoice.building}-{invoice.room_number}</p>
+            <p className="text-sm font-bold text-slate-900">{getRoomLabel(invoice.building, invoice.room_number)}</p>
           </div>
           <div className="p-3 bg-slate-50 rounded-xl">
             <p className="text-xs text-slate-500 mb-1">Số người ở</p>

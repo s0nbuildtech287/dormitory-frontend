@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { X, Zap, Droplets, TrendingUp, AlertTriangle, RefreshCw, Building2 } from "lucide-react";
 import { detectInvoiceAnomalies } from "../../../api/apiInvoice.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 /**
  * Modal hiển thị các bất thường điện/nước trong hóa đơn
  * So sánh tháng hiện tại với trung bình 3 tháng trước
  */
 const AnomalyModal = ({ isOpen, onClose }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -145,7 +147,7 @@ const AnomalyCard = ({ item }) => {
         <div className="flex items-center gap-2">
           <Building2 size={14} className="text-slate-500" />
           <span className="text-sm font-bold text-slate-900">
-            Tòa {item.building} - Phòng {item.room_number}
+            {getRoomLabel(item.building, item.room_number)}
           </span>
           <span className="text-xs text-slate-500 font-mono">{item.invoice_number}</span>
         </div>

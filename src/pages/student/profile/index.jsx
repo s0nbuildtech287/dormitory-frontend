@@ -7,6 +7,8 @@ import {
   ShieldAlert, ShieldCheck, ShieldX, MinusCircle
 } from "lucide-react";
 import { getStudentProfile, getStudentDisciplinary } from "../../../api/apiStudent.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const fmt    = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
@@ -71,6 +73,7 @@ const ContractBadge = ({ status }) => {
 };
 
 const StudentProfile = ({ user }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [profile, setProfile]         = useState(null);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
@@ -125,7 +128,7 @@ const StudentProfile = ({ user }) => {
           <ConductBadge score={user?.conduct_score} />
           {hasRoom && (
             <div className="flex items-center gap-1.5 text-blue-100 text-sm font-semibold justify-end">
-              <Home size={14} /> Phòng {profile.building}-{profile.room_number}
+              <Home size={14} /> {getRoomLabel(profile.building, profile.room_number)}
             </div>
           )}
         </div>

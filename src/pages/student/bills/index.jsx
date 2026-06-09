@@ -7,6 +7,7 @@ import {
 import { getStudentInvoices, submitMeterReading } from "../../../api/apiStudent.js";
 import { createVNPayPayment } from "../../../api/apiVNPay.js";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const fmtMoney = (v) => (v != null ? `${Number(v).toLocaleString("vi-VN")} đ` : "—");
 const fmtMonth = (v) => {
@@ -34,6 +35,7 @@ const DetailRow = ({ icon: Icon, label, value, accent, sub }) => (
 );
 
 const StudentBills = () => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
@@ -462,7 +464,7 @@ const StudentBills = () => {
               <div>
                 <p className="font-black text-slate-900">{fmtMonth(selected.billing_month)}</p>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Phòng {selected.building}-{selected.room_number} · {selected.invoice_number}
+                  Phòng {getRoomLabel(selected.building, selected.room_number)} · {selected.invoice_number}
                 </p>
               </div>
               {(() => {
@@ -589,7 +591,7 @@ const StudentBills = () => {
                 </span>
               </div>
               <p className={`text-xs ${isActive ? "text-blue-200" : "text-slate-400"}`}>
-                Phòng {inv.building}-{inv.room_number}
+                Phòng {getRoomLabel(inv.building, inv.room_number)}
               </p>
               <p className={`text-sm font-black mt-1 ${isActive ? "text-white" : "text-blue-700"}`}>
                 {fmtMoney(inv.total_amount)}

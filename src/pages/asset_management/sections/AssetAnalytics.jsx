@@ -1,6 +1,7 @@
 import { Package, TrendingUp, MapPin, BarChart3, DollarSign, ChevronDown, ChevronUp, TrendingDown, ArrowUpFromLine, ArrowDownToLine } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAssetsByBuilding } from "../../../api/apiAsset.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 // Tông màu xanh từ đậm đến nhạt (đồng bộ với ContractStatistics)
 const ASSET_COLORS = [
@@ -17,6 +18,7 @@ const BUILDING_COLORS = [
 ];
 
 const AssetAnalytics = ({ assets }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
   const [buildingData, setBuildingData] = useState([]);
   const [expandedSections, setExpandedSections] = useState({
     category: false,
@@ -342,7 +344,7 @@ const AssetAnalytics = ({ assets }) => {
                           <span className="text-xs font-bold text-blue-700">{index + 1}</span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">
-                          {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
+                          {getBuildingLabel(building.building)}
                         </span>
                       </div>
                       <div className="text-right">
@@ -370,7 +372,7 @@ const AssetAnalytics = ({ assets }) => {
                           <span className="text-xs font-bold text-blue-700">{index + 3}</span>
                         </div>
                         <span className="text-sm font-medium text-slate-700">
-                          {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
+                          {getBuildingLabel(building.building)}
                         </span>
                       </div>
                       <div className="text-right">
@@ -402,7 +404,7 @@ const AssetAnalytics = ({ assets }) => {
                               <span className="text-xs font-bold text-blue-700">{index + 5}</span>
                             </div>
                             <span className="text-sm font-medium text-slate-700">
-                              {building.building === 'Kho' ? 'Kho tổng' : `Tòa ${building.building}`}
+                              {getBuildingLabel(building.building)}
                             </span>
                           </div>
                           <div className="text-right">

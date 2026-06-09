@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { X, Receipt, AlertTriangle } from "lucide-react";
 import { getRooms } from "../../../api/apiRoom.js";
 import { createInvoiceFromRoom } from "../../../api/apiInvoice.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [billingMonth, setBillingMonth] = useState("");
@@ -143,7 +145,7 @@ const CreateInvoiceModal = ({ isOpen, onClose, onSuccess }) => {
               <option value="">-- Chọn phòng --</option>
               {rooms.map(room => (
                 <option key={room.id} value={room.id}>
-                  {room.building}-{room.room_number} ({room.currentOccupancy} người)
+                  {getRoomLabel(room.building, room.room_number)} ({room.currentOccupancy} người)
                 </option>
               ))}
             </select>

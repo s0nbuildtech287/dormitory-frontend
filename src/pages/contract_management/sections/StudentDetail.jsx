@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { ArrowLeft, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCw, Sparkles, Star } from "lucide-react";
 import { getContractById, getSuggestedRooms, assignRoom, terminateContract } from "../../../api/apiContract.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const fmt = (v) => (v !== null && v !== undefined && v !== "" ? v : "—");
@@ -23,6 +24,7 @@ const InfoRow = ({ label, value, highlight }) => (
 
 // ─── Room assign modal ────────────────────────────────────────────────────────
 const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -98,7 +100,7 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
                     <div>
                       <p className="font-black text-slate-900">
                         Phòng {room.room_number}
-                        <span className="text-slate-500 font-bold text-xs ml-2">({room.building})</span>
+                        <span className="text-slate-500 font-bold text-xs ml-2">({getBuildingLabel(room.building)})</span>
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5">
                         Tầng {room.floor} · {room.available_slots}/{room.capacity} chỗ trống
@@ -146,6 +148,7 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
 
 // ─── Main Detail Component ────────────────────────────────────────────────────
 const StudentDetail = ({ contractId, onBack }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -378,7 +381,7 @@ const StudentDetail = ({ contractId, onBack }) => {
                 <div className="text-center p-6 bg-blue-600 rounded-2xl">
                   <p className="text-[10px] text-blue-200 font-bold uppercase mb-1">Phòng</p>
                   <p className="text-4xl font-black text-white">{contract.room_number}</p>
-                  <p className="text-blue-200 text-sm mt-1">Tòa {contract.building}</p>
+                  <p className="text-blue-200 text-sm mt-1">{getBuildingLabel(contract.building)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <InfoRow label="Tầng" value={contract.floor ? `Tầng ${contract.floor}` : null} />

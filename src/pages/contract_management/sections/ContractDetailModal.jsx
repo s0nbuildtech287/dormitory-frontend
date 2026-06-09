@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { X, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCw, Sparkles, Star, FileX, FileCheck } from "lucide-react";
 import { getContractById, getSuggestedRooms, assignRoom, terminateContract, updateContract } from "../../../api/apiContract.js";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const fmt = (v) => (v !== null && v !== undefined && v !== "" ? v : "—");
@@ -17,6 +18,7 @@ const STATUS_CONFIG = {
 
 // ─── Room assign modal (inner) ───────────────────────────────────────────────
 const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -91,7 +93,7 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
                     <div>
                       <p className="font-black text-slate-900">
                         Phòng {room.room_number}
-                        <span className="text-slate-500 font-bold text-xs ml-2">({room.building})</span>
+                        <span className="text-slate-500 font-bold text-xs ml-2">({getBuildingLabel(room.building)})</span>
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5">
                         Tầng {room.floor} · {room.available_slots}/{room.capacity} chỗ trống
@@ -139,6 +141,7 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
 
 // ─── Main Detail Modal ────────────────────────────────────────────────────────
 const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -481,7 +484,7 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl">
                       <p className="text-slate-600 text-xs font-semibold mb-1">Tòa nhà</p>
-                      <p className="text-slate-700 font-bold">Tòa {contract.building || "—"}</p>
+                      <p className="text-slate-700 font-bold">{getBuildingLabel(contract.building)}</p>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl">
                       <p className="text-slate-600 text-xs font-semibold mb-1">Tầng</p>

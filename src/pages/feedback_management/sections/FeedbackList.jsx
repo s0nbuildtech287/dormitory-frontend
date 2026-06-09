@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Pagination from "../../../components/common/Pagination.jsx";
 import { API_BASE_URL } from "../../../config/api.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const API = API_BASE_URL;
 const token = () => localStorage.getItem("token");
@@ -75,6 +76,7 @@ const fmt = (iso) => new Date(iso).toLocaleString("vi-VN", {
 });
 
 const FeedbackList = ({ feedbacks, setFeedbacks }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [loading, setLoading]           = useState(true);
   const [selected, setSelected]         = useState(null);
   const [replyText, setReplyText]       = useState("");
@@ -345,7 +347,7 @@ const FeedbackList = ({ feedbacks, setFeedbacks }) => {
                   <p className="font-bold text-slate-800">{selected.student_name || "—"}</p>
                   <p className="text-xs text-slate-500">{selected.student_code || selected.student_email || ""}</p>
                   {selected.room_number && (
-                    <p className="text-xs text-slate-400">Phòng {selected.room_number} – {selected.building}</p>
+                    <p className="text-xs text-slate-400">{getRoomLabel(selected.building, selected.room_number)}</p>
                   )}
                 </div>
               </div>

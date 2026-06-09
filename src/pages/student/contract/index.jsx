@@ -7,6 +7,7 @@ import {
 import { getStudentContracts } from "../../../api/apiStudent.js";
 import { createVNPayPayment } from "../../../api/apiVNPay.js";
 import ContractPrintView from "./ContractPrintView.jsx";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const fmt      = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
@@ -70,6 +71,7 @@ const ContractProgress = ({ startDate, endDate }) => {
 };
 
 const StudentContract = () => {
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
@@ -186,7 +188,7 @@ const StudentContract = () => {
           <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-1">Hợp đồng nội trú KTX</p>
           <h2 className="text-xl font-black truncate">{c.contract_number || "—"}</h2>
           <p className="text-slate-400 text-sm mt-0.5">
-            {c.room_number ? `Phòng ${c.building}-${c.room_number}` : "Chưa gán phòng"}
+            {c.room_number ? getRoomLabel(c.building, c.room_number) : "Chưa gán phòng"}
             {c.start_date && ` · ${fmtDate(c.start_date)} → ${fmtDate(c.end_date)}`}
           </p>
         </div>
@@ -262,8 +264,8 @@ const StudentContract = () => {
         <Section title="Thông tin phòng ở" icon={Home} className="h-full">
           {c.room_number ? (
             <>
-              <InfoRow icon={Home}     label="Số phòng"   value={`${c.building}-${c.room_number}`} accent />
-              <InfoRow icon={Building} label="Tòa nhà"    value={`Tòa ${c.building}`} />
+              <InfoRow icon={Home}     label="Số phòng"   value={getRoomLabel(c.building, c.room_number)} accent />
+              <InfoRow icon={Building} label="Tòa nhà"    value={getBuildingLabel(c.building)} />
               <InfoRow icon={Layers}   label="Tầng"       value={`Tầng ${c.floor}`} />
               <InfoRow icon={Users}    label="Số người ở" value={`${c.current_occupancy}/${c.capacity} người`} />
               <InfoRow icon={Ruler}    label="Diện tích"  value={c.area ? `${c.area} m²` : null} />

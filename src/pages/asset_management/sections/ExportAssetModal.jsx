@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { X, ArrowUpFromLine, Save, Eye, Package } from "lucide-react";
 import { getRooms } from "../../../api/apiRoom.js";
 import { exportAsset, getAssets, getAssetsByRoom } from "../../../api/apiAsset.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
   // 8 loại tài sản cố định
   const assetTypes = [
     { code: 'GIUONG', name: 'Giường', category: 'Nội thất', unit: 'Cái' },
@@ -321,9 +323,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
               >
                 <option value="">-- Chọn tòa --</option>
                 {buildings.map((building) => (
-                  <option key={building} value={building}>
-                    Tòa {building}
-                  </option>
+                  <option key={building} value={building}>{getBuildingLabel(building)}</option>
                 ))}
               </select>
             </div>
@@ -413,7 +413,7 @@ const ExportAssetModal = ({ isOpen, onClose, onSuccess }) => {
                 <span>Xuất đến:</span>
                 <span className="font-semibold">
                   {formData.building && formData.room_number 
-                    ? `Tòa ${formData.building} - ${formData.room_number}` 
+                    ? getRoomLabel(formData.building, formData.room_number) 
                     : '---'}
                 </span>
               </div>
