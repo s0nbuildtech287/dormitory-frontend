@@ -307,12 +307,14 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                 type="button"
                 onClick={() => setForm((prev) => ({ ...initialState, mode: key, building: prev.building, gender_type: prev.gender_type }))}
                 className={`rounded-2xl border px-4 py-4 text-left transition-all ${
-                  form.mode === key ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 hover:border-slate-300 bg-white text-slate-700"
+                  form.mode === key
+                    ? "border-blue-950 bg-blue-950 text-white shadow-lg shadow-blue-950/20"
+                    : "border-blue-100 bg-gradient-to-br from-blue-50 to-slate-100 text-slate-800 hover:border-blue-300 hover:bg-blue-50"
                 }`}
               >
                 <Icon size={18} className="mb-3" />
                 <p className="font-bold">{title}</p>
-                <p className={`text-xs mt-1 ${form.mode === key ? "text-slate-300" : "text-slate-500"}`}>{subtitle}</p>
+                <p className={`text-xs mt-1 ${form.mode === key ? "text-blue-100" : "text-slate-500"}`}>{subtitle}</p>
               </button>
             ))}
           </div>
