@@ -10,6 +10,12 @@ const MODES = {
 
 const DEFAULT_BUILDINGS = ["A", "B", "C", "D"];
 const DEFAULT_GENDER = (building) => (building === "A" || building === "C" ? "Nam" : "Nữ");
+const RESERVED_FOR_OPTIONS = [
+  { value: "general", label: "Phòng thường" },
+  { value: "freshmen", label: "Tân sinh viên" },
+  { value: "returning_students", label: "Lưu sinh viên" },
+  { value: "international", label: "Sinh viên quốc tế" },
+];
 const fmt = (value) => new Intl.NumberFormat("vi-VN").format(Number(value || 0));
 
 const basePricing = {
@@ -21,6 +27,7 @@ const basePricing = {
   garbage_fee: 20000,
   area: 25,
   status: "Active",
+  reserved_for: "general",
 };
 
 const formatRoomCode = (sequence, building, floor) => `room-${sequence}-${building}-${floor}`;
@@ -127,14 +134,14 @@ function validateForm(form, existingRoomNumbers) {
   if (form.mode === MODES.FLOOR) {
     if (!Number(form.floor) || Number(form.floor) <= 0) return "Vui lòng nhập tầng hợp lệ.";
     if (!Number(form.rooms_count) || Number(form.rooms_count) <= 0) return "Số phòng của tầng phải lớn hơn 0.";
-    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Sequence bắt đầu phải lớn hơn 0.";
+    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Thứ tự bắt đầu phải lớn hơn 0.";
   }
 
   if (form.mode === MODES.BUILDING) {
     if (!Number(form.floors_count) || Number(form.floors_count) <= 0) return "Số tầng phải lớn hơn 0.";
     if (!Number(form.rooms_per_floor) || Number(form.rooms_per_floor) <= 0) return "Số phòng mỗi tầng phải lớn hơn 0.";
     if (!Number(form.start_floor) || Number(form.start_floor) <= 0) return "Tầng bắt đầu phải lớn hơn 0.";
-    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Sequence bắt đầu phải lớn hơn 0.";
+    if (!Number(form.room_start_number) || Number(form.room_start_number) <= 0) return "Thứ tự bắt đầu phải lớn hơn 0.";
   }
 
   return "";
@@ -237,6 +244,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
           garbage_fee: Number(form.garbage_fee || 0),
           area: Number(form.area || 0),
           status: form.status || "Active",
+          reserved_for: form.reserved_for,
         });
       } else if (form.mode === MODES.FLOOR) {
         await createFloorRooms({
@@ -252,6 +260,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
           garbage_fee: Number(form.garbage_fee || 0),
           area: Number(form.area || 0),
           status: form.status || "Active",
+          reserved_for: form.reserved_for,
         });
       } else {
         await createBuildingRooms({
@@ -268,6 +277,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
           garbage_fee: Number(form.garbage_fee || 0),
           area: Number(form.area || 0),
           status: form.status || "Active",
+          reserved_for: form.reserved_for,
         });
       }
 
@@ -305,7 +315,15 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
               <button
                 key={key}
                 type="button"
-                onClick={() => setForm((prev) => ({ ...initialState, mode: key, building: prev.building, gender_type: prev.gender_type }))}
+                onClick={() =>
+                  setForm((prev) => ({
+                    ...initialState,
+                    mode: key,
+                    building: prev.building,
+                    gender_type: prev.gender_type,
+                    reserved_for: prev.reserved_for,
+                  }))
+                }
                 className={`rounded-2xl border px-4 py-4 text-left transition-all ${
                   form.mode === key
                     ? "border-blue-950 bg-blue-950 text-white shadow-lg shadow-blue-950/20"
@@ -424,7 +442,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                     <input type="number" min="1" value={form.rooms_count} onChange={(e) => handleChange("rooms_count", e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Sequence bắt đầu *</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Thứ tự bắt đầu *</label>
                     <input type="number" min="1" value={form.room_start_number} onChange={(e) => handleChange("room_start_number", e.target.value)} className={inputClass} />
                   </div>
                   <div>
@@ -454,7 +472,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                 <input type="number" min="1" value={form.start_floor} onChange={(e) => handleChange("start_floor", e.target.value)} className={inputClass} />
               </div>
               <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Sequence bắt đầu *</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Thứ tự bắt đầu *</label>
                 <input type="number" min="1" value={form.room_start_number} onChange={(e) => handleChange("room_start_number", e.target.value)} className={inputClass} />
               </div>
             </div>
@@ -471,6 +489,20 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Giá thuê / tháng *</label>
                 <input type="number" min="0" value={form.rent_price} onChange={(e) => handleChange("rent_price", e.target.value)} className={inputClass} />
                 <p className="text-xs text-slate-400 mt-1">{fmt(form.rent_price)} VNĐ</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Đối tượng sử dụng</label>
+                <select value={form.reserved_for} onChange={(e) => handleChange("reserved_for", e.target.value)} className={inputClass}>
+                  {RESERVED_FOR_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400 mt-1">Giá trị này sẽ được lưu vào cột <code>reserved_for</code>.</p>
               </div>
             </div>
 
