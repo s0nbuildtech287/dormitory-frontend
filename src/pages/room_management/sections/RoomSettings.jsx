@@ -345,7 +345,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
             <option value="All">Tất cả tòa</option>
             {uniqueBuildings.map((b) => (
               <option key={b} value={b}>
-                Tòa {b}
+                {getDisplayName(b)}
               </option>
             ))}
           </select>
@@ -372,7 +372,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                       <div>
                         <p className="font-bold text-slate-900 text-sm">{room.room_number || room.name}</p>
                         <p className="text-xs text-slate-500">
-                          Tòa {room.building} — Tầng {room.floor} — Sức chứa {room.capacity}
+                          {getDisplayName(room.building)} — Tầng {room.floor} — Sức chứa {room.capacity}
                         </p>
                       </div>
                       <StatusBadge room={{ ...room, status: maint ? "Maintenance" : room.status }} />
@@ -477,7 +477,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                 >
                   <span className="font-bold text-slate-900 text-sm">{r.room_number || r.name}</span>
                   <span className="text-xs text-slate-500">
-                    Tòa {r.building} – Tầng {r.floor} – {r.capacity} chỗ – <StatusBadge room={r} />
+                    {getDisplayName(r.building)} – Tầng {r.floor} – {r.capacity} chỗ – <StatusBadge room={r} />
                   </span>
                 </button>
               ))}
@@ -492,7 +492,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               <div>
                 <h4 className="font-bold text-slate-900">Phòng {quickRoom.room_number || quickRoom.name}</h4>
                 <p className="text-xs text-slate-500">
-                  Tòa {quickRoom.building} – Tầng {quickRoom.floor}
+                  {getDisplayName(quickRoom.building)} – Tầng {quickRoom.floor}
                 </p>
               </div>
               <StatusBadge room={quickRoom} />

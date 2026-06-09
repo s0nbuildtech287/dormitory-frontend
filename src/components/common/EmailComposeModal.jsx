@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Send, Paperclip, Minus, CheckCircle, AlertCircle, ChevronDown } from "lucide-react";
 import { sendEmail } from "../../api/apiEmail.js";
+import { getRoomLabel } from "../../utils/buildingDisplay.js";
 
 /**
  * EmailComposeModal
@@ -58,7 +59,7 @@ Trân trọng.`,
 Hợp đồng ký túc xá của bạn đã được tạo thành công với thông tin như sau:
 
   • Số hợp đồng : ${contract.contract_number || "—"}
-  • Phòng        : ${contract.room_number ? `${contract.building || ""}${contract.room_number}` : "Chưa gán phòng"}
+  • Phòng        : ${contract.room_number ? getRoomLabel(contract.building, contract.room_number) : "Chưa gán phòng"}
   • Thời hạn     : ${contract.start_date ? new Date(contract.start_date).toLocaleDateString("vi-VN") : "—"} → ${contract.end_date ? new Date(contract.end_date).toLocaleDateString("vi-VN") : "—"}
   • Tiền thuê    : ${contract.rent_price ? Number(contract.rent_price).toLocaleString("vi-VN") + " VNĐ/tháng" : "—"}
   • Tiền cọc     : ${contract.deposit_amount ? Number(contract.deposit_amount).toLocaleString("vi-VN") + " VNĐ" : "—"}

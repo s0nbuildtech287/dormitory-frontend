@@ -3,8 +3,10 @@ import { FileText, CheckCircle, Clock, AlertCircle, DollarSign, TrendingUp, Wall
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, Legend, BarChart, Bar } from "recharts";
 import { getInvoiceStatistics, getInvoices } from "../../../api/apiInvoice.js";
 import { BillStatus } from "../../../utils/types.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const InvoiceStatistics = ({ bills, onNavigateToInvoice }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const [statistics, setStatistics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -424,7 +426,7 @@ const InvoiceStatistics = ({ bills, onNavigateToInvoice }) => {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <p className="text-sm font-bold text-slate-900">
-                            Phòng {invoice.building}-{invoice.room_number}
+                            Phòng {getRoomLabel(invoice.building, invoice.room_number)}
                           </p>
                           <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
                             invoice.status === 'Quá hạn' 

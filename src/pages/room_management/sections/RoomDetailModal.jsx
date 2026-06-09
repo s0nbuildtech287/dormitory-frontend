@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { X, Home, Package, Wifi, Car, Droplet, Zap, Users } from "lucide-react";
 import { getAssetsByRoom } from "../../../api/apiAsset.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const RoomDetailModal = ({ room, onClose }) => {
+    const { getBuildingLabel } = useBuildingDisplayNames();
     const [roomAssets, setRoomAssets] = useState([]);
     const [loadingAssets, setLoadingAssets] = useState(false);
 
@@ -55,7 +57,7 @@ const RoomDetailModal = ({ room, onClose }) => {
                             </div>
                             <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                                 <span className="text-sm font-semibold text-slate-600">Tòa:</span>
-                                <span className="text-sm font-bold text-slate-900">{room.building}</span>
+                                <span className="text-sm font-bold text-slate-900">{getBuildingLabel(room.building)}</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                                 <span className="text-sm font-semibold text-slate-600">Tầng:</span>

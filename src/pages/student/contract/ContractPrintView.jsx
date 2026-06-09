@@ -1,5 +1,6 @@
 // ContractPrintView.jsx — In hợp đồng qua iframe ẩn, không overlay
 import { useEffect, useRef } from "react";
+import { getBuildingLabel, getRoomLabel } from "../../../utils/buildingDisplay.js";
 
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "............");
 const fmtMoney = (v) => (v != null ? `${Number(v).toLocaleString("vi-VN")} đồng` : "............");
@@ -112,7 +113,7 @@ function buildHTML(c) {
   <p class="section-title">Điều 1: Nội dung hợp đồng</p>
   <p>Bên A đồng ý cho Bên B thuê chỗ ở tại Ký túc xá với thông tin sau:</p>
   <table><tbody>
-    ${row("Phòng", c.room_number ? `${c.building}-${c.room_number} (Tầng ${c.floor}, Tòa ${c.building})` : "Chưa gán phòng")}
+    ${row("Phòng", c.room_number ? `${getRoomLabel(c.building, c.room_number)} (Tầng ${c.floor}, ${getBuildingLabel(c.building)})` : "Chưa gán phòng")}
     ${row("Diện tích", c.area ? `${c.area} m²` : "............")}
     ${row("Sức chứa", c.capacity ? `${c.capacity} người` : "............")}
     ${row("Ngày bắt đầu", fmtDate(c.start_date))}

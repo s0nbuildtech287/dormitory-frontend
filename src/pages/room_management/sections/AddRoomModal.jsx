@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Building2, CheckCircle2, Home, Layers3, Plus, X } from "lucide-react";
 import { createBuildingRooms, createFloorRooms, createRoom, getRoomStructure } from "../../../api/apiRoom.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 const MODES = {
   ROOM: "room",
@@ -148,6 +149,7 @@ function validateForm(form, existingRoomNumbers) {
 }
 
 const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
   const [form, setForm] = useState(initialState);
   const [structure, setStructure] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -373,15 +375,13 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
               />
               <datalist id="building-options">
                 {existingBuildings.map((building) => (
-                  <option key={building} value={building} />
+                  <option key={building} value={building} label={getBuildingLabel(building)} />
                 ))}
               </datalist>
               {metaLoading ? (
                 <p className="text-xs text-slate-400 mt-1">Đang tải metadata tòa/tầng...</p>
               ) : selectedBuildingMeta ? (
-                <p className="text-xs text-slate-500 mt-1">
-                  Tòa {form.building} hiện có {selectedBuildingMeta.room_count} phòng, {selectedBuildingMeta.floor_count} tầng.
-                </p>
+                <p className="text-xs text-slate-500 mt-1">{getBuildingLabel(form.building)} hiện có {selectedBuildingMeta.room_count} phòng, {selectedBuildingMeta.floor_count} tầng.</p>
               ) : (
                 <p className="text-xs text-slate-400 mt-1">Nếu nhập tòa mới, hệ thống sẽ tạo theo cấu hình bạn nhập.</p>
               )}
@@ -550,7 +550,7 @@ const AddRoomModal = ({ isOpen, onClose, rooms = [], onSuccess }) => {
                   <div key={item.room_number} className="flex items-center justify-between rounded-xl bg-white border border-slate-200 px-3 py-2 text-sm">
                     <div>
                       <p className="font-bold text-slate-800">{item.room_number}</p>
-                      <p className="text-slate-500 text-xs">Tòa {item.building} · Tầng {item.floor}</p>
+                      <p className="text-slate-500 text-xs">{getBuildingLabel(item.building)} · Tầng {item.floor}</p>
                     </div>
                     {existingRoomNumbers.has(item.room_number.toLowerCase()) ? (
                       <span className="text-red-600 text-xs font-bold">Trùng mã</span>
