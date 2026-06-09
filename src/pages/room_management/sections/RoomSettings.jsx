@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo, useEffect } from "react";
 import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Search, Save, RotateCcw } from "lucide-react";
-import { updateRoom } from "../../../api/apiRoom.js";
+import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames } from "../../../api/apiRoom.js";
 
 // ─── Toggle switch helper ──────────────────────────────────────────────────────
 const Toggle = ({ checked, onChange }) => (
@@ -62,6 +62,36 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
 
   const [buildingNames, setBuildingNames] = useState({});
   const getDisplayName = (id) => buildingNames[id] ?? `Tòa ${id}`;
+
+  useEffect(() => {
+    const loadBuildingNames = async () => {
+      try {
+        const res = await getBuildingDisplayNames();
+        if (res.success && res.data && typeof res.data === "object") {
+          setBuildingNames(res.data);
+        }
+      } catch (error) {
+        console.error("Error loading building display names:", error);
+      }
+    };
+
+    loadBuildingNames();
+  }, []);
+
+  const saveBuildingNames = async () => {
+    setSaveStatus("saving");
+    try {
+      const res = await updateBuildingDisplayNames(buildingNames);
+      if (res.success) {
+        setSaveStatus("success");
+        setTimeout(() => setSaveStatus(null), 3000);
+      }
+    } catch (error) {
+      console.error("Error saving building display names:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus(null), 3000);
+    }
+  };
 
   // ── Section 2: Bảo trì phòng ──────────────────────────────────────────────
   const [maintSearch, setMaintSearch] = useState("");
@@ -196,10 +226,18 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
             <h3 className="text-2xl font-bold text-slate-900 mb-1">Điều chỉnh Quản lý Phòng</h3>
             <p className="text-slate-500 text-sm">Đặt tên hiển thị tòa, đánh dấu phòng bảo trì hàng loạt, chỉnh nhanh thông số một phòng và cấu hình mặc định cho phòng mới.</p>
           </div>
+          <button
+            onClick={saveBuildingNames}
+            disabled={saveStatus === "saving"}
+            className="px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <Save size={18} />
+            {saveStatus === "saving" ? "Đang lưu..." : "Lưu tên hiển thị"}
+          </button>
         </div>
         {saveStatus === "success" && (
           <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-emerald-700 text-sm">
-            <CheckCircle size={16} /> Đã lưu thay đổi thành công!
+            <CheckCircle size={16} /> Đã lưu tên hiển thị thành công.
           </div>
         )}
         {saveStatus === "error" && (
@@ -272,7 +310,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
         </div>
         <div className="p-4 bg-indigo-50 rounded-xl flex items-start gap-3">
           <Info size={15} className="text-indigo-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-indigo-700">Tên hiển thị chỉ có tác dụng trên giao diện người dùng và chưa đồng bộ với cơ sở dữ liệu trong phiên bản hiện tại.</p>
+          <p className="text-sm text-indigo-700">Tên hiển thị sẽ được lưu vào hệ thống và dùng chung cho toàn bộ giao diện.</p>
         </div>
       </Section>
 
@@ -643,3 +681,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
 };
 
 export default RoomSettings;
+
+
+
+

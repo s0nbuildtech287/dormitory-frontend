@@ -168,6 +168,69 @@ export const getRoomStructure = async () => {
 };
 
 /**
+ * Get display names for buildings
+ */
+export const getBuildingDisplayNames = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/settings/display-names`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải tên hiển thị tòa');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching building display names:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update display names for buildings
+ * @param {Object} displayNames
+ */
+export const updateBuildingDisplayNames = async (displayNames) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/settings/display-names`,
+      {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ displayNames })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi lưu tên hiển thị tòa');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating building display names:', error);
+    throw error;
+  }
+};
+
+/**
  * Create many rooms for one floor
  * @param {Object} payload
  * @returns {Promise<Object>}
