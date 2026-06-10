@@ -252,9 +252,9 @@ const CampaignLauncher = () => {
               />
               <StatCard
                 icon={CalendarClock}
-                label={`Sẽ trống trong ${forecastDays} ngày tới`}
+                label={`Chỗ trống trong ${forecastDays} ngày tới`}
                 value={roomForecast.available_soon}
-                subValue="chỗ từ HĐ sắp hết hạn"
+                subValue={`chỗ từ ${roomForecast.rooms_affected ?? 0} phòng sắp hết HĐ`}
                 color="amber"
               />
               <StatCard
