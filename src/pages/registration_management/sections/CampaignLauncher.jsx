@@ -181,15 +181,27 @@ const CampaignLauncher = () => {
       header: "Hết hạn",
       accessor: (row) => {
         const daysLeft = Math.ceil((new Date(row.end_date) - new Date()) / (1000 * 60 * 60 * 24));
-        const color = daysLeft <= 14 ? "text-rose-600 bg-rose-50" : daysLeft <= 30 ? "text-amber-600 bg-amber-50" : "text-slate-600 bg-slate-50";
+        const color = daysLeft <= 14
+          ? "bg-rose-100 text-rose-700 border border-rose-200"
+          : daysLeft <= 30
+          ? "bg-amber-100 text-amber-700 border border-amber-200"
+          : "bg-slate-100 text-slate-600 border border-slate-200";
+        const isYear4 = row.snapshot_year === 4;
         return (
-          <div>
+          <div className="space-y-1">
             <p className="text-sm font-semibold text-slate-800">
               {new Date(row.end_date).toLocaleDateString("vi-VN")}
             </p>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${color}`}>
-              còn {daysLeft} ngày
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${color}`}>
+                còn {daysLeft} ngày
+              </span>
+              {isYear4 && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 whitespace-nowrap">
+                  Năm 4 — Không gia hạn
+                </span>
+              )}
+            </div>
           </div>
         );
       },
