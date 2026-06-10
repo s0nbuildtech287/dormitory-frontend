@@ -19,7 +19,9 @@ import { getRoomForecast, getDemandForecast } from "../../../api/apiRegistration
 import { getExpiringContracts, sendRenewalEmails } from "../../../api/apiContract.js";
 import StatCard from "../../../components/common/StatCard.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
+import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import { usePagination } from "../../../hooks/usePagination.js";
 
 const CampaignLauncher = () => {
   // ─── STATE ────────────────────────────────────────────────
@@ -37,6 +39,9 @@ const CampaignLauncher = () => {
   const [confirmSend, setConfirmSend] = useState(false);
   const [sendResult, setSendResult] = useState(null);
   const [error, setError] = useState(null);
+
+  // Phân trang cho bảng hợp đồng sắp hết hạn
+  const pagination = usePagination(expiringContracts, 10);
 
   // ─── FETCH ─────────────────────────────────────────────────
   const fetchForecast = useCallback(async () => {
@@ -100,10 +105,12 @@ const CampaignLauncher = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === expiringContracts.length) {
-      setSelectedIds([]);
+    const currentPageIds = pagination.currentItems.map((c) => c.id);
+    const allSelected = currentPageIds.every((id) => selectedIds.includes(id));
+    if (allSelected) {
+      setSelectedIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
     } else {
-      setSelectedIds(expiringContracts.map((c) => c.id));
+      setSelectedIds((prev) => [...new Set([...prev, ...currentPageIds])]);
     }
   };
 
@@ -119,7 +126,8 @@ const CampaignLauncher = () => {
     {
       header: (
         <button onClick={toggleSelectAll} className="flex items-center justify-center">
-          {selectedIds.length === expiringContracts.length && expiringContracts.length > 0 ? (
+          {pagination.currentItems.length > 0 &&
+           pagination.currentItems.every((c) => selectedIds.includes(c.id)) ? (
             <CheckSquare size={16} className="text-blue-600" />
           ) : (
             <Square size={16} className="text-slate-400" />
@@ -145,6 +153,14 @@ const CampaignLauncher = () => {
           <p className="font-semibold text-slate-900">{row.student_name || "—"}</p>
           <p className="text-xs text-slate-400">{row.student_email}</p>
         </div>
+      ),
+    },
+    {
+      header: "Mã SV",
+      accessor: (row) => (
+        <span className="font-mono text-xs font-semibold text-slate-700">
+          {row.snapshot_student_id || "—"}
+        </span>
       ),
     },
     {
@@ -404,16 +420,19 @@ const CampaignLauncher = () => {
           {loadingContracts ? (
             <p className="text-center text-slate-400 text-sm py-8">Đang tải dữ liệu...</p>
           ) : (
-            <DataTable
-              columns={contractColumns}
-              data={expiringContracts}
-              keyExtractor={(row) => row.id}
-              emptyState={{
-                icon: CheckCircle2,
-                title: "Không có hợp đồng sắp hết hạn",
-                description: `Tất cả hợp đồng còn hơn ${expiringDays} ngày hiệu lực`,
-              }}
-            />
+            <>
+              <DataTable
+                columns={contractColumns}
+                data={pagination.currentItems}
+                keyExtractor={(row) => row.id}
+                emptyState={{
+                  icon: CheckCircle2,
+                  title: "Không có hợp đồng sắp hết hạn",
+                  description: `Tất cả hợp đồng còn hơn ${expiringDays} ngày hiệu lực`,
+                }}
+              />
+              <Pagination pagination={pagination} />
+            </>
           )}
         </div>
       </div>
