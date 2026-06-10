@@ -13,7 +13,8 @@ import {
   CalendarClock,
   Users,
   BarChart3,
-  Info,
+  Building2,
+  GraduationCap,
 } from "lucide-react";
 import { getRoomForecast, getDemandForecast } from "../../../api/apiRegistration.js";
 import { getExpiringContracts, sendRenewalEmails } from "../../../api/apiContract.js";
@@ -270,28 +271,101 @@ const CampaignLauncher = () => {
           {loadingForecast ? (
             <p className="text-center text-slate-400 text-sm py-8">Đang tải dữ liệu...</p>
           ) : roomForecast ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatCard
-                icon={BedDouble}
-                label="Phòng trống ngay lập tức"
-                value={roomForecast.available_now}
-                subValue="chỗ trống"
-                color="emerald"
-              />
-              <StatCard
-                icon={CalendarClock}
-                label={`Chỗ trống trong ${forecastDays} ngày tới`}
-                value={roomForecast.available_soon}
-                subValue={`chỗ từ ${roomForecast.rooms_affected ?? 0} phòng sắp hết HĐ`}
-                color="amber"
-              />
-              <StatCard
-                icon={BarChart3}
-                label="Tổng dự kiến có thể đáp ứng"
-                value={roomForecast.available_now + roomForecast.available_soon}
-                subValue="chỗ"
-                color="blue"
-              />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard
+                  icon={BedDouble}
+                  label="Phòng trống ngay lập tức"
+                  value={roomForecast.available_now}
+                  subValue="chỗ trống"
+                  color="emerald"
+                />
+                <StatCard
+                  icon={CalendarClock}
+                  label={`Chỗ trống trong ${forecastDays} ngày tới`}
+                  value={roomForecast.available_soon}
+                  subValue={`chỗ từ ${roomForecast.rooms_affected ?? 0} phòng sắp hết HĐ`}
+                  color="amber"
+                />
+                <StatCard
+                  icon={BarChart3}
+                  label="Tổng dự kiến có thể đáp ứng"
+                  value={roomForecast.available_now + roomForecast.available_soon}
+                  subValue="chỗ"
+                  color="blue"
+                />
+              </div>
+
+              {/* Phòng trống theo tòa — bảng tòa × tầng */}
+              {roomForecast.by_building?.length > 0 && (() => {
+                // Pivot: { building: { floor: { pct, avail } } }
+                const buildingMap = {};
+                const floorSet = new Set();
+                roomForecast.by_building.forEach((r) => {
+                  if (!buildingMap[r.building]) buildingMap[r.building] = {};
+                  buildingMap[r.building][r.floor] = {
+                    pct: parseInt(r.occupancy_pct),
+                    avail: parseInt(r.available_slots),
+                  };
+                  floorSet.add(parseInt(r.floor));
+                });
+                const buildings = Object.keys(buildingMap).sort();
+                const floors = [...floorSet].sort((a, b) => a - b);
+
+                const cellColor = (pct) => {
+                  if (pct >= 95) return "bg-rose-100 text-rose-700";
+                  if (pct >= 80) return "bg-amber-100 text-amber-700";
+                  if (pct >= 50) return "bg-yellow-50 text-yellow-700";
+                  return "bg-emerald-50 text-emerald-700";
+                };
+
+                return (
+                  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Building2 size={15} className="text-slate-500" />
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tỉ lệ lấp đầy theo tòa / tầng</p>
+                      <div className="ml-auto flex items-center gap-3 text-[10px] font-semibold">
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-100 inline-block"/>{"<50%"}</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-200 inline-block"/>50–80%</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-100 inline-block"/>80–95%</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-100 inline-block"/>{"≥95%"}</span>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs border-collapse">
+                        <thead>
+                          <tr>
+                            <th className="text-left px-3 py-2 bg-slate-100 rounded-tl-lg font-bold text-slate-600 w-24">Tòa \ Tầng</th>
+                            {floors.map((f) => (
+                              <th key={f} className="px-3 py-2 bg-slate-100 text-center font-bold text-slate-600">Tầng {f}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {buildings.map((b, bi) => (
+                            <tr key={b} className={bi % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                              <td className="px-3 py-2 font-black text-slate-700 border-r border-slate-100">{b}</td>
+                              {floors.map((f) => {
+                                const cell = buildingMap[b]?.[f];
+                                if (!cell) return (
+                                  <td key={f} className="px-3 py-2 text-center text-slate-300">—</td>
+                                );
+                                return (
+                                  <td key={f} className="px-2 py-1.5 text-center">
+                                    <span className={`inline-block px-2 py-0.5 rounded-lg font-bold ${cellColor(cell.pct)}`}>
+                                      {cell.pct}%
+                                    </span>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           ) : (
             <p className="text-center text-slate-400 text-sm py-8">Không có dữ liệu</p>
@@ -346,14 +420,36 @@ const CampaignLauncher = () => {
                 )}
               </div>
 
-              {/* Insight banner */}
-              <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                <Info size={16} className="text-blue-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-blue-700">
-                  Dự báo dựa trên dữ liệu lịch sử. Nếu năm trước chưa có đủ dữ liệu, con số sẽ thấp
-                  — hãy cân nhắc điều chỉnh thủ công chỉ tiêu trong tab <strong>Điều chỉnh</strong>.
-                </p>
-              </div>
+              {/* Phân loại đối tượng đăng ký */}
+              {demandForecast.by_target?.length > 0 && (
+                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <GraduationCap size={15} className="text-slate-500" />
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Phân loại đối tượng năm {demandForecast.year - 1}
+                      {demandForecast.is_baseline && <span className="ml-1 text-amber-500">(ước tính theo tỷ lệ chuẩn)</span>}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {demandForecast.by_target.map((t) => {
+                      const colorMap = { blue: "bg-blue-50 border-blue-100 text-blue-700", violet: "bg-violet-50 border-violet-100 text-violet-700", rose: "bg-rose-50 border-rose-100 text-rose-700" };
+                      const barMap = { blue: "bg-blue-400", violet: "bg-violet-400", rose: "bg-rose-400" };
+                      const total = demandForecast.by_target.reduce((s, x) => s + x.count, 0);
+                      const pct = total > 0 ? Math.round((t.count / total) * 100) : 0;
+                      return (
+                        <div key={t.label} className={`rounded-xl border px-3 py-2.5 ${colorMap[t.color] || colorMap.blue}`}>
+                          <p className="text-xs font-bold">{t.label}</p>
+                          <p className="text-2xl font-black mt-0.5">{t.count.toLocaleString()}</p>
+                          <div className="w-full h-1.5 bg-white/60 rounded-full mt-1.5 overflow-hidden">
+                            <div className={`h-full rounded-full ${barMap[t.color]}`} style={{ width: `${pct}%` }} />
+                          </div>
+                          <p className="text-[10px] mt-1 opacity-70">{pct}% tổng đăng ký</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-center text-slate-400 text-sm py-8">Không có dữ liệu</p>
