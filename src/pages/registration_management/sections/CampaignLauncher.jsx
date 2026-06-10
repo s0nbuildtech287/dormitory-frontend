@@ -420,33 +420,52 @@ const CampaignLauncher = () => {
                 )}
               </div>
 
-              {/* Phân loại đối tượng đăng ký */}
-              {demandForecast.by_target?.length > 0 && (
+              {/* Phân loại đối tượng — bảng lịch sử 6 năm */}
+              {demandForecast.history?.length > 0 && (
                 <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <GraduationCap size={15} className="text-slate-500" />
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Phân loại đối tượng năm {demandForecast.year - 1}
-                      {demandForecast.is_baseline && <span className="ml-1 text-amber-500">(ước tính theo tỷ lệ chuẩn)</span>}
-                    </p>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lịch sử đăng ký theo đối tượng (6 năm)</p>
+                    <div className="ml-auto flex items-center gap-3 text-[10px] font-semibold text-slate-400">
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block"/>Ước tính</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block"/>Thực tế</span>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {demandForecast.by_target.map((t) => {
-                      const colorMap = { blue: "bg-blue-50 border-blue-100 text-blue-700", violet: "bg-violet-50 border-violet-100 text-violet-700", rose: "bg-rose-50 border-rose-100 text-rose-700" };
-                      const barMap = { blue: "bg-blue-400", violet: "bg-violet-400", rose: "bg-rose-400" };
-                      const total = demandForecast.by_target.reduce((s, x) => s + x.count, 0);
-                      const pct = total > 0 ? Math.round((t.count / total) * 100) : 0;
-                      return (
-                        <div key={t.label} className={`rounded-xl border px-3 py-2.5 ${colorMap[t.color] || colorMap.blue}`}>
-                          <p className="text-xs font-bold">{t.label}</p>
-                          <p className="text-2xl font-black mt-0.5">{t.count.toLocaleString()}</p>
-                          <div className="w-full h-1.5 bg-white/60 rounded-full mt-1.5 overflow-hidden">
-                            <div className={`h-full rounded-full ${barMap[t.color]}`} style={{ width: `${pct}%` }} />
-                          </div>
-                          <p className="text-[10px] mt-1 opacity-70">{pct}% tổng đăng ký</p>
-                        </div>
-                      );
-                    })}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="text-left px-3 py-2 bg-slate-100 rounded-tl-lg font-bold text-slate-600 w-32">Đối tượng \ Năm</th>
+                          {demandForecast.history.map((h) => (
+                            <th key={h.year} className="px-3 py-2 bg-slate-100 text-center font-bold text-slate-600">
+                              <span className={h.isReal ? "text-blue-600" : "text-slate-400"}>{h.year}</span>
+                              {!h.isReal && <span className="block text-[9px] font-normal text-slate-400">ước tính</span>}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {[
+                          { key: "freshmen", label: "Tân SV (Năm 1)", color: "text-blue-700 bg-blue-50" },
+                          { key: "returning", label: "Lưu SV (Năm 2-4)", color: "text-violet-700 bg-violet-50" },
+                          { key: "policy", label: "Diện chính sách", color: "text-rose-700 bg-rose-50" },
+                          { key: "total", label: "Tổng cộng", color: "text-slate-700 bg-slate-100 font-black" },
+                        ].map((row, ri) => (
+                          <tr key={row.key} className={ri % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                            <td className={`px-3 py-2 font-bold border-r border-slate-100 ${row.key === "total" ? "font-black text-slate-800" : "text-slate-600"}`}>
+                              {row.label}
+                            </td>
+                            {demandForecast.history.map((h) => (
+                              <td key={h.year} className="px-2 py-1.5 text-center">
+                                <span className={`inline-block px-2 py-0.5 rounded-lg font-bold ${h.isReal ? row.color : "bg-slate-100 text-slate-400"}`}>
+                                  {(h[row.key] || 0).toLocaleString()}
+                                </span>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
