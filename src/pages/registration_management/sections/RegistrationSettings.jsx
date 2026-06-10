@@ -31,13 +31,25 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
     },
   });
 
-  // Score Mapping Rules state
+  // Bảng quy đổi điểm chi tiết cho từng chính sách
   const [scoreMappings, setScoreMappings] = useState({
     priority: {
       absolute_policy: 100,
       priority_area: 70,
       other_objects: 30,
       non_priority: 0,
+    },
+    priority_detailed: {
+      ho_ngheo: 40,
+      can_ngheo: 35,
+      khuyet_tat: 30,
+      liet_sy: 50,
+      thuong_binh: 45,
+      luu_hoc_sinh: 40,
+      vung_sau_xa: 20,
+      hai_dao: 25,
+      hoan_canh_kho_khan: 30,
+      giay_xac_nhan: 15,
     },
     year: {
       year1: 100,
@@ -104,6 +116,18 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
               priority_area: settingsValue.scoreMappings.priority?.priority_area || 70,
               other_objects: settingsValue.scoreMappings.priority?.other_objects || 30,
               non_priority: settingsValue.scoreMappings.priority?.non_priority || 0,
+            },
+            priority_detailed: {
+              ho_ngheo: settingsValue.scoreMappings.priority_detailed?.ho_ngheo || 40,
+              can_ngheo: settingsValue.scoreMappings.priority_detailed?.can_ngheo || 35,
+              khuyet_tat: settingsValue.scoreMappings.priority_detailed?.khuyet_tat || 30,
+              liet_sy: settingsValue.scoreMappings.priority_detailed?.liet_sy || 50,
+              thuong_binh: settingsValue.scoreMappings.priority_detailed?.thuong_binh || 45,
+              luu_hoc_sinh: settingsValue.scoreMappings.priority_detailed?.luu_hoc_sinh || 40,
+              vung_sau_xa: settingsValue.scoreMappings.priority_detailed?.vung_sau_xa || 20,
+              hai_dao: settingsValue.scoreMappings.priority_detailed?.hai_dao || 25,
+              hoan_canh_kho_khan: settingsValue.scoreMappings.priority_detailed?.hoan_canh_kho_khan || 30,
+              giay_xac_nhan: settingsValue.scoreMappings.priority_detailed?.giay_xac_nhan || 15,
             },
             year: {
               year1: settingsValue.scoreMappings.year?.year1 || 100,
@@ -613,96 +637,230 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
 
         {expandedSection === "mappings" && (
           <div className="px-8 pb-8 border-t border-slate-100 space-y-8">
-            {/* 1. Priority Score Mapping */}
+            {/* 1. Priority Score Mapping - DETAILED */}
             <div className="space-y-4">
               <h4 className="font-bold text-slate-900 flex items-center gap-2">
                 <span className="inline-flex items-center justify-center w-8 h-8 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">1</span>
-                Điểm Chính sách (Thang 100)
+                Điểm Chính sách (Thang 100 - Có thể cộng dồn)
               </h4>
+              
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-sm text-blue-700">
+                  <strong>⚠️ Lưu ý:</strong> Nếu sinh viên đáp ứng nhiều chính sách, điểm sẽ được <strong>cộng dồn</strong> (tối đa 100 điểm).
+                  <br />
+                  <strong>Ví dụ:</strong> Hộ nghèo (40đ) + Khuyết tật (30đ) = <strong>70 điểm</strong>
+                </p>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Hộ nghèo */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Chính sách tuyệt đối</label>
+                  <label className="block text-sm font-bold text-slate-900">Hộ nghèo</label>
                   <div className="relative">
                     <input
                       type="number"
-                      value={scoreMappings.priority.absolute_policy}
+                      value={scoreMappings.priority_detailed.ho_ngheo}
                       onChange={(e) =>
                         setScoreMappings({
                           ...scoreMappings,
-                          priority: { ...scoreMappings.priority, absolute_policy: parseFloat(e.target.value) || 0 },
+                          priority_detailed: { ...scoreMappings.priority_detailed, ho_ngheo: parseFloat(e.target.value) || 0 },
                         })
                       }
-                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
                       min="0"
                       max="100"
                     />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">đ</span>
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
                   </div>
-                  <p className="text-xs text-slate-500">Hộ nghèo, cận nghèo, con thương binh, khuyết tật, lưu học sinh</p>
                 </div>
 
+                {/* Cận nghèo */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Khu vực ưu tiên</label>
+                  <label className="block text-sm font-bold text-slate-900">Cận nghèo</label>
                   <div className="relative">
                     <input
                       type="number"
-                      value={scoreMappings.priority.priority_area}
+                      value={scoreMappings.priority_detailed.can_ngheo}
                       onChange={(e) =>
                         setScoreMappings({
                           ...scoreMappings,
-                          priority: { ...scoreMappings.priority, priority_area: parseFloat(e.target.value) || 0 },
+                          priority_detailed: { ...scoreMappings.priority_detailed, can_ngheo: parseFloat(e.target.value) || 0 },
                         })
                       }
-                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
                       min="0"
                       max="100"
                     />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">đ</span>
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
                   </div>
-                  <p className="text-xs text-slate-500">Vùng sâu vùng xa, hải đảo, điều kiện kinh tế đặc biệt khó khăn</p>
                 </div>
 
+                {/* Khuyết tật */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Đối tượng khác</label>
+                  <label className="block text-sm font-bold text-slate-900">Khuyết tật</label>
                   <div className="relative">
                     <input
                       type="number"
-                      value={scoreMappings.priority.other_objects}
+                      value={scoreMappings.priority_detailed.khuyet_tat}
                       onChange={(e) =>
                         setScoreMappings({
                           ...scoreMappings,
-                          priority: { ...scoreMappings.priority, other_objects: parseFloat(e.target.value) || 0 },
+                          priority_detailed: { ...scoreMappings.priority_detailed, khuyet_tat: parseFloat(e.target.value) || 0 },
                         })
                       }
-                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
                       min="0"
                       max="100"
                     />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">đ</span>
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
                   </div>
-                  <p className="text-xs text-slate-500">Có giấy xác nhận ưu tiên từ địa phương hoặc nhà trường</p>
                 </div>
 
+                {/* Con liệt sỹ */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-slate-900">Không thuộc diện ưu tiên</label>
+                  <label className="block text-sm font-bold text-slate-900">Con liệt sỹ</label>
                   <div className="relative">
                     <input
                       type="number"
-                      value={scoreMappings.priority.non_priority}
+                      value={scoreMappings.priority_detailed.liet_sy}
                       onChange={(e) =>
                         setScoreMappings({
                           ...scoreMappings,
-                          priority: { ...scoreMappings.priority, non_priority: parseFloat(e.target.value) || 0 },
+                          priority_detailed: { ...scoreMappings.priority_detailed, liet_sy: parseFloat(e.target.value) || 0 },
                         })
                       }
-                      className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
                       min="0"
                       max="100"
                     />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">đ</span>
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
                   </div>
-                  <p className="text-xs text-slate-500">Không có giấy xác nhận ưu tiên</p>
+                </div>
+
+                {/* Con thương binh */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-900">Con thương binh</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={scoreMappings.priority_detailed.thuong_binh}
+                      onChange={(e) =>
+                        setScoreMappings({
+                          ...scoreMappings,
+                          priority_detailed: { ...scoreMappings.priority_detailed, thuong_binh: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
+                  </div>
+                </div>
+
+                {/* Lưu học sinh */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-900">Lưu học sinh</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={scoreMappings.priority_detailed.luu_hoc_sinh}
+                      onChange={(e) =>
+                        setScoreMappings({
+                          ...scoreMappings,
+                          priority_detailed: { ...scoreMappings.priority_detailed, luu_hoc_sinh: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
+                  </div>
+                </div>
+
+                {/* Vùng sâu vùng xa */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-900">Vùng sâu vùng xa</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={scoreMappings.priority_detailed.vung_sau_xa}
+                      onChange={(e) =>
+                        setScoreMappings({
+                          ...scoreMappings,
+                          priority_detailed: { ...scoreMappings.priority_detailed, vung_sau_xa: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
+                  </div>
+                </div>
+
+                {/* Hải đảo */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-900">Hải đảo</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={scoreMappings.priority_detailed.hai_dao}
+                      onChange={(e) =>
+                        setScoreMappings({
+                          ...scoreMappings,
+                          priority_detailed: { ...scoreMappings.priority_detailed, hai_dao: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
+                  </div>
+                </div>
+
+                {/* Hoàn cảnh khó khăn */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-900">Hoàn cảnh khó khăn</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={scoreMappings.priority_detailed.hoan_canh_kho_khan}
+                      onChange={(e) =>
+                        setScoreMappings({
+                          ...scoreMappings,
+                          priority_detailed: { ...scoreMappings.priority_detailed, hoan_canh_kho_khan: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
+                  </div>
+                </div>
+
+                {/* Giấy xác nhận ưu tiên khác */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-900">Giấy xác nhận khác</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={scoreMappings.priority_detailed.giay_xac_nhan}
+                      onChange={(e) =>
+                        setScoreMappings({
+                          ...scoreMappings,
+                          priority_detailed: { ...scoreMappings.priority_detailed, giay_xac_nhan: parseFloat(e.target.value) || 0 },
+                        })
+                      }
+                      className="w-full px-4 py-3 pr-10 border border-slate-200 rounded-xl focus:ring-4 focus:ring-purple-50 outline-none"
+                      min="0"
+                      max="100"
+                    />
+                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-sm">đ</span>
+                  </div>
                 </div>
               </div>
             </div>
