@@ -146,3 +146,16 @@ export const revertContract = async (id) => {
   });
   return handleResponse(response);
 };
+
+/**
+ * Gửi email nhắc gia hạn cho các hợp đồng sắp hết hạn
+ * @param {string[]} contractIds - Danh sách ID hợp đồng
+ */
+export const sendRenewalEmails = async (contractIds) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/send-renewal-emails`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ contractIds }),
+  });
+  return handleResponse(response);
+};

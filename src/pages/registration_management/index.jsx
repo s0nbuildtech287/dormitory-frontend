@@ -30,6 +30,7 @@ import {
   RotateCw,
   Plus,
   Settings,
+  Rocket,
 } from "lucide-react";
 import { getRegistrations } from "../../api/apiRegistration.js";
 
@@ -37,6 +38,7 @@ import { getRegistrations } from "../../api/apiRegistration.js";
 import RegistrationList from "./sections/RegistrationList.jsx";
 import RegistrationStatistics from "./sections/RegistrationStatistics.jsx";
 import RegistrationSettings from "./sections/RegistrationSettings.jsx";
+import CampaignLauncher from "./sections/CampaignLauncher.jsx";
 import PageTabs from "../../components/common/PageTabs.jsx";
 
 const RegistrationManagement = () => {
@@ -278,6 +280,7 @@ const RegistrationManagement = () => {
     <div className="space-y-6">
       <PageTabs
         tabs={[
+          { id: "campaign", label: "Mở đợt đăng ký mới", icon: Rocket },
           { id: "list", label: "Danh sách hồ sơ", icon: List },
           { id: "stats", label: "Thống kê & Phân tích", icon: BarChart3 },
           { id: "adjustment", label: "Điều chỉnh", icon: Settings },
@@ -285,6 +288,8 @@ const RegistrationManagement = () => {
         activeTab={activeSubTab}
         onTabChange={setActiveSubTab}
       />
+
+      {activeSubTab === "campaign" && <CampaignLauncher />}
 
       {activeSubTab === "list" && (
         <RegistrationList

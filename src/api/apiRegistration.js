@@ -540,3 +540,42 @@ export const validateRegistrationImages = async (id) => {
     throw new Error(error.message || 'Lỗi kết nối đến server');
   }
 };
+
+/**
+ * CAMPAIGN LAUNCHER API
+ */
+
+/**
+ * Get room availability forecast
+ * @param {number} days - Số ngày dự báo
+ * @returns {Promise<Object>} { available_now, available_soon, total, forecast_days }
+ */
+export const getRoomForecast = async (days = 30) => {
+  const token = getAuthToken();
+  const response = await fetch(`${API_BASE_URL}/registrations/room-forecast?days=${days}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Lỗi tải dự báo phòng');
+  return data;
+};
+
+/**
+ * Get demand forecast (năm trước +10%)
+ * @returns {Promise<Object>} { last_year, estimated, growth_rate, year }
+ */
+export const getDemandForecast = async () => {
+  const token = getAuthToken();
+  const response = await fetch(`${API_BASE_URL}/registrations/demand-forecast`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Lỗi tải dự báo nhu cầu');
+  return data;
+};
