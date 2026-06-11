@@ -54,6 +54,8 @@ const RoomXungKich = ({
   const [xungKichActiveContracts, setXungKichActiveContracts] = useState([]);
   const [selectedXungKichStudent, setSelectedXungKichStudent] = useState(null);
   const [selectedXungKichRoom, setSelectedXungKichRoom] = useState(null);
+  const [leaderPromoteStudent, setLeaderPromoteStudent] = useState(null);
+  const [leaderPromoting, setLeaderPromoting] = useState(false);
 
   const safeRooms = Array.isArray(rooms) ? rooms : [];
 
@@ -183,19 +185,27 @@ const RoomXungKich = ({
       alert("Không tìm thấy thông tin hợp đồng của sinh viên.");
       return;
     }
+    setLeaderPromoteStudent(student);
+  };
 
-    const confirmPromote = window.confirm(
-      `Bạn có chắc chắn muốn bổ nhiệm sinh viên ${student.student_name} làm Trưởng xung kích cho tòa ${getBuildingLabel(student.building)}?\n` +
-      `Sinh viên đang là Trưởng xung kích của tòa này sẽ tự động chuyển thành Xung kích.`
-    );
+  const confirmPromoteToLeader = async () => {
+    if (!leaderPromoteStudent) return;
 
-    if (!confirmPromote) return;
+    const contractId = leaderPromoteStudent.contract_id || leaderPromoteStudent.id?.split("-")[1];
+    if (!contractId) {
+      alert("Không tìm thấy thông tin hợp đồng của sinh viên.");
+      return;
+    }
 
     try {
+      setLeaderPromoting(true);
       await setVolunteerRole(contractId, "truong_xung_kich");
+      setLeaderPromoteStudent(null);
       onRefresh?.();
     } catch (error) {
       alert(error.message || "Không thể cập nhật chức vụ trưởng xung kích");
+    } finally {
+      setLeaderPromoting(false);
     }
   };
 
@@ -692,6 +702,47 @@ const RoomXungKich = ({
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {leaderPromoteStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl border-2 border-slate-200 p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Crown size={22} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xl font-black text-slate-900">Bổ nhiệm Trưởng xung kích</h3>
+                <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                  Bổ nhiệm <span className="font-bold text-slate-900">{leaderPromoteStudent.student_name}</span> làm{" "}
+                  <span className="font-bold text-blue-700">Trưởng xung kích</span> cho tòa{" "}
+                  <span className="font-bold text-slate-900">{getBuildingLabel(leaderPromoteStudent.building)}</span>?
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  Mỗi tòa chỉ có 1 trưởng xung kích.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setLeaderPromoteStudent(null)}
+                disabled={leaderPromoting}
+                className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmPromoteToLeader}
+                disabled={leaderPromoting}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-200 disabled:opacity-50 flex items-center gap-2"
+              >
+                {leaderPromoting && <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />}
+                {leaderPromoting ? "Đang lưu..." : "Xác nhận bổ nhiệm"}
+              </button>
             </div>
           </div>
         </div>
