@@ -39,65 +39,65 @@ const RegistrationStatistics = ({ regs }) => {
   const statsData = useMemo(() => {
     if (!regs || regs.length === 0) {
       return {
+        totalApplied: 0,
         totalApproved: 0,
         countApproved: 0,
         countPending: 0,
         countRejected: 0,
         baskets: [],
+        approvedBaskets: [],
         genderRatio: { male: 0, female: 0 },
         provinces: [],
         basketGender: [],
         priorityBreakdown: [],
         faculties: [],
         cohorts: [],
+        yearlyTrends: [],
       };
     }
 
-    // Analyze PENDING registrations for baskets, but show ALL statuses
-    const pendingRegs = regs.filter((r) => r.status === RegistrationStatus.PENDING);
-    const actualTotal = pendingRegs.length;
-
-    // Status counts - from ALL registrations, but only recent ones (last 30 days)
+    // Lọc hồ sơ thuộc đợt đăng ký mới (trong vòng 30 ngày gần đây)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
     const recentRegs = regs.filter((r) => {
-      if (!r.updated_at) return false;
-      const updatedDate = new Date(r.updated_at);
-      return updatedDate >= thirtyDaysAgo;
+      const dateStr = r.created_at || r.updated_at;
+      if (!dateStr) return false;
+      const createdDate = new Date(dateStr);
+      return createdDate >= thirtyDaysAgo;
     });
 
-    const countApproved = recentRegs.filter((r) => r.status === RegistrationStatus.APPROVED).length;
-    const countPending = regs.filter((r) => r.status === RegistrationStatus.PENDING).length;
+    const pendingRegs = recentRegs.filter((r) => r.status === RegistrationStatus.PENDING);
+    const approvedRegs = recentRegs.filter((r) => r.status === RegistrationStatus.APPROVED);
+
+    const countPending = pendingRegs.length;
+    const countApproved = approvedRegs.length;
     const countRejected = recentRegs.filter((r) => r.status === RegistrationStatus.REJECTED).length;
 
-    if (actualTotal === 0) {
-      return {
-        totalApproved: 0,
-        countApproved,
-        countPending,
-        countRejected,
-        baskets: [],
-        genderRatio: { male: 0, female: 0 },
-        provinces: [],
-        basketGender: [],
-        priorityBreakdown: [],
-        faculties: [],
-        cohorts: [],
-      };
-    }
+    // activeBatchRegs đại diện cho các hồ sơ đang xử lý hoặc đã duyệt của đợt này
+    const activeBatchRegs = recentRegs.filter(
+      (r) => r.status === RegistrationStatus.PENDING || r.status === RegistrationStatus.APPROVED
+    );
 
-    // --- 1. BASKET COUNTS & GENDER RATIO (from PENDING only) ---
-    const basket1 = pendingRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
-    const basket2 = pendingRegs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
-    const basket3 = pendingRegs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
+    // Phân bổ nhóm của các hồ sơ trong đợt này (để phân tích nhân khẩu học/nhu cầu)
+    const basket1 = activeBatchRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
+    const basket2 = activeBatchRegs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
+    const basket3 = activeBatchRegs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
 
-    const maleCount = pendingRegs.filter((r) => r.gender === "Nam").length;
-    const femaleCount = pendingRegs.filter((r) => r.gender === "Nữ").length;
+    // Phân bổ nhóm của các hồ sơ ĐÃ DUYỆT (để so sánh với chỉ tiêu)
+    const approvedBasket1 = approvedRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
+    const approvedBasket2 = approvedRegs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
+    const approvedBasket3 = approvedRegs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
 
-    // --- 2. GEOGRAPHIC INSIGHTS (Top 5 Provinces - from PENDING only) ---
+    const approvedYear1Count = approvedRegs.filter((r) => r.year === 1).length;
+    const approvedYear2PlusCount = approvedRegs.filter((r) => r.year > 1).length;
+
+    const maleCount = activeBatchRegs.filter((r) => r.gender === "Nam").length;
+    const femaleCount = activeBatchRegs.filter((r) => r.gender === "Nữ").length;
+
+    // --- 2. GEOGRAPHIC INSIGHTS (từ activeBatchRegs) ---
     const provinceCounts = {};
-    pendingRegs.forEach((r) => {
+    activeBatchRegs.forEach((r) => {
       if (!r.address) return;
       const addressParts = r.address.split(",");
       const province = addressParts[addressParts.length - 1]?.trim() || "Không rõ";
@@ -110,7 +110,7 @@ const RegistrationStatistics = ({ regs }) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // --- 3. BASKET ANALYTICS (from PENDING only) ---
+    // --- 3. BASKET ANALYTICS ---
     const basketGender = [
       {
         name: "Nhóm 1 (Chính sách)",
@@ -129,7 +129,7 @@ const RegistrationStatistics = ({ regs }) => {
       },
     ];
 
-    // --- 3b. Priority Reasons Breakdown (Nhóm 1 only - from PENDING) ---
+    // --- 3b. Priority Reasons Breakdown ---
     const priorityCounts = {};
     basket1.forEach((r) => {
       const reasons = r.priority_reasons || "Khác";
@@ -151,9 +151,9 @@ const RegistrationStatistics = ({ regs }) => {
       color: ["#f8a5a5", "#fbbf77", "#fcd34d", "#bef264", "#67e8f9", "#c4b5fd"][idx % 6],
     }));
 
-    // --- 4. ACADEMIC DISTRIBUTION (from PENDING only) ---
+    // --- 4. ACADEMIC DISTRIBUTION ---
     const facultyCounts = {};
-    pendingRegs.forEach((r) => {
+    activeBatchRegs.forEach((r) => {
       const key = r.faculty || r.major || "Khác";
       if (!facultyCounts[key]) facultyCounts[key] = 0;
       facultyCounts[key]++;
@@ -164,9 +164,9 @@ const RegistrationStatistics = ({ regs }) => {
       .sort((a, b) => b.value - a.value)
       .slice(0, 10);
 
-    // --- 5. COHORT BREAKDOWN (from PENDING only) ---
+    // --- 5. COHORT BREAKDOWN ---
     const yearCounts = { "Năm 1": 0, "Năm 2": 0, "Năm 3": 0, "Năm 4": 0 };
-    pendingRegs.forEach((r) => {
+    activeBatchRegs.forEach((r) => {
       if (r.year === 1) yearCounts["Năm 1"]++;
       else if (r.year === 2) yearCounts["Năm 2"]++;
       else if (r.year === 3) yearCounts["Năm 3"]++;
@@ -178,9 +178,9 @@ const RegistrationStatistics = ({ regs }) => {
       value: yearCounts[key],
     }));
 
-    // --- 6. YEARLY SUBMISSION TRENDS (from PENDING only) ---
+    // --- 6. YEARLY SUBMISSION TRENDS ---
     const yearlySubmissions = {};
-    pendingRegs.forEach((r) => {
+    activeBatchRegs.forEach((r) => {
       if (r.created_at) {
         const year = new Date(r.created_at).getFullYear();
         if (!yearlySubmissions[year]) yearlySubmissions[year] = 0;
@@ -208,14 +208,22 @@ const RegistrationStatistics = ({ regs }) => {
     }));
 
     return {
-      totalApproved: actualTotal,
+      totalApplied: activeBatchRegs.length,
+      totalApproved: countApproved,
       countApproved,
       countPending,
       countRejected,
+      approvedYear1Count,
+      approvedYear2PlusCount,
       baskets: [
         { name: "Nhóm 1 (Chính sách)", count: basket1.length, color: "#e74c3c" },
         { name: "Nhóm 2 (Tân sinh viên)", count: basket2.length, color: "#3498db" },
         { name: "Nhóm 3 (Khóa cũ)", count: basket3.length, color: "#9b59b6" },
+      ],
+      approvedBaskets: [
+        { name: "Nhóm 1 (Chính sách)", count: approvedBasket1.length, color: "#e74c3c" },
+        { name: "Nhóm 2 (Tân sinh viên)", count: approvedBasket2.length, color: "#3498db" },
+        { name: "Nhóm 3 (Khóa cũ)", count: approvedBasket3.length, color: "#9b59b6" },
       ],
       genderRatio: { male: maleCount, female: femaleCount },
       provinces,
@@ -231,9 +239,9 @@ const RegistrationStatistics = ({ regs }) => {
   const quotaBasket1 = Math.round(totalSlots * (policy_priority / 100));
   const quotaBasket2 = Math.round(totalSlots * (freshmen / 100));
   const quotaBasket3 = Math.round(totalSlots * (seniors / 100));
-  const basket1Count = statsData.baskets[0]?.count || 0;
-  const basket2Count = statsData.baskets[1]?.count || 0;
-  const basket3Count = statsData.baskets[2]?.count || 0;
+  const basket1Count = statsData.approvedBaskets?.[0]?.count || 0;
+  const basket2Count = statsData.approvedYear1Count || 0;
+  const basket3Count = statsData.approvedYear2PlusCount || 0;
 
   const DiffBadge = ({ diff }) => {
     if (diff > 0) return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">+{diff} vượt</span>;
@@ -246,7 +254,7 @@ const RegistrationStatistics = ({ regs }) => {
       {/* 1. SUMMARY CARDS - Row 1: tổng quan hồ sơ */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total */}
-        <StatCard icon={UserCheck} label="Tổng hồ sơ đã ứng tuyển" value={statsData.totalApproved} subValue="sinh viên" color="emerald" />
+        <StatCard icon={UserCheck} label="Tổng hồ sơ đã ứng tuyển" value={statsData.totalApplied} subValue="sinh viên" color="emerald" />
 
         {/* Baskets - R1, R2, R3 */}
         <StatCard icon={Target} label="Nhóm 1: Chính sách" value={statsData.baskets[0]?.count || 0} subValue="sinh viên" color="rose" />
@@ -319,8 +327,8 @@ const RegistrationStatistics = ({ regs }) => {
           </div>
           {/* Overall summary pill */}
           <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600">
-            <span className="text-slate-400">Tổng nộp:</span>
-            <span className="font-bold text-slate-900">{statsData.totalApproved}</span>
+            <span className="text-slate-400">Tổng đã duyệt:</span>
+            <span className="font-bold text-slate-900">{statsData.countApproved}</span>
             <span className="text-slate-300">/</span>
             <span className="text-slate-400">Chỉ tiêu:</span>
             <span className="font-bold text-violet-700">{totalSlots}</span>
@@ -415,15 +423,15 @@ const RegistrationStatistics = ({ regs }) => {
               <li className="flex items-start gap-2">
                 <span className="text-rose-500 mt-0.5">●</span>
                 <span>
-                  Nhóm 1 chiếm <strong>{statsData.totalApproved > 0 ? ((statsData.baskets[0]?.count / statsData.totalApproved) * 100).toFixed(1) : 0}%</strong>
-                  {statsData.baskets[0]?.count > statsData.totalApproved * 0.15 ? " (cao hơn mức khuyến nghị 12-15%)" : " (phù hợp chính sách ưu tiên)"}
+                  Nhóm 1 chiếm <strong>{statsData.totalApplied > 0 ? ((statsData.baskets[0]?.count / statsData.totalApplied) * 100).toFixed(1) : 0}%</strong>
+                  {statsData.baskets[0]?.count > statsData.totalApplied * 0.15 ? " (cao hơn mức khuyến nghị 12-15%)" : " (phù hợp chính sách ưu tiên)"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">●</span>
                 <span>
                   Nhóm 2 (Tân SV) có <strong>{statsData.baskets[1]?.count}</strong> hồ sơ
-                  {statsData.baskets[1]?.count > statsData.totalApproved * 0.6 ? ", cần mở rộng chỗ ở cho năm 1" : ", phù hợp với chỉ tiêu"}
+                  {statsData.baskets[1]?.count > statsData.totalApplied * 0.6 ? ", cần mở rộng chỗ ở cho năm 1" : ", phù hợp với chỉ tiêu"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -446,7 +454,7 @@ const RegistrationStatistics = ({ regs }) => {
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">●</span>
                 <span>
-                  Tỷ lệ Nam/Nữ: <strong>{statsData.totalApproved > 0 ? (statsData.genderRatio.male / statsData.genderRatio.female).toFixed(2) : "N/A"}</strong>
+                  Tỷ lệ Nam/Nữ: <strong>{statsData.totalApplied > 0 ? (statsData.genderRatio.male / statsData.genderRatio.female).toFixed(2) : "N/A"}</strong>
                   {statsData.genderRatio.male > statsData.genderRatio.female * 1.5
                     ? " (nam nhiều hơn đáng kể)"
                     : statsData.genderRatio.female > statsData.genderRatio.male * 1.5
@@ -458,8 +466,8 @@ const RegistrationStatistics = ({ regs }) => {
                 <span className="text-pink-500 mt-0.5">●</span>
                 <span>
                   {statsData.genderRatio.male > statsData.genderRatio.female
-                    ? `Nam chiếm ${((statsData.genderRatio.male / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nam`
-                    : `Nữ chiếm ${((statsData.genderRatio.female / statsData.totalApproved) * 100).toFixed(1)}%, có thể cần thêm phòng nữ`}
+                    ? `Nam chiếm ${((statsData.genderRatio.male / statsData.totalApplied) * 100).toFixed(1)}%, có thể cần thêm phòng nam`
+                    : `Nữ chiếm ${((statsData.genderRatio.female / statsData.totalApplied) * 100).toFixed(1)}%, có thể cần thêm phòng nữ`}
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -480,7 +488,7 @@ const RegistrationStatistics = ({ regs }) => {
                 <span className="text-orange-500 mt-0.5">●</span>
                 <span>
                   Top tỉnh: <strong>{statsData.provinces[0]?.name || "N/A"}</strong> có <strong>{statsData.provinces[0]?.count || 0}</strong> sinh viên
-                  {statsData.provinces[0]?.count > statsData.totalApproved * 0.2 ? " (tập trung cao)" : ""}
+                  {statsData.provinces[0]?.count > statsData.totalApplied * 0.2 ? " (tập trung cao)" : ""}
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -493,7 +501,7 @@ const RegistrationStatistics = ({ regs }) => {
                 <span className="text-purple-500 mt-0.5">●</span>
                 <span>
                   Năm 1 có <strong>{statsData.cohorts.find((c) => c.name === "Năm 1")?.value || 0}</strong> hồ sơ,
-                  {statsData.cohorts.find((c) => c.name === "Năm 1")?.value > statsData.totalApproved * 0.5 ? " cần ưu tiên hỗ trợ tân sinh viên" : " tỷ lệ phù hợp"}
+                  {statsData.cohorts.find((c) => c.name === "Năm 1")?.value > statsData.totalApplied * 0.5 ? " cần ưu tiên hỗ trợ tân sinh viên" : " tỷ lệ phù hợp"}
                 </span>
               </li>
             </ul>
