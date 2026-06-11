@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { LayoutGrid, BarChart3, Settings, ArrowLeft } from "lucide-react";
+import { LayoutGrid, BarChart3, Settings, ArrowLeft, Users } from "lucide-react";
 import { getRooms } from "../../api/apiRoom.js";
 import RoomList from "./sections/RoomList.jsx";
+import RoomXungKich from "./sections/RoomXungKich.jsx";
 import RoomAnalytics from "./sections/RoomAnalytics.jsx";
 import RoomSettings from "./sections/RoomSettings.jsx";
 import PageTabs from "../../components/common/PageTabs.jsx";
@@ -58,6 +59,7 @@ const RoomManagement = ({ onNavigateToContract, onNavigateToInvoice }) => {
       <PageTabs
         tabs={[
           { id: "list", label: "Danh sách phòng", icon: LayoutGrid },
+          { id: "xung_kich", label: "Sinh viên xung kích", icon: Users },
           { id: "analytics", label: "Thống kê mật độ", icon: BarChart3 },
           { id: "settings", label: "Điều chỉnh", icon: Settings },
         ]}
@@ -67,6 +69,17 @@ const RoomManagement = ({ onNavigateToContract, onNavigateToInvoice }) => {
 
       {/* Tab Content */}
       {activeSubTab === "list" && <RoomList rooms={rooms} isLoadingRooms={isLoadingRooms} onRefresh={handleRefresh} selectedRoom={selectedRoom} setSelectedRoom={setSelectedRoom} onNavigateToContract={onNavigateToContract} onNavigateToInvoice={onNavigateToInvoice} />}
+      {activeSubTab === "xung_kich" && (
+        <RoomXungKich
+          rooms={rooms}
+          isLoadingRooms={isLoadingRooms}
+          onRefresh={handleRefresh}
+          selectedRoom={selectedRoom}
+          setSelectedRoom={setSelectedRoom}
+          onNavigateToContract={onNavigateToContract}
+          onNavigateToInvoice={onNavigateToInvoice}
+        />
+      )}
       {activeSubTab === "analytics" && <RoomAnalytics rooms={rooms} />}
       {activeSubTab === "settings" && <RoomSettings rooms={rooms} onRefresh={handleRefresh} />}
     </div>

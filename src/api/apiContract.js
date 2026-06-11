@@ -159,3 +159,18 @@ export const sendRenewalEmails = async (contractIds) => {
   });
   return handleResponse(response);
 };
+
+/**
+ * Transfer an active contract to a new room
+ * @param {string} contractId
+ * @param {string} roomId
+ */
+export const transferRoom = async (contractId, roomId) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/${contractId}/transfer-room`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ room_id: roomId }),
+  });
+  return handleResponse(response);
+};
+
