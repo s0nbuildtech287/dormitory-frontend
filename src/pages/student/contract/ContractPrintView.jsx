@@ -1,19 +1,27 @@
 // ContractPrintView.jsx — In hợp đồng qua iframe ẩn, không overlay
 import { useEffect, useRef } from "react";
-import { getBuildingLabel, getRoomLabel } from "../../../utils/buildingDisplay.js";
 
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "............");
 const fmtMoney = (v) => (v != null ? `${Number(v).toLocaleString("vi-VN")} đồng` : "............");
 const fmt      = (v) => (v != null && v !== "" ? v : "............");
 
-function buildHTML(c) {
+function buildHTML(c, { studentName, getBuildingLabel }) {
   const today = new Date().toLocaleDateString("vi-VN");
+  const name = studentName || c.student_name || c.rf_student_name;
+  const className = c.snapshot_class
+    || (c.snapshot_year && c.snapshot_faculty ? `${c.snapshot_year} ${c.snapshot_faculty}` : null);
+  const buildingLabel = c.building ? getBuildingLabel(c.building) : "............";
+  const roomDisplay = c.room_number
+    ? `P.${c.room_number}, ${buildingLabel}`
+    : "............";
 
   const row = (label, value) => `
     <tr>
       <td class="label">${label}:</td>
       <td class="value">${value}</td>
     </tr>`;
+
+  const li = (text) => `<li>${text}</li>`;
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -40,7 +48,6 @@ function buildHTML(c) {
       .page { padding: 20mm 20mm 20mm 25mm; page-break-after: auto; }
     }
 
-    /* Tiêu đề */
     .center { text-align: center; }
     .quochieu { font-weight: bold; text-transform: uppercase; font-size: 12pt; }
     .doclaptudo { font-weight: bold; font-size: 12pt; margin-top: 2mm; }
@@ -51,18 +58,17 @@ function buildHTML(c) {
     .divider-bold { border: none; border-top: 2px solid #000; margin-bottom: 5mm; }
     .divider { border: none; border-top: 1px solid #000; margin: 4mm 0; }
 
-    /* Nội dung */
     .section-title { font-weight: bold; margin: 4mm 0 2mm; }
     .italic-note { font-style: italic; font-size: 11pt; margin-bottom: 4mm; }
     p { margin-bottom: 3mm; }
+    ol { margin: 0 0 3mm 6mm; padding-left: 4mm; }
+    li { margin-bottom: 1.5mm; }
 
-    /* Bảng thông tin */
     table { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
     td { padding: 2mm 0; vertical-align: top; }
-    td.label { width: 46%; font-style: italic; }
+    td.label { width: 38%; font-style: italic; }
     td.value { font-weight: 600; }
 
-    /* Chữ ký */
     .signature-row { display: flex; justify-content: space-between; margin-top: 10mm; }
     .sig-box { text-align: center; width: 44%; }
     .sig-box .sig-title { font-weight: bold; margin-bottom: 1mm; }
@@ -81,7 +87,7 @@ function buildHTML(c) {
   </div>
 
   <div class="center" style="margin-top:5mm">
-    <p class="tieude">Hợp đồng nội trú ký túc xá</p>
+    <p class="tieude">Hợp đồng ở nội trú ký túc xá</p>
     <p class="sohd">Số: <strong>${fmt(c.contract_number)}</strong></p>
   </div>
 
@@ -91,56 +97,68 @@ function buildHTML(c) {
     Căn cứ Quy chế công tác sinh viên nội trú của Bộ Giáo dục và Đào tạo; Quy định của Trường Đại học Thủy Lợi về quản lý ký túc xá; Hai bên cùng thỏa thuận ký kết hợp đồng với các điều khoản sau:
   </p>
 
-  <p class="section-title">Bên cho thuê (Bên A):</p>
   <table><tbody>
-    ${row("Đơn vị", "Ký túc xá Trường Đại học Thủy Lợi")}
-    ${row("Địa chỉ", "175 Tây Sơn, Đống Đa, Hà Nội")}
-    ${row("Điện thoại", "(024) 3563 3351")}
-    ${row("Đại diện", "Ban Quản lý Ký túc xá")}
-  </tbody></table>
-
-  <p class="section-title">Bên thuê (Bên B):</p>
-  <table><tbody>
+    ${row("Sinh viên", fmt(name))}
+    ${row("Lớp", fmt(className))}
+    ${row("Phòng", roomDisplay)}
+    ${row("Trường", "Trường Đại học Thủy Lợi")}
+    ${row("Địa chỉ KTX", "175 Tây Sơn - Đống Đa - Hà Nội")}
     ${row("Mã sinh viên", fmt(c.snapshot_student_id))}
     ${row("Số CCCD", fmt(c.snapshot_cccd))}
-    ${row("Khoa", fmt(c.snapshot_faculty))}
-    ${row("Năm học", fmt(c.snapshot_year))}
     ${row("Số điện thoại", fmt(c.snapshot_phone))}
   </tbody></table>
 
   <hr class="divider" />
 
-  <p class="section-title">Điều 1: Nội dung hợp đồng</p>
-  <p>Bên A đồng ý cho Bên B thuê chỗ ở tại Ký túc xá với thông tin sau:</p>
+  <p class="section-title">Điều 1. Vị trí phòng ở</p>
+  <p>Bên A cho Bên B thuê chỗ ở tại Ký túc xá Trường Đại học Thủy Lợi, cụ thể:</p>
   <table><tbody>
-    ${row("Phòng", c.room_number ? `${getRoomLabel(c.building, c.room_number)} (Tầng ${c.floor}, ${getBuildingLabel(c.building)})` : "Chưa gán phòng")}
-    ${row("Diện tích", c.area ? `${c.area} m²` : "............")}
-    ${row("Sức chứa", c.capacity ? `${c.capacity} người` : "............")}
-    ${row("Ngày bắt đầu", fmtDate(c.start_date))}
-    ${row("Ngày kết thúc", fmtDate(c.end_date))}
+    ${row("Số phòng", c.room_number ? `P.${c.room_number}` : "............")}
+    ${row("Nhà", buildingLabel)}
+    ${row("Thời hạn", `từ ${fmtDate(c.start_date)} đến ${fmtDate(c.end_date)}`)}
     ${row("Ngày ký hợp đồng", fmtDate(c.signed_at))}
   </tbody></table>
 
-  <p class="section-title">Điều 2: Giá thuê và phương thức thanh toán</p>
-  <table><tbody>
-    ${row("Phí nội trú / người / tháng", fmtMoney(c.rent_price))}
-    ${row("Tiền cọc", fmtMoney(c.deposit_amount))}
-    ${row("Phí internet / phòng / tháng", fmtMoney(c.internet_fee))}
-    ${row("Phí vệ sinh / phòng / tháng", fmtMoney(c.garbage_fee))}
-    ${row("Phí gửi xe / xe / tháng", fmtMoney(c.parking_fee))}
-  </tbody></table>
-  <p class="italic-note">
-    Hạn nộp tiền: ngày 10 hàng tháng. Thanh toán qua hệ thống online (VNPay) hoặc nộp trực tiếp tại văn phòng KTX. Nộp trễ bị phạt 0,1%/ngày trên số tiền còn nợ.
-  </p>
+  <p class="section-title">Điều 2. Trang bị, tiện nghi được sử dụng</p>
+  <p>Bên B được sử dụng trang bị, tiện nghi trong phòng gồm: giường, nệm, tủ cá nhân, bàn học, ghế, quạt trần, đèn chiếu sáng, ổ cắm điện và các thiết bị chung của phòng theo hiện trạng bàn giao.</p>
+  <p>Bên B có trách nhiệm giữ gìn, bảo quản và sử dụng đúng mục đích; không tự ý di chuyển, tháo dỡ hoặc chuyển nhượng tài sản.</p>
 
-  <p class="section-title">Điều 3: Quyền và nghĩa vụ các bên</p>
-  <p><strong>Bên A:</strong> Cung cấp chỗ ở đúng hợp đồng; đảm bảo an ninh, vệ sinh, điện nước; thông báo kịp thời các thay đổi liên quan đến sinh viên.</p>
-  <p><strong>Bên B:</strong> Tuân thủ nội quy KTX; nộp phí đúng hạn; giữ gìn tài sản chung; không tự ý sửa chữa phòng; đăng ký tạm trú theo quy định; thông báo trước 15 ngày khi trả phòng.</p>
+  <p class="section-title">Điều 3. Mức phí nội trú hàng tháng</p>
+  <p>Mức phí nội trú: <strong>${fmtMoney(c.rent_price)}</strong>/người/tháng.</p>
+  <p>Phí nội trú <strong>không bao gồm</strong> tiền điện, tiền nước, cước điện thoại, phí internet và các khoản phí dịch vụ khác (nếu có) theo quy định của KTX.</p>
+  <p>Bên B có trách nhiệm đóng phí đúng hạn theo thông báo của Ban quản lý KTX. Tiền cọc (nếu có): <strong>${fmtMoney(c.deposit_amount)}</strong>.</p>
 
-  <p class="section-title">Điều 4: Điều khoản chung</p>
-  <p>
-    ${c.terms_conditions || "Hợp đồng có hiệu lực kể từ ngày ký. Mọi tranh chấp được giải quyết trên tinh thần thương lượng. Nếu không thỏa thuận được, hai bên đưa ra cơ quan có thẩm quyền giải quyết theo quy định pháp luật hiện hành."}
-  </p>
+  <p class="section-title">Điều 4. Trách nhiệm Bên A (KTX)</p>
+  <ol>
+    ${li("Bố trí chỗ ở đúng vị trí đã thỏa thuận.")}
+    ${li("Đảm bảo an ninh, trật tự, vệ sinh môi trường chung trong khu nội trú.")}
+    ${li("Hướng dẫn, tổ chức thực hiện nội quy KTX và quy định của Nhà trường.")}
+    ${li("Thông báo kịp thời các thay đổi liên quan đến sinh viên nội trú.")}
+    ${li("Tiếp nhận và xử lý phản ánh, kiến nghị của Bên B theo thẩm quyền.")}
+  </ol>
+
+  <p class="section-title">Điều 5. Trách nhiệm Bên B (sinh viên)</p>
+  <ol>
+    ${li("Chấp hành nội quy KTX, quy định của Nhà trường và pháp luật hiện hành.")}
+    ${li("Đóng đầy đủ, đúng hạn các khoản phí theo quy định.")}
+    ${li("Giữ gìn vệ sinh phòng ở, tài sản chung; không gây mất trật tự, ảnh hưởng người khác.")}
+    ${li("Không tự ý sửa chữa, cải tạo phòng; không cho người khác ở thay hoặc ở chung không đúng quy định.")}
+    ${li("Thông báo trước cho Ban quản lý KTX khi có nhu cầu chấm dứt hợp đồng hoặc chuyển phòng.")}
+    ${li("Thực hiện đầy đủ thủ tục tạm trú, tạm vắng theo quy định.")}
+  </ol>
+
+  <p class="section-title">Điều 6. Các trường hợp chấm dứt hợp đồng tự động</p>
+  <p>Hợp đồng tự động chấm dứt trong các trường hợp:</p>
+  <ol>
+    ${li("Hết thời hạn hợp đồng.")}
+    ${li("Bên B không đóng phí hoặc chậm đóng phí theo quy định.")}
+    ${li("Bên B vi phạm nội quy nghiêm trọng hoặc vi phạm nhiều lần.")}
+    ${li("Bên B bị đình chỉ học tập.")}
+    ${li("Bên B đã tốt nghiệp.")}
+    ${li("Bên B có kết luận y tế cần cách ly theo quy định.")}
+    ${li("Khu nội trú bị phá dỡ hoặc Nhà trường có quyết định thu hồi chỗ ở.")}
+  </ol>
+  ${c.terms_conditions ? `<p class="italic-note">Ghi chú bổ sung: ${c.terms_conditions}</p>` : ""}
 
   <div class="signature-row">
     <div class="sig-box">
@@ -154,7 +172,7 @@ function buildHTML(c) {
       <p class="sig-title">Bên B</p>
       <p style="font-style:italic;font-size:11pt">(Ký, ghi rõ họ tên)</p>
       <div class="sig-space"></div>
-      <p class="sig-name">Sinh viên</p>
+      <p class="sig-name">${fmt(name)}</p>
       <p>MSSV: ${fmt(c.snapshot_student_id)}</p>
     </div>
   </div>
@@ -164,26 +182,25 @@ function buildHTML(c) {
 </html>`;
 }
 
-export default function ContractPrintView({ contract: c, onClose }) {
+export default function ContractPrintView({ contract: c, studentName, getBuildingLabel, onClose }) {
   const iframeRef = useRef(null);
 
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
+    const labelFn = getBuildingLabel || (() => "............");
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     doc.open();
-    doc.write(buildHTML(c));
+    doc.write(buildHTML(c, { studentName, getBuildingLabel: labelFn }));
     doc.close();
 
-    // Đợi load xong rồi print
     iframe.onload = () => {
       iframe.contentWindow.focus();
       iframe.contentWindow.print();
-      // Sau khi đóng hộp thoại in thì đóng view
       iframe.contentWindow.onafterprint = () => onClose();
     };
-  }, [c, onClose]);
+  }, [c, studentName, getBuildingLabel, onClose]);
 
   return (
     <iframe

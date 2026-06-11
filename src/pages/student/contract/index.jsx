@@ -8,6 +8,7 @@ import { getStudentContracts } from "../../../api/apiStudent.js";
 import { createVNPayPayment } from "../../../api/apiVNPay.js";
 import ContractPrintView from "./ContractPrintView.jsx";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import { useAuth } from "../../../contexts/AuthContext.jsx";
 
 const fmt      = (v) => (v != null && v !== "" ? v : "—");
 const fmtDate  = (v) => (v ? new Date(v).toLocaleDateString("vi-VN") : "—");
@@ -71,6 +72,7 @@ const ContractProgress = ({ startDate, endDate }) => {
 };
 
 const StudentContract = () => {
+  const { user } = useAuth();
   const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -206,7 +208,12 @@ const StudentContract = () => {
 
       {/* ── Print view ── */}
       {showPrint && (
-        <ContractPrintView contract={c} onClose={() => setShowPrint(false)} />
+        <ContractPrintView
+          contract={c}
+          studentName={user?.full_name}
+          getBuildingLabel={getBuildingLabel}
+          onClose={() => setShowPrint(false)}
+        />
       )}
 
       {/* ── Thanh tiến trình (chỉ khi Active) ── */}
