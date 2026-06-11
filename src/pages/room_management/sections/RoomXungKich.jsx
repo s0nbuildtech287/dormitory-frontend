@@ -40,6 +40,7 @@ const RoomXungKich = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBuilding, setFilterBuilding] = useState("All");
   const [filterFloor, setFilterFloor] = useState("All");
+  const [filterRole, setFilterRole] = useState("All");
   const { getBuildingLabel } = useBuildingDisplayNames();
 
   // Modals state
@@ -75,6 +76,13 @@ const RoomXungKich = ({
     }
   }, [filterFloor, uniqueRoomNumbers]);
 
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setFilterBuilding("All");
+    setFilterFloor("All");
+    setFilterRole("All");
+  };
+
   // Compute and filter volunteer students flat list
   const filteredStudents = useMemo(() => {
     const xungKichRooms = safeRooms.filter((r) => (r.reserved_for || "general") === "xung_kich");
@@ -99,6 +107,12 @@ const RoomXungKich = ({
       .filter((student) => {
         const matchesBuilding = filterBuilding === "All" || student.building === filterBuilding;
         const matchesRoom = filterFloor === "All" || String(student.room_number || "") === String(filterFloor);
+        const isLeader = student.volunteer_role === "truong_xung_kich";
+        const isVolunteer = student.volunteer_role === "xung_kich";
+        const matchesRole =
+          filterRole === "All" ||
+          (filterRole === "leader" && isLeader) ||
+          (filterRole === "volunteer" && isVolunteer);
 
         const q = searchTerm.toLowerCase();
         const matchesSearch =
@@ -107,7 +121,7 @@ const RoomXungKich = ({
           student.student_name?.toLowerCase().includes(q) ||
           student.student_id?.toLowerCase().includes(q);
 
-        return matchesBuilding && matchesRoom && matchesSearch;
+        return matchesBuilding && matchesRoom && matchesRole && matchesSearch;
       })
       .sort((a, b) => {
         // Group by room_number first so roommates stay together
@@ -116,7 +130,7 @@ const RoomXungKich = ({
         // Sort by name inside room
         return String(a.student_name || "").localeCompare(String(b.student_name || ""));
       });
-  }, [safeRooms, filterBuilding, filterFloor, searchTerm]);
+  }, [safeRooms, filterBuilding, filterFloor, filterRole, searchTerm]);
 
   // Pagination hook
   const pagination = usePagination(filteredStudents, 10);
@@ -363,7 +377,7 @@ const RoomXungKich = ({
       {/* Filters */}
       <FilterBar
         title="Bộ lọc xung kích"
-        filterContainerClass="grid grid-cols-7 gap-4 items-center"
+        filterContainerClass="grid grid-cols-8 gap-4 items-center"
         search={{
           placeholder: "Tìm tên, mã SV hoặc phòng...",
           value: searchTerm,
@@ -388,16 +402,21 @@ const RoomXungKich = ({
               { value: "All", label: "Tất cả phòng" },
               ...uniqueRoomNumbers.map((roomNumber) => ({ value: String(roomNumber), label: `Phòng ${roomNumber}` })),
             ]
+          },
+          {
+            value: filterRole,
+            onChange: setFilterRole,
+            className: "col-span-1",
+            options: [
+              { value: "All", label: "Tất cả chức vụ" },
+              { value: "leader", label: "Trưởng xung kích" },
+              { value: "volunteer", label: "Xung kích" },
+            ]
           }
         ]}
-        hasActiveFilter={searchTerm !== "" || filterBuilding !== "All" || filterFloor !== "All"}
-        onReset={() => {
-          setSearchTerm("");
-          setFilterBuilding("All");
-          setFilterFloor("All");
-        }}
+        hasActiveFilter={searchTerm !== "" || filterBuilding !== "All" || filterFloor !== "All" || filterRole !== "All"}
         customFilters={
-          <div className="col-span-2 flex gap-2">
+          <div className="col-span-3 flex gap-2">
             <button
               onClick={openXungKichPicker}
               className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
@@ -409,6 +428,14 @@ const RoomXungKich = ({
               className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
             >
               <Users size={16} className="mr-1 flex-shrink-0" /> Thêm sinh viên xung kích
+            </button>
+            <button
+              onClick={handleResetFilters}
+              disabled={!searchTerm && filterBuilding === "All" && filterFloor === "All" && filterRole === "All"}
+              className="w-[84px] flex-none flex items-center justify-center px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
+              title="Xóa bộ lọc"
+            >
+              ↺ Reset
             </button>
           </div>
         }
