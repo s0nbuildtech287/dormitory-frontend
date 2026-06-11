@@ -649,7 +649,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                     <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2 mb-2"><Info size={14} /> Quy chế gán phòng</h4>
                     <ul className="text-xs text-blue-800 space-y-1 list-disc pl-4">
                       <li>Cùng giới tính, còn chỗ trống</li>
-                      <li>Ưu tiên phòng <code>international</code> / <code>freshmen</code> / <code>returning_students</code></li>
+                      <li>Ưu tiên phòng <code>quốc tế</code> / <code>tân sinh viên</code> / <code>khóa cũ</code></li>
                       <li>Hết phòng → giữ trạng thái Chờ gán phòng</li>
                     </ul>
                   </div>
