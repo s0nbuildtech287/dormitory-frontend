@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Target, Zap, BarChart3, Info, ChevronDown, ChevronUp, AlertCircle, CheckCircle } from "lucide-react";
 import { getScoringWeights, updateScoringWeights, recalculateAllScores } from "../../../api/apiRegistration.js";
 
@@ -6,9 +6,9 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
   // Quota Settings state
   const [quotas, setQuotas] = useState({
     totalSlots: 1000,
-    policy_priority: 10,
+    policy_priority: 0,
     freshmen: 60,
-    seniors: 30,
+    seniors: 40,
     waterfall_enabled: true,
   });
 
@@ -77,10 +77,10 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
         // Load quotas
         if (settingsValue.quotas) {
           setQuotas({
-            totalSlots: settingsValue.quotas.totalSlots || 1000,
-            policy_priority: settingsValue.quotas.policy_priority || 10,
-            freshmen: settingsValue.quotas.freshmen || 60,
-            seniors: settingsValue.quotas.seniors || 30,
+            totalSlots: settingsValue.quotas.totalSlots !== undefined ? settingsValue.quotas.totalSlots : 1000,
+            policy_priority: settingsValue.quotas.policy_priority !== undefined ? settingsValue.quotas.policy_priority : 0,
+            freshmen: settingsValue.quotas.freshmen !== undefined ? settingsValue.quotas.freshmen : 60,
+            seniors: settingsValue.quotas.seniors !== undefined ? settingsValue.quotas.seniors : 40,
             waterfall_enabled: settingsValue.quotas.waterfall_enabled !== undefined ? settingsValue.quotas.waterfall_enabled : true,
           });
         }
@@ -155,7 +155,8 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
       setSaveStatus("saving");
       
       // Step 1: Update settings
-      const allSettings = { quotas, weights, scoreMappings };
+      const updatedQuotas = { ...quotas, policy_priority: 0 };
+      const allSettings = { quotas: updatedQuotas, weights, scoreMappings };
       await updateScoringWeights(allSettings);
       
       // Step 2: Recalculate all registration scores with new weights
@@ -186,7 +187,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
   const basket2Total = (weights.basket2.trongso_chinhsach + weights.basket2.trongso_namhoc + weights.basket2.trongso_hocluc).toFixed(2);
   const basket3Total = (weights.basket3.trongso_chinhsach + weights.basket3.trongso_namhoc + weights.basket3.trongso_hocluc).toFixed(2);
   const weightsValid = Math.abs(parseFloat(basket1Total) - 1) < 0.01 && Math.abs(parseFloat(basket2Total) - 1) < 0.01 && Math.abs(parseFloat(basket3Total) - 1) < 0.01;
-  const totalQuota = quotas.policy_priority + quotas.freshmen + quotas.seniors;
+  const totalQuota = quotas.freshmen + quotas.seniors;
   const quotaValid = Math.abs(totalQuota - 100) < 1;
 
   // Fetch settings when component mounts
@@ -271,30 +272,10 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             </div>
 
             {/* Quota Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Policy Priority */}
-              <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Nhóm 1: Ưu tiên chính sách ({quotas.policy_priority}%) — {Math.round((quotas.policy_priority / 100) * quotas.totalSlots)} chỗ</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={quotas.policy_priority}
-                    onChange={(e) => setQuotas({ ...quotas, policy_priority: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-4 py-3 pr-8 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
-                </div>
-                <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 10% — Dành cho hộ nghèo, khuyết tật, lưu học sinh
-                </p>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Freshmen */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Nhóm 2: Tân sinh viên ({quotas.freshmen}%) — {Math.round((quotas.freshmen / 100) * quotas.totalSlots)} chỗ</label>
+                <label className="block text-sm font-bold text-slate-900">Nhóm 1: Tân sinh viên ({quotas.freshmen}%) — {Math.round((quotas.freshmen / 100) * quotas.totalSlots)} chỗ</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -308,13 +289,13 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 60% — Ưu tiên sinh viên năm nhất
+                  <strong>Mặc định:</strong> 60% — Ưu tiên sinh viên năm nhất (gồm cả tân sinh viên diện chính sách)
                 </p>
               </div>
 
               {/* Seniors */}
               <div className="space-y-3">
-                <label className="block text-sm font-bold text-slate-900">Nhóm 3: Sinh viên khóa cũ ({quotas.seniors}%) — {Math.round((quotas.seniors / 100) * quotas.totalSlots)} chỗ</label>
+                <label className="block text-sm font-bold text-slate-900">Nhóm 2: Sinh viên khóa cũ ({quotas.seniors}%) — {Math.round((quotas.seniors / 100) * quotas.totalSlots)} chỗ</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -328,7 +309,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold">%</span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  <strong>Mặc định:</strong> 40% — Xét theo điểm học tập
+                  <strong>Mặc định:</strong> 40% — Xét theo điểm học tập (gồm cả sinh viên khóa cũ diện chính sách)
                 </p>
               </div>
             </div>

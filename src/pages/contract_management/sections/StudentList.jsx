@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare, RotateCcw, Rocket, Loader2, X, Info, AlertTriangle } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
@@ -278,7 +278,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             <button
               onClick={() => setIsOpenAutoAssignModal(true)}
               disabled={pendingContracts.length === 0}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm shadow-indigo-200 transition-colors flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors flex items-center gap-1.5"
             >
               <Rocket size={13} /> Gán tự động ({pendingContracts.length})
             </button>
@@ -564,14 +564,14 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
       {isOpenAutoAssignModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100">
-            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
+            <div className="bg-blue-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/10 rounded-xl text-white">
                   <Rocket size={20} />
                 </div>
                 <div>
                   <h2 className="text-white text-xl font-black text-left">Gán phòng tự động</h2>
-                  <p className="text-indigo-100 text-xs text-left mt-0.5">Xếp phòng cho hợp đồng chờ gán theo giới tính, diện SV và điểm AI</p>
+                  <p className="text-blue-100 text-xs text-left mt-0.5">Xếp phòng cho hợp đồng chờ gán theo giới tính, diện SV và điểm AI</p>
                 </div>
               </div>
               <button
@@ -586,7 +586,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
             <div className="flex-1 overflow-y-auto p-6">
               {autoAssigning ? (
                 <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                  <Loader2 size={40} className="animate-spin text-indigo-600" />
+                  <Loader2 size={40} className="animate-spin text-blue-600" />
                   <p className="font-bold text-slate-800">Đang gán phòng tự động...</p>
                 </div>
               ) : autoAssignResult ? (
@@ -623,7 +623,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                           <tr key={idx}>
                             <td className="px-4 py-2 text-xs font-mono">{item.student_id}</td>
                             <td className="px-4 py-2 text-xs">{item.student_name}</td>
-                            <td className="px-4 py-2 text-xs font-bold text-indigo-600">{item.room_number}</td>
+                            <td className="px-4 py-2 text-xs font-bold text-blue-600">{item.room_number}</td>
                             <td className="px-4 py-2 text-xs">
                               {item.status === "Active" ? (
                                 <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">Đang nội trú</span>
@@ -665,7 +665,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                     setAutoAssignResult(null);
                     if (onRefresh) onRefresh();
                   }}
-                  className="px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700"
+                  className="px-6 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700"
                 >
                   Xác nhận & Đóng
                 </button>
@@ -681,7 +681,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   <button
                     onClick={handleRunAutoAssign}
                     disabled={autoAssigning || pendingContracts.length === 0}
-                    className="px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5"
+                    className="px-6 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
                   >
                     <Rocket size={13} /> Bắt đầu gán phòng
                   </button>

@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
 import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp, CheckCircle2, Clock, XCircle, Gauge } from "lucide-react";
 import { RegistrationStatus } from "../../../utils/types.js";
@@ -11,9 +11,9 @@ const COLORS = ["#1e40af", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"
 const RegistrationStatistics = ({ regs }) => {
   const [quotaSettings, setQuotaSettings] = useState({
     totalSlots: 1000,
-    policy_priority: 10,
+    policy_priority: 0,
     freshmen: 60,
-    seniors: 30,
+    seniors: 40,
   });
 
   useEffect(() => {
@@ -24,9 +24,9 @@ const RegistrationStatistics = ({ regs }) => {
           const q = data.data.value.quotas;
           setQuotaSettings({
             totalSlots: q.totalSlots || 1000,
-            policy_priority: q.policy_priority ?? 10,
+            policy_priority: q.policy_priority !== undefined ? q.policy_priority : 0,
             freshmen: q.freshmen ?? 60,
-            seniors: q.seniors ?? 30,
+            seniors: q.seniors ?? 40,
           });
         }
       } catch (e) {
@@ -329,35 +329,6 @@ const RegistrationStatistics = ({ regs }) => {
 
         {/* Per-basket rows */}
         <div className="divide-y divide-slate-50">
-          {/* Basket 1 */}
-          {(() => {
-            const diff = basket1Count - quotaBasket1;
-            const pct = quotaBasket1 > 0 ? Math.min((basket1Count / quotaBasket1) * 100, 150) : 0;
-            return (
-              <div className="flex items-center gap-4 px-6 py-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" />
-                <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Nhóm 1 — Chính sách</p>
-                  <p className="text-xs text-slate-400">
-                    {policy_priority}% chỉ tiêu = {quotaBasket1} suất
-                  </p>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                    <span>{basket1Count} hồ sơ</span>
-                    <span>{Math.round(pct)}%</span>
-                  </div>
-                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-400" : "bg-blue-600"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
-                  </div>
-                </div>
-                <div className="w-36 shrink-0 flex items-center justify-end gap-2">
-                  <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
-                  <DiffBadge diff={diff} />
-                </div>
-              </div>
-            );
-          })()}
 
           {/* Basket 2 */}
           {(() => {

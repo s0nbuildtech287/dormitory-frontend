@@ -137,9 +137,9 @@ const RegistrationList = ({
   // Settings state for quotas
   const [quotas, setQuotas] = useState({
     totalSlots: 1000,
-    policy_priority: 10,
+    policy_priority: 0,
     freshmen: 60,
-    seniors: 30,
+    seniors: 40,
   });
 
   // Load room forecast stats
@@ -242,7 +242,7 @@ const RegistrationList = ({
   // Calculate quota-based pending count for current filter group
   const totalSlots = quotas.totalSlots || 1000;
   const groupQuotas = {
-    "Chính sách": Math.round((quotas.policy_priority / 100) * totalSlots),
+    "Chính sách": totalSlots,
     "Tân sinh viên": Math.round((quotas.freshmen / 100) * totalSlots),
     "Sinh viên khoá cũ": Math.round((quotas.seniors / 100) * totalSlots),
   };
@@ -407,7 +407,7 @@ const RegistrationList = ({
 
           <button
             onClick={() => setIsOpenAutoAllocateModal(true)}
-            className="col-span-1 flex items-center justify-center px-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-indigo-200 font-bold text-xs whitespace-nowrap"
+            className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap"
           >
             <Rocket size={14} className="mr-1 flex-shrink-0" /> Duyệt tự động
           </button>
@@ -467,18 +467,32 @@ const RegistrationList = ({
 
         <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-2xl border border-emerald-200 shadow-sm flex flex-col justify-center">
           <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1 text-left">Tỷ lệ sử dụng chỉ tiêu</p>
-          <div className="flex justify-between items-end mb-1">
-            <span className="text-base font-black text-emerald-900 leading-none">
-              {Math.min(100, Math.round(((totalSlots - roomStats.available_now) / totalSlots) * 100))}%
-            </span>
-            <span className="text-[10px] text-emerald-600 font-medium leading-none">{totalSlots - roomStats.available_now} / {totalSlots} chỗ đã gán</span>
-          </div>
-          <div className="w-full bg-emerald-200/40 h-2 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-emerald-600 rounded-full transition-all duration-500" 
-              style={{ width: `${Math.min(100, Math.round(((totalSlots - roomStats.available_now) / totalSlots) * 100))}%` }}
-            ></div>
-          </div>
+          {(() => {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const approvedCount = regs.filter((reg) => {
+              if (reg.status !== RegistrationStatus.APPROVED) return false;
+              const createdDate = reg.created_at ? new Date(reg.created_at) : new Date();
+              return createdDate >= thirtyDaysAgo;
+            }).length;
+            const pctUsed = totalSlots > 0 ? Math.min(100, Math.round((approvedCount / totalSlots) * 100)) : 0;
+            return (
+              <>
+                <div className="flex justify-between items-end mb-1">
+                  <span className="text-base font-black text-emerald-900 leading-none">
+                    {pctUsed}%
+                  </span>
+                  <span className="text-[10px] text-emerald-600 font-medium leading-none">{approvedCount} / {totalSlots} chỗ đã gán</span>
+                </div>
+                <div className="w-full bg-emerald-200/40 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-600 rounded-full transition-all duration-500" 
+                    style={{ width: `${pctUsed}%` }}
+                  ></div>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -1229,7 +1243,7 @@ const RegistrationList = ({
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
+            <div className="bg-blue-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/10 rounded-xl text-white">
                   <Rocket size={20} className="animate-pulse" />
@@ -1257,8 +1271,8 @@ const RegistrationList = ({
                 /* Loading State */
                 <div className="flex flex-col items-center justify-center py-20 space-y-6">
                   <div className="relative">
-                    <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-indigo-600">
+                    <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-blue-600">
                       <Rocket size={24} className="animate-bounce" />
                     </div>
                   </div>
@@ -1356,7 +1370,7 @@ const RegistrationList = ({
                     </div>
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Hồ sơ chờ duyệt</span>
-                      <span className="font-black text-indigo-600 text-lg block mt-1">
+                      <span className="font-black text-blue-600 text-lg block mt-1">
                         {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length} hồ sơ
                       </span>
                     </div>
@@ -1397,7 +1411,7 @@ const RegistrationList = ({
                       setAutoAllocateResult(null);
                       if (onRefresh) onRefresh();
                     }}
-                    className="px-6 py-2.5 text-white font-bold text-xs bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                    className="px-6 py-2.5 text-white font-bold text-xs bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
                   >
                     Xác nhận & Đóng
                   </button>
@@ -1414,7 +1428,7 @@ const RegistrationList = ({
                   <button
                     onClick={handleRunAutoAllocate}
                     disabled={autoAllocating || filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length === 0}
-                    className="px-6 py-2.5 text-white font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-100 flex items-center gap-1.5"
+                    className="px-6 py-2.5 text-white font-bold text-xs bg-blue-600 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-100 flex items-center gap-1.5"
                   >
                     {autoAllocating ? (
                       <><Loader2 size={13} className="animate-spin" /> Đang duyệt...</>
