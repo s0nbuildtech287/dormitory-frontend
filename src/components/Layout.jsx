@@ -34,10 +34,19 @@ const Layout = ({ user, onLogout, children }) => {
 
   const { notifications, adminAlerts, unreadCount, clearUnread, clearAdminAlerts, highPriorityToasts, dismissHighPriorityToast } = useNotifications();
 
-  // Dropdown items: sinh viên thấy notifications, admin thấy adminAlerts
-  const dropdownItems = user.role === UserRole.ADMIN ? adminAlerts : notifications;
+  const isAdmin = user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN || user.role === UserRole.STAFF;
 
-  const menuItems = user.role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
+  const getRoleDisplayName = () => {
+    if (user.role === UserRole.SUPER_ADMIN) return "Super Admin";
+    if (user.role === UserRole.STAFF) return user.staff_title || "Cán bộ quản lý";
+    if (user.role === UserRole.ADMIN) return "Ban Quản Lý";
+    return "Sinh Viên";
+  };
+
+  // Dropdown items: sinh viên thấy notifications, admin thấy adminAlerts
+  const dropdownItems = isAdmin ? adminAlerts : notifications;
+
+  const menuItems = isAdmin ? ADMIN_ROUTES : STUDENT_ROUTES;
 
   const getIconComponent = (iconName) => {
     const IconComponent = LucideIcons[iconName];
@@ -266,7 +275,7 @@ const Layout = ({ user, onLogout, children }) => {
                   {/* Header */}
                   <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 className="font-bold text-slate-900 text-base">Thông báo</h3>
-                    {user.role === UserRole.ADMIN && adminAlerts.length > 0 && (
+                    {isAdmin && adminAlerts.length > 0 && (
                       <button onClick={clearAdminAlerts}
                         className="text-xs text-blue-600 hover:underline font-semibold">
                         Xóa tất cả
@@ -282,7 +291,7 @@ const Layout = ({ user, onLogout, children }) => {
                         <p className="text-sm">Không có thông báo mới</p>
                       </div>
                     ) : dropdownItems.slice(0, 10).map((item, idx) => {
-                      const isAdminAlert = user.role === UserRole.ADMIN;
+                      const isAdminAlert = isAdmin;
                       const alertIcon = isAdminAlert
                         ? item.type === "new_registration" ? <FileText size={16} className="text-blue-600" /> : <MessageSquare size={16} className="text-amber-600" />
                         : <Megaphone size={16} className="text-blue-600" />;
@@ -335,7 +344,7 @@ const Layout = ({ user, onLogout, children }) => {
                     <button
                       onClick={() => {
                         setShowNotifications(false);
-                        navigate(user.role === UserRole.ADMIN ? "/notifications" : "/home");
+                        navigate(isAdmin ? "/notifications" : "/home");
                       }}
                       className="w-full py-3 text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors">
                       Xem tất cả thông báo
@@ -348,7 +357,7 @@ const Layout = ({ user, onLogout, children }) => {
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-slate-900">{user.name}</p>
               <p className="text-xs text-slate-500 font-medium">
-                {user.role === UserRole.ADMIN ? "Ban Quản Lý" : "Sinh Viên"}
+                {getRoleDisplayName()}
               </p>
             </div>
             
@@ -375,10 +384,10 @@ const Layout = ({ user, onLogout, children }) => {
                   <div className="px-4 py-3 border-b border-slate-100">
                     <p className="text-sm font-bold text-slate-800">{user.name}</p>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {user.role === UserRole.ADMIN ? "Ban Quản Lý" : "Sinh Viên"}
+                      {getRoleDisplayName()}
                     </p>
                   </div>
-                  {user.role === UserRole.ADMIN && (
+                  {isAdmin && (
                   <button
                     onClick={() => {
                       navigate("/profile-admin");
@@ -423,7 +432,7 @@ const Layout = ({ user, onLogout, children }) => {
       </main>
 
       {/* ── High Priority Toast Container (Admin only) ── */}
-      {user.role === UserRole.ADMIN && highPriorityToasts.length > 0 && (
+      {isAdmin && highPriorityToasts.length > 0 && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full">
           {highPriorityToasts.map(toast => (
             <div key={toast.id}

@@ -49,8 +49,10 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
 
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminName, setNewAdminName] = useState("");
+  const [newAdminRole, setNewAdminRole] = useState("STAFF");
+  const [newAdminTitle, setNewAdminTitle] = useState("");
 
-  const isSuperAdmin = user?.email === "buixu4ns0n@gmail.com";
+  const isSuperAdmin = user?.role === "SUPER_ADMIN" || user?.email === "buixu4ns0n@gmail.com";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -146,19 +148,30 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
       setMessage({ ok: false, text: "Vui lòng nhập đầy đủ email và họ tên!" });
       return;
     }
+    if (newAdminRole === "STAFF" && !newAdminTitle.trim()) {
+      setMessage({ ok: false, text: "Vui lòng nhập chức danh cho cán bộ quản lý!" });
+      return;
+    }
     setIsSaving(true);
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${BACKEND_URL}/api/auth/create-admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email: newAdminEmail.trim(), full_name: newAdminName.trim() }),
+        body: JSON.stringify({ 
+          email: newAdminEmail.trim(), 
+          full_name: newAdminName.trim(),
+          role: newAdminRole,
+          staff_title: newAdminRole === "STAFF" ? newAdminTitle.trim() : null
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Tạo tài khoản thất bại!");
       setMessage({ ok: true, text: `Tạo tài khoản ${newAdminEmail} thành công! Mật khẩu mặc định: 123` });
       setNewAdminEmail("");
       setNewAdminName("");
+      setNewAdminRole("STAFF");
+      setNewAdminTitle("");
       setTimeout(() => setMessage(null), 5000);
     } catch (err) {
       setMessage({ ok: false, text: err.message });
@@ -187,7 +200,7 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-1 text-slate-900">{formData.name}</h1>
             <p className="text-slate-600 flex items-center gap-2 mb-3">
-              <Shield size={16} /> Ban Quản Lý Ký Túc Xá
+              <Shield size={16} /> {user?.staff_title || (user?.role === "SUPER_ADMIN" ? "Quản trị viên tối cao" : "Ban Quản Lý Ký Túc Xá")}
             </p>
             <div className="flex items-center gap-4 text-sm text-slate-500">
               <span className="flex items-center gap-1">
@@ -369,6 +382,21 @@ const ProfileAdmin = ({ user, onLogout, onUpdateProfile }) => {
               <input type="email" value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} placeholder="Nhập email tài khoản..."
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
             </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Phân quyền</label>
+              <select value={newAdminRole} onChange={(e) => setNewAdminRole(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm font-semibold transition-all">
+                <option value="STAFF">Cán bộ quản lý (STAFF)</option>
+                <option value="SUPER_ADMIN">Tài khoản tối cao (SUPER_ADMIN)</option>
+              </select>
+            </div>
+            {newAdminRole === "STAFF" && (
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Chức danh</label>
+                <input type="text" value={newAdminTitle} onChange={(e) => setNewAdminTitle(e.target.value)} placeholder="Ví dụ: Giám đốc trung tâm, Ban tài chính, Ban kỷ luật..."
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-50 focus:border-blue-300 outline-none text-sm transition-all" />
+              </div>
+            )}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <button onClick={handleCreateAdmin} disabled={isSaving}
                 className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">

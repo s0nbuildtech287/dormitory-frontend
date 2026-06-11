@@ -18,8 +18,9 @@ const RouteConfig = () => {
   const { contractFilter, invoiceFilter, notificationData } = useNavigation();
   const { handleNavigateToContract, handleNavigateToInvoice, handleNavigateToNotification } = useNavigationHandlers();
 
-  const routes = user?.role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
-  const defaultPath = user?.role === UserRole.ADMIN ? "/dashboard" : "/profile";
+  const isAdmin = user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.STAFF;
+  const routes = isAdmin ? ADMIN_ROUTES : STUDENT_ROUTES;
+  const defaultPath = isAdmin ? "/dashboard" : "/profile";
 
   const getProps = (routeId) => {
     const props = { user, tab: routeId };

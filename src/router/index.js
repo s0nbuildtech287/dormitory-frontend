@@ -170,7 +170,8 @@ export const STUDENT_ROUTES = [
  * @returns {Array} Routes for the role
  */
 export const getRoutesByRole = (role) => {
-  return role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
+  const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.STAFF;
+  return isAdmin ? ADMIN_ROUTES : STUDENT_ROUTES;
 };
 
 /**

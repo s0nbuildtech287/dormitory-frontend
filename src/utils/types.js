@@ -1,6 +1,8 @@
 export const UserRole = {
-  ADMIN: "ADMIN",
+  SUPER_ADMIN: "SUPER_ADMIN",
+  STAFF: "STAFF",
   STUDENT: "STUDENT",
+  ADMIN: "ADMIN",
 };
 
 export const Gender = {

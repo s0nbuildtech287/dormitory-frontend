@@ -116,7 +116,7 @@ const LoginPage = ({ onLogin }) => {
         const lastVerified = sessions[user.email];
         const within7days = lastVerified && Date.now() - lastVerified < 7 * 24 * 60 * 60 * 1000;
 
-        const isAdminNoOtp = user.role === 'ADMIN' && user.email !== 'buixu4ns0n@gmail.com';
+        const isAdminNoOtp = (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.role === 'STAFF') && user.email !== 'buixu4ns0n@gmail.com';
 
         if (isOtpEnabled && !within7days && !isAdminNoOtp) {
           setPendingAuth({ token: data.data.token, user });
