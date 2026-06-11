@@ -100,6 +100,8 @@ const RegistrationList = ({
   const [isOpenAutoAllocateModal, setIsOpenAutoAllocateModal] = useState(false);
   const [autoAllocating, setAutoAllocating] = useState(false);
   const [autoAllocateResult, setAutoAllocateResult] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [progressStage, setProgressStage] = useState("");
   const [roomStats, setRoomStats] = useState({
     available_now: 0,
     available_soon: 0,
@@ -151,16 +153,50 @@ const RegistrationList = ({
       .catch(err => console.error("Error loading room forecast:", err));
   }, [regs]);
 
+  const getApprovalStage = (percent) => {
+    if (percent < 20) return "Chuẩn bị danh sách xét duyệt...";
+    if (percent < 45) return "Đang xếp hạng theo điểm AI & diện ưu tiên...";
+    if (percent < 75) return "Đang khởi tạo tài khoản & hợp đồng chờ gán...";
+    if (percent < 90) return "Đang kiểm tra chỉ tiêu & áp dụng cấu hình...";
+    return "Đang hoàn tất lưu dữ liệu...";
+  };
+
   const handleRunAutoAllocate = async () => {
     setAutoAllocating(true);
+    setProgress(0);
+    setProgressStage("Chuẩn bị danh sách xét duyệt...");
+
+    const pendingCount = (regs || []).filter(
+      (r) =>
+        r.status === "Chờ duyệt" &&
+        (filterFaculty === "All" || r.faculty === filterFaculty)
+    ).length;
+
+    const estimatedDuration = Math.max(2000, pendingCount * 22);
+    const tickMs = 100;
+    const increment = (tickMs / estimatedDuration) * 98;
+
+    let currentProgress = 0;
+    const timer = setInterval(() => {
+      currentProgress = Math.min(98, currentProgress + increment);
+      setProgress(Math.round(currentProgress));
+      setProgressStage(getApprovalStage(currentProgress));
+    }, tickMs);
+
     try {
       const res = await autoAllocateRegistrations(filterFaculty === "All" ? null : filterFaculty);
+      clearInterval(timer);
+      setProgress(100);
+      setProgressStage("Đã duyệt thành công!");
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
       if (res.success) {
         setAutoAllocateResult(res.data);
       } else {
         alert(res.message || "Tự động phân bổ thất bại");
       }
     } catch (err) {
+      clearInterval(timer);
       alert(err.message || "Có lỗi xảy ra");
     } finally {
       setAutoAllocating(false);
@@ -1268,18 +1304,32 @@ const RegistrationList = ({
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-6">
               {autoAllocating ? (
-                /* Loading State */
-                <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                /* Loading State with Progress Bar */
+                <div className="flex flex-col items-center justify-center py-16 space-y-8 px-8">
                   <div className="relative">
-                    <div className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+                    <div className="w-20 h-20 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin"></div>
                     <div className="absolute inset-0 flex items-center justify-center text-blue-600">
-                      <Rocket size={24} className="animate-bounce" />
+                      <Rocket size={28} className="animate-bounce" />
                     </div>
                   </div>
-                  <div className="text-center space-y-2 max-w-md">
-                    <h3 className="font-bold text-slate-800 text-lg">Đang duyệt hồ sơ...</h3>
-                    <p className="text-sm text-slate-500 font-medium">
-                      Hệ thống đang sắp xếp hồ sơ theo nhóm ưu tiên, điểm AI và chỉ tiêu từng giỏ, sau đó tạo hợp đồng chờ gán phòng.
+                  
+                  <div className="w-full max-w-md space-y-3">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+                      <span className="text-blue-600 animate-pulse text-left">{progressStage}</span>
+                      <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-lg text-sm">{progress}%</span>
+                    </div>
+                    
+                    <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-300 ease-out shadow-sm shadow-blue-500/20"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="text-center max-w-md">
+                    <p className="text-xs text-slate-400 font-medium">
+                      Vui lòng không đóng trình duyệt hoặc tải lại trang trong khi hệ thống đang xử lý dữ liệu.
                     </p>
                   </div>
                 </div>

@@ -85,19 +85,49 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [isOpenAutoAssignModal, setIsOpenAutoAssignModal] = useState(false);
   const [autoAssigning, setAutoAssigning] = useState(false);
   const [autoAssignResult, setAutoAssignResult] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [progressStage, setProgressStage] = useState("");
 
   const pendingContracts = contracts.filter((c) => c.status === "Pending");
 
+  const getAssignmentStage = (percent) => {
+    if (percent < 20) return "Khởi tạo danh sách phòng và hợp đồng chờ xếp...";
+    if (percent < 40) return "Đang lọc theo giới tính và khoa/ngành học...";
+    if (percent < 70) return "Đang tối ưu phân bổ (Phòng quốc tế / Tân SV / Khóa cũ)...";
+    if (percent < 90) return "Đang cập nhật chỗ trống và tạo hồ sơ nội trú...";
+    return "Đang hoàn tất...";
+  };
+
   const handleRunAutoAssign = async () => {
     setAutoAssigning(true);
+    setProgress(0);
+    setProgressStage("Khởi tạo danh sách phòng và hợp đồng chờ xếp...");
+
+    const estimatedDuration = Math.max(2000, pendingContracts.length * 15);
+    const tickMs = 100;
+    const increment = (tickMs / estimatedDuration) * 98;
+
+    let currentProgress = 0;
+    const timer = setInterval(() => {
+      currentProgress = Math.min(98, currentProgress + increment);
+      setProgress(Math.round(currentProgress));
+      setProgressStage(getAssignmentStage(currentProgress));
+    }, tickMs);
+
     try {
       const res = await autoAssignPendingContracts();
+      clearInterval(timer);
+      setProgress(100);
+      setProgressStage("Đã gán phòng thành công!");
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
       if (res.success) {
         setAutoAssignResult(res.data);
       } else {
         alert(res.message || "Gán phòng tự động thất bại");
       }
     } catch (err) {
+      clearInterval(timer);
       alert(err.message || "Có lỗi xảy ra");
     } finally {
       setAutoAssigning(false);
@@ -585,9 +615,34 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
 
             <div className="flex-1 overflow-y-auto p-6">
               {autoAssigning ? (
-                <div className="flex flex-col items-center justify-center py-20 space-y-6">
-                  <Loader2 size={40} className="animate-spin text-blue-600" />
-                  <p className="font-bold text-slate-800">Đang gán phòng tự động...</p>
+                /* Loading State with Progress Bar */
+                <div className="flex flex-col items-center justify-center py-16 space-y-8 px-8">
+                  <div className="relative">
+                    <div className="w-20 h-20 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-blue-600">
+                      <Rocket size={28} className="animate-bounce" />
+                    </div>
+                  </div>
+                  
+                  <div className="w-full max-w-md space-y-3">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-500">
+                      <span className="text-blue-600 animate-pulse text-left">{progressStage}</span>
+                      <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-lg text-sm">{progress}%</span>
+                    </div>
+                    
+                    <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-300 ease-out shadow-sm shadow-blue-500/20"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="text-center max-w-md">
+                    <p className="text-xs text-slate-400 font-medium">
+                      Hệ thống đang tự động xếp phòng theo giới tính, diện sinh viên và tối ưu hóa vị trí phòng trống.
+                    </p>
+                  </div>
                 </div>
               ) : autoAssignResult ? (
                 <div className="space-y-6">
