@@ -299,7 +299,7 @@ const RoomXungKich = ({
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
       <FilterBar
-        title="Bộ lọc phòng"
+        title="Bộ lọc xung kích"
         filterContainerClass="grid grid-cols-7 gap-4 items-center"
         search={{
           placeholder: "Tìm tên, mã SV hoặc phòng...",
@@ -311,7 +311,7 @@ const RoomXungKich = ({
           {
             value: filterBuilding,
             onChange: setFilterBuilding,
-            className: "col-span-2",
+            className: "col-span-1",
             options: [
               { value: "All", label: "Tất cả tòa" },
               ...uniqueBuildings.map((b) => ({ value: b, label: getBuildingLabel(b) })),
@@ -335,18 +335,18 @@ const RoomXungKich = ({
         }}
         customFilters={
           <div className="col-span-2 flex gap-2">
-      <button
-        onClick={openXungKichPicker}
-        className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
-      >
-        <Users size={16} className="mr-1 flex-shrink-0" /> Chọn phòng xung kích
-      </button>
-      <button
-        onClick={openXungKichAssignModal}
-        className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
-      >
-        <Users size={16} className="mr-1 flex-shrink-0" /> Thêm sinh viên xung kích
-      </button>
+            <button
+              onClick={openXungKichPicker}
+              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+            >
+              <Users size={16} className="mr-1 flex-shrink-0" /> Chọn phòng xung kích
+            </button>
+            <button
+              onClick={openXungKichAssignModal}
+              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+            >
+              <Users size={16} className="mr-1 flex-shrink-0" /> Thêm sinh viên xung kích
+            </button>
           </div>
         }
       />
