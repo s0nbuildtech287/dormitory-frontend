@@ -57,6 +57,25 @@ const INTERNATIONAL_KEYWORDS = [
   "campuchia",
 ];
 
+const getStudentGroupKey = (student = {}) => {
+  const year = Number(student.snapshot_year);
+  const priorityReasons = student.priority_reasons || "";
+
+  if (hasAnyKeyword(priorityReasons, INTERNATIONAL_KEYWORDS)) return "international";
+  if (hasAnyKeyword(priorityReasons, POLICY_KEYWORDS)) return "policy";
+  if (year === 1) return "freshmen";
+  if (year >= 2) return "returning_students";
+  return "general";
+};
+
+const STUDENT_GROUP_LABELS = {
+  freshmen: "Tân sinh viên",
+  returning_students: "Lưu sinh viên",
+  policy: "Chính sách",
+  international: "Quốc tế",
+  general: "Phòng chung",
+};
+
 const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedRoom, onNavigateToContract, onNavigateToInvoice }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBuilding, setFilterBuilding] = useState("All");
@@ -403,25 +422,25 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               width: "w-[18%]",
               accessor: (room) => {
                 const students = Array.isArray(room.students) ? room.students : [];
-                const hasFreshmen = students.some((s) => Number(s.snapshot_year) === 1);
-                const hasReturningStudents = students.some((s) => Number(s.snapshot_year) >= 2);
-                const hasPolicyStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, POLICY_KEYWORDS));
-                const hasInternationalStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, INTERNATIONAL_KEYWORDS));
+                const groupCounts = students.reduce((acc, student) => {
+                  const groupKey = getStudentGroupKey(student);
+                  acc[groupKey] = (acc[groupKey] || 0) + 1;
+                  return acc;
+                }, { general: 0, freshmen: 0, returning_students: 0, policy: 0, international: 0 });
 
-                const badges = [];
-                if (hasFreshmen) badges.push(RESERVED_FOR_CONFIG.freshmen);
-                if (hasReturningStudents) badges.push(RESERVED_FOR_CONFIG.returning_students);
-                if (hasPolicyStudent) badges.push({ label: "Có chính sách", cls: "bg-emerald-100 text-emerald-700" });
-                if (hasInternationalStudent) badges.push(RESERVED_FOR_CONFIG.international);
-                if (badges.length === 0) badges.push(RESERVED_FOR_CONFIG.general);
+                const priorityOrder = ["international", "freshmen", "policy", "returning_students"];
+                const dominantGroup = priorityOrder.reduce((best, key) => {
+                  if (!best) return groupCounts[key] > 0 ? key : null;
+                  return groupCounts[key] > groupCounts[best] ? key : best;
+                }, null);
+
+                const dominantConfig = dominantGroup ? RESERVED_FOR_CONFIG[dominantGroup] : RESERVED_FOR_CONFIG.general;
 
                 return (
-                  <div className="flex flex-wrap items-center justify-center gap-1">
-                    {badges.map((badge) => (
-                      <span key={badge.label} className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${badge.cls}`}>
-                        {badge.label}
-                      </span>
-                    ))}
+                  <div className="flex items-center justify-center">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${dominantConfig.cls}`}>
+                      {dominantConfig.label}
+                    </span>
                   </div>
                 );
               },
@@ -653,6 +672,9 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                       <div>
                         <p className="text-sm font-semibold text-slate-900">{s.student_name || '—'}</p>
                         {s.student_id && <p className="text-xs text-slate-500 font-mono mt-0.5">{s.student_id}</p>}
+                        <p className={`text-[10px] font-bold mt-1 inline-flex px-2 py-0.5 rounded-md ${RESERVED_FOR_CONFIG[getStudentGroupKey(s)]?.cls || RESERVED_FOR_CONFIG.general.cls}`}>
+                          {STUDENT_GROUP_LABELS[getStudentGroupKey(s)] || "Phòng chung"}
+                        </p>
                       </div>
                       {s.contract_number && (
                         <button
