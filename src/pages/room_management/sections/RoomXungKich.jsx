@@ -59,13 +59,19 @@ const RoomXungKich = ({
 
   // Dynamic filter options from data
   const uniqueBuildings = [...new Set(safeRooms.map((r) => r.building).filter(Boolean))].sort();
-  const uniqueFloors = [...new Set(safeRooms.filter((r) => filterBuilding === "All" || r.building === filterBuilding).map((r) => r.floor).filter(Boolean))].sort((a, b) => a - b);
+  const uniqueRoomNumbers = [...new Set(
+    safeRooms
+      .filter((r) => (r.reserved_for || "general") === "xung_kich")
+      .filter((r) => filterBuilding === "All" || r.building === filterBuilding)
+      .map((r) => r.room_number)
+      .filter(Boolean)
+  )].sort((a, b) => String(a).localeCompare(String(b), "vi", { numeric: true, sensitivity: "base" }));
   
   useEffect(() => {
-    if (filterFloor !== "All" && !uniqueFloors.includes(Number(filterFloor))) {
+    if (filterFloor !== "All" && !uniqueRoomNumbers.includes(filterFloor)) {
       setFilterFloor("All");
     }
-  }, [filterFloor, uniqueFloors]);
+  }, [filterFloor, uniqueRoomNumbers]);
 
   // Compute and filter volunteer students flat list
   const filteredStudents = useMemo(() => {
@@ -90,7 +96,7 @@ const RoomXungKich = ({
     return students
       .filter((student) => {
         const matchesBuilding = filterBuilding === "All" || student.building === filterBuilding;
-        const matchesFloor = filterFloor === "All" || student.floor === parseInt(filterFloor);
+        const matchesRoom = filterFloor === "All" || String(student.room_number || "") === String(filterFloor);
 
         const q = searchTerm.toLowerCase();
         const matchesSearch =
@@ -99,7 +105,7 @@ const RoomXungKich = ({
           student.student_name?.toLowerCase().includes(q) ||
           student.student_id?.toLowerCase().includes(q);
 
-        return matchesBuilding && matchesFloor && matchesSearch;
+        return matchesBuilding && matchesRoom && matchesSearch;
       })
       .sort((a, b) => {
         // Group by room_number first so roommates stay together
@@ -322,8 +328,8 @@ const RoomXungKich = ({
             onChange: setFilterFloor,
             className: "col-span-1",
             options: [
-              { value: "All", label: "Tất cả tầng" },
-              ...uniqueFloors.map((f) => ({ value: String(f), label: `Tầng ${f}` })),
+              { value: "All", label: "Tất cả phòng" },
+              ...uniqueRoomNumbers.map((roomNumber) => ({ value: String(roomNumber), label: `Phòng ${roomNumber}` })),
             ]
           }
         ]}
