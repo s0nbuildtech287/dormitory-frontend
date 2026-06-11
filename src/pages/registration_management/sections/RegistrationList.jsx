@@ -261,7 +261,14 @@ const RegistrationList = ({
 
       return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup && matchesVision && matchesFaculty;
     })
-    .sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0));
+    .sort((a, b) => {
+      const aValid = a.vision_status === "VALID" ? 1 : 0;
+      const bValid = b.vision_status === "VALID" ? 1 : 0;
+      if (aValid !== bValid) {
+        return bValid - aValid;
+      }
+      return (b.ai_score ?? 0) - (a.ai_score ?? 0);
+    });
 
   // Custom Hooks
   const pagination = usePagination(filteredRegs, 10);
