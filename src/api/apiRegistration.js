@@ -579,3 +579,39 @@ export const getDemandForecast = async () => {
   if (!response.ok) throw new Error(data.message || 'Lỗi tải dự báo nhu cầu');
   return data;
 };
+
+/**
+ * AI Bulk Auto-Allocation and Room Assignment
+ * @param {string} faculty - Faculty filter (optional)
+ * @returns {Promise<Object>} Auto-allocation results
+ */
+export const autoAllocateRegistrations = async (faculty = null) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/auto-allocate`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ faculty })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Tự động duyệt và xếp phòng thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};

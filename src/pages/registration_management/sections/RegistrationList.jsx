@@ -1,6 +1,6 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck } from "lucide-react";
+import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck, Rocket, BedDouble, Users, AlertTriangle, Info } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -10,7 +10,7 @@ import FilterBar from "../../../components/common/FilterBar.jsx";
 import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
-import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration, importFromGoogleSheets, validateRegistrationImages } from "../../../api/apiRegistration.js";
+import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration, importFromGoogleSheets, validateRegistrationImages, getRoomForecast, autoAllocateRegistrations } from "../../../api/apiRegistration.js";
 
 // Badge hiển thị trạng thái xác thực ảnh Vision
 const VisionBadge = ({ status }) => {
@@ -94,6 +94,19 @@ const RegistrationList = ({
 }) => {
   const [filterGroup, setFilterGroup] = useState("All");
   const [filterVision, setFilterVision] = useState("All");
+  const [filterFaculty, setFilterFaculty] = useState("All");
+
+  // Auto-allocate states
+  const [isOpenAutoAllocateModal, setIsOpenAutoAllocateModal] = useState(false);
+  const [autoAllocating, setAutoAllocating] = useState(false);
+  const [autoAllocateResult, setAutoAllocateResult] = useState(null);
+  const [roomStats, setRoomStats] = useState({
+    available_now: 0,
+    available_soon: 0,
+    total: 0,
+    by_building: {}
+  });
+
   const [validatingId, setValidatingId] = useState(null);
   const [selectedRegDetail, setSelectedRegDetail] = useState(null);
   const [isConfirming, setIsConfirming] = useState(null);
@@ -129,6 +142,31 @@ const RegistrationList = ({
     seniors: 30,
   });
 
+  // Load room forecast stats
+  useEffect(() => {
+    getRoomForecast()
+      .then(res => {
+        if (res.success) setRoomStats(res.data);
+      })
+      .catch(err => console.error("Error loading room forecast:", err));
+  }, [regs]);
+
+  const handleRunAutoAllocate = async () => {
+    setAutoAllocating(true);
+    try {
+      const res = await autoAllocateRegistrations(filterFaculty === "All" ? null : filterFaculty);
+      if (res.success) {
+        setAutoAllocateResult(res.data);
+      } else {
+        alert(res.message || "Tự động phân bổ thất bại");
+      }
+    } catch (err) {
+      alert(err.message || "Có lỗi xảy ra");
+    } finally {
+      setAutoAllocating(false);
+    }
+  };
+
   // Auto-refresh khi user focus lại vào tab/window
   useEffect(() => {
     const handleFocus = () => {
@@ -153,6 +191,15 @@ const RegistrationList = ({
     fetchQuotas();
   }, [regs]);
 
+  const facultyOptions = useMemo(() => {
+    const opts = [{ value: "All", label: "Tất cả khoa" }];
+    const uniqueFaculties = [...new Set(regs.map(r => r.faculty).filter(Boolean))];
+    uniqueFaculties.sort().forEach(fac => {
+      opts.push({ value: fac, label: fac });
+    });
+    return opts;
+  }, [regs]);
+
   const filteredRegs = regs
     .filter((reg) => reg.status !== RegistrationStatus.APPROVED) // Ẩn hồ sơ đã duyệt (đã chuyển sang hợp đồng)
     .filter((reg) => {
@@ -173,8 +220,10 @@ const RegistrationList = ({
       const matchesGroup = filterGroup === "All" || regGroup === filterGroup;
 
       const matchesVision = filterVision === "All" || (reg.vision_status || "PENDING") === filterVision;
+      
+      const matchesFaculty = filterFaculty === "All" || reg.faculty === filterFaculty;
 
-      return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup && matchesVision;
+      return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup && matchesVision && matchesFaculty;
     })
     .sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0));
 
@@ -308,7 +357,7 @@ const RegistrationList = ({
       {/* KHỐI CHỨC NĂNG DỮ LIỆU ĐẦU VÀO */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
         <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Đồng bộ dữ liệu đăng ký</h3>
-        <div className="grid grid-cols-7 gap-4 items-stretch">
+        <div className="grid grid-cols-8 gap-4 items-stretch">
           <div className="col-span-3 relative">
             <input
               type="text"
@@ -333,6 +382,7 @@ const RegistrationList = ({
               setFilterGender("All");
               setFilterGroup("All");
               setFilterVision("All");
+              setFilterFaculty("All");
               setSyncMsg(null);
             }}
             className="col-span-1 flex items-center justify-center px-1 py-3 bg-white text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-lg shadow-slate-100 font-bold text-xs whitespace-nowrap">
@@ -353,6 +403,13 @@ const RegistrationList = ({
             className="col-span-1 flex items-center justify-center px-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 font-bold text-xs whitespace-nowrap"
           >
             <Plus size={14} className="mr-1 flex-shrink-0" /> Thêm hồ sơ
+          </button>
+
+          <button
+            onClick={() => setIsOpenAutoAllocateModal(true)}
+            className="col-span-1 flex items-center justify-center px-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-indigo-200 font-bold text-xs whitespace-nowrap"
+          >
+            <Rocket size={14} className="mr-1 flex-shrink-0" /> Duyệt & Gán tự động
           </button>
         </div>
 
@@ -378,10 +435,57 @@ const RegistrationList = ({
         )}
       </div>
 
+      {/* KHỐI THỐNG KÊ DUNG LƯỢNG PHÒNG */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider text-left">Chỗ trống hiện tại</p>
+            <p className="text-xl font-black text-blue-900 mt-0.5 text-left">{roomStats.available_now} chỗ</p>
+            <p className="text-[10px] text-blue-500 mt-0.5 text-left">Sẵn sàng gán phòng ngay</p>
+          </div>
+          <div className="bg-blue-200/50 p-2 rounded-xl text-blue-700">
+            <BedDouble size={20} />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-2xl border border-purple-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-purple-600 font-bold uppercase tracking-wider text-left">Hồ sơ chờ duyệt</p>
+            <p className="text-xl font-black text-purple-900 mt-0.5 text-left">{actualPendingCount} hồ sơ</p>
+            {actualPendingCount > roomStats.available_now ? (
+              <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 bg-rose-200 text-rose-800 rounded text-[9px] font-bold">
+                <AlertTriangle size={9} /> Quá tải ({actualPendingCount - roomStats.available_now} chỗ)
+              </span>
+            ) : (
+              <p className="text-[10px] text-purple-500 mt-0.5 text-left">KTX đáp ứng đủ</p>
+            )}
+          </div>
+          <div className="bg-purple-200/50 p-2 rounded-xl text-purple-700">
+            <Users size={20} />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-2xl border border-emerald-200 shadow-sm flex flex-col justify-center">
+          <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1 text-left">Tỷ lệ sử dụng chỉ tiêu</p>
+          <div className="flex justify-between items-end mb-1">
+            <span className="text-base font-black text-emerald-900 leading-none">
+              {Math.min(100, Math.round(((totalSlots - roomStats.available_now) / totalSlots) * 100))}%
+            </span>
+            <span className="text-[10px] text-emerald-600 font-medium leading-none">{totalSlots - roomStats.available_now} / {totalSlots} chỗ đã gán</span>
+          </div>
+          <div className="w-full bg-emerald-200/40 h-2 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-emerald-600 rounded-full transition-all duration-500" 
+              style={{ width: `${Math.min(100, Math.round(((totalSlots - roomStats.available_now) / totalSlots) * 100))}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+
       {/* THANH TÌM KIẾM VÀ LỌC */}
       <FilterBar
         title="Bộ lọc dữ liệu đăng ký"
-        filterContainerClass="grid grid-cols-7 gap-4 items-center"
+        filterContainerClass="grid grid-cols-9 gap-4 items-center"
         search={{
           placeholder: "Tìm tên hoặc mã SV...",
           value: searchTerm,
@@ -410,6 +514,22 @@ const RegistrationList = ({
               { value: "3", label: "Năm 3" },
               { value: "4", label: "Năm 4" },
             ]
+          },
+          {
+            value: filterGender,
+            onChange: (val) => handleFilterChange(setFilterGender, val),
+            className: "w-full",
+            options: [
+              { value: "All", label: "Tất cả giới tính" },
+              { value: "Nam", label: "Nam" },
+              { value: "Nữ", label: "Nữ" },
+            ]
+          },
+          {
+            value: filterFaculty,
+            onChange: (val) => handleFilterChange(setFilterFaculty, val),
+            className: "w-full",
+            options: facultyOptions
           },
           {
             value: filterScore,
@@ -1103,6 +1223,237 @@ const RegistrationList = ({
           console.log("Gửi email:", { to, subject, body });
         }}
       />
+
+      {/* MODAL WIZARD: DUYỆT & GÁN PHÒNG TỰ ĐỘNG BẰNG AI */}
+      {isOpenAutoAllocateModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-xl text-white">
+                  <Rocket size={20} className="animate-pulse" />
+                </div>
+                <div>
+                  <h2 className="text-white text-xl font-black text-left">Duyệt & Gán phòng tự động bằng AI</h2>
+                  <p className="text-blue-100 text-xs text-left mt-0.5">Xếp phòng thông minh dựa trên diện ưu tiên, chỉ tiêu khoa và điểm số</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsOpenAutoAllocateModal(false);
+                  setAutoAllocateResult(null);
+                }}
+                disabled={autoAllocating}
+                className="text-white hover:bg-white/20 p-2 rounded-lg transition-all disabled:opacity-40"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {autoAllocating ? (
+                /* Loading State */
+                <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-indigo-600">
+                      <Rocket size={24} className="animate-bounce" />
+                    </div>
+                  </div>
+                  <div className="text-center space-y-2 max-w-md">
+                    <h3 className="font-bold text-slate-800 text-lg">Đang tiến hành phân phòng bằng AI...</h3>
+                    <p className="text-sm text-slate-500 font-medium">
+                      Hệ thống đang tải danh sách phòng trống, sắp xếp hồ sơ theo nhóm ưu tiên và thực hiện gán phòng tối ưu. Quá trình này có thể mất vài giây.
+                    </p>
+                  </div>
+                </div>
+              ) : autoAllocateResult ? (
+                /* Success/Result State */
+                <div className="space-y-6">
+                  <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex items-start gap-4">
+                    <div className="p-3 bg-emerald-500 rounded-xl text-white">
+                      <CheckCircle2 size={24} />
+                    </div>
+                    <div className="space-y-1 text-left">
+                      <h3 className="font-bold text-emerald-900 text-base">Hoàn thành tiến trình gán phòng tự động!</h3>
+                      <p className="text-sm text-emerald-700 font-medium">
+                        Thuật toán AI đã quét và phân phòng thành công dựa trên cấu hình chỉ tiêu hiện tại.
+                      </p>
+                      <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-emerald-200/50">
+                        <div>
+                          <p className="text-xs text-emerald-600 font-bold">Tổng số đã xử lý</p>
+                          <p className="text-2xl font-black text-emerald-800">{autoAllocateResult.processed} hồ sơ</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-emerald-600 font-bold">Gán phòng thành công</p>
+                          <p className="text-2xl font-black text-emerald-800">{autoAllocateResult.approvedAndAssigned} hồ sơ</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-emerald-600 font-bold">Hợp đồng chờ gán (Pending)</p>
+                          <p className="text-2xl font-black text-amber-700">{autoAllocateResult.approvedPending} hồ sơ</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Danh sách gán phòng chi tiết ({autoAllocateResult.allocations?.length || 0} sinh viên)</h4>
+                    </div>
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200">
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Phòng gán</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tòa</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {autoAllocateResult.allocations && autoAllocateResult.allocations.length > 0 ? (
+                            autoAllocateResult.allocations.map((item, idx) => (
+                              <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-4 py-2.5 text-xs font-mono font-bold text-slate-700">{item.student_id}</td>
+                                <td className="px-4 py-2.5 text-xs font-semibold text-slate-900">{item.student_name}</td>
+                                <td className="px-4 py-2.5 text-xs text-slate-600">{item.faculty}</td>
+                                <td className="px-4 py-2.5 text-xs font-black">
+                                  {item.room_number === "Chờ gán phòng" ? (
+                                    <span className="text-amber-600">Chờ gán phòng</span>
+                                  ) : (
+                                    <span className="text-indigo-600">{item.room_number}</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2.5 text-xs text-slate-600">{item.building}</td>
+                                <td className="px-4 py-2.5 text-xs">
+                                  {item.status === "Active" ? (
+                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-bold text-[10px]">Đang nội trú</span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md font-bold text-[10px]">Pending</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="6" className="text-center py-6 text-sm text-slate-500 font-medium">Không có hồ sơ nào được phân bổ.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Initial/Ready State */
+                <div className="space-y-6 text-left">
+                  {/* Alert if registrations exceed available slots */}
+                  {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length > roomStats.available_now && (
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
+                      <AlertTriangle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
+                      <div>
+                        <p className="font-bold text-amber-900 text-sm text-left">Cảnh báo: Quá tải dung lượng chỗ trống</p>
+                        <p className="text-xs text-amber-700 mt-0.5 text-left font-medium">
+                          Số lượng hồ sơ chờ duyệt hiện tại ({filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length} hồ sơ) vượt quá số chỗ trống tức thời ({roomStats.available_now} chỗ). Một số sinh viên sẽ được duyệt ở trạng thái <strong>Pending (chờ xếp phòng thủ công)</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Summary statistics */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Khoa áp dụng</span>
+                      <span className="font-black text-slate-800 text-sm block mt-1">{filterFaculty === "All" ? "Tất cả các khoa" : filterFaculty}</span>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Hồ sơ chờ duyệt</span>
+                      <span className="font-black text-indigo-600 text-lg block mt-1">
+                        {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length} hồ sơ
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Chỗ trống khả dụng</span>
+                      <span className="font-black text-emerald-600 text-lg block mt-1">
+                        {roomStats.available_now} chỗ
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Allocation Logic Details */}
+                  <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl space-y-4">
+                    <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2">
+                      <Info size={16} /> Quy chế xếp phòng tự động bằng AI:
+                    </h4>
+                    <ul className="text-xs text-blue-800 space-y-2 list-disc pl-5 font-medium">
+                      <li>
+                        <strong>Xử lý theo độ ưu tiên:</strong> Sinh viên được chia vào 3 giỏ ưu tiên (Diện chính sách ➜ Tân SV năm 1 ➜ SV khóa cũ) và sắp xếp theo điểm số AI từ cao xuống thấp.
+                      </li>
+                      <li>
+                        <strong>Gán phòng tối ưu giới tính & đối tượng:</strong> Hệ thống tự động lọc phòng trống cùng giới tính. Sinh viên quốc tế được ưu tiên xếp phòng <code>international</code>, Tân SV xếp vào phòng <code>freshmen</code>, SV khóa cũ xếp vào phòng <code>returning_students</code>.
+                      </li>
+                      <li>
+                        <strong>Hòa nhập chính sách:</strong> Sinh viên diện chính sách sẽ được xếp phòng chung với các sinh viên thông thường cùng khoa, cùng khóa để tránh cô lập.
+                      </li>
+                      <li>
+                        <strong>Phương án dự phòng:</strong> Nếu phòng chuyên biệt đầy, hệ thống tự động gán vào phòng thường (<code>general</code>). Nếu ký túc xá hết sạch chỗ trống, hồ sơ vẫn được duyệt thành công nhưng hợp đồng sẽ ở trạng thái <code>Pending</code> để sắp xếp thủ công sau.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <p className="text-xs text-slate-500 font-bold text-center">
+                    Bạn có chắc chắn muốn tiến hành duyệt và gán phòng tự động bằng AI cho nhóm hồ sơ trên không?
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-6 py-4 flex justify-between items-center rounded-b-3xl border-t border-slate-200 flex-shrink-0">
+              {autoAllocateResult ? (
+                <>
+                  <p className="text-xs text-slate-500 font-semibold text-left">Tự động hoàn tất và cập nhật trạng thái dữ liệu.</p>
+                  <button
+                    onClick={() => {
+                      setIsOpenAutoAllocateModal(false);
+                      setAutoAllocateResult(null);
+                      if (onRefresh) onRefresh();
+                    }}
+                    className="px-6 py-2.5 text-white font-bold text-xs bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100"
+                  >
+                    Xác nhận & Đóng
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsOpenAutoAllocateModal(false)}
+                    disabled={autoAllocating}
+                    className="px-5 py-2.5 text-slate-700 font-bold text-xs bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-40"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    onClick={handleRunAutoAllocate}
+                    disabled={autoAllocating || filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length === 0}
+                    className="px-6 py-2.5 text-white font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-100 flex items-center gap-1.5"
+                  >
+                    {autoAllocating ? (
+                      <><Loader2 size={13} className="animate-spin" /> Đang xếp phòng...</>
+                    ) : (
+                      <><Rocket size={13} /> Bắt đầu xếp phòng</>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
