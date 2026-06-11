@@ -188,3 +188,16 @@ export const setVolunteerRole = async (contractId, volunteerRole) => {
   return handleResponse(response);
 };
 
+/**
+ * Gán phòng tự động cho hợp đồng Pending
+ * @param {string|null} faculty - Lọc theo khoa (optional)
+ */
+export const autoAssignPendingContracts = async (faculty = null) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/auto-assign`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ faculty }),
+  });
+  return handleResponse(response);
+};
+

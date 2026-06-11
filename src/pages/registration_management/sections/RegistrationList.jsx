@@ -409,7 +409,7 @@ const RegistrationList = ({
             onClick={() => setIsOpenAutoAllocateModal(true)}
             className="col-span-1 flex items-center justify-center px-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-indigo-200 font-bold text-xs whitespace-nowrap"
           >
-            <Rocket size={14} className="mr-1 flex-shrink-0" /> Duyệt & Gán tự động
+            <Rocket size={14} className="mr-1 flex-shrink-0" /> Duyệt tự động
           </button>
         </div>
 
@@ -1224,7 +1224,7 @@ const RegistrationList = ({
         }}
       />
 
-      {/* MODAL WIZARD: DUYỆT & GÁN PHÒNG TỰ ĐỘNG BẰNG AI */}
+      {/* MODAL: DUYỆT HỒ SƠ TỰ ĐỘNG */}
       {isOpenAutoAllocateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100">
@@ -1235,8 +1235,8 @@ const RegistrationList = ({
                   <Rocket size={20} className="animate-pulse" />
                 </div>
                 <div>
-                  <h2 className="text-white text-xl font-black text-left">Duyệt & Gán phòng tự động bằng AI</h2>
-                  <p className="text-blue-100 text-xs text-left mt-0.5">Xếp phòng thông minh dựa trên diện ưu tiên, chỉ tiêu khoa và điểm số</p>
+                  <h2 className="text-white text-xl font-black text-left">Duyệt hồ sơ tự động</h2>
+                  <p className="text-blue-100 text-xs text-left mt-0.5">Duyệt theo nhóm ưu tiên và điểm AI — tạo hợp đồng chờ gán phòng</p>
                 </div>
               </div>
               <button
@@ -1263,9 +1263,9 @@ const RegistrationList = ({
                     </div>
                   </div>
                   <div className="text-center space-y-2 max-w-md">
-                    <h3 className="font-bold text-slate-800 text-lg">Đang tiến hành phân phòng bằng AI...</h3>
+                    <h3 className="font-bold text-slate-800 text-lg">Đang duyệt hồ sơ...</h3>
                     <p className="text-sm text-slate-500 font-medium">
-                      Hệ thống đang tải danh sách phòng trống, sắp xếp hồ sơ theo nhóm ưu tiên và thực hiện gán phòng tối ưu. Quá trình này có thể mất vài giây.
+                      Hệ thống đang sắp xếp hồ sơ theo nhóm ưu tiên, điểm AI và chỉ tiêu từng giỏ, sau đó tạo hợp đồng chờ gán phòng.
                     </p>
                   </div>
                 </div>
@@ -1277,22 +1277,22 @@ const RegistrationList = ({
                       <CheckCircle2 size={24} />
                     </div>
                     <div className="space-y-1 text-left">
-                      <h3 className="font-bold text-emerald-900 text-base">Hoàn thành tiến trình gán phòng tự động!</h3>
+                      <h3 className="font-bold text-emerald-900 text-base">Hoàn thành duyệt hồ sơ!</h3>
                       <p className="text-sm text-emerald-700 font-medium">
-                        Thuật toán AI đã quét và phân phòng thành công dựa trên cấu hình chỉ tiêu hiện tại.
+                        Các hồ sơ đã được duyệt và chuyển sang Hợp đồng sinh viên (trạng thái chờ gán phòng). Vào tab Hợp đồng để gán phòng tự động.
                       </p>
                       <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-emerald-200/50">
                         <div>
-                          <p className="text-xs text-emerald-600 font-bold">Tổng số đã xử lý</p>
+                          <p className="text-xs text-emerald-600 font-bold">Đã duyệt</p>
                           <p className="text-2xl font-black text-emerald-800">{autoAllocateResult.processed} hồ sơ</p>
                         </div>
                         <div>
-                          <p className="text-xs text-emerald-600 font-bold">Gán phòng thành công</p>
-                          <p className="text-2xl font-black text-emerald-800">{autoAllocateResult.approvedAndAssigned} hồ sơ</p>
+                          <p className="text-xs text-emerald-600 font-bold">Hợp đồng Pending</p>
+                          <p className="text-2xl font-black text-amber-700">{autoAllocateResult.processed} hồ sơ</p>
                         </div>
                         <div>
-                          <p className="text-xs text-emerald-600 font-bold">Hợp đồng chờ gán (Pending)</p>
-                          <p className="text-2xl font-black text-amber-700">{autoAllocateResult.approvedPending} hồ sơ</p>
+                          <p className="text-xs text-emerald-600 font-bold">Bỏ qua (hết chỉ tiêu)</p>
+                          <p className="text-2xl font-black text-slate-600">{autoAllocateResult.skippedQuota || 0} hồ sơ</p>
                         </div>
                       </div>
                     </div>
@@ -1300,7 +1300,7 @@ const RegistrationList = ({
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Danh sách gán phòng chi tiết ({autoAllocateResult.allocations?.length || 0} sinh viên)</h4>
+                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Danh sách đã duyệt ({autoAllocateResult.allocations?.length || 0} sinh viên)</h4>
                     </div>
                     <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
                       <table className="w-full text-left border-collapse">
@@ -1309,9 +1309,7 @@ const RegistrationList = ({
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Phòng gán</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tòa</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Trạng thái</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Trạng thái HĐ</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -1321,26 +1319,14 @@ const RegistrationList = ({
                                 <td className="px-4 py-2.5 text-xs font-mono font-bold text-slate-700">{item.student_id}</td>
                                 <td className="px-4 py-2.5 text-xs font-semibold text-slate-900">{item.student_name}</td>
                                 <td className="px-4 py-2.5 text-xs text-slate-600">{item.faculty}</td>
-                                <td className="px-4 py-2.5 text-xs font-black">
-                                  {item.room_number === "Chờ gán phòng" ? (
-                                    <span className="text-amber-600">Chờ gán phòng</span>
-                                  ) : (
-                                    <span className="text-indigo-600">{item.room_number}</span>
-                                  )}
-                                </td>
-                                <td className="px-4 py-2.5 text-xs text-slate-600">{item.building}</td>
                                 <td className="px-4 py-2.5 text-xs">
-                                  {item.status === "Active" ? (
-                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md font-bold text-[10px]">Đang nội trú</span>
-                                  ) : (
-                                    <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md font-bold text-[10px]">Pending</span>
-                                  )}
+                                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md font-bold text-[10px]">Chờ gán phòng</span>
                                 </td>
                               </tr>
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="6" className="text-center py-6 text-sm text-slate-500 font-medium">Không có hồ sơ nào được phân bổ.</td>
+                              <td colSpan="4" className="text-center py-6 text-sm text-slate-500 font-medium">Không có hồ sơ nào được duyệt.</td>
                             </tr>
                           )}
                         </tbody>
@@ -1351,18 +1337,16 @@ const RegistrationList = ({
               ) : (
                 /* Initial/Ready State */
                 <div className="space-y-6 text-left">
-                  {/* Alert if registrations exceed available slots */}
-                  {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length > roomStats.available_now && (
-                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-start gap-3">
-                      <AlertTriangle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
-                      <div>
-                        <p className="font-bold text-amber-900 text-sm text-left">Cảnh báo: Quá tải dung lượng chỗ trống</p>
-                        <p className="text-xs text-amber-700 mt-0.5 text-left font-medium">
-                          Số lượng hồ sơ chờ duyệt hiện tại ({filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length} hồ sơ) vượt quá số chỗ trống tức thời ({roomStats.available_now} chỗ). Một số sinh viên sẽ được duyệt ở trạng thái <strong>Pending (chờ xếp phòng thủ công)</strong>.
-                        </p>
-                      </div>
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-start gap-3">
+                    <Info className="text-blue-600 flex-shrink-0 mt-0.5" size={18} />
+                    <div>
+                      <p className="font-bold text-blue-900 text-sm text-left">Lưu ý quy trình 2 bước</p>
+                      <p className="text-xs text-blue-700 mt-0.5 text-left font-medium">
+                        Bước 1 (tại đây): Duyệt hồ sơ → tạo hợp đồng <strong>Chờ gán phòng</strong>.
+                        Bước 2: Vào <strong>Hợp đồng sinh viên</strong> → nhấn <strong>Gán tự động</strong> để xếp phòng.
+                      </p>
                     </div>
-                  )}
+                  </div>
 
                   {/* Summary statistics */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1377,36 +1361,26 @@ const RegistrationList = ({
                       </span>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Chỗ trống khả dụng</span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Chỉ tiêu còn lại (tổng)</span>
                       <span className="font-black text-emerald-600 text-lg block mt-1">
-                        {roomStats.available_now} chỗ
+                        {quotas.totalSlots ? `~${quotas.totalSlots} chỗ` : "—"}
                       </span>
                     </div>
                   </div>
 
-                  {/* Allocation Logic Details */}
                   <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl space-y-4">
                     <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2">
-                      <Info size={16} /> Quy chế xếp phòng tự động bằng AI:
+                      <Info size={16} /> Quy chế duyệt tự động:
                     </h4>
                     <ul className="text-xs text-blue-800 space-y-2 list-disc pl-5 font-medium">
-                      <li>
-                        <strong>Xử lý theo độ ưu tiên:</strong> Sinh viên được chia vào 3 giỏ ưu tiên (Diện chính sách ➜ Tân SV năm 1 ➜ SV khóa cũ) và sắp xếp theo điểm số AI từ cao xuống thấp.
-                      </li>
-                      <li>
-                        <strong>Gán phòng tối ưu giới tính & đối tượng:</strong> Hệ thống tự động lọc phòng trống cùng giới tính. Sinh viên quốc tế được ưu tiên xếp phòng <code>international</code>, Tân SV xếp vào phòng <code>freshmen</code>, SV khóa cũ xếp vào phòng <code>returning_students</code>.
-                      </li>
-                      <li>
-                        <strong>Hòa nhập chính sách:</strong> Sinh viên diện chính sách sẽ được xếp phòng chung với các sinh viên thông thường cùng khoa, cùng khóa để tránh cô lập.
-                      </li>
-                      <li>
-                        <strong>Phương án dự phòng:</strong> Nếu phòng chuyên biệt đầy, hệ thống tự động gán vào phòng thường (<code>general</code>). Nếu ký túc xá hết sạch chỗ trống, hồ sơ vẫn được duyệt thành công nhưng hợp đồng sẽ ở trạng thái <code>Pending</code> để sắp xếp thủ công sau.
-                      </li>
+                      <li><strong>Thứ tự ưu tiên:</strong> Nhóm chính sách → Tân SV năm 1 → SV khóa cũ, sắp xếp theo điểm AI giảm dần.</li>
+                      <li><strong>Chỉ tiêu:</strong> Mỗi nhóm có hạn mức riêng — hết chỉ tiêu thì bỏ qua hồ sơ còn lại.</li>
+                      <li><strong>Kết quả:</strong> Hồ sơ được duyệt → chuyển sang Hợp đồng sinh viên ở trạng thái <code>Chờ gán phòng</code>.</li>
                     </ul>
                   </div>
 
                   <p className="text-xs text-slate-500 font-bold text-center">
-                    Bạn có chắc chắn muốn tiến hành duyệt và gán phòng tự động bằng AI cho nhóm hồ sơ trên không?
+                    Bạn có chắc chắn muốn duyệt tự động các hồ sơ chờ duyệt ở trên không?
                   </p>
                 </div>
               )}
@@ -1443,9 +1417,9 @@ const RegistrationList = ({
                     className="px-6 py-2.5 text-white font-bold text-xs bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-100 flex items-center gap-1.5"
                   >
                     {autoAllocating ? (
-                      <><Loader2 size={13} className="animate-spin" /> Đang xếp phòng...</>
+                      <><Loader2 size={13} className="animate-spin" /> Đang duyệt...</>
                     ) : (
-                      <><Rocket size={13} /> Bắt đầu xếp phòng</>
+                      <><Rocket size={13} /> Bắt đầu duyệt</>
                     )}
                   </button>
                 </>

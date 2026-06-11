@@ -581,9 +581,9 @@ export const getDemandForecast = async () => {
 };
 
 /**
- * AI Bulk Auto-Allocation and Room Assignment
+ * Duyệt hàng loạt hồ sơ chờ duyệt → tạo hợp đồng Pending (chưa gán phòng)
  * @param {string} faculty - Faculty filter (optional)
- * @returns {Promise<Object>} Auto-allocation results
+ * @returns {Promise<Object>} Bulk approve results
  */
 export const autoAllocateRegistrations = async (faculty = null) => {
   try {
@@ -607,7 +607,7 @@ export const autoAllocateRegistrations = async (faculty = null) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'Tự động duyệt và xếp phòng thất bại');
+      throw new Error(data.message || 'Duyệt hồ sơ tự động thất bại');
     }
 
     return data;

@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
-import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare, RotateCcw } from "lucide-react";
+import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare, RotateCcw, Rocket, Loader2, X, Info, AlertTriangle } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -7,7 +7,7 @@ import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
-import { revertContract } from "../../../api/apiContract.js";
+import { revertContract, autoAssignPendingContracts } from "../../../api/apiContract.js";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -53,7 +53,7 @@ const INTERNATIONAL_KEYWORDS = [
   "campuchia",
 ];
 
-const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract, onAutoAssign, initialFilter }) => {
+const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDeleteContract, initialFilter }) => {
   const [searchTerm, setSearchTerm] = useState(initialFilter?.searchTerm || "");
   const [filterStatus, setFilterStatus] = useState(initialFilter?.filterStatus || "All");
   const [filterGender, setFilterGender] = useState(initialFilter?.filterGender || "All");
@@ -82,6 +82,27 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [composeEmail, setComposeEmail] = useState(null);
   const [revertTarget, setRevertTarget] = useState(null); // contract to revert
   const [revertLoading, setRevertLoading] = useState(false);
+  const [isOpenAutoAssignModal, setIsOpenAutoAssignModal] = useState(false);
+  const [autoAssigning, setAutoAssigning] = useState(false);
+  const [autoAssignResult, setAutoAssignResult] = useState(null);
+
+  const pendingContracts = contracts.filter((c) => c.status === "Pending");
+
+  const handleRunAutoAssign = async () => {
+    setAutoAssigning(true);
+    try {
+      const res = await autoAssignPendingContracts();
+      if (res.success) {
+        setAutoAssignResult(res.data);
+      } else {
+        alert(res.message || "Gán phòng tự động thất bại");
+      }
+    } catch (err) {
+      alert(err.message || "Có lỗi xảy ra");
+    } finally {
+      setAutoAssigning(false);
+    }
+  };
 
   const filtered = contracts.filter((c) => {
     const q = searchTerm.toLowerCase();
@@ -255,10 +276,11 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
               Áp dụng
             </button>
             <button
-              onClick={onAutoAssign}
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-blue-200 transition-colors"
+              onClick={() => setIsOpenAutoAssignModal(true)}
+              disabled={pendingContracts.length === 0}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm shadow-indigo-200 transition-colors flex items-center gap-1.5"
             >
-              Gán tự động
+              <Rocket size={13} /> Gán tự động ({pendingContracts.length})
             </button>
           </>
         }
@@ -537,6 +559,138 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           console.log("Gửi email:", { to, subject, body });
         }}
       />
+
+      {/* MODAL: GÁN PHÒNG TỰ ĐỘNG */}
+      {isOpenAutoAssignModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100">
+            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-xl text-white">
+                  <Rocket size={20} />
+                </div>
+                <div>
+                  <h2 className="text-white text-xl font-black text-left">Gán phòng tự động</h2>
+                  <p className="text-indigo-100 text-xs text-left mt-0.5">Xếp phòng cho hợp đồng chờ gán theo giới tính, diện SV và điểm AI</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setIsOpenAutoAssignModal(false); setAutoAssignResult(null); }}
+                disabled={autoAssigning}
+                className="text-white hover:bg-white/20 p-2 rounded-lg transition-all disabled:opacity-40"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {autoAssigning ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-6">
+                  <Loader2 size={40} className="animate-spin text-indigo-600" />
+                  <p className="font-bold text-slate-800">Đang gán phòng tự động...</p>
+                </div>
+              ) : autoAssignResult ? (
+                <div className="space-y-6">
+                  <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl">
+                    <h3 className="font-bold text-emerald-900">Hoàn thành gán phòng!</h3>
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div>
+                        <p className="text-xs text-emerald-600 font-bold">Đã xử lý</p>
+                        <p className="text-2xl font-black text-emerald-800">{autoAssignResult.processed}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-emerald-600 font-bold">Gán thành công</p>
+                        <p className="text-2xl font-black text-emerald-800">{autoAssignResult.assigned}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-amber-600 font-bold">Vẫn chờ gán</p>
+                        <p className="text-2xl font-black text-amber-700">{autoAssignResult.stillPending}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[280px] overflow-y-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200">
+                          <th className="px-4 py-2 text-xs font-bold text-slate-500">MSSV</th>
+                          <th className="px-4 py-2 text-xs font-bold text-slate-500">Tên</th>
+                          <th className="px-4 py-2 text-xs font-bold text-slate-500">Phòng</th>
+                          <th className="px-4 py-2 text-xs font-bold text-slate-500">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {(autoAssignResult.allocations || []).map((item, idx) => (
+                          <tr key={idx}>
+                            <td className="px-4 py-2 text-xs font-mono">{item.student_id}</td>
+                            <td className="px-4 py-2 text-xs">{item.student_name}</td>
+                            <td className="px-4 py-2 text-xs font-bold text-indigo-600">{item.room_number}</td>
+                            <td className="px-4 py-2 text-xs">
+                              {item.status === "Active" ? (
+                                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">Đang nội trú</span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">Chờ gán</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 text-left">
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex gap-3">
+                    <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-800 font-medium">
+                      Có <strong>{pendingContracts.length}</strong> hợp đồng chờ gán phòng. Hệ thống sẽ ưu tiên phòng chuyên biệt (quốc tế / tân SV / khóa cũ), sau đó phòng thường.
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl">
+                    <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2 mb-2"><Info size={14} /> Quy chế gán phòng</h4>
+                    <ul className="text-xs text-blue-800 space-y-1 list-disc pl-4">
+                      <li>Cùng giới tính, còn chỗ trống</li>
+                      <li>Ưu tiên phòng <code>international</code> / <code>freshmen</code> / <code>returning_students</code></li>
+                      <li>Hết phòng → giữ trạng thái Chờ gán phòng</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-200 rounded-b-3xl">
+              {autoAssignResult ? (
+                <button
+                  onClick={() => {
+                    setIsOpenAutoAssignModal(false);
+                    setAutoAssignResult(null);
+                    if (onRefresh) onRefresh();
+                  }}
+                  className="px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700"
+                >
+                  Xác nhận & Đóng
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsOpenAutoAssignModal(false)}
+                    disabled={autoAssigning}
+                    className="px-5 py-2.5 text-slate-700 text-xs font-bold bg-white border border-slate-300 rounded-xl hover:bg-slate-50"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleRunAutoAssign}
+                    disabled={autoAssigning || pendingContracts.length === 0}
+                    className="px-6 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Rocket size={13} /> Bắt đầu gán phòng
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
