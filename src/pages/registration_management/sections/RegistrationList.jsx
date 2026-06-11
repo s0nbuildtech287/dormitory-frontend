@@ -155,7 +155,7 @@ const RegistrationList = ({
 
   const getApprovalStage = (percent) => {
     if (percent < 20) return "Chuẩn bị danh sách xét duyệt...";
-    if (percent < 45) return "Đang xếp hạng theo điểm AI & diện ưu tiên...";
+    if (percent < 45) return "Đang xếp hạng theo điểm xét tuyển & diện ưu tiên...";
     if (percent < 75) return "Đang khởi tạo tài khoản & hợp đồng chờ gán...";
     if (percent < 90) return "Đang kiểm tra chỉ tiêu & áp dụng cấu hình...";
     return "Đang hoàn tất lưu dữ liệu...";
@@ -1293,7 +1293,7 @@ const RegistrationList = ({
                 </div>
                 <div>
                   <h2 className="text-white text-xl font-black text-left">Duyệt hồ sơ tự động</h2>
-                  <p className="text-blue-100 text-xs text-left mt-0.5">Duyệt theo nhóm ưu tiên và điểm AI — tạo hợp đồng chờ gán phòng</p>
+                  <p className="text-blue-100 text-xs text-left mt-0.5">Duyệt theo nhóm ưu tiên và điểm xét tuyển — tạo hợp đồng chờ gán phòng</p>
                 </div>
               </div>
               <button
@@ -1444,7 +1444,7 @@ const RegistrationList = ({
                       <Info size={16} /> Quy chế duyệt tự động:
                     </h4>
                     <ul className="text-xs text-blue-800 space-y-2 list-disc pl-5 font-medium">
-                      <li><strong>Thứ tự ưu tiên:</strong> Nhóm chính sách → Tân SV năm 1 → SV khóa cũ, sắp xếp theo điểm AI giảm dần.</li>
+                      <li><strong>Thứ tự ưu tiên:</strong> Nhóm chính sách → Tân SV năm 1 → SV khóa cũ, sắp xếp theo điểm xét tuyển giảm dần.</li>
                       <li><strong>Chỉ tiêu:</strong> Mỗi nhóm có hạn mức riêng — hết chỉ tiêu thì bỏ qua hồ sơ còn lại.</li>
                       <li><strong>Kết quả:</strong> Hồ sơ được duyệt → chuyển sang Hợp đồng sinh viên ở trạng thái <code>Chờ gán phòng</code>.</li>
                     </ul>

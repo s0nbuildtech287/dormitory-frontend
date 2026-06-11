@@ -601,7 +601,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                 </div>
                 <div>
                   <h2 className="text-white text-xl font-black text-left">Gán phòng tự động</h2>
-                  <p className="text-blue-100 text-xs text-left mt-0.5">Xếp phòng cho hợp đồng chờ gán theo giới tính, diện SV và điểm AI</p>
+                  <p className="text-blue-100 text-xs text-left mt-0.5">Xếp phòng cho hợp đồng chờ gán theo giới tính, diện SV và điểm xét tuyển</p>
                 </div>
               </div>
               <button
