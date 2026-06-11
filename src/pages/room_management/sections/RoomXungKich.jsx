@@ -335,18 +335,18 @@ const RoomXungKich = ({
         }}
         customFilters={
           <div className="col-span-2 flex gap-2">
-            <button
-              onClick={openXungKichPicker}
-              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-white border-2 border-emerald-600 text-emerald-700 rounded-xl hover:bg-emerald-50 transition-all font-bold text-sm shadow-sm"
-            >
-              <Users size={16} className="mr-1 flex-shrink-0" /> Chọn phòng xung kích
-            </button>
-            <button
-              onClick={openXungKichAssignModal}
-              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-bold text-sm shadow-sm"
-            >
-              <Users size={16} className="mr-1 flex-shrink-0" /> Thêm sinh viên xung kích
-            </button>
+      <button
+        onClick={openXungKichPicker}
+        className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+      >
+        <Users size={16} className="mr-1 flex-shrink-0" /> Chọn phòng xung kích
+      </button>
+      <button
+        onClick={openXungKichAssignModal}
+        className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+      >
+        <Users size={16} className="mr-1 flex-shrink-0" /> Thêm sinh viên xung kích
+      </button>
           </div>
         }
       />
@@ -400,7 +400,7 @@ const RoomXungKich = ({
                     value={xungKichSearch}
                     onChange={(e) => setXungKichSearch(e.target.value)}
                     placeholder="Tìm số phòng hoặc tòa..."
-                    className="w-full pl-9 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-50 outline-none bg-slate-50/50"
+                    className="w-full pl-9 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-50 outline-none bg-slate-50/50"
                   />
                 </div>
                 <div className="max-h-[420px] overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100">
@@ -413,7 +413,7 @@ const RoomXungKich = ({
                       <button
                         key={room.id}
                         onClick={() => setXungKichTargetRoom(room)}
-                        className={`w-full text-left px-4 py-3 transition-colors ${selected ? "bg-emerald-50" : "hover:bg-slate-50"}`}
+                        className={`w-full text-left px-4 py-3 transition-colors ${selected ? "bg-blue-50" : "hover:bg-slate-50"}`}
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
@@ -447,7 +447,7 @@ const RoomXungKich = ({
                         <p className="font-bold text-slate-900">{xungKichTargetRoom.currentOccupancy || 0}</p>
                       </div>
                     </div>
-                    <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-sm text-emerald-800">
+                    <div className="p-4 rounded-xl border border-blue-200 bg-blue-50 text-sm text-blue-800">
                       Phòng này sẽ được chuyển sang trạng thái <strong>xung kích</strong>. Phòng không được chứa sinh viên quốc tế.
                     </div>
                     <div className="flex gap-3">
@@ -459,7 +459,7 @@ const RoomXungKich = ({
                       </button>
                       <button
                         onClick={() => confirmMarkXungKich(xungKichTargetRoom)}
-                        className="flex-1 px-4 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700"
+                        className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700"
                       >
                         Chuyển thành xung kích
                       </button>
@@ -503,13 +503,13 @@ const RoomXungKich = ({
                     value={xungKichAssignSearch}
                     onChange={(e) => setXungKichAssignSearch(e.target.value)}
                     placeholder="Tìm tên, mã SV hoặc phòng hiện tại..."
-                    className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-emerald-50 outline-none bg-slate-50/50"
+                    className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-50 outline-none bg-slate-50/50"
                   />
                 </div>
                 
                 {xungKichAssignLoading ? (
                   <div className="flex items-center justify-center py-12 text-slate-400">
-                    <div className="w-6 h-6 border-2 border-slate-200 border-t-emerald-600 rounded-full animate-spin mr-2" />
+                    <div className="w-6 h-6 border-2 border-slate-200 border-t-blue-600 rounded-full animate-spin mr-2" />
                     Đang tải danh sách sinh viên...
                   </div>
                 ) : (
@@ -541,7 +541,7 @@ const RoomXungKich = ({
                             key={c.id}
                             onClick={() => setSelectedXungKichStudent(c)}
                             className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
-                              selected ? "bg-emerald-50 text-emerald-900" : "hover:bg-slate-50"
+                              selected ? "bg-blue-50 text-blue-900" : "hover:bg-slate-50"
                             }`}
                           >
                             <div>
@@ -550,7 +550,7 @@ const RoomXungKich = ({
                                 MSV: {c.snapshot_student_id || "—"} | Phòng hiện tại: {c.room_number || "Không"}
                               </p>
                             </div>
-                            {selected && <CheckSquare size={16} className="text-emerald-600 shrink-0" />}
+                            {selected && <CheckSquare size={16} className="text-blue-600 shrink-0" />}
                           </button>
                         );
                       });
@@ -582,7 +582,7 @@ const RoomXungKich = ({
                             disabled={isFull}
                             onClick={() => setSelectedXungKichRoom(room)}
                             className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between ${
-                              selected ? "bg-emerald-50 text-emerald-900" : isFull ? "opacity-50 cursor-not-allowed bg-slate-50" : "hover:bg-slate-50"
+                              selected ? "bg-blue-50 text-blue-900" : isFull ? "opacity-50 cursor-not-allowed bg-slate-50" : "hover:bg-slate-50"
                             }`}
                           >
                             <div>
@@ -592,7 +592,7 @@ const RoomXungKich = ({
                               </p>
                             </div>
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              isFull ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
+                              isFull ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
                             }`}>
                               {room.currentOccupancy || 0}/{room.capacity} {isFull ? "Đầy" : "Trống"}
                             </span>
@@ -617,7 +617,7 @@ const RoomXungKich = ({
                     </div>
                     <div className="flex justify-between py-1">
                       <span className="text-slate-500">Phòng xung kích mới:</span>
-                      <span className="font-black text-emerald-700">{selectedXungKichRoom ? `Phòng ${selectedXungKichRoom.room_number} (Tòa ${getBuildingLabel(selectedXungKichRoom.building)})` : "Chưa chọn"}</span>
+                      <span className="font-black text-blue-700">{selectedXungKichRoom ? `Phòng ${selectedXungKichRoom.room_number} (Tòa ${getBuildingLabel(selectedXungKichRoom.building)})` : "Chưa chọn"}</span>
                     </div>
                   </div>
 
@@ -631,7 +631,7 @@ const RoomXungKich = ({
                     <button
                       onClick={handleTransferToXungKich}
                       disabled={!selectedXungKichStudent || !selectedXungKichRoom || xungKichAssignLoading}
-                      className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                     >
                       {xungKichAssignLoading && <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
                       Xác nhận gán
