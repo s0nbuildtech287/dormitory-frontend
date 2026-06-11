@@ -88,7 +88,7 @@ const LoginPage = ({ onLogin }) => {
 
   const validateId = (val) => {
     if (!val.trim()) return "Vui lòng nhập email";
-    if (val.trim() === "admin") return null; // account đặc biệt
+    if (/^admin\d*$/.test(val.trim())) return null; // các account admin/staff đặc biệt
     if (!val.includes("@")) return "Email không hợp lệ, thiếu ký tự @";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return "Email không đúng định dạng";
     return null;
