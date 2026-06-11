@@ -80,15 +80,11 @@ const RegistrationStatistics = ({ regs }) => {
     );
 
     // Phân bổ nhóm của các hồ sơ trong đợt này (để phân tích nhân khẩu học/nhu cầu)
-    const basket1 = activeBatchRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
-    const basket2 = activeBatchRegs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
-    const basket3 = activeBatchRegs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
+    const activeYear1 = activeBatchRegs.filter((r) => r.year === 1);
+    const activeYear2Plus = activeBatchRegs.filter((r) => r.year > 1);
+    const policyRegs = activeBatchRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
 
     // Phân bổ nhóm của các hồ sơ ĐÃ DUYỆT (để so sánh với chỉ tiêu)
-    const approvedBasket1 = approvedRegs.filter((r) => r.priority_reasons && String(r.priority_reasons).trim() !== "");
-    const approvedBasket2 = approvedRegs.filter((r) => r.year === 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
-    const approvedBasket3 = approvedRegs.filter((r) => r.year > 1 && (!r.priority_reasons || String(r.priority_reasons).trim() === ""));
-
     const approvedYear1Count = approvedRegs.filter((r) => r.year === 1).length;
     const approvedYear2PlusCount = approvedRegs.filter((r) => r.year > 1).length;
 
@@ -113,25 +109,25 @@ const RegistrationStatistics = ({ regs }) => {
     // --- 3. BASKET ANALYTICS ---
     const basketGender = [
       {
-        name: "Nhóm 1 (Chính sách)",
-        Nam: basket1.filter((r) => r.gender === "Nam").length,
-        Nữ: basket1.filter((r) => r.gender === "Nữ").length,
+        name: "Diện chính sách",
+        Nam: policyRegs.filter((r) => r.gender === "Nam").length,
+        Nữ: policyRegs.filter((r) => r.gender === "Nữ").length,
       },
       {
-        name: "Nhóm 2 (Tân SV)",
-        Nam: basket2.filter((r) => r.gender === "Nam").length,
-        Nữ: basket2.filter((r) => r.gender === "Nữ").length,
+        name: "Tân sinh viên",
+        Nam: activeYear1.filter((r) => !r.priority_reasons || String(r.priority_reasons).trim() === "").filter((r) => r.gender === "Nam").length,
+        Nữ: activeYear1.filter((r) => !r.priority_reasons || String(r.priority_reasons).trim() === "").filter((r) => r.gender === "Nữ").length,
       },
       {
-        name: "Nhóm 3 (Khóa cũ)",
-        Nam: basket3.filter((r) => r.gender === "Nam").length,
-        Nữ: basket3.filter((r) => r.gender === "Nữ").length,
+        name: "Sinh viên khóa cũ",
+        Nam: activeYear2Plus.filter((r) => !r.priority_reasons || String(r.priority_reasons).trim() === "").filter((r) => r.gender === "Nam").length,
+        Nữ: activeYear2Plus.filter((r) => !r.priority_reasons || String(r.priority_reasons).trim() === "").filter((r) => r.gender === "Nữ").length,
       },
     ];
 
     // --- 3b. Priority Reasons Breakdown ---
     const priorityCounts = {};
-    basket1.forEach((r) => {
+    policyRegs.forEach((r) => {
       const reasons = r.priority_reasons || "Khác";
       let category = "Khác";
       const lower = reasons.toLowerCase();
@@ -215,15 +211,10 @@ const RegistrationStatistics = ({ regs }) => {
       countRejected,
       approvedYear1Count,
       approvedYear2PlusCount,
+      policyCount: policyRegs.length,
       baskets: [
-        { name: "Nhóm 1 (Chính sách)", count: basket1.length, color: "#e74c3c" },
-        { name: "Nhóm 2 (Tân sinh viên)", count: basket2.length, color: "#3498db" },
-        { name: "Nhóm 3 (Khóa cũ)", count: basket3.length, color: "#9b59b6" },
-      ],
-      approvedBaskets: [
-        { name: "Nhóm 1 (Chính sách)", count: approvedBasket1.length, color: "#e74c3c" },
-        { name: "Nhóm 2 (Tân sinh viên)", count: approvedBasket2.length, color: "#3498db" },
-        { name: "Nhóm 3 (Khóa cũ)", count: approvedBasket3.length, color: "#9b59b6" },
+        { name: "Tân sinh viên", count: activeYear1.length, color: "#3498db" },
+        { name: "Sinh viên khóa cũ", count: activeYear2Plus.length, color: "#9b59b6" },
       ],
       genderRatio: { male: maleCount, female: femaleCount },
       provinces,
@@ -256,10 +247,10 @@ const RegistrationStatistics = ({ regs }) => {
         {/* Total */}
         <StatCard icon={UserCheck} label="Tổng hồ sơ đã ứng tuyển" value={statsData.totalApplied} subValue="sinh viên" color="emerald" />
 
-        {/* Baskets - R1, R2, R3 */}
-        <StatCard icon={Target} label="Nhóm 1: Chính sách" value={statsData.baskets[0]?.count || 0} subValue="sinh viên" color="rose" />
-        <StatCard icon={School} label="Nhóm 2: Tân sinh viên" value={statsData.baskets[1]?.count || 0} subValue="sinh viên" color="blue" />
-        <StatCard icon={GraduationCap} label="Nhóm 3: Khóa cũ" value={statsData.baskets[2]?.count || 0} subValue="sinh viên" color="purple" />
+        {/* Baskets */}
+        <StatCard icon={Target} label="Diện chính sách" value={statsData.policyCount || 0} subValue="sinh viên" color="rose" />
+        <StatCard icon={School} label="Tân sinh viên" value={statsData.baskets[0]?.count || 0} subValue="sinh viên" color="blue" />
+        <StatCard icon={GraduationCap} label="Sinh viên khóa cũ" value={statsData.baskets[1]?.count || 0} subValue="sinh viên" color="purple" />
 
         {/* Gender Ratio Card */}
         <div className="bg-gradient-to-br from-indigo-50 to-white p-4 rounded-2xl border border-indigo-100 shadow-sm">
@@ -346,7 +337,7 @@ const RegistrationStatistics = ({ regs }) => {
               <div className="flex items-center gap-4 px-6 py-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
                 <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Nhóm 2 — Tân sinh viên</p>
+                  <p className="text-sm font-bold text-slate-800">Tân sinh viên</p>
                   <p className="text-xs text-slate-400">
                     {freshmen}% chỉ tiêu = {quotaBasket2} suất
                   </p>
@@ -376,7 +367,7 @@ const RegistrationStatistics = ({ regs }) => {
               <div className="flex items-center gap-4 px-6 py-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0" />
                 <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Nhóm 3 — Khóa cũ</p>
+                  <p className="text-sm font-bold text-slate-800">Sinh viên khóa cũ</p>
                   <p className="text-xs text-slate-400">
                     {seniors}% chỉ tiêu = {quotaBasket3} suất
                   </p>
@@ -423,22 +414,22 @@ const RegistrationStatistics = ({ regs }) => {
               <li className="flex items-start gap-2">
                 <span className="text-rose-500 mt-0.5">●</span>
                 <span>
-                  Nhóm 1 chiếm <strong>{statsData.totalApplied > 0 ? ((statsData.baskets[0]?.count / statsData.totalApplied) * 100).toFixed(1) : 0}%</strong>
-                  {statsData.baskets[0]?.count > statsData.totalApplied * 0.15 ? " (cao hơn mức khuyến nghị 12-15%)" : " (phù hợp chính sách ưu tiên)"}
+                  Diện chính sách chiếm <strong>{statsData.totalApplied > 0 ? ((statsData.policyCount / statsData.totalApplied) * 100).toFixed(1) : 0}%</strong>
+                  {statsData.policyCount > statsData.totalApplied * 0.15 ? " (cao hơn mức khuyến nghị 12-15%)" : " (phù hợp chính sách ưu tiên)"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">●</span>
                 <span>
-                  Nhóm 2 (Tân SV) có <strong>{statsData.baskets[1]?.count}</strong> hồ sơ
-                  {statsData.baskets[1]?.count > statsData.totalApplied * 0.6 ? ", cần mở rộng chỗ ở cho năm 1" : ", phù hợp với chỉ tiêu"}
+                  Tân sinh viên chiếm <strong>{statsData.totalApplied > 0 ? ((statsData.baskets[0]?.count / statsData.totalApplied) * 100).toFixed(1) : 0}%</strong> ({statsData.baskets[0]?.count} hồ sơ)
+                  {statsData.baskets[0]?.count > statsData.totalApplied * 0.6 ? ", cần ưu tiên mở rộng chỗ năm 1" : ", phù hợp với chỉ tiêu"}
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-purple-500 mt-0.5">●</span>
                 <span>
-                  Nhóm 3 có <strong>{statsData.baskets[2]?.count}</strong> khóa cũ,
-                  {statsData.baskets[2]?.count < statsData.baskets[1]?.count * 0.5 ? " nhu cầu thấp hơn tân sinh viên" : " cạnh tranh cao"}
+                  Sinh viên khóa cũ chiếm <strong>{statsData.totalApplied > 0 ? ((statsData.baskets[1]?.count / statsData.totalApplied) * 100).toFixed(1) : 0}%</strong> ({statsData.baskets[1]?.count} khóa cũ)
+                  {statsData.baskets[1]?.count < statsData.baskets[0]?.count * 0.5 ? " nhu cầu thấp hơn tân sinh viên" : " cạnh tranh cao"}
                 </span>
               </li>
             </ul>
@@ -515,8 +506,8 @@ const RegistrationStatistics = ({ regs }) => {
           <div className="flex items-center gap-2 mb-6">
             <Target className="text-blue-600" size={24} />
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Tương quan Nam/Nữ trong từng nhóm</h3>
-              <p className="text-sm text-slate-500">Cơ cấu giới tính theo nhóm đối tượng</p>
+              <h3 className="text-lg font-bold text-slate-900">Tương quan Nam/Nữ theo phân loại</h3>
+              <p className="text-sm text-slate-500">Cơ cấu giới tính của Tân sinh viên và Khóa cũ</p>
             </div>
           </div>
 
@@ -540,8 +531,8 @@ const RegistrationStatistics = ({ regs }) => {
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp className="text-rose-600" size={24} />
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Cơ cấu Diện ưu tiên (Nhóm 1)</h3>
-              <p className="text-sm text-slate-500">Phân loại trong nhóm chính sách</p>
+              <h3 className="text-lg font-bold text-slate-900">Cơ cấu Diện ưu tiên Chính sách</h3>
+              <p className="text-sm text-slate-500">Phân loại theo diện chính sách ưu tiên</p>
             </div>
           </div>
 
