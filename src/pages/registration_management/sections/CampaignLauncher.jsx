@@ -337,7 +337,9 @@ const CampaignLauncher = () => {
                           <tr>
                             <th className="text-left px-3 py-2 bg-slate-100 rounded-tl-lg font-bold text-slate-600 w-24">Tòa \ Tầng</th>
                             {floors.map((f) => (
-                              <th key={f} className="px-3 py-2 bg-slate-100 text-center font-bold text-slate-600">Tầng {f}</th>
+                              <th key={f} className="px-3 py-2 bg-slate-100 text-center font-bold text-slate-700">
+                                {f}
+                              </th>
                             ))}
                           </tr>
                         </thead>
@@ -437,9 +439,9 @@ const CampaignLauncher = () => {
                         <tr>
                           <th className="text-left px-3 py-2 bg-slate-100 rounded-tl-lg font-bold text-slate-600 w-32">Đối tượng \ Năm</th>
                           {demandForecast.history.map((h) => (
-                            <th key={h.year} className="px-3 py-2 bg-slate-100 text-center font-bold text-slate-600">
-                              <span className={h.isReal ? "text-blue-600" : "text-slate-400"}>{h.year}</span>
-                              {!h.isReal && <span className="block text-[9px] font-normal text-slate-400">ước tính</span>}
+                            <th key={h.year} className="px-3 py-2.5 bg-slate-100 text-center border-b border-slate-200">
+                              <span className={`block text-sm font-bold ${h.isReal ? "text-blue-700" : "text-slate-600"}`}>{h.year}</span>
+                              {!h.isReal && <span className="block text-[10px] font-medium text-slate-500">ước tính</span>}
                             </th>
                           ))}
                         </tr>
@@ -451,13 +453,13 @@ const CampaignLauncher = () => {
                           { key: "policy", label: "Diện chính sách", color: "text-rose-700 bg-rose-50" },
                           { key: "total", label: "Tổng cộng", color: "text-slate-700 bg-slate-100 font-black" },
                         ].map((row, ri) => (
-                          <tr key={row.key} className={ri % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                            <td className={`px-3 py-2 font-bold border-r border-slate-100 ${row.key === "total" ? "font-black text-slate-800" : "text-slate-600"}`}>
+                          <tr key={row.key} className={ri % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                            <td className={`px-3 py-2 font-bold border-r border-slate-100 ${row.key === "total" ? "font-black text-slate-900" : "text-slate-700"}`}>
                               {row.label}
                             </td>
                             {demandForecast.history.map((h) => (
                               <td key={h.year} className="px-2 py-1.5 text-center">
-                                <span className={`inline-block px-2 py-0.5 rounded-lg font-bold ${h.isReal ? row.color : "bg-slate-100 text-slate-400"}`}>
+                                <span className={`inline-block px-2.5 py-0.5 rounded-lg font-extrabold tracking-tight ${h.isReal ? row.color : "bg-slate-50 text-slate-500 border border-slate-200"}`}>
                                   {(h[row.key] || 0).toLocaleString()}
                                 </span>
                               </td>
