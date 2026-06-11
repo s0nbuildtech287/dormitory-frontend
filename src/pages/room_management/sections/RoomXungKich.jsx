@@ -416,23 +416,23 @@ const RoomXungKich = ({
         ]}
         hasActiveFilter={searchTerm !== "" || filterBuilding !== "All" || filterFloor !== "All" || filterRole !== "All"}
         customFilters={
-          <div className="col-span-3 flex gap-2">
+          <div className="col-span-3 grid grid-cols-3 gap-2">
             <button
               onClick={openXungKichPicker}
-              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+              className="w-full flex items-center justify-center px-3 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
             >
-              <Users size={16} className="mr-1 flex-shrink-0" /> Chọn phòng xung kích
+              <Users size={16} className="mr-1 flex-shrink-0" /> Chọn phòng
             </button>
             <button
               onClick={openXungKichAssignModal}
-              className="flex-1 flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
+              className="w-full flex items-center justify-center px-3 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-sm shadow-sm"
             >
-              <Users size={16} className="mr-1 flex-shrink-0" /> Thêm sinh viên xung kích
+              <Users size={16} className="mr-1 flex-shrink-0" /> Thêm SV
             </button>
             <button
               onClick={handleResetFilters}
               disabled={!searchTerm && filterBuilding === "All" && filterFloor === "All" && filterRole === "All"}
-              className="w-[84px] flex-none flex items-center justify-center px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
+              className="w-full flex items-center justify-center px-2 py-2.5 rounded-xl border border-slate-200 bg-white text-[11px] font-bold text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
               title="Xóa bộ lọc"
             >
               ↺ Reset
