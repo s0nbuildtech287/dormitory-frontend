@@ -174,3 +174,17 @@ export const transferRoom = async (contractId, roomId) => {
   return handleResponse(response);
 };
 
+/**
+ * Set volunteer role for a student contract
+ * @param {string} contractId
+ * @param {string} volunteerRole - 'truong_xung_kich' or 'xung_kich'
+ */
+export const setVolunteerRole = async (contractId, volunteerRole) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/${contractId}/set-volunteer-role`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ volunteer_role: volunteerRole }),
+  });
+  return handleResponse(response);
+};
+

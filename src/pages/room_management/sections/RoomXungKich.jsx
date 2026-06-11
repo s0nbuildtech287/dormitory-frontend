@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Eye, Users, X, Home, Trash2, Send, CheckSquare, Plus } from "lucide-react";
+import { Search, Eye, Users, X, Home, Trash2, Send, CheckSquare, Plus, Crown } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import Pagination from "../../../components/common/Pagination.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import RoomDetailModal from "./RoomDetailModal.jsx";
 import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
-import { getContracts, transferRoom } from "../../../api/apiContract.js";
+import { getContracts, transferRoom, setVolunteerRole } from "../../../api/apiContract.js";
 import { updateRoom } from "../../../api/apiRoom.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
@@ -177,6 +177,28 @@ const RoomXungKich = ({
     }
   };
 
+  const handlePromoteToLeader = async (student) => {
+    const contractId = student.contract_id || student.id?.split("-")[1];
+    if (!contractId) {
+      alert("Không tìm thấy thông tin hợp đồng của sinh viên.");
+      return;
+    }
+
+    const confirmPromote = window.confirm(
+      `Bạn có chắc chắn muốn bổ nhiệm sinh viên ${student.student_name} làm Trưởng xung kích cho tòa ${getBuildingLabel(student.building)}?\n` +
+      `Sinh viên đang là Trưởng xung kích của tòa này sẽ tự động chuyển thành Xung kích.`
+    );
+
+    if (!confirmPromote) return;
+
+    try {
+      await setVolunteerRole(contractId, "truong_xung_kich");
+      onRefresh?.();
+    } catch (error) {
+      alert(error.message || "Không thể cập nhật chức vụ trưởng xung kích");
+    }
+  };
+
   // Room picker candidate filtering
   const xungKichCandidates = safeRooms.filter((room) => {
     const currentReserved = room.reserved_for || "general";
@@ -195,7 +217,7 @@ const RoomXungKich = ({
     {
       header: "Mã sinh viên",
       align: "center",
-      width: "w-[12%]",
+      width: "w-[10%]",
       accessor: (student) => (
         <span className="text-xs font-mono font-semibold text-slate-900">
           {student.student_id || "—"}
@@ -205,7 +227,7 @@ const RoomXungKich = ({
     {
       header: "Họ và tên",
       align: "left",
-      width: "w-[18%]",
+      width: "w-[15%]",
       accessor: (student) => (
         <span className="text-xs font-semibold text-slate-900">
           {student.student_name || "—"}
@@ -213,9 +235,36 @@ const RoomXungKich = ({
       ),
     },
     {
-      header: "Phòng",
+      header: "Chức vụ",
       align: "center",
       width: "w-[12%]",
+      accessor: (student) => {
+        const isLeader = student.volunteer_role === "truong_xung_kich";
+        const hasRole = student.volunteer_role === "truong_xung_kich" || student.volunteer_role === "xung_kich";
+        
+        if (!hasRole) {
+          return <span className="text-xs text-slate-400 font-normal">—</span>;
+        }
+
+        return (
+          <div className="flex items-center justify-center">
+            {isLeader ? (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                Trưởng xung kích
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Xung kích
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      header: "Phòng",
+      align: "center",
+      width: "w-[10%]",
       accessor: (student) => (
         <span className="text-xs font-semibold text-slate-900">
           {student.room_number || "—"}
@@ -225,7 +274,7 @@ const RoomXungKich = ({
     {
       header: "Vị trí",
       align: "center",
-      width: "w-[15%]",
+      width: "w-[12%]",
       accessor: (student) => (
         <span className="text-xs font-semibold text-slate-900">
           {getBuildingLabel(student.building)} - Tầng {student.floor}
@@ -235,7 +284,7 @@ const RoomXungKich = ({
     {
       header: "Email",
       align: "left",
-      width: "w-[20%]",
+      width: "w-[18%]",
       accessor: (student) => (
         <span className="text-xs font-normal text-slate-600 font-mono">
           {student.email || student.student_email || "—"}
@@ -245,7 +294,7 @@ const RoomXungKich = ({
     {
       header: "Mã hợp đồng",
       align: "center",
-      width: "w-[13%]",
+      width: "w-[10%]",
       accessor: (student) =>
         student.contract_number ? (
           <button
@@ -268,20 +317,18 @@ const RoomXungKich = ({
       align: "center",
       width: "w-[10%]",
       accessor: (student) => {
-        const originalRoom = safeRooms.find((r) => r.id === student.room_id);
+        const isLeader = student.volunteer_role === "truong_xung_kich";
         return (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => {
-                if (originalRoom) {
-                  setSelectedRoomDetail(originalRoom);
-                }
-              }}
-              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Xem chi tiết phòng"
-            >
-              <Eye size={16} />
-            </button>
+          <div className="flex items-center justify-center gap-1.5">
+            {!isLeader && (
+              <button
+                onClick={() => handlePromoteToLeader(student)}
+                className="p-1.5 text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors cursor-pointer"
+                title="Bổ nhiệm làm trưởng xung kích cho tòa"
+              >
+                <Crown size={16} />
+              </button>
+            )}
             <button
               onClick={() => {
                 setComposeEmail({
