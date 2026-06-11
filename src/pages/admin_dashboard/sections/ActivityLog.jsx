@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Search, ChevronDown } from "lucide-react";
 import Pagination from "../../../components/common/Pagination.jsx";
 import { getActivityLogs } from "../../../api/apiLog.js";
@@ -48,6 +48,9 @@ const ACTION_META = {
   REVERT_CONTRACT:        { label: "Hoàn tác hợp đồng",       cls: "bg-blue-100 text-blue-700" },
   UPDATE_SETTINGS:        { label: "Cập nhật cài đặt",        cls: "bg-blue-100 text-blue-700" },
   RECALCULATE_SCORES:     { label: "Tính lại Điểm xét duyệt",        cls: "bg-blue-100 text-blue-700" },
+  AUTO_APPROVE_REGISTRATIONS: { label: "Duyệt hồ sơ tự động",   cls: "bg-green-100 text-green-700" },
+  AUTO_ASSIGN_ROOMS:      { label: "Gán phòng tự động",       cls: "bg-green-100 text-green-700" },
+  UPDATE_VOLUNTEER_ROLE:  { label: "Cập nhật chức vụ xung kích", cls: "bg-blue-100 text-blue-700" },
 };
 
 const ENTITY_LABEL = {
@@ -117,7 +120,14 @@ const ActivityLog = () => {
       if (res.success) {
         const mapped = res.data.map(l => ({
           id:          l.id,
-          admin:       l.user_name || "Không rõ",
+          admin: (() => {
+            if (!l.user_name) return "Không rõ";
+            if (l.user_role === "SUPER_ADMIN") return `${l.user_name} (Super Admin)`;
+            if (l.user_role === "STAFF") return `${l.user_name} (${l.user_staff_title || "Cán bộ quản lý"})`;
+            if (l.user_role === "ADMIN") return `${l.user_name} (Ban Quản Lý)`;
+            if (l.user_role === "STUDENT") return `${l.user_name} (Sinh viên)`;
+            return l.user_name;
+          })(),
           action:      l.action,
           entity_type: l.entity_type,
           entity_id:   l.entity_id,
