@@ -1,4 +1,4 @@
-@startuml "Notification Send Sequence"
+@startuml
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 22
@@ -10,10 +10,6 @@ participant "Socket.io" as WS
 participant "Giao diện Sinh viên" as Student
 database "CSDL" as DB
 
-note over Student,WS
-Client kết nối socket.io kèm JWT,
-server join room theo role/userId.
-end note
 
 alt Gửi ALL
   Admin -> FE: Nhập nội dung
