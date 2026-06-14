@@ -1,7 +1,6 @@
 @startuml "UC Phân rã - Quản lý hóa đơn"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-left to right direction
 skinparam usecase {
   BackgroundColor White
   BorderColor Black
@@ -16,25 +15,47 @@ skinparam shadowing false
 
 actor "<b>Ban quản lý</b>" as Admin
 
-usecase "<b>Xem danh sách hóa đơn</b>" as UC1
-usecase "<b>Xem chi tiết hóa đơn</b>" as UC2
-usecase "<b>Tạo hóa đơn thủ công</b>" as UC3
-usecase "<b>Tự động tạo hóa đơn theo phòng</b>" as UC4
-usecase "<b>Cập nhật hóa đơn</b>" as UC5
-usecase "<b>Xóa hóa đơn</b>" as UC6
-usecase "<b>Phát hiện bất thường điện/nước</b>" as UC7
-usecase "<b>Tự động cập nhật hóa đơn quá hạn</b>" as UC8
-usecase "<b>Điều chỉnh bảng giá dịch vụ</b>" as UC9
-usecase "<b>Xem thống kê doanh thu</b>" as UC10
+together {
+  usecase "<b>Xem danh sách hóa đơn</b>" as UC1
+  usecase "<b>Xem chi tiết hóa đơn</b>" as UC2
+  usecase "<b>Tạo hóa đơn thủ công</b>" as UC3
+  usecase "<b>Tự động tạo hóa đơn theo phòng</b>" as UC4
+  usecase "<b>Điều chỉnh bảng giá dịch vụ</b>" as UC9
+}
 
-Admin --> UC1
-Admin --> UC2
-Admin --> UC3
-Admin --> UC4
-Admin --> UC5
-Admin --> UC6
-Admin --> UC7
-Admin --> UC8
-Admin --> UC9
-Admin --> UC10
+together {
+  usecase "<b>Cập nhật hóa đơn</b>" as UC5
+  usecase "<b>Xóa hóa đơn</b>" as UC6
+  usecase "<b>Phát hiện bất thường điện/nước</b>" as UC7
+  usecase "<b>Tự động cập nhật hóa đơn quá hạn</b>" as UC8
+  usecase "<b>Xem thống kê doanh thu</b>" as UC10
+}
+
+UC1 -[hidden]-> UC2
+UC2 -[hidden]-> UC3
+UC3 -[hidden]-> UC4
+UC4 -[hidden]-> UC9
+
+UC5 -[hidden]-> UC6
+UC6 -[hidden]-> UC7
+UC7 -[hidden]-> UC8
+UC8 -[hidden]-> UC10
+
+UC1 -[hidden]right-> UC5
+UC2 -[hidden]right-> UC6
+UC3 -[hidden]right-> UC7
+UC4 -[hidden]right-> UC8
+UC9 -[hidden]right-> UC10
+
+Admin -right-> UC1
+Admin -right-> UC2
+Admin -right-> UC3
+Admin -right-> UC4
+Admin -right-> UC9
+
+Admin -right-> UC5
+Admin -right-> UC6
+Admin -right-> UC7
+Admin -right-> UC8
+Admin -right-> UC10
 @enduml

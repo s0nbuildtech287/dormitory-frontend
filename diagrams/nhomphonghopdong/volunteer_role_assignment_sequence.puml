@@ -1,0 +1,28 @@
+@startuml "Volunteer Role Assignment Sequence"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
+
+actor "Quản lý tòa nhà" as Admin
+participant "Giao diện" as FE
+participant "ContractController" as ConC
+participant "ContractService" as ConS
+participant "StudentContractDAO" as ConDAO
+database "CSDL" as DB
+
+Admin -> FE: Chọn SV + Chọn vai trò "Trưởng ban"
+FE -> ConC: POST /api/contracts/{id}/set-volunteer-role
+ConC -> ConS: setVolunteerRole(contractId, role)
+ConS -> ConDAO: findOldLeader(buildingId)
+ConDAO -> DB: Query Trưởng ban cũ
+DB --> ConDAO: Kết quả
+opt Có Trưởng ban cũ
+  ConS -> ConDAO: updateRole(oldId, 'xung_kich')
+  ConDAO -> DB: UPDATE old contract
+end
+ConS -> ConDAO: updateRole(newId, 'truong_xung_kich')
+ConDAO -> DB: UPDATE new contract
+ConS --> ConC: Thành công
+ConC --> FE: 200 OK
+FE --> Admin: Cập nhật giao diện hiển thị
+@enduml
