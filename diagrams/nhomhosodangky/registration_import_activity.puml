@@ -4,24 +4,24 @@ skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
 :Chọn Import hồ sơ;
-:Chọn Excel hoặc Google Sheets;
+:Chọn Excel hoặc\nGoogle Sheets;
 |Hệ thống|
 :Nhận file hoặc URL;
 if (Nguồn hợp lệ?) then (Có)
-  :Đọc dữ liệu và validate thông tin;
+  :Đọc dữ liệu và\nvalidate thông tin;
   :Lưu hồ sơ tạm vào CSDL;
-  :Tính toán điểm xét tuyển dựa trên các tiêu chí;
+  :Tính toán điểm rèn luyện,\nđiểm ưu tiên & điểm xét tuyển;
   fork
-    :Xác thực ảnh minh chứng (Vision API);
+    :Xác thực ảnh minh chứng\n(Vision API);
   fork again
-    :Phân loại vào nhóm giỏ chỉ tiêu (Nhóm 1, 2, 3);
+    :Phân loại vào các\nnhóm chỉ tiêu (Nhóm 1, 2, 3);
   end fork
-  :Lưu điểm xét duyệt & đề xuất vào CSDL;
+  :Lưu điểm xét duyệt\n& đề xuất vào CSDL;
   |Ban quản lý|
-  :Thông báo nhập hồ sơ và xử lý điểm thành công;
+  :Thông báo nhập hồ sơ\nvà xử lý điểm thành công;
   stop
 else (Không)
-  :Thông báo lỗi định dạng/URL;
+  :Thông báo lỗi\nđịnh dạng/URL;
   |Ban quản lý|
   :Sửa nguồn và thử lại;
   stop

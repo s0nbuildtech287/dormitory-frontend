@@ -2,7 +2,8 @@
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 22
-actor "Ban quản lý" as Admin
+
+actor "Quản lý tòa nhà" as Admin
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC
 participant "RegistrationService" as RegS
@@ -10,34 +11,45 @@ participant "UserService" as UserS
 participant "NotificationService" as NotiS
 database "CSDL" as DB
 
-== Duyệt / Từ chối ==
-Admin -> FE: Chọn hồ sơ + ghi chú
-FE -> RegC: POST /api/registrations/{id}/approve|reject
-RegC -> RegS: approveRegistration|rejectRegistration(args)
-RegS -> DB: UPDATE register_forms
-DB --> RegS: OK
-alt Hồ sơ được duyệt
-	RegS -> UserS: createStudentAccount(args)
-	UserS -> DB: INSERT users
-	DB --> UserS: OK
+alt Chế độ 1: Duyệt thủ công
+  Admin -> FE: Chọn hồ sơ + Ghi chú duyệt/từ chối
+  FE -> RegC: POST /api/registrations/{id}/approve|reject
+  RegC -> RegS: approveRegistration|rejectRegistration(args)
+  RegS -> DB: UPDATE register_forms SET status = 'Chấp nhận'|'Từ chối'
+  DB --> RegS: OK
+  
+  opt Trường hợp duyệt thành công
+    RegS -> UserS: createStudentAccount(args)
+    UserS -> DB: INSERT users (Mật khẩu = CCCD)
+    DB --> UserS: OK
+    RegS -> DB: INSERT student_contracts (status = 'Pending')
+  end
+  
+  RegS -> NotiS: sendNotification(email/socket)
+  NotiS -> DB: INSERT notifications
+  RegS --> RegC: Kết quả duyệt
+  RegC --> FE: 200 OK
+  FE --> Admin: Cập nhật trạng thái hiển thị trên bảng
+
+else Chế độ 2: Duyệt tự động theo lô (Bulk Auto-Allocate)
+  Admin -> FE: Chọn Khoa + Ấn "Duyệt tự động theo chỉ tiêu"
+  FE -> RegC: POST /api/registrations/auto-allocate (body: {faculty})
+  RegC -> RegS: bulkApproveRegistrations({faculty, adminId})
+  RegS -> DB: SELECT settings (chỉ tiêu Quotas & trọng số)
+  DB --> RegS: Quotas (Tân SV %, Khóa cũ %)
+  RegS -> DB: SELECT * FROM register_forms WHERE status = 'Chờ duyệt'
+  DB --> RegS: Danh sách hồ sơ
+  RegS -> RegS: Sắp xếp theo Nhóm (1, 2, 3) + Điểm xét tuyển (Giảm dần)
+  
+  loop Từng hồ sơ (cho đến khi hết chỉ tiêu trong nhóm)
+    RegS -> DB: UPDATE register_forms SET status = 'Chấp nhận'
+    RegS -> UserS: Tìm hoặc tạo tài khoản Sinh viên
+    UserS -> DB: INSERT users (nếu chưa có)
+    RegS -> DB: INSERT student_contracts (status = 'Pending')
+  end
+  
+  RegS --> RegC: Kết quả duyệt hàng loạt (số lượng thành công, danh sách duyệt)
+  RegC --> FE: 200 OK (Kết quả bulk approve)
+  FE --> Admin: Hiển thị báo cáo và danh sách sinh viên được duyệt
 end
-RegS -> NotiS: send notification
-NotiS -> DB: INSERT notifications
-RegS --> RegC: Kết quả
-RegC --> FE: 200 OK
-
-== Điều chỉnh trọng số ==
-Admin -> FE: Cập nhật scoring weights
-FE -> RegC: PUT /api/registrations/scoring-weights
-RegC -> RegS: updateScoringWeightsSettings(args)
-RegS -> DB: UPDATE settings
-DB --> RegS: OK
-RegC --> FE: 200 OK
-
-Admin -> FE: Recalculate scores
-FE -> RegC: POST /api/registrations/recalculate-scores
-RegC -> RegS: recalculateAllScores()
-RegS -> DB: UPDATE register_forms
-DB --> RegS: OK
-RegC --> FE: 200 OK
 @enduml

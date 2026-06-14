@@ -10,7 +10,7 @@ Luồng sự kiện chính:
 4. Ban quản lý thiết lập chỉ tiêu tuyển sinh (Quotas) cho đợt mới và ấn kích hoạt "Mở đợt".
 5. Hệ thống mở cổng đăng ký cho sinh viên, đồng thời hiển thị màn hình quản lý hồ sơ đăng ký.
 6. Sinh viên đăng ký trực tuyến (hoặc Ban quản lý import/nhập thủ công hồ sơ).
-7. Hệ thống tự động xử lý hồ sơ: tính điểm ưu tiên cộng dồn & Điểm xét tuyển, gọi Google Vision API xác thực ảnh minh chứng và phân loại vào các giỏ chỉ tiêu.
+7. Hệ thống tự động xử lý hồ sơ: tính điểm ưu tiên cộng dồn & Điểm xét tuyển, gọi Google Vision API xác thực ảnh minh chứng và phân loại vào các nhóm chỉ tiêu.
 8. Ban quản lý tiến hành duyệt hồ sơ (thủ công hoặc tự động theo lô dựa trên chỉ tiêu và điểm xét tuyển).
 9. Nếu hồ sơ được duyệt, hệ thống tự động tạo tài khoản sinh viên (email = email SV, mật khẩu = CCCD) và tạo hợp đồng Pending.
 10. Hệ thống gửi email thông báo kết quả xét duyệt cho sinh viên.
