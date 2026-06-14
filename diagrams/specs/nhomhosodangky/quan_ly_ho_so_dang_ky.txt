@@ -1,23 +1,26 @@
-Mô tả: Quản lý hồ sơ đăng ký (xem danh sách/chi tiết, nhập/import, tính điểm, xác thực ảnh, duyệt/từ chối, điều chỉnh trọng số, thống kê).
-Tác nhân: Ban quản lý.
-Các ràng buộc: Hồ sơ hợp lệ; cấu hình trọng số có sẵn; Vision API khả dụng.
-Điều kiện kích hoạt: Ban quản lý mở mục Quản lý hồ sơ đăng ký.
+Mô tả: Quản lý hồ sơ đăng ký (mở đợt đăng ký mới, xem danh sách/chi tiết, nhập/import, tự động tính điểm & xác thực ảnh, duyệt/từ chối, điều chỉnh trọng số, thống kê).
+Tác nhân: Ban quản lý (Quản lý tòa nhà).
+Các ràng buộc: Hồ sơ hợp lệ; cấu hình trọng số có sẵn; Vision API khả dụng; dữ liệu phòng ở và hợp đồng sẵn có.
+Điều kiện kích hoạt: Ban quản lý truy cập chức năng Mở đợt đăng ký mới hoặc Quản lý hồ sơ đăng ký.
 Luồng sự kiện:
 Luồng sự kiện chính:
-1. Hệ thống hiển thị danh sách hồ sơ và các thao tác.
-2. Ban quản lý chọn thao tác (nhập thủ công/import/xem chi tiết/duyệt/từ chối/xóa).
-3. Hệ thống kiểm tra dữ liệu và cập nhật hồ sơ.
-4. Hệ thống tính điểm xét duyệt tự động.
-5. Hệ thống (hoặc Ban quản lý kích hoạt) xác thực ảnh minh chứng.
-6. Hệ thống cập nhật trạng thái hồ sơ.
-7. Nếu hồ sơ được duyệt, hệ thống tự động tạo tài khoản sinh viên
-	(email = email SV, mật khẩu = CCCD).
-8. Hệ thống thông báo kết quả.
-9. Hệ thống hiển thị thống kê hồ sơ.
+1. Ban quản lý chọn chức năng "Mở đợt đăng ký mới".
+2. Hệ thống tính toán dự báo Cung (Room Forecast) và dự báo Cầu (Demand Forecast) rồi hiển thị báo cáo đối chiếu.
+3. Ban quản lý xác nhận số liệu, chọn gửi email nhắc nhở gia hạn hợp đồng/trả phòng tự động cho sinh viên.
+4. Ban quản lý thiết lập chỉ tiêu tuyển sinh (Quotas) cho đợt mới và ấn kích hoạt "Mở đợt".
+5. Hệ thống mở cổng đăng ký cho sinh viên, đồng thời hiển thị màn hình quản lý hồ sơ đăng ký.
+6. Sinh viên đăng ký trực tuyến (hoặc Ban quản lý import/nhập thủ công hồ sơ).
+7. Hệ thống tự động xử lý hồ sơ: tính điểm ưu tiên cộng dồn & Điểm xét tuyển, gọi Google Vision API xác thực ảnh minh chứng và phân loại vào các giỏ chỉ tiêu.
+8. Ban quản lý tiến hành duyệt hồ sơ (thủ công hoặc tự động theo lô dựa trên chỉ tiêu và điểm xét tuyển).
+9. Nếu hồ sơ được duyệt, hệ thống tự động tạo tài khoản sinh viên (email = email SV, mật khẩu = CCCD) và tạo hợp đồng Pending.
+10. Hệ thống gửi email thông báo kết quả xét duyệt cho sinh viên.
+11. Ban quản lý xem các báo cáo thống kê và biểu đồ hồ sơ đăng ký.
+
 Luồng rẽ nhánh:
-2.1 Import sai định dạng → thông báo lỗi.
-4.1 Thiếu dữ liệu → tính điểm không đầy đủ, gắn cảnh báo.
-5.1 Vision API lỗi → giữ trạng thái PENDING và thông báo lỗi.
-6.1 Ban quản lý điều chỉnh trọng số → hệ thống cập nhật và tính lại điểm.
-6.2 Duyệt/Từ chối thất bại → thông báo lỗi.
-7.1 Tạo tài khoản thất bại → thông báo lỗi và ghi log.
+2.1 Hệ thống không thể dự báo cung cầu → Hiển thị cảnh báo và cho phép nhập chỉ tiêu thủ công.
+3.1 Gửi email nhắc nhở/trả phòng lỗi → Ghi nhận log hệ thống, cho phép Admin gửi lại sau.
+6.1 Nhập/Import hồ sơ sai định dạng → Hệ thống hiển thị thông báo lỗi chi tiết.
+7.1 Thiếu dữ liệu điểm ưu tiên/GPA → Hệ thống tính điểm không đầy đủ và gắn nhãn cảnh báo.
+7.2 Vision API lỗi hoặc ảnh mờ → Gắn cờ cảnh báo hồ sơ để kiểm tra trực quan thủ công.
+8.1 Quá chỉ tiêu khi duyệt tự động → Hồ sơ thừa chỉ tiêu giữ trạng thái Chờ duyệt.
+9.1 Tạo tài khoản sinh viên bị trùng hoặc lỗi → Thông báo lỗi, ghi log hệ thống và cho phép thử lại.

@@ -8,11 +8,17 @@ start
 |Hệ thống|
 :Nhận file hoặc URL;
 if (Nguồn hợp lệ?) then (Có)
-  :Đọc dữ liệu;
-  :Validate mapping trường;
-  :Lưu hồ sơ vào DB;
+  :Đọc dữ liệu và validate thông tin;
+  :Lưu hồ sơ tạm vào CSDL;
+  :Tính toán điểm xét tuyển dựa trên các tiêu chí;
+  fork
+    :Xác thực ảnh minh chứng (Vision API);
+  fork again
+    :Phân loại vào nhóm giỏ chỉ tiêu (Nhóm 1, 2, 3);
+  end fork
+  :Lưu điểm xét duyệt & đề xuất vào CSDL;
   |Ban quản lý|
-  :Thông báo import thành công;
+  :Thông báo nhập hồ sơ và xử lý điểm thành công;
   stop
 else (Không)
   :Thông báo lỗi định dạng/URL;
