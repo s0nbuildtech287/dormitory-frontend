@@ -2,23 +2,24 @@
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 22
+
 actor "Ban quản lý" as Admin
-participant "Giao diện" as FE
-participant "AssetController" as AC
-participant "AssetService" as AS
-database "CSDL" as DB
+participant "Hệ thống" as System
 
-Admin -> FE: Thêm/Sửa/Xóa tài sản
-FE -> AC: POST|PUT|DELETE /api/assets
-AC -> AS: create|update|delete
-AS -> DB: INSERT/UPDATE/DELETE assets
-DB --> AS: OK
-AC --> FE: 200 OK
+== 1. CRUD tài sản (Thêm / Sửa / Xóa) ==
+Admin -> System: Thêm/Sửa/Xóa tài sản
+System --> Admin: Xác nhận và cập nhật danh sách tài sản (200 OK)
 
-Admin -> FE: Điều chỉnh giới hạn tài sản
-FE -> AC: PUT /api/assets/limits
-AC -> AS: updateAssetLimit(args)
-AS -> DB: UPDATE asset_limits
-DB --> AS: OK
-AC --> FE: 200 OK
+== 2. Nhập kho & Xuất kho tài sản ==
+alt Nhập kho
+  Admin -> System: Yêu cầu Nhập kho tài sản (số lượng, thông tin)
+  System --> Admin: Lưu lịch sử và cập nhật tồn kho thành công (201 Created)
+else Xuất kho đến phòng
+  Admin -> System: Yêu cầu Xuất kho đến phòng (chọn tài sản, phòng, số lượng)
+  System --> Admin: Kiểm tra, trừ tồn kho và gán phòng thành công (201 Created)
+end
+
+== 3. Điều chỉnh giới hạn định mức phòng ==
+Admin -> System: Thay đổi giới hạn định mức tài sản tối đa của phòng
+System --> Admin: Lưu cấu hình định mức phòng thành công (200 OK)
 @enduml

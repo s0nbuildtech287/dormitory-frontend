@@ -13,6 +13,7 @@ skinparam actor {
 }
 
 actor "<b>Ban quản lý</b>" as Admin
+actor "<b>Quản trị viên</b>" as SuperAdmin
 actor "<b>Sinh viên</b>" as SV
 
 usecase "<b>Xem thông tin cá nhân</b>" as UC1
@@ -31,11 +32,14 @@ usecase "<b>Đặt lại mật khẩu mới</b>" as UC11
 Admin --> UC1
 Admin --> UC2
 Admin --> UC3
-Admin --> UC4
-Admin --> UC5
 Admin --> UC6
 Admin --> UC7
 Admin --> UC8
+
+SuperAdmin --> UC4
+SuperAdmin --> UC5
+SuperAdmin --> UC6
+SuperAdmin --> UC7
 
 SV --> UC6
 SV --> UC7
