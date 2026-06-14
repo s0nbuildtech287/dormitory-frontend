@@ -1,7 +1,6 @@
-@startuml "UC Phân rã - Phản ánh (Ban quản lý)"
+@startuml
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-left to right direction
 skinparam usecase {
   BackgroundColor White
   BorderColor Black
@@ -16,19 +15,37 @@ skinparam shadowing false
 
 actor "<b>Ban quản lý</b>" as Admin
 
-usecase "<b>Xem danh sách phản ánh</b>" as UC1
-usecase "<b>Xem chi tiết phản ánh</b>" as UC2
-usecase "<b>Cập nhật trạng thái xử lý</b>" as UC3
-usecase "<b>Phản hồi cho sinh viên</b>" as UC4
-usecase "<b>Xóa phản ánh</b>" as UC5
-usecase "<b>Phân tích lại cảm xúc</b>" as UC6
-usecase "<b>Xem thống kê phản ánh</b>" as UC7
+together {
+  usecase "<b>Xem danh sách phản ánh</b>" as UC1
+  usecase "<b>Xem chi tiết phản ánh</b>" as UC2
+  usecase "<b>Xóa phản ánh</b>" as UC5
+}
 
-Admin --> UC1
-Admin --> UC2
-Admin --> UC3
-Admin --> UC4
+together {
+  usecase "<b>Cập nhật trạng thái xử lý</b>" as UC3
+  usecase "<b>Phản hồi cho sinh viên</b>" as UC4
+  usecase "<b>Phân tích lại cảm xúc</b>" as UC6
+  usecase "<b>Xem thống kê phản ánh</b>" as UC7
+}
+
+UC1 -[hidden]-> UC2
+UC2 -[hidden]-> UC5
+
+UC3 -[hidden]-> UC4
+UC4 -[hidden]-> UC6
+UC6 -[hidden]-> UC7
+
+UC1 -[hidden]right-> UC3
+UC2 -[hidden]right-> Admin
+Admin -[hidden]right-> UC4
+UC5 -[hidden]right-> UC6
+
+UC1 <-- Admin
+UC2 <-- Admin
 Admin --> UC5
+
+UC3 <-- Admin
+Admin --> UC4
 Admin --> UC6
 Admin --> UC7
 @enduml
