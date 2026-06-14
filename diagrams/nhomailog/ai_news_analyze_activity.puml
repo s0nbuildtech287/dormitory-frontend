@@ -1,25 +1,31 @@
 @startuml "AI News Analyze Activity"
-skinparam defaultFontSize 28
+skinparam defaultFontSize 24
 skinparam defaultFontName "Times New Roman"
 ' Activity Diagram: Phân tích bài báo bằng AI
 |Sinh viên|
 start
-:Mở Tin tức → chọn bài → nhấn "AI";
+:Mở Tin tức →
+chọn bài → nhấn "AI";
 |Hệ thống - Frontend|
-:Gửi yêu cầu phân tích (url + title);
+:Gửi yêu cầu
+phân tích (url + title);
 |Hệ thống - Backend|
-:Kiểm tra URL hợp lệ;
+:Kiểm tra URL
+hợp lệ;
 if (URL hợp lệ?) then (Có)
-  :Cào & trích xuất nội dung chính;
+  :Cào & trích xuất
+  nội dung chính;
   if (Có nội dung?) then (Có)
     :Gọi AI phân tích\n(tóm tắt/điểm nổi bật/ý nghĩa);
     |Hệ thống - Frontend|
-    :Mở modal Chatbot + hiển thị kết quả;
+    :Mở modal Chatbot
+    hiển thị kết quả;
     |Sinh viên|
     if (Hỏi thêm?) then (Có)
       :Nhập câu hỏi;
       |Hệ thống - Backend|
-      :Gọi AI theo ngữ cảnh bài báo;
+      :Gọi AI theo
+      ngữ cảnh bài báo;
       |Sinh viên|
       :Đọc câu trả lời;
       stop
@@ -28,14 +34,17 @@ if (URL hợp lệ?) then (Có)
     endif
   else (Không)
     |Hệ thống - Frontend|
-    :Mở chatbot với prompt cơ bản;
+    :Mở chatbot với
+    prompt cơ bản;
     |Sinh viên|
-    :Tự chỉnh prompt rồi gửi;
+    :Tự chỉnh prompt
+    rồi gửi;
     stop
   endif
 else (Không)
   |Hệ thống - Frontend|
-  :Thông báo lỗi URL;
+  :Thông báo lỗi
+  URL;
   stop
 endif
 @enduml
