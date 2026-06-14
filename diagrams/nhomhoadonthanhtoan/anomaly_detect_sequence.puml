@@ -3,7 +3,7 @@ skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 22
 ' Sequence Diagram: Phát hiện bất thường hóa đơn điện/nước
-actor "Ban quản lý" as Admin
+actor "Kế toán" as Accountant
 participant "Giao diện\n(BillList)" as FE
 participant "AnomalyModal" as Modal
 participant "InvoiceController" as IC
@@ -11,7 +11,7 @@ participant "InvoiceService" as IS
 participant "InvoiceDAO" as IDAO
 database "CSDL" as DB
 
-Admin -> FE: Nhấn nút "Bất thường"
+Accountant -> FE: Nhấn nút "Bất thường"
 FE -> Modal: isOpen = true
 Modal -> IC: GET /api/invoices/anomalies
 IC -> IS: detectAnomalies()
@@ -32,5 +32,5 @@ end
 IS -> IS: Sắp xếp theo mức tăng giảm dần
 IS --> IC: { total, threshold_pct, anomalies[] }
 IC --> Modal: 200 OK + data
-Modal --> Admin: Hiển thị danh sách phòng bất thường\n(điện/nước: lượng dùng + tiền + % tăng)
+Modal --> Accountant: Hiển thị danh sách phòng bất thường\n(điện/nước: lượng dùng + tiền + % tăng)
 @enduml

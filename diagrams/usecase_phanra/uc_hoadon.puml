@@ -13,7 +13,7 @@ skinparam ArrowColor Black
 skinparam ArrowThickness 1
 skinparam shadowing false
 
-actor "<b>Ban quản lý</b>" as Admin
+actor "<b>Kế toán</b>" as Admin
 
 together {
   usecase "<b>Xem danh sách hóa đơn</b>" as UC1

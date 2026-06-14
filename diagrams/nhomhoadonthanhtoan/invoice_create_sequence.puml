@@ -2,7 +2,7 @@
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 28
-actor "Ban quản lý" as Admin
+actor "Kế toán" as Accountant
 actor "Scheduler" as Cron
 participant "Giao diện" as FE
 participant "InvoiceController" as IC
@@ -11,7 +11,7 @@ participant "InvoiceDAO" as IDAO
 database "CSDL" as DB
 
 == Quản lý hóa đơn và bảng giá ==
-Admin -> FE: Xem/Tạo/Sửa/Xóa hóa đơn\nhoặc điều chỉnh bảng giá
+Accountant -> FE: Xem/Tạo/Sửa/Xóa hóa đơn\nhoặc điều chỉnh bảng giá
 FE -> IC: API request (GET/POST/PUT/DELETE)
 IC -> IS: Xử lý nghiệp vụ
 IS -> IDAO: Thao tác CSDL
