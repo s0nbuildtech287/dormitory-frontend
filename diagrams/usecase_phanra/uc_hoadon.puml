@@ -1,4 +1,4 @@
-@startuml "UC Phân rã - Quản lý hóa đơn"
+@startuml
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 skinparam usecase {
@@ -43,19 +43,20 @@ UC8 -[hidden]-> UC10
 
 UC1 -[hidden]right-> UC5
 UC2 -[hidden]right-> UC6
-UC3 -[hidden]right-> UC7
+UC3 -[hidden]right-> Admin
+Admin -[hidden]right-> UC7
 UC4 -[hidden]right-> UC8
 UC9 -[hidden]right-> UC10
 
-Admin -right-> UC1
-Admin -right-> UC2
-Admin -right-> UC3
-Admin -right-> UC4
-Admin -right-> UC9
+UC1 <-- Admin
+UC2 <-- Admin
+UC3 <-- Admin
+Admin --> UC4
+Admin --> UC9
 
-Admin -right-> UC5
-Admin -right-> UC6
-Admin -right-> UC7
-Admin -right-> UC8
-Admin -right-> UC10
+UC5 <-- Admin
+UC6 <-- Admin
+Admin --> UC7
+Admin --> UC8
+Admin --> UC10
 @enduml
