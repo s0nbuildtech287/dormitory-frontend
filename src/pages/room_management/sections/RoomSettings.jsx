@@ -64,12 +64,16 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
     const map = {};
     (Array.isArray(rooms) ? rooms : []).forEach((r) => {
       const b = r.building || "?";
-      if (!map[b]) map[b] = { id: b, displayName: `Tòa ${b}`, rooms: 0, capacity: 0, occupancy: 0 };
+      if (!map[b]) map[b] = { id: b, displayName: `Tòa ${b}`, rooms: 0, capacity: 0, occupancy: 0, floorsSet: new Set() };
       map[b].rooms++;
       map[b].capacity += r.capacity || 0;
       map[b].occupancy += r.currentOccupancy || 0;
+      if (r.floor) map[b].floorsSet.add(r.floor);
     });
-    return Object.values(map).sort((a, b) => a.id.localeCompare(b.id));
+    return Object.values(map).map(bData => ({
+      ...bData,
+      floorsCount: bData.floorsSet.size
+    })).sort((a, b) => a.id.localeCompare(b.id));
   }, [rooms]);
 
   const buildingRooms = useMemo(() => {
@@ -331,6 +335,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               <tr className="bg-slate-50 text-slate-700 text-xs font-black uppercase tracking-widest">
                 <th className="px-6 py-4 border-r-2 border-slate-200">Tòa (ID)</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200">Tên hiển thị</th>
+                <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Số tầng</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Số phòng</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Sức chứa</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Đang ở</th>
@@ -340,7 +345,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
             <tbody className="divide-y divide-slate-100">
               {buildingSummary.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-slate-400 text-sm">
+                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400 text-sm">
                     Chưa có dữ liệu tòa
                   </td>
                 </tr>
@@ -381,6 +386,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                           className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-indigo-50 outline-none bg-slate-50/60"
                         />
                       </td>
+                      <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.floorsCount}</td>
                       <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.rooms}</td>
                       <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.capacity}</td>
                       <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.occupancy}</td>
@@ -395,7 +401,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={6} className="bg-slate-50/50 p-6 border-b border-slate-200">
+                        <td colSpan={7} className="bg-slate-50/50 p-6 border-b border-slate-200">
                           {/* Tab Selector */}
                           <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
                             <h4 className="text-sm font-bold text-slate-800">Thông tin chi tiết tòa {b.id}</h4>
