@@ -499,12 +499,12 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                               <table className="w-full text-left border-collapse">
                                 <thead>
                                   <tr className="bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
-                                    <th className="px-4 py-2.5">Tầng</th>
-                                    <th className="px-4 py-2.5 text-center">Số phòng</th>
-                                    <th className="px-4 py-2.5 text-center">Sức chứa</th>
-                                    <th className="px-4 py-2.5 text-center">Đang ở</th>
-                                    <th className="px-4 py-2.5">Đối tượng sử dụng</th>
-                                    <th className="px-4 py-2.5 text-center">Thao tác</th>
+                                    <th className="px-4 py-2.5 w-[20%]">Tầng</th>
+                                    <th className="px-4 py-2.5 text-center w-[12%]">Số phòng</th>
+                                    <th className="px-4 py-2.5 text-center w-[12%]">Sức chứa</th>
+                                    <th className="px-4 py-2.5 text-center w-[12%]">Đang ở</th>
+                                    <th className="px-4 py-2.5 w-[30%]">Đối tượng sử dụng</th>
+                                    <th className="px-4 py-2.5 text-center w-[14%]">Thao tác</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
