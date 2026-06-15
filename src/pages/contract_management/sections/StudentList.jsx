@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, Eye, Clock, CheckCircle2, XCircle, FileX, Trash2, FileText, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Mail, Send, Square, CheckSquare, RotateCcw, Rocket, Loader2, X, Info, AlertTriangle } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
@@ -58,6 +58,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [filterStatus, setFilterStatus] = useState(initialFilter?.filterStatus || "All");
   const [filterGender, setFilterGender] = useState(initialFilter?.filterGender || "All");
   const [filterCohort, setFilterCohort] = useState(initialFilter?.filterCohort || "All");
+  const [filterFaculty, setFilterFaculty] = useState(initialFilter?.filterFaculty || "All");
   const [dateFrom, setDateFrom] = useState(initialFilter?.dateFrom || "");
   const [dateTo, setDateTo] = useState(initialFilter?.dateTo || "");
   // Track email sent locally (chưa dùng backend)
@@ -70,6 +71,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
       if (initialFilter.filterStatus !== undefined) setFilterStatus(initialFilter.filterStatus);
       if (initialFilter.filterGender !== undefined) setFilterGender(initialFilter.filterGender);
       if (initialFilter.filterCohort !== undefined) setFilterCohort(initialFilter.filterCohort);
+      if (initialFilter.filterFaculty !== undefined) setFilterFaculty(initialFilter.filterFaculty);
       if (initialFilter.dateFrom !== undefined) setDateFrom(initialFilter.dateFrom);
       if (initialFilter.dateTo !== undefined) setDateTo(initialFilter.dateTo);
     }
@@ -88,7 +90,20 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [progress, setProgress] = useState(0);
   const [progressStage, setProgressStage] = useState("");
 
-  const pendingContracts = contracts.filter((c) => c.status === "Pending");
+  const facultyOptions = useMemo(() => {
+    const opts = [{ value: "All", label: "Tất cả khoa" }];
+    const uniqueFaculties = [...new Set(contracts.map(c => c.snapshot_faculty).filter(Boolean))];
+    uniqueFaculties.sort().forEach(fac => {
+      opts.push({ value: fac, label: fac });
+    });
+    return opts;
+  }, [contracts]);
+
+  const pendingContracts = contracts.filter((c) => {
+    const isPending = c.status === "Pending";
+    const matchesFaculty = filterFaculty === "All" || c.snapshot_faculty === filterFaculty;
+    return isPending && matchesFaculty;
+  });
 
   const getAssignmentStage = (percent) => {
     if (percent < 20) return "Khởi tạo danh sách phòng và hợp đồng chờ xếp...";
@@ -115,7 +130,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     }, tickMs);
 
     try {
-      const res = await autoAssignPendingContracts();
+      const res = await autoAssignPendingContracts(filterFaculty !== "All" ? filterFaculty : null);
       clearInterval(timer);
       setProgress(100);
       setProgressStage("Đã gán phòng thành công!");
@@ -160,11 +175,13 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
       (filterCohort === "policy" && isPolicy) ||
       (filterCohort === "international" && isInternational);
 
+    const matchFaculty = filterFaculty === "All" || c.snapshot_faculty === filterFaculty;
+
     const contractDate = c.created_at ? new Date(c.created_at) : null;
     const matchDateFrom = !dateFrom || (contractDate && contractDate >= new Date(dateFrom));
     const matchDateTo = !dateTo || (contractDate && contractDate <= new Date(dateTo + "T23:59:59"));
 
-    return matchSearch && matchStatus && matchGender && matchCohort && matchDateFrom && matchDateTo;
+    return matchSearch && matchStatus && matchGender && matchCohort && matchFaculty && matchDateFrom && matchDateTo;
   });
 
   // Hooks
@@ -209,12 +226,13 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     setFilterStatus("All");
     setFilterGender("All");
     setFilterCohort("All");
+    setFilterFaculty("All");
     setDateFrom("");
     setDateTo("");
     pagination.goToPage(1);
   };
 
-  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterGender !== "All" || filterCohort !== "All" || dateFrom || dateTo;
+  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterGender !== "All" || filterCohort !== "All" || filterFaculty !== "All" || dateFrom || dateTo;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -274,6 +292,20 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
               <option value="returning_students">Lưu sinh viên</option>
               <option value="policy">Chính sách</option>
               <option value="international">Nước ngoài</option>
+            </select>
+
+            {/* Khoa */}
+            <select
+              value={filterFaculty}
+              onChange={(e) => handleFilterChange(setFilterFaculty, e.target.value)}
+              className="flex-[2] text-xs font-bold bg-white border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 shadow-sm"
+              title="Lọc theo khoa"
+            >
+              {facultyOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
 
             {/* Ngày từ */}
