@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, Fragment } from "react";
-import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, Search, Save, RotateCcw } from "lucide-react";
-import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames } from "../../../api/apiRoom.js";
+import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, Search, Save, RotateCcw, Edit, X } from "lucide-react";
+import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames, updateBatchReservedFor } from "../../../api/apiRoom.js";
 
 // ─── Toggle switch helper ──────────────────────────────────────────────────────
 const Toggle = ({ checked, onChange }) => (
@@ -58,6 +58,29 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
   const [expandedBuildings, setExpandedBuildings] = useState({});
   const [buildingViewModes, setBuildingViewModes] = useState({}); // buildingId -> "room" | "floor"
   const [buildingRoomPages, setBuildingRoomPages] = useState({}); // buildingId -> pageNum
+
+  // Batch edit reserved_for states
+  const [editReservedModal, setEditReservedModal] = useState(null); // null | { type: "building" | "floor", building: string, floor?: number }
+  const [selectedReservedFor, setSelectedReservedFor] = useState("general");
+  const [isSavingReserved, setIsSavingReserved] = useState(false);
+  const [reservedError, setReservedError] = useState(null);
+  const [reservedSuccess, setReservedSuccess] = useState(false);
+
+  const handleOpenFloorEdit = (buildingId, floorNum, currentReservedList) => {
+    const defaultVal = currentReservedList && currentReservedList.length > 0 ? currentReservedList[0] : "general";
+    setSelectedReservedFor(defaultVal);
+    setReservedError(null);
+    setReservedSuccess(false);
+    setEditReservedModal({ type: "floor", building: buildingId, floor: floorNum });
+  };
+
+  const handleOpenBuildingEdit = (buildingId, roomsInB) => {
+    const defaultVal = roomsInB && roomsInB.length > 0 ? (roomsInB[0].reserved_for || "general") : "general";
+    setSelectedReservedFor(defaultVal);
+    setReservedError(null);
+    setReservedSuccess(false);
+    setEditReservedModal({ type: "building", building: buildingId });
+  };
 
   // ── Section 1: Tổng quan Tòa (read-only + editable display names) ─────────
   const buildingSummary = useMemo(() => {
@@ -288,6 +311,37 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
 
   const handleToggle = (id) => setExpandedSection((prev) => (prev === id ? null : id));
 
+  const handleSaveReservedFor = async () => {
+    if (!editReservedModal) return;
+    setIsSavingReserved(true);
+    setReservedError(null);
+    setReservedSuccess(false);
+
+    const payload = {
+      building: editReservedModal.building,
+      floor: editReservedModal.type === "floor" ? Number(editReservedModal.floor) : undefined,
+      reserved_for: selectedReservedFor
+    };
+
+    try {
+      const res = await updateBatchReservedFor(payload);
+      if (res.success) {
+        setReservedSuccess(true);
+        if (onRefresh) {
+          await onRefresh();
+        }
+        setTimeout(() => {
+          setEditReservedModal(null);
+        }, 1200);
+      }
+    } catch (error) {
+      console.error("Error batch updating reserved_for:", error);
+      setReservedError(error.message || "Đã xảy ra lỗi khi cập nhật đối tượng sử dụng");
+    } finally {
+      setIsSavingReserved(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* ── Header ────────────────────────────────────────────────────── */}
@@ -404,7 +458,18 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                         <td colSpan={7} className="bg-slate-50/50 p-6 border-b border-slate-200">
                           {/* Tab Selector */}
                           <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
-                            <h4 className="text-sm font-bold text-slate-800">Thông tin chi tiết tòa {b.id}</h4>
+                            <div className="flex items-center gap-3">
+                              <h4 className="text-sm font-bold text-slate-800">Thông tin chi tiết tòa {b.id}</h4>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenBuildingEdit(b.id, roomsInBuilding)}
+                                className="px-2.5 py-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-100 flex items-center gap-1.5"
+                                title="Thay đổi đối tượng sử dụng cho toàn bộ các phòng của tòa"
+                              >
+                                <Edit size={12} />
+                                Sửa đối tượng cả tòa
+                              </button>
+                            </div>
                             <div className="inline-flex p-1 bg-slate-200/60 rounded-xl">
                               <button
                                 onClick={() => setBuildingViewModes((prev) => ({ ...prev, [b.id]: "room" }))}
@@ -430,7 +495,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                           </div>
 
                           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-                            {viewMode === "floor" ? (
+                             {viewMode === "floor" ? (
                               <table className="w-full text-left border-collapse">
                                 <thead>
                                   <tr className="bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
@@ -439,12 +504,13 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                                     <th className="px-4 py-2.5 text-center">Sức chứa</th>
                                     <th className="px-4 py-2.5 text-center">Đang ở</th>
                                     <th className="px-4 py-2.5">Đối tượng sử dụng</th>
+                                    <th className="px-4 py-2.5 text-center">Thao tác</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
                                   {floorsInBuilding.length === 0 ? (
                                     <tr>
-                                      <td colSpan={5} className="px-4 py-6 text-center text-slate-400 font-normal">
+                                      <td colSpan={6} className="px-4 py-6 text-center text-slate-400 font-normal">
                                         Không có tầng nào trong tòa này
                                       </td>
                                     </tr>
@@ -466,6 +532,16 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                                               );
                                             })}
                                           </div>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleOpenFloorEdit(b.id, fl.floor, fl.reservedForList)}
+                                            className="px-2 py-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors border border-indigo-100 inline-flex items-center gap-1.5"
+                                          >
+                                            <Edit size={10} />
+                                            Sửa
+                                          </button>
                                         </td>
                                       </tr>
                                     ))
@@ -932,6 +1008,123 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
           </p>
         </div>
       </Section>
+
+      {/* ── Modal Batch Edit Reserved For ────────────────────────────── */}
+      {editReservedModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                  {editReservedModal.type === "floor" 
+                    ? `Cập nhật đối tượng - Tầng ${editReservedModal.floor}` 
+                    : `Cập nhật đối tượng - Tòa ${editReservedModal.building}`
+                  }
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {editReservedModal.type === "floor"
+                    ? `Áp dụng đối tượng sử dụng mới cho toàn bộ các phòng thuộc Tầng ${editReservedModal.floor} - Tòa ${editReservedModal.building}`
+                    : `Áp dụng đối tượng sử dụng mới cho toàn bộ các phòng thuộc Tòa ${editReservedModal.building}`
+                  }
+                </p>
+              </div>
+              <button 
+                onClick={() => setEditReservedModal(null)} 
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {reservedError && (
+              <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-rose-700 text-xs font-semibold leading-relaxed animate-in slide-in-from-top-2 duration-250">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <span>{reservedError}</span>
+              </div>
+            )}
+
+            {reservedSuccess && (
+              <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-emerald-700 text-xs font-semibold animate-in slide-in-from-top-2 duration-250">
+                <CheckCircle size={16} className="shrink-0" />
+                <span>Cập nhật đối tượng sử dụng thành công!</span>
+              </div>
+            )}
+
+            <div className="space-y-3 mb-6">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-500 block">
+                Chọn đối tượng sử dụng mới
+              </label>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                {Object.entries(AUDIENCE_CONFIG).map(([key, config]) => {
+                  const isSelected = selectedReservedFor === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setSelectedReservedFor(key)}
+                      className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all text-left ${
+                        isSelected 
+                          ? "border-indigo-600 bg-indigo-50/40 shadow-sm shadow-indigo-50" 
+                          : "border-slate-100 hover:border-slate-200 hover:bg-slate-50/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                          isSelected ? "border-indigo-600 bg-indigo-600" : "border-slate-300"
+                        }`}>
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <span className="text-sm font-bold text-slate-800">{config.label}</span>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${config.cls}`}>
+                        {config.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedReservedFor === "xung_kich" && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-amber-800 text-[11px] font-medium leading-normal mt-3 animate-in fade-in duration-200">
+                  <Info size={14} className="shrink-0 mt-0.5 text-amber-600" />
+                  <span>
+                    <strong>Lưu ý:</strong> Hệ thống sẽ kiểm tra xem có phòng nào thuộc phạm vi cập nhật đang có sinh viên quốc tế lưu trú hay không. Nếu có, hành động sẽ bị từ chối.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setEditReservedModal(null)}
+                disabled={isSavingReserved}
+                className="px-4 py-2 text-sm font-bold text-slate-600 border border-slate-350 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-40"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveReservedFor}
+                disabled={isSavingReserved}
+                className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-150 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {isSavingReserved ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Save size={14} />
+                    Lưu thay đổi
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

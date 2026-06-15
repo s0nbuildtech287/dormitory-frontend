@@ -399,3 +399,38 @@ export const getRoomStatistics = async () => {
     throw error;
   }
 };
+
+/**
+ * Batch update reserved_for for rooms of a building or building/floor
+ * @param {Object} payload { building, floor, reserved_for }
+ * @returns {Promise<Object>}
+ */
+export const updateBatchReservedFor = async (payload) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/batch/reserved-for`,
+      {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi cập nhật hàng loạt đối tượng sử dụng');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in updateBatchReservedFor API call:', error);
+    throw error;
+  }
+};
