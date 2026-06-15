@@ -7,13 +7,22 @@ import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import FilterBar from "../../../components/common/FilterBar.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
-import { revertContract, autoAssignPendingContracts } from "../../../api/apiContract.js";
+import { revertContract, autoAssignPendingContracts, assignRoom } from "../../../api/apiContract.js";
+import { getRooms } from "../../../api/apiRoom.js";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
   Active: { label: "Đang nội trú", cls: "bg-emerald-100 text-emerald-700", icon: <CheckCircle2 size={11} /> },
   Expired: { label: "Hết hạn", cls: "bg-slate-100 text-slate-600", icon: <FileX size={11} /> },
   Terminated: { label: "Chấm dứt", cls: "bg-rose-100 text-rose-700", icon: <XCircle size={11} /> },
+};
+
+const AUDIENCE_CONFIG = {
+  general: { label: "Phòng chung", cls: "bg-slate-100 text-slate-700 border border-slate-200" },
+  freshmen: { label: "Tân sinh viên", cls: "bg-blue-100 text-blue-700 border border-blue-200" },
+  returning_students: { label: "Lưu sinh viên", cls: "bg-amber-100 text-amber-700 border border-amber-200" },
+  international: { label: "Quốc tế", cls: "bg-violet-100 text-violet-700 border border-violet-200" },
+  xung_kich: { label: "Xung kích", cls: "bg-rose-100 text-rose-700 border border-rose-200" },
 };
 
 const normalizeText = (value) =>
@@ -89,6 +98,8 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
   const [autoAssignResult, setAutoAssignResult] = useState(null);
   const [progress, setProgress] = useState(0);
   const [progressStage, setProgressStage] = useState("");
+
+
 
   const facultyOptions = useMemo(() => {
     const opts = [{ value: "All", label: "Tất cả khoa" }];
@@ -195,6 +206,118 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     handleSelectAll, 
     clearSelection 
   } = useSelection(filtered.map(c => c.id));
+
+  // Batch manual room allocation states
+  const [isOpenManualAssignModal, setIsOpenManualAssignModal] = useState(false);
+  const [rooms, setRooms] = useState([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState("");
+  const [selectedRoomId, setSelectedRoomId] = useState("");
+  const [isSavingManualAssign, setIsSavingManualAssign] = useState(false);
+  const [manualAssignError, setManualAssignError] = useState(null);
+  const [manualAssignSuccess, setManualAssignSuccess] = useState(false);
+
+  const selectedPendingContracts = useMemo(() => {
+    return contracts.filter(c => selectedContracts.has(c.id) && c.status === "Pending");
+  }, [selectedContracts, contracts]);
+
+  const handleOpenManualAssignModal = async () => {
+    setIsOpenManualAssignModal(true);
+    setLoadingRooms(true);
+    setManualAssignError(null);
+    setManualAssignSuccess(false);
+    setSelectedBuilding("");
+    setSelectedFloor("");
+    setSelectedRoomId("");
+    try {
+      const res = await getRooms();
+      if (res.success) {
+        setRooms(res.data || []);
+      }
+    } catch (err) {
+      console.error("Error loading rooms:", err);
+      setManualAssignError("Không thể tải danh sách phòng");
+    } finally {
+      setLoadingRooms(false);
+    }
+  };
+
+  const handleSaveManualAssign = async () => {
+    if (!selectedRoomId) {
+      setManualAssignError("Vui lòng chọn phòng");
+      return;
+    }
+    const selectedRoom = rooms.find(r => r.id === selectedRoomId);
+    if (!selectedRoom) {
+      setManualAssignError("Không tìm thấy thông tin phòng");
+      return;
+    }
+    const remainingSlots = selectedRoom.capacity - (selectedRoom.current_occupancy || 0);
+    if (selectedPendingContracts.length > remainingSlots) {
+      setManualAssignError(`Không đủ chỗ trống! Phòng còn ${remainingSlots} chỗ, nhưng bạn đã chọn ${selectedPendingContracts.length} sinh viên.`);
+      return;
+    }
+
+    setIsSavingManualAssign(true);
+    setManualAssignError(null);
+    setManualAssignSuccess(false);
+
+    try {
+      const promises = selectedPendingContracts.map(c => assignRoom(c.id, selectedRoomId));
+      await Promise.all(promises);
+      
+      setManualAssignSuccess(true);
+      clearSelection();
+      if (onRefresh) {
+        await onRefresh();
+      }
+      setTimeout(() => {
+        setIsOpenManualAssignModal(false);
+      }, 1200);
+    } catch (err) {
+      console.error("Error batch manual assignment:", err);
+      setManualAssignError(err.message || "Có lỗi xảy ra khi gán phòng. Vui lòng kiểm tra lại.");
+    } finally {
+      setIsSavingManualAssign(false);
+    }
+  };
+
+  const selectedGenders = useMemo(() => {
+    const genders = [...new Set(selectedPendingContracts.map(c => c.rf_gender || c.snapshot_gender).filter(Boolean))];
+    return genders;
+  }, [selectedPendingContracts]);
+
+  const hasGenderMismatch = selectedGenders.length > 1;
+  const studentGender = selectedGenders.length === 1 ? selectedGenders[0] : null;
+
+  const genderMatchingRooms = useMemo(() => {
+    if (!studentGender) return [];
+    return rooms.filter(r => r.gender_type === studentGender && r.status === "Active");
+  }, [rooms, studentGender]);
+
+  const buildingOptions = useMemo(() => {
+    const bSet = new Set(genderMatchingRooms.map(r => r.building).filter(Boolean));
+    return [...bSet].sort();
+  }, [genderMatchingRooms]);
+
+  const floorOptions = useMemo(() => {
+    if (!selectedBuilding) return [];
+    const fSet = new Set(
+      genderMatchingRooms
+        .filter(r => r.building === selectedBuilding)
+        .map(r => r.floor)
+        .filter(Boolean)
+    );
+    return [...fSet].sort((a, b) => a - b);
+  }, [genderMatchingRooms, selectedBuilding]);
+
+  const roomOptions = useMemo(() => {
+    if (!selectedBuilding || !selectedFloor) return [];
+    return genderMatchingRooms
+      .filter(r => r.building === selectedBuilding && r.floor === Number(selectedFloor))
+      .sort((a, b) => String(a.room_number).localeCompare(String(b.room_number), undefined, { numeric: true }));
+  }, [genderMatchingRooms, selectedBuilding, selectedFloor]);
 
   const handleBulkEmail = () => {
     if (selectedContracts.size === 0) {
@@ -356,6 +479,34 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">Bảng hợp đồng sinh viên ({totalItems} kết quả)</h3>
           
           <div className="flex items-center gap-2">
+            {showCheckboxColumn && selectedContracts.size > 0 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleBulkEmail}
+                  className="px-3 py-2 bg-blue-50 border border-blue-200 text-blue-750 text-xs font-bold rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <Mail size={13} /> Gửi email ({selectedContracts.size})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBulkDeleteContracts([...selectedContracts])}
+                  className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-750 text-xs font-bold rounded-lg hover:bg-rose-100 transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <Trash2 size={13} /> Xóa ({selectedContracts.size})
+                </button>
+                {selectedPendingContracts.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleOpenManualAssignModal}
+                    className="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-750 text-xs font-bold rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-1.5 shadow-sm font-sans"
+                  >
+                    <Rocket size={13} /> Gán phòng thủ công ({selectedPendingContracts.length})
+                  </button>
+                )}
+              </>
+            )}
+
             {/* Toggle Checkbox Column Button */}
             <button
               onClick={handleToggleCheckbox}
@@ -774,6 +925,188 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Batch Manual Assign Rooms ──────────────────────────── */}
+      {isOpenManualAssignModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-lg p-6 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-5">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 tracking-tight font-sans">Gán phòng thủ công hàng loạt</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Đang chọn gán cho <span className="font-bold text-indigo-600">{selectedPendingContracts.length}</span> sinh viên chờ gán phòng.
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsOpenManualAssignModal(false)} 
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {manualAssignError && (
+              <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-rose-700 text-xs font-semibold leading-relaxed animate-in slide-in-from-top-2 duration-250">
+                <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-600" />
+                <span>{manualAssignError}</span>
+              </div>
+            )}
+
+            {manualAssignSuccess && (
+              <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-emerald-700 text-xs font-semibold animate-in slide-in-from-top-2 duration-250">
+                <CheckCircle2 size={16} className="shrink-0 text-emerald-650" />
+                <span>Đã gán phòng thành công cho các sinh viên!</span>
+              </div>
+            )}
+
+            {/* Selection details */}
+            <div className="mb-6 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 block mb-2">
+                Danh sách sinh viên được chọn ({selectedPendingContracts.length})
+              </span>
+              <div className="grid grid-cols-2 gap-2 max-h-[120px] overflow-y-auto pr-1">
+                {selectedPendingContracts.map(c => {
+                  const isMale = (c.rf_gender || c.snapshot_gender) === "Nam";
+                  return (
+                    <div key={c.id} className="flex items-center justify-between px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs">
+                      <span className="font-bold text-slate-800 truncate max-w-[120px]">{c.student_name}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                        isMale ? "bg-blue-50 text-blue-600" : "bg-rose-50 text-rose-600"
+                      }`}>
+                        {c.rf_gender || c.snapshot_gender || "Chung"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {hasGenderMismatch ? (
+              <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-3 text-rose-700 text-xs font-bold leading-normal">
+                <AlertTriangle size={18} className="shrink-0 text-rose-600" />
+                <span>
+                  Lỗi giới tính: Bạn đã chọn cả sinh viên Nam và Nữ. Hệ thống không thể gán sinh viên khác giới tính vào cùng một phòng. Vui lòng tắt chế độ chọn, lọc theo Giới tính và chỉ chọn các sinh viên cùng giới tính.
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-4 mb-6">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2 text-blue-800 text-[11px] font-medium leading-normal">
+                  <Info size={14} className="shrink-0 mt-0.5 text-blue-600" />
+                  <span>
+                    Hệ thống sẽ lọc các phòng hoạt động dành cho giới tính <strong>{studentGender || "Chung"}</strong>.
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Select Building */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-700 block">1. Chọn Tòa nhà</label>
+                    <select
+                      value={selectedBuilding}
+                      onChange={(e) => {
+                        setSelectedBuilding(e.target.value);
+                        setSelectedFloor("");
+                        setSelectedRoomId("");
+                      }}
+                      disabled={loadingRooms || isSavingManualAssign}
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-4 focus:ring-emerald-50 bg-white"
+                    >
+                      <option value="">-- Chọn tòa --</option>
+                      {buildingOptions.map(b => (
+                        <option key={b} value={b}>Tòa {b}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Select Floor */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-700 block">2. Chọn Tầng</label>
+                    <select
+                      value={selectedFloor}
+                      onChange={(e) => {
+                        setSelectedFloor(e.target.value);
+                        setSelectedRoomId("");
+                      }}
+                      disabled={!selectedBuilding || loadingRooms || isSavingManualAssign}
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-4 focus:ring-emerald-50 bg-white disabled:opacity-50"
+                    >
+                      <option value="">-- Chọn tầng --</option>
+                      {floorOptions.map(f => (
+                        <option key={f} value={f}>Tầng {f}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Select Room */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 block">3. Chọn Phòng</label>
+                  {loadingRooms ? (
+                    <div className="py-2.5 px-3 border border-slate-200 rounded-xl text-xs text-slate-450 flex items-center gap-2">
+                      <Loader2 size={12} className="animate-spin" /> Đang tải danh sách phòng...
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedRoomId}
+                      onChange={(e) => {
+                        setSelectedRoomId(e.target.value);
+                        setManualAssignError(null);
+                      }}
+                      disabled={!selectedFloor || isSavingManualAssign}
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-4 focus:ring-emerald-50 bg-white disabled:opacity-50"
+                    >
+                      <option value="">-- Chọn phòng trống --</option>
+                      {roomOptions.map(r => {
+                        const remaining = r.capacity - (r.current_occupancy || 0);
+                        const isEnough = remaining >= selectedPendingContracts.length;
+                        return (
+                          <option 
+                            key={r.id} 
+                            value={r.id} 
+                            disabled={!isEnough}
+                            className={!isEnough ? "text-slate-400 italic" : "text-slate-850 font-bold"}
+                          >
+                            Phòng {r.room_number} ({remaining}/{r.capacity} chỗ trống - Đối tượng: {AUDIENCE_CONFIG[r.reserved_for]?.label || "Phòng chung"}) {!isEnough ? " - Không đủ chỗ" : ""}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsOpenManualAssignModal(false)}
+                disabled={isSavingManualAssign}
+                className="px-4 py-2.5 text-xs font-bold text-slate-600 border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-40"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveManualAssign}
+                disabled={isSavingManualAssign || hasGenderMismatch || !selectedRoomId}
+                className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-150 disabled:opacity-40 flex items-center gap-1.5"
+              >
+                {isSavingManualAssign ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    Đang gán...
+                  </>
+                ) : (
+                  <>
+                    <Rocket size={13} />
+                    Xác nhận gán phòng
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
