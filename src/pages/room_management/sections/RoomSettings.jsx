@@ -1,5 +1,5 @@
-﻿import { useState, useMemo, useEffect } from "react";
-import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, AlertCircle, CheckCircle, Search, Save, RotateCcw } from "lucide-react";
+import { useState, useMemo, useEffect, Fragment } from "react";
+import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, Search, Save, RotateCcw } from "lucide-react";
 import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames } from "../../../api/apiRoom.js";
 
 // ─── Toggle switch helper ──────────────────────────────────────────────────────
@@ -42,10 +42,22 @@ const StatusBadge = ({ room }) => {
   return <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase">Trống</span>;
 };
 
+// ─── Target audience config ──────────────────────────────────────────────────
+const AUDIENCE_CONFIG = {
+  general: { label: "Phòng chung", cls: "bg-slate-150 text-slate-700 border border-slate-350" },
+  freshmen: { label: "Tân sinh viên", cls: "bg-blue-100 text-blue-700 border border-blue-200" },
+  returning_students: { label: "Lưu sinh viên", cls: "bg-amber-100 text-amber-700 border border-amber-200" },
+  international: { label: "Quốc tế", cls: "bg-violet-100 text-violet-700 border border-violet-200" },
+  xung_kich: { label: "Xung kích", cls: "bg-rose-100 text-rose-700 border border-rose-200" },
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 const RoomSettings = ({ rooms = [], onRefresh }) => {
   const [expandedSection, setExpandedSection] = useState("buildings");
   const [saveStatus, setSaveStatus] = useState(null); // null | "saving" | "success" | "error"
+  const [expandedBuildings, setExpandedBuildings] = useState({});
+  const [buildingViewModes, setBuildingViewModes] = useState({}); // buildingId -> "room" | "floor"
+  const [buildingRoomPages, setBuildingRoomPages] = useState({}); // buildingId -> pageNum
 
   // ── Section 1: Tổng quan Tòa (read-only + editable display names) ─────────
   const buildingSummary = useMemo(() => {
@@ -58,6 +70,61 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
       map[b].occupancy += r.currentOccupancy || 0;
     });
     return Object.values(map).sort((a, b) => a.id.localeCompare(b.id));
+  }, [rooms]);
+
+  const buildingRooms = useMemo(() => {
+    const map = {};
+    (Array.isArray(rooms) ? rooms : []).forEach((r) => {
+      const b = r.building || "?";
+      if (!map[b]) map[b] = [];
+      map[b].push(r);
+    });
+    Object.keys(map).forEach((b) => {
+      map[b].sort((r1, r2) => {
+        if (r1.floor !== r2.floor) return (r1.floor || 0) - (r2.floor || 0);
+        return String(r1.room_number || "").localeCompare(String(r2.room_number || ""), undefined, { numeric: true });
+      });
+    });
+    return map;
+  }, [rooms]);
+
+  const buildingFloors = useMemo(() => {
+    const map = {};
+    (Array.isArray(rooms) ? rooms : []).forEach((r) => {
+      const b = r.building || "?";
+      const f = r.floor || 0;
+      if (!map[b]) map[b] = {};
+      if (!map[b][f]) {
+        map[b][f] = {
+          floor: f,
+          rooms: 0,
+          capacity: 0,
+          occupancy: 0,
+          reservedForSet: new Set()
+        };
+      }
+      map[b][f].rooms++;
+      map[b][f].capacity += r.capacity || 0;
+      map[b][f].occupancy += r.currentOccupancy || 0;
+      map[b][f].reservedForSet.add(r.reserved_for || "general");
+    });
+
+    const result = {};
+    Object.keys(map).forEach((b) => {
+      result[b] = Object.values(map[b])
+        .sort((f1, f2) => f1.floor - f2.floor)
+        .map(fData => {
+          const ORDER = ["general", "freshmen", "returning_students", "international", "xung_kich"];
+          const sortedReserved = Array.from(fData.reservedForSet).sort((a, b) => {
+            return ORDER.indexOf(a) - ORDER.indexOf(b);
+          });
+          return {
+            ...fData,
+            reservedForList: sortedReserved
+          };
+        });
+    });
+    return result;
   }, [rooms]);
 
   const [buildingNames, setBuildingNames] = useState({});
@@ -280,29 +347,212 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               )}
               {buildingSummary.map((b) => {
                 const rate = b.capacity > 0 ? ((b.occupancy / b.capacity) * 100).toFixed(0) : 0;
+                const isExpanded = !!expandedBuildings[b.id];
+                const viewMode = buildingViewModes[b.id] || "room";
+                const roomsInBuilding = buildingRooms[b.id] || [];
+                const floorsInBuilding = buildingFloors[b.id] || [];
+
+                // Pagination logic
+                const ITEMS_PER_PAGE = 10;
+                const currentPage = buildingRoomPages[b.id] || 1;
+                const totalRooms = roomsInBuilding.length;
+                const totalPages = Math.ceil(totalRooms / ITEMS_PER_PAGE);
+                const paginatedRooms = roomsInBuilding.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
                 return (
-                  <tr key={b.id} className="hover:bg-slate-50/50">
-                    <td className="px-6 py-4 font-mono font-bold text-indigo-700 border-r-2 border-slate-200">{b.id}</td>
-                    <td className="px-6 py-4 border-r-2 border-slate-200">
-                      <input
-                        type="text"
-                        value={getDisplayName(b.id)}
-                        onChange={(e) => setBuildingNames((prev) => ({ ...prev, [b.id]: e.target.value }))}
-                        className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-indigo-50 outline-none bg-slate-50/60"
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.rooms}</td>
-                    <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.capacity}</td>
-                    <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.occupancy}</td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="flex-1 max-w-[80px] h-2 bg-slate-200 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${rate >= 90 ? "bg-rose-500" : rate >= 70 ? "bg-amber-400" : "bg-emerald-500"}`} style={{ width: `${rate}%` }} />
+                  <Fragment key={b.id}>
+                    <tr className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-mono font-bold text-indigo-700 border-r-2 border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setExpandedBuildings((prev) => ({ ...prev, [b.id]: !prev[b.id] }))}
+                            className="p-1 hover:bg-slate-150 active:bg-slate-200 rounded-lg transition-colors text-slate-500 hover:text-indigo-600 focus:outline-none"
+                            title={isExpanded ? "Đóng danh sách phòng" : "Xem danh sách phòng"}
+                          >
+                            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          </button>
+                          <span>{b.id}</span>
                         </div>
-                        <span className="text-xs font-bold text-slate-600 w-9">{rate}%</span>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-6 py-4 border-r-2 border-slate-200">
+                        <input
+                          type="text"
+                          value={getDisplayName(b.id)}
+                          onChange={(e) => setBuildingNames((prev) => ({ ...prev, [b.id]: e.target.value }))}
+                          className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-indigo-50 outline-none bg-slate-50/60"
+                        />
+                      </td>
+                      <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.rooms}</td>
+                      <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.capacity}</td>
+                      <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.occupancy}</td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="flex-1 max-w-[80px] h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${rate >= 90 ? "bg-rose-500" : rate >= 70 ? "bg-amber-400" : "bg-emerald-500"}`} style={{ width: `${rate}%` }} />
+                          </div>
+                          <span className="text-xs font-bold text-slate-600 w-9">{rate}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={6} className="bg-slate-50/50 p-6 border-b border-slate-200">
+                          {/* Tab Selector */}
+                          <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
+                            <h4 className="text-sm font-bold text-slate-800">Thông tin chi tiết tòa {b.id}</h4>
+                            <div className="inline-flex p-1 bg-slate-200/60 rounded-xl">
+                              <button
+                                onClick={() => setBuildingViewModes((prev) => ({ ...prev, [b.id]: "room" }))}
+                                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                                  viewMode !== "floor"
+                                    ? "bg-white text-indigo-600 shadow-sm"
+                                    : "text-slate-600 hover:text-slate-900"
+                                }`}
+                              >
+                                Xem theo Phòng
+                              </button>
+                              <button
+                                onClick={() => setBuildingViewModes((prev) => ({ ...prev, [b.id]: "floor" }))}
+                                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                                  viewMode === "floor"
+                                    ? "bg-white text-indigo-600 shadow-sm"
+                                    : "text-slate-600 hover:text-slate-900"
+                                }`}
+                              >
+                                Xem theo Tầng
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+                            {viewMode === "floor" ? (
+                              <table className="w-full text-left border-collapse">
+                                <thead>
+                                  <tr className="bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
+                                    <th className="px-4 py-2.5">Tầng</th>
+                                    <th className="px-4 py-2.5 text-center">Số phòng</th>
+                                    <th className="px-4 py-2.5 text-center">Sức chứa</th>
+                                    <th className="px-4 py-2.5 text-center">Đang ở</th>
+                                    <th className="px-4 py-2.5">Đối tượng sử dụng</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                                  {floorsInBuilding.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={5} className="px-4 py-6 text-center text-slate-400 font-normal">
+                                        Không có tầng nào trong tòa này
+                                      </td>
+                                    </tr>
+                                  ) : (
+                                    floorsInBuilding.map((fl) => (
+                                      <tr key={fl.floor} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-4 py-3 font-bold text-slate-900">Tầng {fl.floor}</td>
+                                        <td className="px-4 py-3 text-center font-bold text-slate-800">{fl.rooms}</td>
+                                        <td className="px-4 py-3 text-center font-bold text-slate-800">{fl.capacity}</td>
+                                        <td className="px-4 py-3 text-center font-bold text-indigo-600">{fl.occupancy}</td>
+                                        <td className="px-4 py-3">
+                                          <div className="flex flex-wrap gap-1">
+                                            {fl.reservedForList.map((rf) => {
+                                              const audience = AUDIENCE_CONFIG[rf] || AUDIENCE_CONFIG.general;
+                                              return (
+                                                <span key={rf} className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${audience.cls}`}>
+                                                  {audience.label}
+                                                </span>
+                                              );
+                                            })}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <table className="w-full text-left border-collapse">
+                                <thead>
+                                  <tr className="bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
+                                    <th className="px-4 py-2.5">Số phòng</th>
+                                    <th className="px-4 py-2.5 text-center">Tầng</th>
+                                    <th className="px-4 py-2.5 text-center">Giới tính</th>
+                                    <th className="px-4 py-2.5 text-center">Sức chứa</th>
+                                    <th className="px-4 py-2.5 text-center">Đang ở</th>
+                                    <th className="px-4 py-2.5">Đối tượng sử dụng</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                                  {roomsInBuilding.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={6} className="px-4 py-6 text-center text-slate-400 font-normal">
+                                        Không có phòng nào trong tòa này
+                                      </td>
+                                    </tr>
+                                  ) : (
+                                    paginatedRooms.map((room) => {
+                                      const audienceKey = room.reserved_for || "general";
+                                      const audience = AUDIENCE_CONFIG[audienceKey] || AUDIENCE_CONFIG.general;
+                                      return (
+                                        <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
+                                          <td className="px-4 py-3 font-mono font-bold text-slate-900">{room.room_number || room.name}</td>
+                                          <td className="px-4 py-3 text-center">{room.floor}</td>
+                                          <td className="px-4 py-3 text-center">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                              (room.gender || room.gender_type) === "Nam" 
+                                                ? "bg-blue-50 text-blue-600 border border-blue-100" 
+                                                : "bg-rose-50 text-rose-600 border border-rose-100"
+                                            }`}>
+                                              {room.gender || room.gender_type || "Chung"}
+                                            </span>
+                                          </td>
+                                          <td className="px-4 py-3 text-center font-bold">{room.capacity}</td>
+                                          <td className="px-4 py-3 text-center font-bold text-indigo-600">{room.currentOccupancy || room.current_occupancy || 0}</td>
+                                          <td className="px-4 py-3">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${audience.cls}`}>
+                                              {audience.label}
+                                            </span>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })
+                                  )}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+
+                          {/* Pagination Control Bar */}
+                          {viewMode === "room" && totalPages > 1 && (
+                            <div className="mt-3 px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
+                              <span className="text-xs text-slate-500 font-semibold">
+                                Hiển thị {Math.min(totalRooms, (currentPage - 1) * ITEMS_PER_PAGE + 1)} - {Math.min(totalRooms, currentPage * ITEMS_PER_PAGE)} trong số {totalRooms} phòng
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setBuildingRoomPages((prev) => ({ ...prev, [b.id]: Math.max(1, currentPage - 1) }))}
+                                  disabled={currentPage === 1}
+                                  className="p-1.5 border border-slate-250 rounded-lg hover:bg-slate-100 active:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 transition-colors bg-white"
+                                  title="Trang trước"
+                                >
+                                  <ChevronLeft size={14} />
+                                </button>
+                                <span className="text-xs text-slate-600 font-bold">
+                                  Trang {currentPage} / {totalPages}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setBuildingRoomPages((prev) => ({ ...prev, [b.id]: Math.min(totalPages, currentPage + 1) }))}
+                                  disabled={currentPage === totalPages}
+                                  className="p-1.5 border border-slate-250 rounded-lg hover:bg-slate-100 active:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 transition-colors bg-white"
+                                  title="Trang sau"
+                                >
+                                  <ChevronRight size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
             </tbody>
