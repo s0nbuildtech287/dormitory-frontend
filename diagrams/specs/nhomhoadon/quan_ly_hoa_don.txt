@@ -1,25 +1,26 @@
 Mô tả: Quản lý hóa đơn (CRUD, điều chỉnh bảng giá, hệ thống tự tạo hóa đơn theo phòng và tự cập nhật trạng thái; phát hiện bất thường).
-Tác nhân: Ban quản lý.
+Tác nhân: Kế toán.
 Các ràng buộc: Phòng có hợp đồng đang hiệu lực; bảng giá dịch vụ đã cấu hình.
-Điều kiện kích hoạt: Ban quản lý mở mục Quản lý hóa đơn.
+Điều kiện kích hoạt: Kế toán mở mục Quản lý hóa đơn.
 Luồng sự kiện:
 Luồng sự kiện chính:
 1. Hệ thống hiển thị danh sách hóa đơn.
-2. Ban quản lý chọn thao tác tạo/cập nhật/xóa hóa đơn.
+2. Kế toán chọn thao tác tạo/cập nhật/xóa hóa đơn.
 3. Hệ thống kiểm tra dữ liệu và tính chi phí.
 4. Hệ thống lưu hóa đơn và cập nhật trạng thái.
-5. Ban quản lý điều chỉnh bảng giá dịch vụ (nếu cần).
+5. Kế toán điều chỉnh bảng giá dịch vụ (nếu cần).
 6. Hệ thống lưu bảng giá mới.
 7. Hệ thống tự động tạo hóa đơn theo phòng theo kỳ.
 8. Hệ thống tự động cập nhật trạng thái hóa đơn theo kỳ hạn.
 9. Hệ thống hiển thị thống kê doanh thu.
-Luồng phụ: Phát hiện bất thường (Ban quản lý)
-9.1 Ban quản lý nhấn nút “Bất thường”.
+Luồng phụ: Phát hiện bất thường (Kế toán)
+9.1 Kế toán nhấn nút “Bất thường”.
 9.2 Hệ thống lấy hóa đơn 4 tháng gần nhất và nhóm theo phòng.
 9.3 Hệ thống tính trung bình 3 tháng trước và so sánh tháng hiện tại.
 9.4 Nếu tăng > 50% thì đánh dấu bất thường và tính % tăng + chênh lệch tiền.
-9.5 Hệ thống trả danh sách phòng bất thường để Ban quản lý kiểm tra.
+9.5 Hệ thống trả danh sách phòng bất thường để Kế toán kiểm tra.
 Luồng rẽ nhánh:
 3.1 Chỉ số không hợp lệ → thông báo lỗi.
 4.1 Lưu thất bại → thông báo thất bại.
 6.1 Lưu bảng giá thất bại → thông báo lỗi.
+

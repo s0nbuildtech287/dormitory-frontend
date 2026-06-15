@@ -1,7 +1,6 @@
-@startuml "UC Phân rã - Dashboard & Thống kê"
+@startuml
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-left to right direction
 skinparam usecase {
   BackgroundColor White
   BorderColor Black
@@ -16,21 +15,42 @@ skinparam shadowing false
 
 actor "<b>Ban quản lý</b>" as Admin
 
-usecase "<b>Xem tổng quan hệ thống</b>" as UC1
-usecase "<b>Xem thống kê hồ sơ đăng ký</b>" as UC2
-usecase "<b>Xem thống kê mật độ phòng</b>" as UC3
-usecase "<b>Xem thống kê hợp đồng</b>" as UC4
-usecase "<b>Xem thống kê hóa đơn & doanh thu</b>" as UC5
-usecase "<b>Xem thống kê phản ánh</b>" as UC6
-usecase "<b>Xem thống kê tài sản</b>" as UC7
-usecase "<b>Xem lịch sử hoạt động (log)</b>" as UC8
+together {
+  usecase "<b>Xem tổng quan hệ thống</b>" as UC1
+  usecase "<b>Xem thống kê hồ sơ đăng ký</b>" as UC2
+  usecase "<b>Xem thống kê mật độ phòng</b>" as UC3
+  usecase "<b>Xem thống kê hợp đồng</b>" as UC4
+}
 
-Admin --> UC1
-Admin --> UC2
+together {
+  usecase "<b>Xem thống kê hóa đơn & doanh thu</b>" as UC5
+  usecase "<b>Xem thống kê phản ánh</b>" as UC6
+  usecase "<b>Xem thống kê tài sản</b>" as UC7
+  usecase "<b>Xem lịch sử hoạt động (log)</b>" as UC8
+}
+
+UC1 -[hidden]-> UC2
+UC2 -[hidden]-> UC3
+UC3 -[hidden]-> UC4
+
+UC5 -[hidden]-> UC6
+UC6 -[hidden]-> UC7
+UC7 -[hidden]-> UC8
+
+UC1 -[hidden]right-> UC5
+UC2 -[hidden]right-> Admin
+Admin -[hidden]right-> UC6
+UC3 -[hidden]right-> Admin
+Admin -[hidden]right-> UC7
+UC4 -[hidden]right-> UC8
+
+UC1 <-- Admin
+UC2 <-- Admin
 Admin --> UC3
 Admin --> UC4
-Admin --> UC5
-Admin --> UC6
+
+UC5 <-- Admin
+UC6 <-- Admin
 Admin --> UC7
 Admin --> UC8
 @enduml

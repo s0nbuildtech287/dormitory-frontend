@@ -1,0 +1,22 @@
+@startuml "Volunteer Role Assignment Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Quản lý tòa nhà|
+start
+:Chọn SV xung kích trong phòng;
+:Chọn chức danh bổ nhiệm;
+if (Bổ nhiệm làm Trưởng ban?) then (Có)
+  |Hệ thống|
+  if (Đã có Trưởng ban cũ?) then (Có)
+    :Hạ chức Trưởng ban cũ\nxuống thành viên;
+  endif
+  :Cập nhật chức vụ mới\nlàm Trưởng ban;
+else (Không)
+  |Hệ thống|
+  :Cập nhật chức vụ\nlàm thành viên;
+endif
+:Lưu thông tin vào CSDL\nvà ghi log hệ thống;
+|Quản lý tòa nhà|
+:Hoàn tất bổ nhiệm;
+stop
+@enduml

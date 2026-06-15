@@ -1,0 +1,41 @@
+@startuml "Campaign Launcher Sequence"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 22
+
+actor "Quản lý tòa nhà" as Admin
+participant "Giao diện" as FE
+participant "RegistrationController" as RegC
+participant "RegistrationService" as RegS
+participant "ContractService" as ConS
+participant "EmailService" as MailS
+database "CSDL" as DB
+
+== 1. Dự báo Cung - Cầu ==
+Admin -> FE: Xem trang chuẩn bị đợt mới
+FE -> RegC: GET /api/registrations/room-forecast?days=30
+RegC -> RegS: getRoomForecast(30)
+RegS -> DB: Query tổng slot trống + HĐ sắp hết hạn
+DB --> RegS: Kết quả
+RegS --> FE: 200 OK (Room Forecast)
+
+FE -> RegC: GET /api/registrations/demand-forecast
+RegC -> RegS: getDemandForecast()
+RegS -> DB: Query số lượng hồ sơ năm trước
+DB --> RegS: Kết quả
+RegS --> FE: 200 OK (Demand Forecast)
+
+== 2. Gửi Email thông báo hết hạn ==
+Admin -> FE: Xác nhận gửi email thông báo
+FE -> ConS: POST /api/contracts/send-renewal-emails
+ConS -> DB: Query thông tin hợp đồng sắp hết hạn + email học sinh
+DB --> ConS: Dữ liệu
+loop Từng hợp đồng sắp hết hạn
+  alt Sinh viên Năm cuối (Year 4)
+    ConS -> MailS: sendEmail(thông báo kết thúc thuê & trả phòng)
+  else Sinh viên Khóa dưới (Year 1-3)
+    ConS -> MailS: sendEmail(thông báo nhắc gia hạn)
+  end
+end
+ConS --> FE: 200 OK (Đã gửi email thành công)
+@enduml

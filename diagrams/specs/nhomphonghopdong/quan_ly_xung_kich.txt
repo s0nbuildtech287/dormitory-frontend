@@ -1,0 +1,15 @@
+Mô tả: Quản lý sinh viên xung kích (thiết lập phòng xung kích, chuyển sinh viên vào phòng xung kích, bổ nhiệm/miễn nhiệm chức danh xung kích).
+Tác nhân: Ban quản lý (Quản lý tòa nhà).
+Các ràng buộc: Hợp đồng của sinh viên đang ở trạng thái hiệu lực (Active).
+Điều kiện kích hoạt: Ban quản lý mở mục Quản lý phòng xung kích.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Ban quản lý chọn một phòng và thiết lập phòng đó thành phòng xung kích.
+2. Ban quản lý chọn sinh viên đang nội trú và chuyển họ vào phòng xung kích đã chọn.
+3. Ban quản lý bổ nhiệm chức vụ (Trưởng ban/Thành viên xung kích) cho sinh viên trong phòng xung kích.
+4. Hệ thống cập nhật chức vụ mới cho sinh viên, đồng thời tự động điều chỉnh và hạ chức trưởng ban cũ của tòa nhà nếu bổ nhiệm trưởng ban mới.
+5. Hệ thống ghi log lịch sử bổ nhiệm.
+Luồng rẽ nhánh:
+1.1 Phòng được chọn đang bảo trì hoặc đầy -> Thông báo lỗi và không cho thiết lập.
+2.1 Sinh viên chưa có hợp đồng Active -> Thông báo lỗi không cho chuyển.
+3.1 Hợp đồng sinh viên bị hết hạn hoặc chấm dứt -> Tự động miễn nhiệm chức vụ xung kích.

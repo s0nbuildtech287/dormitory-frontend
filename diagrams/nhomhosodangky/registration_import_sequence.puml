@@ -6,29 +6,30 @@ actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "RegistrationController" as RegC
 participant "RegistrationService" as RegS
-participant "GoogleSheetsService" as GSS
+participant "VisionService" as VisionS
 participant "RegisterFormDAO" as RegDAO
 database "CSDL" as DB
 
-alt Import Excel
-  Admin -> FE: Chọn file Excel
-  FE -> RegC: POST /api/registrations/import/excel
-  RegC -> RegS: importFromExcel(args)
-  RegS -> RegDAO: bulkCreate(records)
-  RegDAO -> DB: INSERT registrations
+alt Import Excel / Google Sheets
+  Admin -> FE: Chọn file Excel hoặc dán link Google Sheets
+  FE -> RegC: POST /api/registrations/import
+  RegC -> RegS: importRegistrations(data)
+  RegS -> RegDAO: bulkInsertTemp(records)
+  RegDAO -> DB: INSERT register_forms (tạm thời)
   DB --> RegDAO: OK
-  RegS --> RegC: Kết quả
-  RegC --> FE: 200 OK
-else Import Google Sheets
-  Admin -> FE: Dán URL Google Sheets
-  FE -> RegC: POST /api/registrations/import/sheets
-  RegC -> RegS: importFromGoogleSheets(args)
-  RegS -> GSS: readSheet(url)
-  GSS --> RegS: rows
-  RegS -> RegDAO: bulkCreate(rows)
-  RegDAO -> DB: INSERT registrations
-  DB --> RegDAO: OK
-  RegS --> RegC: Kết quả
-  RegC --> FE: 200 OK
+  
+  loop Từng hồ sơ vừa import
+    RegS -> RegS: Tính điểm ưu tiên & điểm xét tuyển
+    opt Có ảnh minh chứng diện chính sách
+      RegS -> VisionS: validateEvidenceImage(imageUrl)
+      VisionS --> RegS: Kết quả text OCR / độ khớp minh chứng
+    end
+    RegS -> RegDAO: updateScoresAndSuggestion(id, score, suggestion)
+    RegDAO -> DB: UPDATE register_forms
+  end
+  
+  RegS --> RegC: Kết quả import (số lượng, đề xuất duyệt)
+  RegC --> FE: 200 OK (Import & Xử lý thành công)
+  FE --> Admin: Hiển thị danh sách hồ sơ kèm điểm và gợi ý xét duyệt
 end
 @enduml

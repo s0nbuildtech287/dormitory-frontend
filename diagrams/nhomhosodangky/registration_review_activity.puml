@@ -1,33 +1,29 @@
 @startuml "Registration Review Activity"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-|Ban quản lý|
+|Quản lý tòa nhà|
 start
-:Chọn hồ sơ cần duyệt;
-:Nhập ghi chú (nếu cần);
-if (Duyệt?) then (Có)
+if (Chọn chế độ duyệt?) then (Thủ công)
+  :Chọn hồ sơ cụ thể;
+  if (Duyệt?) then (Duyệt)
+    |Hệ thống|
+    :Phê duyệt, tạo tài khoản SV\n& hợp đồng Pending;
+    :Gửi email kết quả;
+  else (Từ chối)
+    |Hệ thống|
+    :Từ chối hồ sơ\n& gửi email lý do;
+  endif
+else (Tự động theo lô)
+  |Quản lý tòa nhà|
+  :Kích hoạt Duyệt tự động;
   |Hệ thống|
-  :Cập nhật trạng thái = APPROVED;
-  :Tạo tài khoản sinh viên
-  (email = email SV,
-  mật khẩu = CCCD);
-  :Gửi thông báo kết quả;
-  |Ban quản lý|
-  :Hoàn tất duyệt;
-else (Từ chối)
-  |Hệ thống|
-  :Cập nhật trạng thái = REJECTED;
-  :Gửi thông báo lý do;
-  |Ban quản lý|
-  :Hoàn tất từ chối;
+  :Xác định Khoa/Ngành áp dụng;
+  :Sắp xếp hồ sơ theo nhóm\nvà điểm xét tuyển giảm dần;
+  while (Còn chỉ tiêu\n& danh sách hồ sơ?) is (Có)
+    :Duyệt hồ sơ & khởi tạo\ntài khoản, hợp đồng;
+  endwhile (Không)
+  :Hiển thị báo cáo kết quả\nduyệt hàng loạt;
 endif
-if (Điều chỉnh trọng số?) then (Có)
-  |Ban quản lý|
-  :Cập nhật trọng số;
-  |Hệ thống|
-  :Tính lại điểm toàn bộ hồ sơ;
-endif
-|Ban quản lý|
-:Hoàn tất;
+|Quản lý tòa nhà|
 stop
 @enduml
