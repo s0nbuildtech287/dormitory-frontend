@@ -1981,7 +1981,9 @@ const RegistrationList = ({
                                   <div key={fac.name} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
                                     <div className="text-left flex-1 min-w-0 pr-2">
                                       <span className="text-xs font-semibold text-slate-800 block truncate">{fac.name}</span>
-                                      <span className="inline-block text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{fac.count} hồ sơ chờ</span>
+                                      <span className="inline-block text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">
+                                        {fac.count} hồ sơ chờ ({fac.freshmenCount || 0} Tân SV, {fac.seniorsCount || 0} Lưu SV)
+                                      </span>
                                     </div>
                                     <div className="flex gap-2 flex-shrink-0">
                                       <div className="flex flex-col items-center">

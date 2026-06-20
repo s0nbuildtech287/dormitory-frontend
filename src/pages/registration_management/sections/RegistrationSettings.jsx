@@ -386,7 +386,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                         <div className="text-left flex-1 pr-4">
                           <span className="font-semibold text-slate-800 text-sm block">{fac.name}</span>
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-bold mt-1">
-                            {fac.count} hồ sơ chờ duyệt
+                            {fac.count} hồ sơ chờ ({fac.freshmenCount || 0} Tân SV, {fac.seniorsCount || 0} Lưu SV)
                           </span>
                         </div>
                         <div className="flex gap-4 flex-shrink-0">
