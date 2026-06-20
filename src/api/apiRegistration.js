@@ -584,9 +584,10 @@ export const getDemandForecast = async () => {
  * @param {string} faculty - Faculty filter (optional)
  * @param {boolean} simulate - Chạy thử nghiệm
  * @param {boolean} allowOverflow - Cho phép dồn chỉ tiêu thừa
+ * @param {Object} tempQuotas - Chỉ tiêu tạm thời chỉnh trong modal
  * @returns {Promise<Object>} Bulk approve results
  */
-export const autoAllocateRegistrations = async (faculty = null, simulate = false, allowOverflow = false) => {
+export const autoAllocateRegistrations = async (faculty = null, simulate = false, allowOverflow = false, tempQuotas = null) => {
   try {
     const token = getAuthToken();
     if (!token) {
@@ -601,7 +602,7 @@ export const autoAllocateRegistrations = async (faculty = null, simulate = false
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ faculty, simulate, allowOverflow })
+        body: JSON.stringify({ faculty, simulate, allowOverflow, tempQuotas })
       }
     );
 

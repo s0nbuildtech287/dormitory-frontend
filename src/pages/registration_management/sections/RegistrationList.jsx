@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck, Rocket, BedDouble, Users, AlertTriangle, Info, Settings, Sliders } from "lucide-react";
+import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck, Rocket, BedDouble, Users, AlertTriangle, Info, Settings, Sliders } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -128,6 +128,14 @@ const RegistrationList = ({
   const [progressStage, setProgressStage] = useState("");
   const [simulate, setSimulate] = useState(true);
   const [allowOverflow, setAllowOverflow] = useState(false);
+  const [modalQuotas, setModalQuotas] = useState({
+    totalSlots: 1000,
+    freshmen: 60,
+    seniors: 40,
+    facultyQuotas: {},
+  });
+  const [facultiesList, setFacultiesList] = useState([]);
+  const [isQuotasCollapsed, setIsQuotasCollapsed] = useState(true);
   const [roomStats, setRoomStats] = useState({
     available_now: 0,
     available_soon: 0,
@@ -215,7 +223,8 @@ const RegistrationList = ({
       const res = await autoAllocateRegistrations(
         filterFaculty === "All" ? null : filterFaculty,
         runSimulate,
-        allowOverflow
+        allowOverflow,
+        modalQuotas
       );
       clearInterval(timer);
       setProgress(100);
@@ -252,8 +261,30 @@ const RegistrationList = ({
     const fetchQuotas = async () => {
       try {
         const data = await getScoringWeights();
-        if (data.success && data.data && data.data.value && data.data.value.quotas) {
-          setQuotas(data.data.value.quotas);
+        if (data.success) {
+          if (data.data.faculties) {
+            setFacultiesList(data.data.faculties);
+          }
+          if (data.data.value && data.data.value.quotas) {
+            const settingsQuotas = data.data.value.quotas;
+            const loadedFacultyQuotas = settingsQuotas.facultyQuotas || {};
+            if (data.data.faculties) {
+              data.data.faculties.forEach(fac => {
+                if (loadedFacultyQuotas[fac.name] === undefined) {
+                  loadedFacultyQuotas[fac.name] = 0;
+                }
+              });
+            }
+            const updated = {
+              totalSlots: settingsQuotas.totalSlots !== undefined ? settingsQuotas.totalSlots : 1000,
+              policy_priority: settingsQuotas.policy_priority !== undefined ? settingsQuotas.policy_priority : 0,
+              freshmen: settingsQuotas.freshmen !== undefined ? settingsQuotas.freshmen : 60,
+              seniors: settingsQuotas.seniors !== undefined ? settingsQuotas.seniors : 40,
+              facultyQuotas: loadedFacultyQuotas,
+            };
+            setQuotas(updated);
+            setModalQuotas(updated);
+          }
         }
       } catch (error) {
         console.error("Error fetching quotas:", error);
@@ -261,6 +292,43 @@ const RegistrationList = ({
     };
     fetchQuotas();
   }, [regs]);
+
+  // Fetch quotas for modal specifically when it opens to have fresh values and reset collapsed state
+  useEffect(() => {
+    if (isOpenAutoAllocateModal) {
+      const fetchQuotasForModal = async () => {
+        try {
+          const data = await getScoringWeights();
+          if (data.success) {
+            if (data.data.faculties) {
+              setFacultiesList(data.data.faculties);
+            }
+            if (data.data.value && data.data.value.quotas) {
+              const settingsQuotas = data.data.value.quotas;
+              const loadedFacultyQuotas = settingsQuotas.facultyQuotas || {};
+              if (data.data.faculties) {
+                data.data.faculties.forEach(fac => {
+                  if (loadedFacultyQuotas[fac.name] === undefined) {
+                    loadedFacultyQuotas[fac.name] = 0;
+                  }
+                });
+              }
+              setModalQuotas({
+                totalSlots: settingsQuotas.totalSlots !== undefined ? settingsQuotas.totalSlots : 1000,
+                freshmen: settingsQuotas.freshmen !== undefined ? settingsQuotas.freshmen : 60,
+                seniors: settingsQuotas.seniors !== undefined ? settingsQuotas.seniors : 40,
+                facultyQuotas: loadedFacultyQuotas,
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching quotas for modal:", error);
+        }
+      };
+      fetchQuotasForModal();
+      setIsQuotasCollapsed(true);
+    }
+  }, [isOpenAutoAllocateModal]);
 
   const facultyOptions = useMemo(() => {
     const opts = [{ value: "All", label: "Tất cả khoa" }];
@@ -1465,10 +1533,10 @@ const RegistrationList = ({
                   {(() => {
                     const approvedFreshmen = autoAllocateResult.allocations?.filter(r => r.year === 1).length || 0;
                     const approvedSeniors = autoAllocateResult.allocations?.filter(r => r.year > 1).length || 0;
-                    const quotaFreshmenSlots = Math.round((quotas.freshmen / 100) * quotas.totalSlots);
-                    const quotaSeniorsSlots = Math.round((quotas.seniors / 100) * quotas.totalSlots);
-                    const actualFreshmenPercent = ((approvedFreshmen / quotas.totalSlots) * 100).toFixed(1);
-                    const actualSeniorsPercent = ((approvedSeniors / quotas.totalSlots) * 100).toFixed(1);
+                    const quotaFreshmenSlots = Math.round((modalQuotas.freshmen / 100) * modalQuotas.totalSlots);
+                    const quotaSeniorsSlots = Math.round((modalQuotas.seniors / 100) * modalQuotas.totalSlots);
+                    const actualFreshmenPercent = ((approvedFreshmen / modalQuotas.totalSlots) * 100).toFixed(1);
+                    const actualSeniorsPercent = ((approvedSeniors / modalQuotas.totalSlots) * 100).toFixed(1);
 
                     return (
                       <div className="space-y-3 text-left">
@@ -1479,7 +1547,7 @@ const RegistrationList = ({
                             <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                               <span className="font-black text-indigo-900 text-sm">1. Tân sinh viên (Năm 1)</span>
                               <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold">
-                                Chỉ tiêu: {quotas.freshmen}% (~{quotaFreshmenSlots} chỗ)
+                                Chỉ tiêu: {modalQuotas.freshmen}% (~{quotaFreshmenSlots} chỗ)
                               </span>
                             </div>
                             <div className="space-y-2">
@@ -1518,7 +1586,7 @@ const RegistrationList = ({
                             <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                               <span className="font-black text-emerald-900 text-sm">2. Sinh viên khóa cũ (Năm &gt; 1)</span>
                               <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                                Chỉ tiêu: {quotas.seniors}% (~{quotaSeniorsSlots} chỗ)
+                                Chỉ tiêu: {modalQuotas.seniors}% (~{quotaSeniorsSlots} chỗ)
                               </span>
                             </div>
                             <div className="space-y-2">
@@ -1557,7 +1625,7 @@ const RegistrationList = ({
                         <div className="p-4 bg-slate-100/80 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 flex justify-between items-center">
                           <span>Tổng số sinh viên Diện Chính Sách trúng tuyển:</span>
                           <span className="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-lg border border-rose-200 font-bold">
-                            {autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0} sinh viên (chiếm {((autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0) / quotas.totalSlots * 100).toFixed(1)}% chỉ tiêu KTX)
+                            {autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0} sinh viên (chiếm {((autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0) / modalQuotas.totalSlots * 100).toFixed(1)}% chỉ tiêu KTX)
                           </span>
                         </div>
                       </div>
@@ -1618,8 +1686,8 @@ const RegistrationList = ({
                         const overflowFreshmen = autoAllocateResult.overflowAllocations?.filter(r => r.year === 1).length || 0;
                         const overflowSeniors = autoAllocateResult.overflowAllocations?.filter(r => r.year > 1).length || 0;
 
-                        const quotaFreshmenSlots = Math.round((quotas.freshmen / 100) * quotas.totalSlots);
-                        const quotaSeniorsSlots = Math.round((quotas.seniors / 100) * quotas.totalSlots);
+                        const quotaFreshmenSlots = Math.round((modalQuotas.freshmen / 100) * modalQuotas.totalSlots);
+                        const quotaSeniorsSlots = Math.round((modalQuotas.seniors / 100) * modalQuotas.totalSlots);
 
                         const originalFreshmenLeftover = Math.max(0, quotaFreshmenSlots - (approvedFreshmen - overflowFreshmen));
                         const originalSeniorsLeftover = Math.max(0, quotaSeniorsSlots - (approvedSeniors - overflowSeniors));
@@ -1804,6 +1872,109 @@ const RegistrationList = ({
                     </div>
                   </div>
 
+                  {/* Collapsible Quota Editor */}
+                  <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden transition-all duration-300">
+                    <button 
+                      type="button"
+                      onClick={() => setIsQuotasCollapsed(!isQuotasCollapsed)}
+                      className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors border-b border-slate-200"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Settings size={18} className="text-blue-600 animate-spin-slow" />
+                        <span className="text-sm font-bold text-slate-800">Điều chỉnh nhanh chỉ tiêu mô phỏng (Tùy chọn)</span>
+                      </div>
+                      {isQuotasCollapsed ? (
+                        <span className="text-xs text-slate-500 font-bold flex items-center gap-1">Mở rộng <ChevronDown size={14} /></span>
+                      ) : (
+                        <span className="text-xs text-slate-500 font-bold flex items-center gap-1">Thu gọn <ChevronUp size={14} /></span>
+                      )}
+                    </button>
+
+                    {!isQuotasCollapsed && (
+                      <div className="p-5 space-y-4 bg-slate-50/30">
+                        {/* Quota inputs */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-1.5 text-left">
+                            <label className="block text-xs font-bold text-slate-650">Tổng chỉ tiêu KTX</label>
+                            <input
+                              type="number"
+                              value={modalQuotas.totalSlots}
+                              onChange={e => setModalQuotas(prev => ({ ...prev, totalSlots: parseInt(e.target.value) || 0 }))}
+                              className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-50 outline-none text-xs font-bold"
+                              min="1"
+                            />
+                          </div>
+                          <div className="space-y-1.5 text-left">
+                            <label className="block text-xs font-bold text-slate-650">Tân sinh viên (%)</label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                value={modalQuotas.freshmen}
+                                onChange={e => setModalQuotas(prev => ({ ...prev, freshmen: parseFloat(e.target.value) || 0 }))}
+                                className="w-full px-3 py-2 pr-6 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-50 outline-none text-xs font-bold"
+                                min="0"
+                                max="100"
+                              />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                            </div>
+                          </div>
+                          <div className="space-y-1.5 text-left">
+                            <label className="block text-xs font-bold text-slate-650">Khóa cũ (%)</label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                value={modalQuotas.seniors}
+                                onChange={e => setModalQuotas(prev => ({ ...prev, seniors: parseFloat(e.target.value) || 0 }))}
+                                className="w-full px-3 py-2 pr-6 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-50 outline-none text-xs font-bold"
+                                min="0"
+                                max="100"
+                              />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Ratio warning */}
+                        {Math.abs(modalQuotas.freshmen + modalQuotas.seniors - 100) > 0.1 && (
+                          <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-semibold flex items-center gap-1.5">
+                            <AlertTriangle size={14} className="flex-shrink-0" />
+                            Tổng tỷ lệ chỉ tiêu (Tân SV + Khóa cũ) phải bằng 100% (Hiện tại: {(modalQuotas.freshmen + modalQuotas.seniors).toFixed(1)}%)
+                          </div>
+                        )}
+
+                        {/* Faculty Quotas */}
+                        {facultiesList && facultiesList.length > 0 && (
+                          <div className="border-t border-slate-200 pt-3.5 space-y-2.5">
+                            <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Chỉ tiêu theo Khoa (Tùy chọn - Đặt bằng 0 nếu không giới hạn)</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {facultiesList.map(fac => (
+                                <div key={fac.name} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                  <div className="text-left flex-1 min-w-0 pr-2">
+                                    <span className="text-xs font-semibold text-slate-800 block truncate">{fac.name}</span>
+                                    <span className="inline-block text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{fac.count} hồ sơ chờ</span>
+                                  </div>
+                                  <input
+                                    type="number"
+                                    value={modalQuotas.facultyQuotas?.[fac.name] !== undefined ? modalQuotas.facultyQuotas[fac.name] : 0}
+                                    onChange={e => setModalQuotas(prev => ({
+                                      ...prev,
+                                      facultyQuotas: {
+                                        ...prev.facultyQuotas,
+                                        [fac.name]: parseInt(e.target.value) || 0
+                                      }
+                                    }))}
+                                    className="w-20 px-2 py-1 border border-slate-200 rounded-lg text-xs font-bold text-center focus:ring-2 focus:ring-blue-50 outline-none"
+                                    min="0"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Summary statistics & Pending breakdown */}
                   <div className="space-y-3">
                     <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Thống kê hồ sơ chờ duyệt hiện tại</h4>
@@ -1826,7 +1997,7 @@ const RegistrationList = ({
                         <span className="font-black text-indigo-600 text-lg block">
                           {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 2).length} hồ sơ
                         </span>
-                        <span className="text-[10px] text-slate-500 block">Chỉ tiêu: {quotas.freshmen}% (~{Math.round((quotas.freshmen / 100) * quotas.totalSlots)} chỗ)</span>
+                        <span className="text-[10px] text-slate-500 block">Chỉ tiêu: {modalQuotas.freshmen}% (~{Math.round((modalQuotas.freshmen / 100) * modalQuotas.totalSlots)} chỗ)</span>
                       </div>
 
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
@@ -1834,7 +2005,7 @@ const RegistrationList = ({
                         <span className="font-black text-emerald-600 text-lg block">
                           {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 3).length} hồ sơ
                         </span>
-                        <span className="text-[10px] text-slate-500 block">Chỉ tiêu: {quotas.seniors}% (~{Math.round((quotas.seniors / 100) * quotas.totalSlots)} chỗ)</span>
+                        <span className="text-[10px] text-slate-500 block">Chỉ tiêu: {modalQuotas.seniors}% (~{Math.round((modalQuotas.seniors / 100) * modalQuotas.totalSlots)} chỗ)</span>
                       </div>
                     </div>
                   </div>
