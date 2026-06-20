@@ -1470,7 +1470,7 @@ const RegistrationList = ({
                           <AlertTriangle size={24} />
                         </div>
                         <div className="space-y-1 text-left flex-1">
-                          <h3 className="font-bold text-amber-900 text-base">Chế độ mô phỏng xét duyệt (Chưa lưu DB)</h3>
+                          <h3 className="font-bold text-amber-900 text-base">Chế độ mô phỏng xét duyệt</h3>
                           <p className="text-sm text-amber-700 font-medium">
                             Đây là kết quả chạy thử nghiệm. Các hồ sơ dưới đây chưa được duyệt chính thức và không có thay đổi nào được ghi lại vào cơ sở dữ liệu.
                           </p>
@@ -1893,7 +1893,7 @@ const RegistrationList = ({
                           className="w-5 h-5 rounded accent-blue-600 mt-0.5 cursor-pointer"
                         />
                         <div>
-                          <span className="text-sm font-bold text-slate-800 block">Cho phép dồn chỉ tiêu thừa (Overflow)</span>
+                          <span className="text-sm font-bold text-slate-800 block">Cho phép dồn chỉ tiêu thừa</span>
                           <span className="text-xs text-slate-500 block mt-0.5">Sử dụng chỉ tiêu dư từ các nhóm/khoa đăng ký ít để bù đắp, phê duyệt thêm cho sinh viên các nhóm/khoa quá tải.</span>
                         </div>
                       </label>
