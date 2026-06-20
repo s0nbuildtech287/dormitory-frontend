@@ -1,38 +1,37 @@
 @startuml "Room Assignment Sequence"
-skinparam defaultFontSize 26
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 26
+skinparam sequenceMessageSize 20
+
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
-participant "RoomAssignmentController" as RAC
-participant "RoomAssignmentService" as RAS
-participant "RoomDAO" as RoomDAO
-participant "StudentContractDAO" as SCDAO
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-Admin -> FE: Yêu cầu gợi ý phòng
-FE -> RAC: POST /api/room-assignments/suggestions
-RAC -> RAS: getSuggestions(args)
-RAS -> RoomDAO: findAvailableRooms(args)
-RoomDAO -> DB: SELECT rooms
-DB --> RoomDAO: room list
-RAS -> SCDAO: getStudentContract(args)
-SCDAO -> DB: SELECT student_contracts
-DB --> SCDAO: contract info
-RAS --> RAC: suggestions
-RAC --> FE: 200 OK (list suggestions)
+alt Chế độ 1: Gán phòng thủ công
+  Admin -> FE: 1. Chọn hồ sơ chờ xếp phòng
+  FE -> BE: 2. Yêu cầu gợi ý phòng phù hợp
+  BE -> DB: 3. Lấy thông tin phòng trống & sinh viên
+  DB --> BE: 4. Danh sách phòng & thông tin
+  BE -> BE: 5. Tìm kiếm phòng cùng giới tính, khoa/khóa
+  BE --> FE: 6. Gợi ý danh sách 5 phòng tốt nhất
+  Admin -> FE: 7. Chọn một phòng trong gợi ý
+  FE -> BE: 8. Yêu cầu gán phòng đã chọn
+  BE -> DB: 9. Cập nhật trạng thái hợp đồng & số người trong phòng
+  DB --> BE: 10. Xác nhận hoàn tất
+  BE --> FE: 11. Kết quả gán phòng
+  FE --> Admin: 12. Thông báo thành công
 
-Admin -> FE: Chọn phòng để gán
-FE -> RAC: POST /api/room-assignments/assign
-RAC -> RAS: assignRoom(args)
-RAS -> RoomDAO: check availability
-RoomDAO -> DB: SELECT room
-DB --> RoomDAO: OK
-RAS -> SCDAO: update contract (Active)
-SCDAO -> DB: UPDATE student_contracts
-DB --> SCDAO: OK
-RAS -> RoomDAO: update occupancy
-RoomDAO -> DB: UPDATE rooms
-DB --> RoomDAO: OK
-RAC --> FE: 200 OK
+else Chế độ 2: Gán phòng tự động hàng loạt
+  Admin -> FE: 1. Lọc theo khoa (nếu muốn) & bấm gán tự động
+  FE -> BE: 2. Yêu cầu gán phòng tự động
+  BE -> DB: 3. Lấy danh sách hợp đồng chờ xếp & phòng trống
+  DB --> BE: 4. Dữ liệu hợp đồng & phòng
+  BE -> BE: 5. Sắp xếp thứ tự điểm số xét tuyển
+  BE -> BE: 6. Tự động so khớp giới tính, khoa/khóa
+  BE -> DB: 7. Cập nhật các hợp đồng & số người trong các phòng
+  DB --> BE: 8. Xác nhận hoàn tất
+  BE --> FE: 9. Kết quả gán phòng hàng loạt
+  FE --> Admin: 10. Hiển thị danh sách kết quả xếp phòng
+end
 @enduml
