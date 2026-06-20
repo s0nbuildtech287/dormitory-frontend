@@ -1611,9 +1611,32 @@ const RegistrationList = ({
                       <h5 className="font-bold text-blue-900 text-sm flex items-center gap-2">
                         <Info size={16} /> Danh sách dồn chỉ tiêu ({autoAllocateResult.overflowAllocations.length} sinh viên)
                       </h5>
-                      <p className="text-xs text-blue-700 font-medium">
-                        Các hồ sơ dưới đây đã vượt quá hạn mức ban đầu của nhóm học hoặc của khoa, nhưng được dồn chỉ tiêu thừa từ các nhóm/khoa khác sang để phê duyệt.
-                      </p>
+                      {(() => {
+                        const approvedFreshmen = autoAllocateResult.allocations?.filter(r => r.year === 1).length || 0;
+                        const approvedSeniors = autoAllocateResult.allocations?.filter(r => r.year > 1).length || 0;
+                        
+                        const overflowFreshmen = autoAllocateResult.overflowAllocations?.filter(r => r.year === 1).length || 0;
+                        const overflowSeniors = autoAllocateResult.overflowAllocations?.filter(r => r.year > 1).length || 0;
+
+                        const quotaFreshmenSlots = Math.round((quotas.freshmen / 100) * quotas.totalSlots);
+                        const quotaSeniorsSlots = Math.round((quotas.seniors / 100) * quotas.totalSlots);
+
+                        const originalFreshmenLeftover = Math.max(0, quotaFreshmenSlots - (approvedFreshmen - overflowFreshmen));
+                        const originalSeniorsLeftover = Math.max(0, quotaSeniorsSlots - (approvedSeniors - overflowSeniors));
+
+                        return (
+                          <div className="space-y-1 bg-blue-100/30 p-3.5 rounded-xl border border-blue-200/50">
+                            <p className="text-xs text-blue-750 font-medium">
+                              Các hồ sơ dưới đây đã vượt quá hạn mức ban đầu của nhóm học hoặc của khoa, nhưng được dồn chỉ tiêu thừa từ các nhóm/khoa khác sang để phê duyệt.
+                            </p>
+                            <p className="text-xs text-blue-800 font-bold leading-relaxed">
+                              💡 Chi tiết dồn: 
+                              {overflowSeniors > 0 && ` Nhóm Tân sinh viên dư ${originalFreshmenLeftover} chỗ (${approvedFreshmen - overflowFreshmen}/${quotaFreshmenSlots}) -> đã tự động chuyển dồn duyệt cho ${overflowSeniors} sinh viên Khóa cũ.`}
+                              {overflowFreshmen > 0 && ` Nhóm Sinh viên khóa cũ dư ${originalSeniorsLeftover} chỗ (${approvedSeniors - overflowSeniors}/${quotaSeniorsSlots}) -> đã tự động chuyển dồn duyệt cho ${overflowFreshmen} Tân sinh viên.`}
+                            </p>
+                          </div>
+                        );
+                      })()}
                       <div className="max-h-[160px] overflow-y-auto border border-blue-200/50 rounded-xl divide-y divide-blue-100/60 bg-white">
                         {autoAllocateResult.overflowAllocations.map((item, idx) => (
                           <div key={idx} className="p-3 flex justify-between items-center text-xs hover:bg-slate-50 transition-colors">
