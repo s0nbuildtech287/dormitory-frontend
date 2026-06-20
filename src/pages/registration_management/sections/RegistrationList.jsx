@@ -15,11 +15,11 @@ import { getScoringWeights, createRegistration, deleteRegistration, approveRegis
 // Badge hiển thị trạng thái xác thực ảnh Vision
 const VisionBadge = ({ status }) => {
   const cfg = {
-    VALID:    { cls: "bg-emerald-100 text-emerald-700", label: "✅ Hợp lệ" },
-    SUSPECT:  { cls: "bg-amber-100 text-amber-700",    label: "⚠️ Nghi ngờ" },
-    INVALID:  { cls: "bg-rose-100 text-rose-700",      label: "❌ Không hợp lệ" },
-    PENDING:  { cls: "bg-slate-100 text-slate-500",    label: "⏳ Chờ xử lý" },
-    ERROR:    { cls: "bg-orange-100 text-orange-700",  label: "🔴 Lỗi" },
+    VALID: { cls: "bg-emerald-100 text-emerald-700", label: "✅ Hợp lệ" },
+    SUSPECT: { cls: "bg-amber-100 text-amber-700", label: "⚠️ Nghi ngờ" },
+    INVALID: { cls: "bg-rose-100 text-rose-700", label: "❌ Không hợp lệ" },
+    PENDING: { cls: "bg-slate-100 text-slate-500", label: "⏳ Chờ xử lý" },
+    ERROR: { cls: "bg-orange-100 text-orange-700", label: "🔴 Lỗi" },
   };
   if (!status) return null;
   const { cls, label } = cfg[status] || cfg.PENDING;
@@ -383,7 +383,7 @@ const RegistrationList = ({
       const matchesGroup = filterGroup === "All" || regGroup === filterGroup;
 
       const matchesVision = filterVision === "All" || (reg.vision_status || "PENDING") === filterVision;
-      
+
       const matchesFaculty = filterFaculty === "All" || reg.faculty === filterFaculty;
 
       return matchesSearch && matchesStatus && matchesYear && matchesScore && matchesGender && matchesGroup && matchesVision && matchesFaculty;
@@ -400,13 +400,13 @@ const RegistrationList = ({
   // Custom Hooks
   const pagination = usePagination(filteredRegs, 10);
   const { currentItems, totalItems } = pagination;
-  const { 
-    selectedItems: selectedRegs, 
-    showCheckboxColumn, 
-    toggleSelectionMode: handleToggleCheckbox, 
-    handleSelectItem: handleSelectReg, 
-    handleSelectAll, 
-    clearSelection 
+  const {
+    selectedItems: selectedRegs,
+    showCheckboxColumn,
+    toggleSelectionMode: handleToggleCheckbox,
+    handleSelectItem: handleSelectReg,
+    handleSelectAll,
+    clearSelection
   } = useSelection(filteredRegs.map(r => r.id));
 
   // Calculate quota-based pending count for current filter group
@@ -585,11 +585,10 @@ const RegistrationList = ({
 
         {/* Thông báo kết quả đồng bộ */}
         {syncMsg && (
-          <div className={`mt-3 flex items-center justify-between px-3 py-2 rounded-lg ${
-            syncMsg.type === 'success'
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-              : 'bg-rose-50 text-rose-700 border border-rose-200'
-          }`}>
+          <div className={`mt-3 flex items-center justify-between px-3 py-2 rounded-lg ${syncMsg.type === 'success'
+            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            : 'bg-rose-50 text-rose-700 border border-rose-200'
+            }`}>
             <p className="text-xs font-semibold">
               {syncMsg.type === 'success' ? '✅ ' : '❌ '}{syncMsg.text}
             </p>
@@ -655,8 +654,8 @@ const RegistrationList = ({
                   <span className="text-[10px] text-emerald-600 font-medium leading-none">{approvedCount} / {totalSlots} chỗ đã gán</span>
                 </div>
                 <div className="w-full bg-emerald-200/40 h-2 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-emerald-600 rounded-full transition-all duration-500" 
+                  <div
+                    className="h-full bg-emerald-600 rounded-full transition-all duration-500"
                     style={{ width: `${pctUsed}%` }}
                   ></div>
                 </div>
@@ -759,16 +758,15 @@ const RegistrationList = ({
           <h3 className="text-slate-800 font-medium text-sm uppercase tracking-wider text-left">
             Bảng hồ sơ đăng ký ({totalItems} kết quả) - chờ duyệt {actualPendingCount} / {totalItems} hồ sơ
           </h3>
-          
+
           <div className="flex items-center gap-2">
             {/* Toggle Checkbox Column Button */}
             <button
               onClick={handleToggleCheckbox}
-              className={`px-3 py-2 border text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5 ${
-                showCheckboxColumn 
-                  ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100' 
-                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
-              }`}
+              className={`px-3 py-2 border text-xs font-bold rounded-lg shadow-sm transition-colors flex items-center gap-1.5 ${showCheckboxColumn
+                ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100'
+                : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                }`}
             >
               {showCheckboxColumn ? <CheckSquare size={13} /> : <Square size={13} />} {showCheckboxColumn ? 'Tắt chế độ chọn' : 'Chọn nhiều'}
             </button>
@@ -807,18 +805,16 @@ const RegistrationList = ({
               align: "left",
               accessor: (reg) => (
                 <div
-                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                    reg.ai_suggestion === AISuggestionType.RECOMMENDED
-                      ? "bg-emerald-50 text-emerald-600"
-                      : reg.ai_suggestion === AISuggestionType.CONSIDER
-                        ? "bg-amber-50 text-amber-600"
-                        : "bg-rose-50 text-rose-600"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
+                    ? "bg-emerald-50 text-emerald-600"
+                    : reg.ai_suggestion === AISuggestionType.CONSIDER
+                      ? "bg-amber-50 text-amber-600"
+                      : "bg-rose-50 text-rose-600"
+                    }`}
                 >
                   <div
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
-                    }`}
+                    className={`w-1.5 h-1.5 rounded-full ${reg.ai_suggestion === AISuggestionType.RECOMMENDED ? "bg-emerald-500" : reg.ai_suggestion === AISuggestionType.CONSIDER ? "bg-amber-500" : "bg-rose-500"
+                      }`}
                   ></div>
                   {reg.ai_suggestion}
                 </div>
@@ -830,13 +826,12 @@ const RegistrationList = ({
               accessor: (reg) => (
                 <div className="flex items-center gap-1 flex-wrap">
                   <span
-                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
-                      reg.status === RegistrationStatus.PENDING
-                        ? "bg-amber-100 text-amber-700"
-                        : reg.status === RegistrationStatus.APPROVED
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
-                    }`}
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${reg.status === RegistrationStatus.PENDING
+                      ? "bg-amber-100 text-amber-700"
+                      : reg.status === RegistrationStatus.APPROVED
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-rose-100 text-rose-700"
+                      }`}
                   >
                     {reg.status}
                   </span>
@@ -1013,13 +1008,12 @@ const RegistrationList = ({
                     <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200">
                       <p className="text-slate-600 text-xs font-semibold mb-2">Đề xuất</p>
                       <p
-                        className={`font-bold ${
-                          selectedRegDetail.ai_suggestion === AISuggestionType.RECOMMENDED
-                            ? "text-emerald-700"
-                            : selectedRegDetail.ai_suggestion === AISuggestionType.CONSIDER
-                              ? "text-amber-700"
-                              : "text-rose-700"
-                        }`}
+                        className={`font-bold ${selectedRegDetail.ai_suggestion === AISuggestionType.RECOMMENDED
+                          ? "text-emerald-700"
+                          : selectedRegDetail.ai_suggestion === AISuggestionType.CONSIDER
+                            ? "text-amber-700"
+                            : "text-rose-700"
+                          }`}
                       >
                         {selectedRegDetail.ai_suggestion}
                       </p>
@@ -1088,13 +1082,12 @@ const RegistrationList = ({
                 <h4 className="text-slate-900 font-bold text-sm mb-4 uppercase tracking-wider">Trạng thái</h4>
                 <div className="bg-slate-50 p-4 rounded-xl flex items-center gap-1">
                   <span
-                    className={`inline-block px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-tight ${
-                      selectedRegDetail.status === RegistrationStatus.PENDING
-                        ? "bg-amber-100 text-amber-700"
-                        : selectedRegDetail.status === RegistrationStatus.APPROVED
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
-                    }`}
+                    className={`inline-block px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-tight ${selectedRegDetail.status === RegistrationStatus.PENDING
+                      ? "bg-amber-100 text-amber-700"
+                      : selectedRegDetail.status === RegistrationStatus.APPROVED
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-rose-100 text-rose-700"
+                      }`}
                   >
                     {selectedRegDetail.status}
                   </span>
@@ -1132,10 +1125,10 @@ const RegistrationList = ({
                 };
 
                 const visionStatusCfg = {
-                  VALID:   { border: "border-emerald-400", badge: "bg-emerald-100 text-emerald-700", label: "✅ Hợp lệ" },
-                  SUSPECT: { border: "border-amber-400",   badge: "bg-amber-100 text-amber-700",     label: "⚠️ Nghi ngờ" },
-                  INVALID: { border: "border-rose-500",    badge: "bg-rose-100 text-rose-700",       label: "❌ Không hợp lệ" },
-                  ERROR:   { border: "border-orange-400",  badge: "bg-orange-100 text-orange-700",   label: "🔴 Lỗi" },
+                  VALID: { border: "border-emerald-400", badge: "bg-emerald-100 text-emerald-700", label: "✅ Hợp lệ" },
+                  SUSPECT: { border: "border-amber-400", badge: "bg-amber-100 text-amber-700", label: "⚠️ Nghi ngờ" },
+                  INVALID: { border: "border-rose-500", badge: "bg-rose-100 text-rose-700", label: "❌ Không hợp lệ" },
+                  ERROR: { border: "border-orange-400", badge: "bg-orange-100 text-orange-700", label: "🔴 Lỗi" },
                 };
 
                 return (
@@ -1446,15 +1439,15 @@ const RegistrationList = ({
                       <Rocket size={28} className="animate-bounce" />
                     </div>
                   </div>
-                  
+
                   <div className="w-full max-w-md space-y-3">
                     <div className="flex justify-between items-center text-xs font-bold text-slate-500">
                       <span className="text-blue-600 animate-pulse text-left">{progressStage}</span>
                       <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-lg text-sm">{progress}%</span>
                     </div>
-                    
+
                     <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-300 ease-out shadow-sm shadow-blue-500/20"
                         style={{ width: `${progress}%` }}
                       ></div>
@@ -1487,7 +1480,7 @@ const RegistrationList = ({
                               <p className="text-2xl font-black text-amber-800">{autoAllocateResult.processed} hồ sơ</p>
                             </div>
                             <div>
-                              <p className="text-xs text-amber-600 font-bold">Dồn chỉ tiêu (Overflow)</p>
+                              <p className="text-xs text-amber-600 font-bold">Dồn chỉ tiêu</p>
                               <p className="text-2xl font-black text-blue-700">{autoAllocateResult.overflowAllocations?.length || 0} hồ sơ</p>
                             </div>
                             <div>
@@ -1512,7 +1505,7 @@ const RegistrationList = ({
                               onChange={e => setAllowOverflow(e.target.checked)}
                               className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
                             />
-                            <span className="text-xs font-bold text-slate-700">Cho phép dồn chỉ tiêu thừa (Overflow)</span>
+                            <span className="text-xs font-bold text-slate-700">Cho phép dồn chỉ tiêu thừa</span>
                           </label>
                           <button
                             onClick={() => handleRunAutoAllocate(true)}
@@ -1579,10 +1572,10 @@ const RegistrationList = ({
                                 <span>Tổng dự kiến duyệt:</span>
                                 <span className="text-slate-900 font-bold">{approvedFreshmen} / {quotaFreshmenSlots} chỗ ({((approvedFreshmen / quotaFreshmenSlots) * 100).toFixed(1)}%)</span>
                               </div>
-                              
+
                               {/* Progress bar */}
                               <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="bg-indigo-600 h-full rounded-full transition-all"
                                   style={{ width: `${Math.min(100, (approvedFreshmen / quotaFreshmenSlots) * 100)}%` }}
                                 ></div>
@@ -1618,10 +1611,10 @@ const RegistrationList = ({
                                 <span>Tổng dự kiến duyệt:</span>
                                 <span className="text-slate-900 font-bold">{approvedSeniors} / {quotaSeniorsSlots} chỗ ({((approvedSeniors / quotaSeniorsSlots) * 100).toFixed(1)}%)</span>
                               </div>
-                              
+
                               {/* Progress bar */}
                               <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="bg-emerald-600 h-full rounded-full transition-all"
                                   style={{ width: `${Math.min(100, (approvedSeniors / quotaSeniorsSlots) * 100)}%` }}
                                 ></div>
@@ -1706,7 +1699,7 @@ const RegistrationList = ({
                       {(() => {
                         const approvedFreshmen = autoAllocateResult.allocations?.filter(r => r.year === 1).length || 0;
                         const approvedSeniors = autoAllocateResult.allocations?.filter(r => r.year > 1).length || 0;
-                        
+
                         const overflowFreshmen = autoAllocateResult.overflowAllocations?.filter(r => r.year === 1).length || 0;
                         const overflowSeniors = autoAllocateResult.overflowAllocations?.filter(r => r.year > 1).length || 0;
 
@@ -1722,7 +1715,7 @@ const RegistrationList = ({
                               Các hồ sơ dưới đây đã vượt quá hạn mức ban đầu của nhóm học hoặc của khoa, nhưng được dồn chỉ tiêu thừa từ các nhóm/khoa khác sang để phê duyệt.
                             </p>
                             <p className="text-xs text-blue-800 font-bold leading-relaxed">
-                              💡 Chi tiết dồn: 
+                              💡 Chi tiết dồn:
                               {overflowSeniors > 0 && ` Nhóm Tân sinh viên dư ${originalFreshmenLeftover} chỗ (${approvedFreshmen - overflowFreshmen}/${quotaFreshmenSlots}) -> đã tự động chuyển dồn duyệt cho ${overflowSeniors} sinh viên Khóa cũ.`}
                               {overflowFreshmen > 0 && ` Nhóm Sinh viên khóa cũ dư ${originalSeniorsLeftover} chỗ (${approvedSeniors - overflowSeniors}/${quotaSeniorsSlots}) -> đã tự động chuyển dồn duyệt cho ${overflowFreshmen} Tân sinh viên.`}
                             </p>
@@ -1839,13 +1832,12 @@ const RegistrationList = ({
                                 <td className="px-4 py-2.5 font-semibold text-slate-900">{item.student_name}</td>
                                 <td className="px-4 py-2.5 text-slate-600">{item.faculty}</td>
                                 <td className="px-4 py-2.5">
-                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                    item.basket === 1 
-                                      ? "bg-rose-50 text-rose-700 border border-rose-200" 
-                                      : item.basket === 2 || item.year === 1
-                                        ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
-                                        : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                  }`}>
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${item.basket === 1
+                                    ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                    : item.basket === 2 || item.year === 1
+                                      ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                                      : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                    }`}>
                                     {item.basket === 1 ? "Chính sách" : (item.basket === 2 || item.year === 1 ? "Tân SV" : "Lưu SV")}
                                   </span>
                                 </td>
@@ -1870,7 +1862,7 @@ const RegistrationList = ({
                     <div>
                       <p className="font-bold text-blue-900 text-sm text-left">Lưu ý quy trình duyệt tự động nâng cao</p>
                       <p className="text-xs text-blue-700 mt-0.5 text-left font-medium">
-                        Bước 1 (tại đây): Duyệt hồ sơ theo Chỉ tiêu Khoa (nếu cấu hình) → tạo hợp đồng <strong>Chờ gán phòng</strong>.<br/>
+                        Bước 1 (tại đây): Duyệt hồ sơ theo Chỉ tiêu Khoa (nếu cấu hình) → tạo hợp đồng <strong>Chờ gán phòng</strong>.<br />
                         Bước 2: Vào <strong>Hợp đồng sinh viên</strong> → nhấn <strong>Gán tự động</strong> để xếp phòng thực tế.
                       </p>
                     </div>
@@ -1892,7 +1884,7 @@ const RegistrationList = ({
                           <span className="text-xs text-slate-500 block mt-0.5">Hệ thống sẽ tính toán và hiển thị kết quả chi tiết, không thực hiện ghi hoặc thay đổi database.</span>
                         </div>
                       </label>
-                      
+
                       <label className="flex items-start gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-blue-500 cursor-pointer select-none transition-all shadow-sm">
                         <input
                           type="checkbox"
@@ -1910,7 +1902,7 @@ const RegistrationList = ({
 
                   {/* Collapsible Quota Editor */}
                   <div className="bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden transition-all duration-300">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsQuotasCollapsed(!isQuotasCollapsed)}
                       className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors border-b border-slate-200"
@@ -2071,7 +2063,7 @@ const RegistrationList = ({
                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Khoa áp dụng</span>
                         <span className="font-black text-slate-800 text-sm block mt-1">{filterFaculty === "All" ? "Tất cả các khoa" : filterFaculty}</span>
                       </div>
-                      
+
                       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">1. Nhóm Chính sách</span>
                         <span className="font-black text-rose-600 text-lg block">
