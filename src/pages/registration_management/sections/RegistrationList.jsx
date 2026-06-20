@@ -1379,31 +1379,60 @@ const RegistrationList = ({
                 /* Success/Result State */
                 <div className="space-y-6">
                   {autoAllocateResult.isSimulation ? (
-                    <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex items-start gap-4">
-                      <div className="p-3 bg-amber-500 rounded-xl text-white">
-                        <AlertTriangle size={24} />
-                      </div>
-                      <div className="space-y-1 text-left flex-1">
-                        <h3 className="font-bold text-amber-900 text-base">Chế độ mô phỏng xét duyệt (Chưa lưu DB)</h3>
-                        <p className="text-sm text-amber-700 font-medium">
-                          Đây là kết quả chạy thử nghiệm. Các hồ sơ dưới đây chưa được duyệt chính thức và không có thay đổi nào được ghi lại vào cơ sở dữ liệu.
-                        </p>
-                        <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-amber-200/50">
-                          <div>
-                            <p className="text-xs text-amber-600 font-bold">Dự kiến duyệt</p>
-                            <p className="text-2xl font-black text-amber-800">{autoAllocateResult.processed} hồ sơ</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-amber-600 font-bold">Dồn chỉ tiêu (Overflow)</p>
-                            <p className="text-2xl font-black text-blue-700">{autoAllocateResult.overflowAllocations?.length || 0} hồ sơ</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-amber-600 font-bold">Bỏ qua do hết chỉ tiêu</p>
-                            <p className="text-2xl font-black text-slate-600">{autoAllocateResult.skippedQuota || 0} hồ sơ</p>
+                    <>
+                      <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex items-start gap-4">
+                        <div className="p-3 bg-amber-500 rounded-xl text-white">
+                          <AlertTriangle size={24} />
+                        </div>
+                        <div className="space-y-1 text-left flex-1">
+                          <h3 className="font-bold text-amber-900 text-base">Chế độ mô phỏng xét duyệt (Chưa lưu DB)</h3>
+                          <p className="text-sm text-amber-700 font-medium">
+                            Đây là kết quả chạy thử nghiệm. Các hồ sơ dưới đây chưa được duyệt chính thức và không có thay đổi nào được ghi lại vào cơ sở dữ liệu.
+                          </p>
+                          <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-amber-200/50">
+                            <div>
+                              <p className="text-xs text-amber-600 font-bold">Dự kiến duyệt</p>
+                              <p className="text-2xl font-black text-amber-800">{autoAllocateResult.processed} hồ sơ</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-amber-600 font-bold">Dồn chỉ tiêu (Overflow)</p>
+                              <p className="text-2xl font-black text-blue-700">{autoAllocateResult.overflowAllocations?.length || 0} hồ sơ</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-amber-600 font-bold">Bỏ qua do hết chỉ tiêu</p>
+                              <p className="text-2xl font-black text-slate-600">{autoAllocateResult.skippedQuota || 0} hồ sơ</p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+
+                      {/* Thanh điều chỉnh mô phỏng nhanh */}
+                      <div className="p-4 bg-slate-50 border border-slate-250/60 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 text-left">
+                        <div className="flex items-center gap-2">
+                          <Sliders size={16} className="text-blue-600" />
+                          <span className="text-xs font-bold text-slate-700">Điều chỉnh nhanh mô phỏng:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-4 items-center flex-1 justify-start sm:justify-end">
+                          <label className="flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                              type="checkbox"
+                              checked={allowOverflow}
+                              onChange={e => setAllowOverflow(e.target.checked)}
+                              className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
+                            />
+                            <span className="text-xs font-bold text-slate-700">Cho phép dồn chỉ tiêu thừa (Overflow)</span>
+                          </label>
+                          <button
+                            onClick={() => handleRunAutoAllocate(true)}
+                            disabled={autoAllocating}
+                            className="px-4 py-2 text-white font-bold text-xs bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md shadow-blue-100 flex items-center gap-1.5"
+                          >
+                            <RefreshCw size={12} className={autoAllocating ? "animate-spin" : ""} />
+                            Chạy lại mô phỏng
+                          </button>
+                        </div>
+                      </div>
+                    </>
                   ) : (
                     <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex items-start gap-4">
                       <div className="p-3 bg-emerald-500 rounded-xl text-white">
@@ -1433,72 +1462,107 @@ const RegistrationList = ({
                   )}
 
                   {/* Chi tiết phân bổ chỉ tiêu theo nhóm đối tượng */}
-                  <div className="space-y-3 text-left">
-                    <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Chi tiết kết quả theo Nhóm đối tượng</h4>
-                    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="bg-slate-50 border-b border-slate-200">
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Nhóm đối tượng</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Chỉ tiêu cấu hình</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Số lượng nộp</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Dự kiến duyệt</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Bỏ qua / Hết hạn mức</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                          {/* Nhóm 1 */}
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="px-4 py-3 text-rose-700 font-bold">Nhóm 1: Diện chính sách</td>
-                            <td className="px-4 py-3 text-slate-400">Xét duyệt ưu tiên thẳng</td>
-                            <td className="px-4 py-3">
-                              {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 1).length} hồ sơ
-                            </td>
-                            <td className="px-4 py-3 text-emerald-600 font-bold">
-                              {autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0} hồ sơ
-                            </td>
-                            <td className="px-4 py-3 text-rose-600">
-                              {autoAllocateResult.skipped?.filter(r => r.basket === 1).length || 0} hồ sơ
-                            </td>
-                          </tr>
+                  {(() => {
+                    const approvedFreshmen = autoAllocateResult.allocations?.filter(r => r.year === 1).length || 0;
+                    const approvedSeniors = autoAllocateResult.allocations?.filter(r => r.year > 1).length || 0;
+                    const quotaFreshmenSlots = Math.round((quotas.freshmen / 100) * quotas.totalSlots);
+                    const quotaSeniorsSlots = Math.round((quotas.seniors / 100) * quotas.totalSlots);
+                    const actualFreshmenPercent = ((approvedFreshmen / quotas.totalSlots) * 100).toFixed(1);
+                    const actualSeniorsPercent = ((approvedSeniors / quotas.totalSlots) * 100).toFixed(1);
 
-                          {/* Nhóm 2 */}
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="px-4 py-3 text-indigo-700 font-bold">Nhóm 2: Tân sinh viên (Năm 1)</td>
-                            <td className="px-4 py-3 text-slate-600">
-                              {quotas.freshmen}% (~{Math.round((quotas.freshmen / 100) * quotas.totalSlots)} chỗ)
-                            </td>
-                            <td className="px-4 py-3">
-                              {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 2).length} hồ sơ
-                            </td>
-                            <td className="px-4 py-3 text-emerald-600 font-bold">
-                              {autoAllocateResult.allocations?.filter(r => r.basket === 2).length || 0} hồ sơ
-                            </td>
-                            <td className="px-4 py-3 text-rose-600">
-                              {autoAllocateResult.skipped?.filter(r => r.basket === 2).length || 0} hồ sơ
-                            </td>
-                          </tr>
+                    return (
+                      <div className="space-y-3 text-left">
+                        <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Tỷ lệ sử dụng chỉ tiêu thực tế (Sau mô phỏng)</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Cột 1: Tân sinh viên */}
+                          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-left space-y-3">
+                            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                              <span className="font-black text-indigo-900 text-sm">1. Tân sinh viên (Năm 1)</span>
+                              <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold">
+                                Chỉ tiêu: {quotas.freshmen}% (~{quotaFreshmenSlots} chỗ)
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs font-semibold text-slate-600">
+                                <span>Tổng dự kiến duyệt:</span>
+                                <span className="text-slate-900 font-bold">{approvedFreshmen} / {quotaFreshmenSlots} chỗ ({((approvedFreshmen / quotaFreshmenSlots) * 100).toFixed(1)}%)</span>
+                              </div>
+                              
+                              {/* Progress bar */}
+                              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-indigo-600 h-full rounded-full transition-all"
+                                  style={{ width: `${Math.min(100, (approvedFreshmen / quotaFreshmenSlots) * 100)}%` }}
+                                ></div>
+                              </div>
 
-                          {/* Nhóm 3 */}
-                          <tr className="hover:bg-slate-50 transition-colors">
-                            <td className="px-4 py-3 text-emerald-700 font-bold">Nhóm 3: Sinh viên khóa cũ (Năm &gt; 1)</td>
-                            <td className="px-4 py-3 text-slate-600">
-                              {quotas.seniors}% (~{Math.round((quotas.seniors / 100) * quotas.totalSlots)} chỗ)
-                            </td>
-                            <td className="px-4 py-3">
-                              {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 3).length} hồ sơ
-                            </td>
-                            <td className="px-4 py-3 text-emerald-600 font-bold">
-                              {autoAllocateResult.allocations?.filter(r => r.basket === 3).length || 0} hồ sơ
-                            </td>
-                            <td className="px-4 py-3 text-rose-600">
-                              {autoAllocateResult.skipped?.filter(r => r.basket === 3).length || 0} hồ sơ
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                              <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] text-slate-500 border-t border-slate-200/50">
+                                <div>
+                                  <span className="block text-[9px] text-slate-400 font-bold uppercase">Diện chính sách</span>
+                                  <span className="font-bold text-slate-700">
+                                    {autoAllocateResult.allocations?.filter(r => r.year === 1 && r.basket === 1).length || 0} SV
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="block text-[9px] text-slate-400 font-bold uppercase">Xét điểm thường</span>
+                                  <span className="font-bold text-slate-700">
+                                    {autoAllocateResult.allocations?.filter(r => r.year === 1 && r.basket === 2).length || 0} SV
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Cột 2: Sinh viên khóa cũ */}
+                          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 text-left space-y-3">
+                            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                              <span className="font-black text-emerald-900 text-sm">2. Sinh viên khóa cũ (Năm &gt; 1)</span>
+                              <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                                Chỉ tiêu: {quotas.seniors}% (~{quotaSeniorsSlots} chỗ)
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs font-semibold text-slate-600">
+                                <span>Tổng dự kiến duyệt:</span>
+                                <span className="text-slate-900 font-bold">{approvedSeniors} / {quotaSeniorsSlots} chỗ ({((approvedSeniors / quotaSeniorsSlots) * 100).toFixed(1)}%)</span>
+                              </div>
+                              
+                              {/* Progress bar */}
+                              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-emerald-600 h-full rounded-full transition-all"
+                                  style={{ width: `${Math.min(100, (approvedSeniors / quotaSeniorsSlots) * 100)}%` }}
+                                ></div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] text-slate-500 border-t border-slate-200/50">
+                                <div>
+                                  <span className="block text-[9px] text-slate-400 font-bold uppercase">Diện chính sách</span>
+                                  <span className="font-bold text-slate-700">
+                                    {autoAllocateResult.allocations?.filter(r => r.year > 1 && r.basket === 1).length || 0} SV
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="block text-[9px] text-slate-400 font-bold uppercase">Xét điểm thường</span>
+                                  <span className="font-bold text-slate-700">
+                                    {autoAllocateResult.allocations?.filter(r => r.year > 1 && r.basket === 3).length || 0} SV
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Dòng tổng quan tất cả chính sách */}
+                        <div className="p-4 bg-slate-100/80 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 flex justify-between items-center">
+                          <span>Tổng số sinh viên Diện Chính Sách trúng tuyển:</span>
+                          <span className="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-lg border border-rose-200 font-bold">
+                            {autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0} sinh viên (chiếm {((autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0) / quotas.totalSlots * 100).toFixed(1)}% chỉ tiêu KTX)
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Chi tiết hạn mức theo Khoa */}
                   {autoAllocateResult.overflowDetails && Object.keys(autoAllocateResult.overflowDetails).length > 0 && (
