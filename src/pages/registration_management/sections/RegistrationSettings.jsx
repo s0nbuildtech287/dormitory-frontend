@@ -82,8 +82,20 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
           const loadedFacultyQuotas = settingsValue.quotas.facultyQuotas || {};
           if (data.data.faculties) {
             data.data.faculties.forEach(fac => {
-              if (loadedFacultyQuotas[fac.name] === undefined) {
-                loadedFacultyQuotas[fac.name] = 0;
+              const facVal = loadedFacultyQuotas[fac.name];
+              if (facVal === undefined) {
+                loadedFacultyQuotas[fac.name] = { freshmen: 0, seniors: 0 };
+              } else if (typeof facVal === 'object' && facVal !== null) {
+                loadedFacultyQuotas[fac.name] = {
+                  freshmen: facVal.freshmen !== undefined ? Number(facVal.freshmen) : 0,
+                  seniors: facVal.seniors !== undefined ? Number(facVal.seniors) : 0
+                };
+              } else {
+                const numVal = Number(facVal) || 0;
+                loadedFacultyQuotas[fac.name] = {
+                  freshmen: numVal,
+                  seniors: numVal
+                };
               }
             });
           }
@@ -159,14 +171,23 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
     }
   };
 
-  const handleFacultyQuotaChange = (facName, val) => {
-    setQuotas(prev => ({
-      ...prev,
-      facultyQuotas: {
-        ...prev.facultyQuotas,
-        [facName]: parseInt(val) || 0
-      }
-    }));
+  const handleFacultyQuotaSplitChange = (facName, type, val) => {
+    setQuotas(prev => {
+      const currentQuota = prev.facultyQuotas?.[facName] || { freshmen: 0, seniors: 0 };
+      const updatedQuota = typeof currentQuota === 'object' && currentQuota !== null 
+        ? { ...currentQuota } 
+        : { freshmen: Number(currentQuota) || 0, seniors: Number(currentQuota) || 0 };
+      
+      updatedQuota[type] = parseInt(val) || 0;
+
+      return {
+        ...prev,
+        facultyQuotas: {
+          ...prev.facultyQuotas,
+          [facName]: updatedQuota
+        }
+      };
+    });
   };
 
   const handleUpdateSettings = async () => {
@@ -355,7 +376,11 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {facultiesList.map((fac) => {
-                    const currentVal = quotas.facultyQuotas?.[fac.name] !== undefined ? quotas.facultyQuotas[fac.name] : 0;
+                    const quotaVal = quotas.facultyQuotas?.[fac.name] || { freshmen: 0, seniors: 0 };
+                    const currentVal = typeof quotaVal === 'object' && quotaVal !== null
+                      ? { freshmen: quotaVal.freshmen || 0, seniors: quotaVal.seniors || 0 }
+                      : { freshmen: Number(quotaVal) || 0, seniors: Number(quotaVal) || 0 };
+                    
                     return (
                       <div key={fac.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-200">
                         <div className="text-left flex-1 pr-4">
@@ -364,15 +389,29 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                             {fac.count} hồ sơ chờ duyệt
                           </span>
                         </div>
-                        <div className="relative w-28 flex-shrink-0">
-                          <input
-                            type="number"
-                            value={currentVal}
-                            onChange={(e) => handleFacultyQuotaChange(fac.name, e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center"
-                            min="0"
-                            step="5"
-                          />
+                        <div className="flex gap-4 flex-shrink-0">
+                          <div className="flex flex-col items-center">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Tân SV</span>
+                            <input
+                              type="number"
+                              value={currentVal.freshmen}
+                              onChange={(e) => handleFacultyQuotaSplitChange(fac.name, 'freshmen', e.target.value)}
+                              className="w-24 px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center bg-white"
+                              min="0"
+                              step="5"
+                            />
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Lưu SV</span>
+                            <input
+                              type="number"
+                              value={currentVal.seniors}
+                              onChange={(e) => handleFacultyQuotaSplitChange(fac.name, 'seniors', e.target.value)}
+                              className="w-24 px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center bg-white"
+                              min="0"
+                              step="5"
+                            />
+                          </div>
                         </div>
                       </div>
                     );

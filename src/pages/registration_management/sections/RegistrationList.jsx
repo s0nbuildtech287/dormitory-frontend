@@ -270,8 +270,20 @@ const RegistrationList = ({
             const loadedFacultyQuotas = settingsQuotas.facultyQuotas || {};
             if (data.data.faculties) {
               data.data.faculties.forEach(fac => {
-                if (loadedFacultyQuotas[fac.name] === undefined) {
-                  loadedFacultyQuotas[fac.name] = 0;
+                const facVal = loadedFacultyQuotas[fac.name];
+                if (facVal === undefined) {
+                  loadedFacultyQuotas[fac.name] = { freshmen: 0, seniors: 0 };
+                } else if (typeof facVal === 'object' && facVal !== null) {
+                  loadedFacultyQuotas[fac.name] = {
+                    freshmen: facVal.freshmen !== undefined ? Number(facVal.freshmen) : 0,
+                    seniors: facVal.seniors !== undefined ? Number(facVal.seniors) : 0
+                  };
+                } else {
+                  const numVal = Number(facVal) || 0;
+                  loadedFacultyQuotas[fac.name] = {
+                    freshmen: numVal,
+                    seniors: numVal
+                  };
                 }
               });
             }
@@ -308,8 +320,20 @@ const RegistrationList = ({
               const loadedFacultyQuotas = settingsQuotas.facultyQuotas || {};
               if (data.data.faculties) {
                 data.data.faculties.forEach(fac => {
-                  if (loadedFacultyQuotas[fac.name] === undefined) {
-                    loadedFacultyQuotas[fac.name] = 0;
+                  const facVal = loadedFacultyQuotas[fac.name];
+                  if (facVal === undefined) {
+                    loadedFacultyQuotas[fac.name] = { freshmen: 0, seniors: 0 };
+                  } else if (typeof facVal === 'object' && facVal !== null) {
+                    loadedFacultyQuotas[fac.name] = {
+                      freshmen: facVal.freshmen !== undefined ? Number(facVal.freshmen) : 0,
+                      seniors: facVal.seniors !== undefined ? Number(facVal.seniors) : 0
+                    };
+                  } else {
+                    const numVal = Number(facVal) || 0;
+                    loadedFacultyQuotas[fac.name] = {
+                      freshmen: numVal,
+                      seniors: numVal
+                    };
                   }
                 });
               }
@@ -1947,27 +1971,75 @@ const RegistrationList = ({
                           <div className="border-t border-slate-200 pt-3.5 space-y-2.5">
                             <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Chỉ tiêu theo Khoa (Tùy chọn - Đặt bằng 0 nếu không giới hạn)</span>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {facultiesList.map(fac => (
-                                <div key={fac.name} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
-                                  <div className="text-left flex-1 min-w-0 pr-2">
-                                    <span className="text-xs font-semibold text-slate-800 block truncate">{fac.name}</span>
-                                    <span className="inline-block text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{fac.count} hồ sơ chờ</span>
+                              {facultiesList.map(fac => {
+                                const quotaVal = modalQuotas.facultyQuotas?.[fac.name] || { freshmen: 0, seniors: 0 };
+                                const currentVal = typeof quotaVal === 'object' && quotaVal !== null
+                                  ? { freshmen: quotaVal.freshmen || 0, seniors: quotaVal.seniors || 0 }
+                                  : { freshmen: Number(quotaVal) || 0, seniors: Number(quotaVal) || 0 };
+
+                                return (
+                                  <div key={fac.name} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+                                    <div className="text-left flex-1 min-w-0 pr-2">
+                                      <span className="text-xs font-semibold text-slate-800 block truncate">{fac.name}</span>
+                                      <span className="inline-block text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{fac.count} hồ sơ chờ</span>
+                                    </div>
+                                    <div className="flex gap-2 flex-shrink-0">
+                                      <div className="flex flex-col items-center">
+                                        <span className="text-[9px] text-slate-500 font-semibold mb-0.5">Tân SV</span>
+                                        <input
+                                          type="number"
+                                          value={currentVal.freshmen}
+                                          onChange={e => {
+                                            const val = parseInt(e.target.value) || 0;
+                                            setModalQuotas(prev => {
+                                              const current = prev.facultyQuotas?.[fac.name] || { freshmen: 0, seniors: 0 };
+                                              const updated = typeof current === 'object' && current !== null
+                                                ? { ...current }
+                                                : { freshmen: Number(current) || 0, seniors: Number(current) || 0 };
+                                              updated.freshmen = val;
+                                              return {
+                                                ...prev,
+                                                facultyQuotas: {
+                                                  ...prev.facultyQuotas,
+                                                  [fac.name]: updated
+                                                }
+                                              };
+                                            });
+                                          }}
+                                          className="w-16 px-1.5 py-0.5 border border-slate-200 rounded-lg text-[11px] font-bold text-center focus:ring-2 focus:ring-blue-50 outline-none bg-white"
+                                          min="0"
+                                        />
+                                      </div>
+                                      <div className="flex flex-col items-center">
+                                        <span className="text-[9px] text-slate-500 font-semibold mb-0.5">Lưu SV</span>
+                                        <input
+                                          type="number"
+                                          value={currentVal.seniors}
+                                          onChange={e => {
+                                            const val = parseInt(e.target.value) || 0;
+                                            setModalQuotas(prev => {
+                                              const current = prev.facultyQuotas?.[fac.name] || { freshmen: 0, seniors: 0 };
+                                              const updated = typeof current === 'object' && current !== null
+                                                ? { ...current }
+                                                : { freshmen: Number(current) || 0, seniors: Number(current) || 0 };
+                                              updated.seniors = val;
+                                              return {
+                                                ...prev,
+                                                facultyQuotas: {
+                                                  ...prev.facultyQuotas,
+                                                  [fac.name]: updated
+                                                }
+                                              };
+                                            });
+                                          }}
+                                          className="w-16 px-1.5 py-0.5 border border-slate-200 rounded-lg text-[11px] font-bold text-center focus:ring-2 focus:ring-blue-50 outline-none bg-white"
+                                          min="0"
+                                        />
+                                      </div>
+                                    </div>
                                   </div>
-                                  <input
-                                    type="number"
-                                    value={modalQuotas.facultyQuotas?.[fac.name] !== undefined ? modalQuotas.facultyQuotas[fac.name] : 0}
-                                    onChange={e => setModalQuotas(prev => ({
-                                      ...prev,
-                                      facultyQuotas: {
-                                        ...prev.facultyQuotas,
-                                        [fac.name]: parseInt(e.target.value) || 0
-                                      }
-                                    }))}
-                                    className="w-20 px-2 py-1 border border-slate-200 rounded-lg text-xs font-bold text-center focus:ring-2 focus:ring-blue-50 outline-none"
-                                    min="0"
-                                  />
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}
