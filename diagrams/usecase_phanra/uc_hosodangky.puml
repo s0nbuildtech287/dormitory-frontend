@@ -16,8 +16,8 @@ skinparam shadowing false
 
 actor "<b>Ban quản lý</b>" as Admin
 
-usecase "<b>Xem danh sách hồ sơ</b>" as UC1
-usecase "<b>Xem chi tiết hồ sơ</b>" as UC2
+usecase "<b>Mở đợt đăng ký mới</b>" as UC1
+usecase "<b>Xem danh sách hồ sơ</b>" as UC2
 usecase "<b>Nhập hồ sơ thủ công</b>" as UC3
 usecase "<b>Import từ file Excel</b>" as UC4
 usecase "<b>Import từ Google Sheets</b>" as UC5

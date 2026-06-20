@@ -20,7 +20,7 @@ fork again
   :Gửi email nhắc nhở\ngia hạn hợp đồng mới;
 end fork
 |Quản lý tòa nhà|
-:Thiết lập chỉ tiêu (Quotas)\ncho Tân SV / Khóa cũ;
+:Thiết lập chỉ tiêu \ncho Tân SV / Khóa cũ\nvà từng Khoa (Tân SV / Lưu SV);
 :Kích hoạt "Mở đợt đăng ký mới";
 stop
 @enduml

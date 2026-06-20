@@ -17,11 +17,21 @@ else (Tự động theo lô)
   |Quản lý tòa nhà|
   :Kích hoạt Duyệt tự động;
   |Hệ thống|
-  :Xác định Khoa/Ngành áp dụng;
+  :Xác định hạn mức chỉ tiêu\nvà chế độ duyệt (mô phỏng, dồn chỉ tiêu);
   :Sắp xếp hồ sơ theo nhóm\nvà điểm xét tuyển giảm dần;
-  while (Còn chỉ tiêu\n& danh sách hồ sơ?) is (Có)
-    :Duyệt hồ sơ & khởi tạo\ntài khoản, hợp đồng;
+  while (Còn chỉ tiêu nhóm & khoa\n& danh sách hồ sơ?) is (Có)
+    :Xếp sinh viên vào danh sách duyệt;
   endwhile (Không)
+  if (Bật dồn chỉ tiêu?) then (Có)
+    :Gom chỉ tiêu dư từ khoa khác;\n:Duyệt nốt cho sinh viên chờ theo điểm số;
+  endif
+  if (Chế độ mô phỏng?) then (Có)
+    :Hiển thị kết quả để xem trước;
+    |Quản lý tòa nhà|
+    :Xác nhận duyệt thực tế;
+    |Hệ thống|
+  endif
+  :Khởi tạo tài khoản SV & hợp đồng;\n:Lưu đè cấu hình chỉ tiêu mới vào CSDL;
   :Hiển thị báo cáo kết quả\nduyệt hàng loạt;
 endif
 |Quản lý tòa nhà|
