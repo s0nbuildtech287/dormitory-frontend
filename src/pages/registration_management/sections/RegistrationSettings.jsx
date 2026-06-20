@@ -394,7 +394,8 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Tân SV</span>
                             <input
                               type="number"
-                              value={currentVal.freshmen}
+                              value={currentVal.freshmen === 0 ? "" : currentVal.freshmen}
+                              placeholder="0"
                               onChange={(e) => handleFacultyQuotaSplitChange(fac.name, 'freshmen', e.target.value)}
                               className="w-24 px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center bg-white"
                               min="0"
@@ -405,7 +406,8 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Lưu SV</span>
                             <input
                               type="number"
-                              value={currentVal.seniors}
+                              value={currentVal.seniors === 0 ? "" : currentVal.seniors}
+                              placeholder="0"
                               onChange={(e) => handleFacultyQuotaSplitChange(fac.name, 'seniors', e.target.value)}
                               className="w-24 px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center bg-white"
                               min="0"

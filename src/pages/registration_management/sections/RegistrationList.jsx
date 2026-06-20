@@ -1828,6 +1828,7 @@ const RegistrationList = ({
                               <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
                               <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
                               <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
+                              <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Đối tượng</th>
                               <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Lý do</th>
                             </tr>
                           </thead>
@@ -1837,6 +1838,17 @@ const RegistrationList = ({
                                 <td className="px-4 py-2.5 font-mono font-bold text-slate-700">{item.student_id}</td>
                                 <td className="px-4 py-2.5 font-semibold text-slate-900">{item.student_name}</td>
                                 <td className="px-4 py-2.5 text-slate-600">{item.faculty}</td>
+                                <td className="px-4 py-2.5">
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    item.basket === 1 
+                                      ? "bg-rose-50 text-rose-700 border border-rose-200" 
+                                      : item.basket === 2 || item.year === 1
+                                        ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                                        : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  }`}>
+                                    {item.basket === 1 ? "Chính sách" : (item.basket === 2 || item.year === 1 ? "Tân SV" : "Lưu SV")}
+                                  </span>
+                                </td>
                                 <td className="px-4 py-2.5">
                                   <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full font-bold text-[9px] uppercase">
                                     {item.reason}
@@ -1990,7 +2002,8 @@ const RegistrationList = ({
                                         <span className="text-[9px] text-slate-500 font-semibold mb-0.5">Tân SV</span>
                                         <input
                                           type="number"
-                                          value={currentVal.freshmen}
+                                          value={currentVal.freshmen === 0 ? "" : currentVal.freshmen}
+                                          placeholder="0"
                                           onChange={e => {
                                             const val = parseInt(e.target.value) || 0;
                                             setModalQuotas(prev => {
@@ -2016,7 +2029,8 @@ const RegistrationList = ({
                                         <span className="text-[9px] text-slate-500 font-semibold mb-0.5">Lưu SV</span>
                                         <input
                                           type="number"
-                                          value={currentVal.seniors}
+                                          value={currentVal.seniors === 0 ? "" : currentVal.seniors}
+                                          placeholder="0"
                                           onChange={e => {
                                             const val = parseInt(e.target.value) || 0;
                                             setModalQuotas(prev => {
