@@ -579,13 +579,14 @@ export const getDemandForecast = async () => {
   if (!response.ok) throw new Error(data.message || 'Lỗi tải dự báo nhu cầu');
   return data;
 };
-
 /**
  * Duyệt hàng loạt hồ sơ chờ duyệt → tạo hợp đồng Pending (chưa gán phòng)
  * @param {string} faculty - Faculty filter (optional)
+ * @param {boolean} simulate - Chạy thử nghiệm
+ * @param {boolean} allowOverflow - Cho phép dồn chỉ tiêu thừa
  * @returns {Promise<Object>} Bulk approve results
  */
-export const autoAllocateRegistrations = async (faculty = null) => {
+export const autoAllocateRegistrations = async (faculty = null, simulate = false, allowOverflow = false) => {
   try {
     const token = getAuthToken();
     if (!token) {
@@ -600,7 +601,7 @@ export const autoAllocateRegistrations = async (faculty = null) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ faculty })
+        body: JSON.stringify({ faculty, simulate, allowOverflow })
       }
     );
 

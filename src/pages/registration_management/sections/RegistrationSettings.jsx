@@ -3,16 +3,16 @@ import { Target, Zap, BarChart3, Info, ChevronDown, ChevronUp, AlertCircle, Chec
 import { getScoringWeights, updateScoringWeights, recalculateAllScores } from "../../../api/apiRegistration.js";
 
 const RegistrationSettings = ({ onSettingsUpdated }) => {
-  // Quota Settings state
   const [quotas, setQuotas] = useState({
     totalSlots: 1000,
     policy_priority: 0,
     freshmen: 60,
     seniors: 40,
     waterfall_enabled: true,
+    facultyQuotas: {},
   });
+  const [facultiesList, setFacultiesList] = useState([]);
 
-  // Trọng số điểm cho từng nhóm xét duyệt
   const [weights, setWeights] = useState({
     basket1: {
       trongso_chinhsach: 0.4,
@@ -73,21 +73,32 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
       const data = await getScoringWeights();
       if (data.success && data.data && data.data.value) {
         const settingsValue = data.data.value;
-        
-        // Load quotas
+
+        // Load quotas and dynamic faculties
+        if (data.data.faculties) {
+          setFacultiesList(data.data.faculties);
+        }
         if (settingsValue.quotas) {
+          const loadedFacultyQuotas = settingsValue.quotas.facultyQuotas || {};
+          if (data.data.faculties) {
+            data.data.faculties.forEach(fac => {
+              if (loadedFacultyQuotas[fac.name] === undefined) {
+                loadedFacultyQuotas[fac.name] = 0;
+              }
+            });
+          }
           setQuotas({
             totalSlots: settingsValue.quotas.totalSlots !== undefined ? settingsValue.quotas.totalSlots : 1000,
             policy_priority: settingsValue.quotas.policy_priority !== undefined ? settingsValue.quotas.policy_priority : 0,
             freshmen: settingsValue.quotas.freshmen !== undefined ? settingsValue.quotas.freshmen : 60,
             seniors: settingsValue.quotas.seniors !== undefined ? settingsValue.quotas.seniors : 40,
             waterfall_enabled: settingsValue.quotas.waterfall_enabled !== undefined ? settingsValue.quotas.waterfall_enabled : true,
+            facultyQuotas: loadedFacultyQuotas,
           });
         }
-        
+
         // Load weights (3 basket structure)
-        if (settingsValue.weights) {
-          if (settingsValue.weights.basket1 || settingsValue.weights.basket2 || settingsValue.weights.basket3) {
+        if (settingsValue.weights && (settingsValue.weights.basket1 || settingsValue.weights.basket2 || settingsValue.weights.basket3)) {
             setWeights({
               basket1: {
                 trongso_chinhsach: settingsValue.weights.basket1?.trongso_chinhsach || settingsValue.weights.basket1?.w1_priority || 0.4,
@@ -141,12 +152,21 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             },
           });
         }
-      }
     } catch (error) {
       console.error("Error fetching settings:", error);
     } finally {
       setIsLoadingSettings(false);
     }
+  };
+
+  const handleFacultyQuotaChange = (facName, val) => {
+    setQuotas(prev => ({
+      ...prev,
+      facultyQuotas: {
+        ...prev.facultyQuotas,
+        [facName]: parseInt(val) || 0
+      }
+    }));
   };
 
   const handleUpdateSettings = async () => {
@@ -325,17 +345,41 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
               </div>
             </div>
 
-            {/* Waterfall Toggle */}
-            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-              <div>
-                <p className="font-bold text-slate-900">Cộng dồn chỗ trống</p>
-                <p className="text-sm text-slate-600 mt-1">Nếu bật, chỗ trống từ nhóm trên sẽ tự động chuyển xuống nhóm dưới</p>
+
+            {/* Cấu hình chỉ tiêu theo Khoa */}
+            {facultiesList && facultiesList.length > 0 && (
+              <div className="space-y-4 border-t border-slate-100 pt-6 mt-6">
+                <div className="text-left">
+                  <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Cấu hình Chỉ tiêu theo Khoa (Tùy chọn)</h4>
+                  <p className="text-xs text-slate-500 mt-1">Để chỉ tiêu là 0 nếu không muốn giới hạn riêng theo Khoa (hệ thống sẽ dùng chỉ tiêu tsv/lsv chung)</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {facultiesList.map((fac) => {
+                    const currentVal = quotas.facultyQuotas?.[fac.name] !== undefined ? quotas.facultyQuotas[fac.name] : 0;
+                    return (
+                      <div key={fac.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-200">
+                        <div className="text-left flex-1 pr-4">
+                          <span className="font-semibold text-slate-800 text-sm block">{fac.name}</span>
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-bold mt-1">
+                            {fac.count} hồ sơ chờ duyệt
+                          </span>
+                        </div>
+                        <div className="relative w-28 flex-shrink-0">
+                          <input
+                            type="number"
+                            value={currentVal}
+                            onChange={(e) => handleFacultyQuotaChange(fac.name, e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center"
+                            min="0"
+                            step="5"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" checked={quotas.waterfall_enabled} onChange={(e) => setQuotas({ ...quotas, waterfall_enabled: e.target.checked })} className="sr-only peer" />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
+            )}
           </div>
         )}
       </div>

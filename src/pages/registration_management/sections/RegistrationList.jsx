@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { RegistrationStatus, AISuggestionType } from "../../../utils/types.js";
-import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck, Rocket, BedDouble, Users, AlertTriangle, Info } from "lucide-react";
+import { Search, Eye, RefreshCw, RotateCw, Plus, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, CheckCircle2, XCircle, Send, Square, CheckSquare, Loader2, ShieldCheck, Rocket, BedDouble, Users, AlertTriangle, Info, Settings, Sliders } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
 import Pagination from "../../../components/common/Pagination.jsx";
@@ -43,6 +43,30 @@ const getGroupName = (year, priorityReasons) => {
   }
 
   return "Không xác định";
+};
+
+// Helper to classify registration into baskets (1: Policy, 2: Freshmen, 3: Seniors)
+const getRegBasket = (reg) => {
+  if (reg.priority_reasons && String(reg.priority_reasons).trim() !== "") {
+    const lowerReason = String(reg.priority_reasons).toLowerCase();
+    const hasPriority =
+      lowerReason.includes("hộ nghèo") ||
+      lowerReason.includes("cận nghèo") ||
+      lowerReason.includes("thương binh") ||
+      lowerReason.includes("liệt sỹ") ||
+      lowerReason.includes("khuyết tật") ||
+      lowerReason.includes("lưu học sinh") ||
+      lowerReason.includes("hoàn cảnh khó khăn đặc biệt") ||
+      lowerReason.includes("vùng sâu") ||
+      lowerReason.includes("vùng xa") ||
+      lowerReason.includes("hải đảo") ||
+      lowerReason.includes("vùng có điều kiện kinh tế đặc biệt khó khăn") ||
+      lowerReason.includes("giấy xác nhận ưu tiên") ||
+      lowerReason.includes("ưu tiên khác");
+
+    if (hasPriority) return 1;
+  }
+  return reg.year === 1 ? 2 : 3;
 };
 
 // Helper function to convert snake_case object keys to camelCase
@@ -102,6 +126,8 @@ const RegistrationList = ({
   const [autoAllocateResult, setAutoAllocateResult] = useState(null);
   const [progress, setProgress] = useState(0);
   const [progressStage, setProgressStage] = useState("");
+  const [simulate, setSimulate] = useState(true);
+  const [allowOverflow, setAllowOverflow] = useState(false);
   const [roomStats, setRoomStats] = useState({
     available_now: 0,
     available_soon: 0,
@@ -161,10 +187,12 @@ const RegistrationList = ({
     return "Đang hoàn tất lưu dữ liệu...";
   };
 
-  const handleRunAutoAllocate = async () => {
+  const handleRunAutoAllocate = async (overrideSimulate = null) => {
     setAutoAllocating(true);
     setProgress(0);
     setProgressStage("Chuẩn bị danh sách xét duyệt...");
+
+    const runSimulate = overrideSimulate !== null ? overrideSimulate : simulate;
 
     const pendingCount = (regs || []).filter(
       (r) =>
@@ -184,14 +212,21 @@ const RegistrationList = ({
     }, tickMs);
 
     try {
-      const res = await autoAllocateRegistrations(filterFaculty === "All" ? null : filterFaculty);
+      const res = await autoAllocateRegistrations(
+        filterFaculty === "All" ? null : filterFaculty,
+        runSimulate,
+        allowOverflow
+      );
       clearInterval(timer);
       setProgress(100);
-      setProgressStage("Đã duyệt thành công!");
+      setProgressStage(runSimulate ? "Đã chạy mô phỏng xong!" : "Đã duyệt thành công!");
       await new Promise((resolve) => setTimeout(resolve, 400));
 
       if (res.success) {
         setAutoAllocateResult(res.data);
+        if (!runSimulate && onRefresh) {
+          onRefresh();
+        }
       } else {
         alert(res.message || "Tự động phân bổ thất bại");
       }
@@ -1343,55 +1378,224 @@ const RegistrationList = ({
               ) : autoAllocateResult ? (
                 /* Success/Result State */
                 <div className="space-y-6">
-                  <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex items-start gap-4">
-                    <div className="p-3 bg-emerald-500 rounded-xl text-white">
-                      <CheckCircle2 size={24} />
-                    </div>
-                    <div className="space-y-1 text-left">
-                      <h3 className="font-bold text-emerald-900 text-base">Hoàn thành duyệt hồ sơ!</h3>
-                      <p className="text-sm text-emerald-700 font-medium">
-                        Các hồ sơ đã được duyệt và chuyển sang Hợp đồng sinh viên (trạng thái chờ gán phòng). Vào tab Hợp đồng để gán phòng tự động.
-                      </p>
-                      <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-emerald-200/50">
-                        <div>
-                          <p className="text-xs text-emerald-600 font-bold">Đã duyệt</p>
-                          <p className="text-2xl font-black text-emerald-800">{autoAllocateResult.processed} hồ sơ</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-emerald-600 font-bold">Hợp đồng Pending</p>
-                          <p className="text-2xl font-black text-amber-700">{autoAllocateResult.processed} hồ sơ</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-emerald-600 font-bold">Bỏ qua (hết chỉ tiêu)</p>
-                          <p className="text-2xl font-black text-slate-600">{autoAllocateResult.skippedQuota || 0} hồ sơ</p>
+                  {autoAllocateResult.isSimulation ? (
+                    <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex items-start gap-4">
+                      <div className="p-3 bg-amber-500 rounded-xl text-white">
+                        <AlertTriangle size={24} />
+                      </div>
+                      <div className="space-y-1 text-left flex-1">
+                        <h3 className="font-bold text-amber-900 text-base">Chế độ mô phỏng xét duyệt (Chưa lưu DB)</h3>
+                        <p className="text-sm text-amber-700 font-medium">
+                          Đây là kết quả chạy thử nghiệm. Các hồ sơ dưới đây chưa được duyệt chính thức và không có thay đổi nào được ghi lại vào cơ sở dữ liệu.
+                        </p>
+                        <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-amber-200/50">
+                          <div>
+                            <p className="text-xs text-amber-600 font-bold">Dự kiến duyệt</p>
+                            <p className="text-2xl font-black text-amber-800">{autoAllocateResult.processed} hồ sơ</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-amber-600 font-bold">Dồn chỉ tiêu (Overflow)</p>
+                            <p className="text-2xl font-black text-blue-700">{autoAllocateResult.overflowAllocations?.length || 0} hồ sơ</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-amber-600 font-bold">Bỏ qua do hết chỉ tiêu</p>
+                            <p className="text-2xl font-black text-slate-600">{autoAllocateResult.skippedQuota || 0} hồ sơ</p>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  ) : (
+                    <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl flex items-start gap-4">
+                      <div className="p-3 bg-emerald-500 rounded-xl text-white">
+                        <CheckCircle2 size={24} />
+                      </div>
+                      <div className="space-y-1 text-left flex-1">
+                        <h3 className="font-bold text-emerald-900 text-base">Hoàn thành duyệt hồ sơ thực tế!</h3>
+                        <p className="text-sm text-emerald-700 font-medium">
+                          Các hồ sơ đã được duyệt chính thức và đã được ghi nhận trong cơ sở dữ liệu. Hợp đồng sinh viên ở trạng thái chờ gán phòng đã được tạo thành công.
+                        </p>
+                        <div className="grid grid-cols-3 gap-6 mt-4 pt-4 border-t border-emerald-200/50">
+                          <div>
+                            <p className="text-xs text-emerald-600 font-bold">Đã duyệt</p>
+                            <p className="text-2xl font-black text-emerald-800">{autoAllocateResult.processed} hồ sơ</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-emerald-600 font-bold">Hợp đồng Chờ gán</p>
+                            <p className="text-2xl font-black text-amber-700">{autoAllocateResult.processed} hồ sơ</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-emerald-600 font-bold">Bỏ qua</p>
+                            <p className="text-2xl font-black text-slate-600">{autoAllocateResult.skippedQuota || 0} hồ sơ</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Chi tiết phân bổ chỉ tiêu theo nhóm đối tượng */}
+                  <div className="space-y-3 text-left">
+                    <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Chi tiết kết quả theo Nhóm đối tượng</h4>
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                      <table className="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200">
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Nhóm đối tượng</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Chỉ tiêu cấu hình</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Số lượng nộp</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Dự kiến duyệt</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Bỏ qua / Hết hạn mức</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
+                          {/* Nhóm 1 */}
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3 text-rose-700 font-bold">Nhóm 1: Diện chính sách</td>
+                            <td className="px-4 py-3 text-slate-400">Xét duyệt ưu tiên thẳng</td>
+                            <td className="px-4 py-3">
+                              {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 1).length} hồ sơ
+                            </td>
+                            <td className="px-4 py-3 text-emerald-600 font-bold">
+                              {autoAllocateResult.allocations?.filter(r => r.basket === 1).length || 0} hồ sơ
+                            </td>
+                            <td className="px-4 py-3 text-rose-600">
+                              {autoAllocateResult.skipped?.filter(r => r.basket === 1).length || 0} hồ sơ
+                            </td>
+                          </tr>
+
+                          {/* Nhóm 2 */}
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3 text-indigo-700 font-bold">Nhóm 2: Tân sinh viên (Năm 1)</td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {quotas.freshmen}% (~{Math.round((quotas.freshmen / 100) * quotas.totalSlots)} chỗ)
+                            </td>
+                            <td className="px-4 py-3">
+                              {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 2).length} hồ sơ
+                            </td>
+                            <td className="px-4 py-3 text-emerald-600 font-bold">
+                              {autoAllocateResult.allocations?.filter(r => r.basket === 2).length || 0} hồ sơ
+                            </td>
+                            <td className="px-4 py-3 text-rose-600">
+                              {autoAllocateResult.skipped?.filter(r => r.basket === 2).length || 0} hồ sơ
+                            </td>
+                          </tr>
+
+                          {/* Nhóm 3 */}
+                          <tr className="hover:bg-slate-50 transition-colors">
+                            <td className="px-4 py-3 text-emerald-700 font-bold">Nhóm 3: Sinh viên khóa cũ (Năm &gt; 1)</td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {quotas.seniors}% (~{Math.round((quotas.seniors / 100) * quotas.totalSlots)} chỗ)
+                            </td>
+                            <td className="px-4 py-3">
+                              {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 3).length} hồ sơ
+                            </td>
+                            <td className="px-4 py-3 text-emerald-600 font-bold">
+                              {autoAllocateResult.allocations?.filter(r => r.basket === 3).length || 0} hồ sơ
+                            </td>
+                            <td className="px-4 py-3 text-rose-600">
+                              {autoAllocateResult.skipped?.filter(r => r.basket === 3).length || 0} hồ sơ
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
+                  {/* Chi tiết hạn mức theo Khoa */}
+                  {autoAllocateResult.overflowDetails && Object.keys(autoAllocateResult.overflowDetails).length > 0 && (
+                    <div className="space-y-3 text-left">
+                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Chi tiết phân bổ chỉ tiêu theo Khoa</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(autoAllocateResult.overflowDetails).map(([facName, detail]) => {
+                          const leftover = detail.leftover || 0;
+                          const excess = detail.excess || 0;
+                          return (
+                            <div key={facName} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-blue-300 transition-all space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="font-bold text-slate-900 text-sm">{facName}</span>
+                                <span className="text-[11px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full font-bold">
+                                  Chỉ tiêu: {detail.quota || "0 (Không giới hạn)"}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-4 gap-2 text-center">
+                                <div className="bg-white p-1.5 rounded-xl border border-slate-100">
+                                  <span className="block text-[9px] text-slate-400 font-bold uppercase">Hồ sơ</span>
+                                  <span className="font-bold text-xs text-slate-700">{detail.applied}</span>
+                                </div>
+                                <div className="bg-emerald-50/50 p-1.5 rounded-xl border border-emerald-100">
+                                  <span className="block text-[9px] text-emerald-500 font-bold uppercase">Duyệt</span>
+                                  <span className="font-bold text-xs text-emerald-700">{detail.approved}</span>
+                                </div>
+                                <div className="bg-blue-50/50 p-1.5 rounded-xl border border-blue-100">
+                                  <span className="block text-[9px] text-blue-500 font-bold uppercase">Dư</span>
+                                  <span className="font-bold text-xs text-blue-700">{leftover}</span>
+                                </div>
+                                <div className="bg-red-50/50 p-1.5 rounded-xl border border-red-100">
+                                  <span className="block text-[9px] text-red-500 font-bold uppercase">Vượt</span>
+                                  <span className="font-bold text-xs text-red-700">{excess}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Nhóm được dồn chỉ tiêu */}
+                  {autoAllocateResult.overflowAllocations && autoAllocateResult.overflowAllocations.length > 0 && (
+                    <div className="p-5 bg-blue-50/50 border border-blue-200/80 rounded-2xl text-left space-y-2">
+                      <h5 className="font-bold text-blue-900 text-sm flex items-center gap-2">
+                        <Info size={16} /> Danh sách dồn chỉ tiêu ({autoAllocateResult.overflowAllocations.length} sinh viên)
+                      </h5>
+                      <p className="text-xs text-blue-700 font-medium">
+                        Các hồ sơ dưới đây đã vượt quá hạn mức ban đầu của nhóm học hoặc của khoa, nhưng được dồn chỉ tiêu thừa từ các nhóm/khoa khác sang để phê duyệt.
+                      </p>
+                      <div className="max-h-[160px] overflow-y-auto border border-blue-200/50 rounded-xl divide-y divide-blue-100/60 bg-white">
+                        {autoAllocateResult.overflowAllocations.map((item, idx) => (
+                          <div key={idx} className="p-3 flex justify-between items-center text-xs hover:bg-slate-50 transition-colors">
+                            <div>
+                              <span className="font-bold text-slate-800">{item.student_name}</span>
+                              <span className="text-slate-400 font-mono ml-2">({item.student_id})</span>
+                            </div>
+                            <span className="text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase">{item.faculty}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Danh sách đã duyệt */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Danh sách đã duyệt ({autoAllocateResult.allocations?.length || 0} sinh viên)</h4>
+                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
+                        Danh sách dự kiến duyệt ({autoAllocateResult.allocations?.length || 0} sinh viên)
+                      </h4>
                     </div>
-                    <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
+                    <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto bg-white shadow-sm">
                       <table className="w-full text-left border-collapse">
                         <thead>
                           <tr className="bg-slate-50 border-b border-slate-200">
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Trạng thái HĐ</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Nguồn duyệt</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 text-xs">
                           {autoAllocateResult.allocations && autoAllocateResult.allocations.length > 0 ? (
                             autoAllocateResult.allocations.map((item, idx) => (
                               <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-4 py-2.5 text-xs font-mono font-bold text-slate-700">{item.student_id}</td>
-                                <td className="px-4 py-2.5 text-xs font-semibold text-slate-900">{item.student_name}</td>
-                                <td className="px-4 py-2.5 text-xs text-slate-600">{item.faculty}</td>
-                                <td className="px-4 py-2.5 text-xs">
-                                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md font-bold text-[10px]">Chờ gán phòng</span>
+                                <td className="px-4 py-2.5 font-mono font-bold text-slate-700">{item.student_id}</td>
+                                <td className="px-4 py-2.5 font-semibold text-slate-950">{item.student_name}</td>
+                                <td className="px-4 py-2.5 text-slate-600">{item.faculty}</td>
+                                <td className="px-4 py-2.5">
+                                  <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase border ${
+                                    item.source?.includes("Phase 2") 
+                                      ? "bg-blue-50 text-blue-700 border-blue-200" 
+                                      : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                  }`}>
+                                    {item.source || "Duyệt tự động"}
+                                  </span>
                                 </td>
                               </tr>
                             ))
@@ -1404,6 +1608,43 @@ const RegistrationList = ({
                       </table>
                     </div>
                   </div>
+
+                  {/* Danh sách bị bỏ qua */}
+                  {autoAllocateResult.skipped && autoAllocateResult.skipped.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider text-left">
+                          Danh sách hồ sơ bị bỏ qua ({autoAllocateResult.skipped.length} sinh viên)
+                        </h4>
+                      </div>
+                      <div className="border border-slate-200 rounded-2xl overflow-hidden max-h-[220px] overflow-y-auto bg-white shadow-sm">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                              <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
+                              <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
+                              <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
+                              <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Lý do</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 text-xs text-left">
+                            {autoAllocateResult.skipped.map((item, idx) => (
+                              <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-4 py-2.5 font-mono font-bold text-slate-700">{item.student_id}</td>
+                                <td className="px-4 py-2.5 font-semibold text-slate-900">{item.student_name}</td>
+                                <td className="px-4 py-2.5 text-slate-600">{item.faculty}</td>
+                                <td className="px-4 py-2.5">
+                                  <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full font-bold text-[9px] uppercase">
+                                    {item.reason}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 /* Initial/Ready State */
@@ -1411,47 +1652,94 @@ const RegistrationList = ({
                   <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-start gap-3">
                     <Info className="text-blue-600 flex-shrink-0 mt-0.5" size={18} />
                     <div>
-                      <p className="font-bold text-blue-900 text-sm text-left">Lưu ý quy trình 2 bước</p>
+                      <p className="font-bold text-blue-900 text-sm text-left">Lưu ý quy trình duyệt tự động nâng cao</p>
                       <p className="text-xs text-blue-700 mt-0.5 text-left font-medium">
-                        Bước 1 (tại đây): Duyệt hồ sơ → tạo hợp đồng <strong>Chờ gán phòng</strong>.
-                        Bước 2: Vào <strong>Hợp đồng sinh viên</strong> → nhấn <strong>Gán tự động</strong> để xếp phòng.
+                        Bước 1 (tại đây): Duyệt hồ sơ theo Chỉ tiêu Khoa (nếu cấu hình) → tạo hợp đồng <strong>Chờ gán phòng</strong>.<br/>
+                        Bước 2: Vào <strong>Hợp đồng sinh viên</strong> → nhấn <strong>Gán tự động</strong> để xếp phòng thực tế.
                       </p>
                     </div>
                   </div>
 
-                  {/* Summary statistics */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Khoa áp dụng</span>
-                      <span className="font-black text-slate-800 text-sm block mt-1">{filterFaculty === "All" ? "Tất cả các khoa" : filterFaculty}</span>
+                  {/* Cài đặt chế độ duyệt */}
+                  <div className="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <h4 className="font-bold text-slate-800 text-sm">Cài đặt chế độ duyệt tự động:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <label className="flex items-start gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-blue-500 cursor-pointer select-none transition-all shadow-sm">
+                        <input
+                          type="checkbox"
+                          checked={simulate}
+                          onChange={e => setSimulate(e.target.checked)}
+                          className="w-5 h-5 rounded accent-blue-600 mt-0.5 cursor-pointer"
+                        />
+                        <div>
+                          <span className="text-sm font-bold text-slate-800 block">Chạy thử nghiệm (Mô phỏng)</span>
+                          <span className="text-xs text-slate-500 block mt-0.5">Hệ thống sẽ tính toán và hiển thị kết quả chi tiết, không thực hiện ghi hoặc thay đổi database.</span>
+                        </div>
+                      </label>
+                      
+                      <label className="flex items-start gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:border-blue-500 cursor-pointer select-none transition-all shadow-sm">
+                        <input
+                          type="checkbox"
+                          checked={allowOverflow}
+                          onChange={e => setAllowOverflow(e.target.checked)}
+                          className="w-5 h-5 rounded accent-blue-600 mt-0.5 cursor-pointer"
+                        />
+                        <div>
+                          <span className="text-sm font-bold text-slate-800 block">Cho phép dồn chỉ tiêu thừa (Overflow)</span>
+                          <span className="text-xs text-slate-500 block mt-0.5">Sử dụng chỉ tiêu dư từ các nhóm/khoa đăng ký ít để bù đắp, phê duyệt thêm cho sinh viên các nhóm/khoa quá tải.</span>
+                        </div>
+                      </label>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Hồ sơ chờ duyệt</span>
-                      <span className="font-black text-blue-600 text-lg block mt-1">
-                        {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length} hồ sơ
-                      </span>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Chỉ tiêu còn lại (tổng)</span>
-                      <span className="font-black text-emerald-600 text-lg block mt-1">
-                        {quotas.totalSlots ? `~${quotas.totalSlots} chỗ` : "—"}
-                      </span>
+                  </div>
+
+                  {/* Summary statistics & Pending breakdown */}
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Thống kê hồ sơ chờ duyệt hiện tại</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Khoa áp dụng</span>
+                        <span className="font-black text-slate-800 text-sm block mt-1">{filterFaculty === "All" ? "Tất cả các khoa" : filterFaculty}</span>
+                      </div>
+                      
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">1. Nhóm Chính sách</span>
+                        <span className="font-black text-rose-600 text-lg block">
+                          {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 1).length} hồ sơ
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">Xét duyệt ưu tiên thẳng</span>
+                      </div>
+
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">2. Tân sinh viên</span>
+                        <span className="font-black text-indigo-600 text-lg block">
+                          {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 2).length} hồ sơ
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">Chỉ tiêu: {quotas.freshmen}% (~{Math.round((quotas.freshmen / 100) * quotas.totalSlots)} chỗ)</span>
+                      </div>
+
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-left space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">3. Sinh viên khóa cũ</span>
+                        <span className="font-black text-emerald-600 text-lg block">
+                          {filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING && getRegBasket(reg) === 3).length} hồ sơ
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">Chỉ tiêu: {quotas.seniors}% (~{Math.round((quotas.seniors / 100) * quotas.totalSlots)} chỗ)</span>
+                      </div>
                     </div>
                   </div>
 
                   <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl space-y-4">
                     <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2">
-                      <Info size={16} /> Quy chế duyệt tự động:
+                      <Info size={16} /> Quy chế duyệt tự động nâng cao:
                     </h4>
                     <ul className="text-xs text-blue-800 space-y-2 list-disc pl-5 font-medium">
                       <li><strong>Thứ tự ưu tiên:</strong> Nhóm chính sách → Tân SV năm 1 → SV khóa cũ, sắp xếp theo điểm xét tuyển giảm dần.</li>
-                      <li><strong>Chỉ tiêu:</strong> Mỗi nhóm có hạn mức riêng — hết chỉ tiêu thì bỏ qua hồ sơ còn lại.</li>
-                      <li><strong>Kết quả:</strong> Hồ sơ được duyệt → chuyển sang Hợp đồng sinh viên ở trạng thái <code>Chờ gán phòng</code>.</li>
+                      <li><strong>Xét theo Khoa:</strong> Nếu một khoa được đặt chỉ tiêu lớn hơn 0, hệ thống sẽ giới hạn số sinh viên khoa đó trúng tuyển tương ứng.</li>
+                      <li><strong>Chế độ dồn chỉ tiêu:</strong> Khi được bật, chỉ tiêu thừa từ các khoa ít hồ sơ sẽ tự động chuyển sang xét duyệt tiếp cho sinh viên khoa quá tải (theo thứ tự ưu tiên điểm số).</li>
                     </ul>
                   </div>
 
                   <p className="text-xs text-slate-500 font-bold text-center">
-                    Bạn có chắc chắn muốn duyệt tự động các hồ sơ chờ duyệt ở trên không?
+                    Bạn có chắc chắn muốn bắt đầu chạy quy trình duyệt tự động ở trên không?
                   </p>
                 </div>
               )}
@@ -1460,19 +1748,54 @@ const RegistrationList = ({
             {/* Modal Footer */}
             <div className="bg-slate-50 px-6 py-4 flex justify-between items-center rounded-b-3xl border-t border-slate-200 flex-shrink-0">
               {autoAllocateResult ? (
-                <>
-                  <p className="text-xs text-slate-500 font-semibold text-left">Tự động hoàn tất và cập nhật trạng thái dữ liệu.</p>
-                  <button
-                    onClick={() => {
-                      setIsOpenAutoAllocateModal(false);
-                      setAutoAllocateResult(null);
-                      if (onRefresh) onRefresh();
-                    }}
-                    className="px-6 py-2.5 text-white font-bold text-xs bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
-                  >
-                    Xác nhận & Đóng
-                  </button>
-                </>
+                autoAllocateResult.isSimulation ? (
+                  <>
+                    <button
+                      onClick={() => setAutoAllocateResult(null)}
+                      disabled={autoAllocating}
+                      className="px-5 py-2.5 text-slate-700 font-bold text-xs bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all disabled:opacity-40"
+                    >
+                      Quay lại thiết lập
+                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setIsOpenAutoAllocateModal(false);
+                          setAutoAllocateResult(null);
+                        }}
+                        disabled={autoAllocating}
+                        className="px-5 py-2.5 text-slate-500 font-bold text-xs hover:text-slate-700 transition-all disabled:opacity-40"
+                      >
+                        Hủy bỏ
+                      </button>
+                      <button
+                        onClick={() => handleRunAutoAllocate(false)}
+                        disabled={autoAllocating}
+                        className="px-6 py-2.5 text-white font-bold text-xs bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 flex items-center gap-1.5 rounded-xl disabled:opacity-40"
+                      >
+                        {autoAllocating ? (
+                          <><Loader2 size={13} className="animate-spin" /> Đang duyệt...</>
+                        ) : (
+                          <><Rocket size={13} /> Phê duyệt thực tế (Lưu DB)</>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-slate-500 font-semibold text-left">Đã ghi nhận dữ liệu thật thành công.</p>
+                    <button
+                      onClick={() => {
+                        setIsOpenAutoAllocateModal(false);
+                        setAutoAllocateResult(null);
+                        if (onRefresh) onRefresh();
+                      }}
+                      className="px-6 py-2.5 text-white font-bold text-xs bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
+                    >
+                      Xác nhận & Đóng
+                    </button>
+                  </>
+                )
               ) : (
                 <>
                   <button
@@ -1483,14 +1806,14 @@ const RegistrationList = ({
                     Hủy bỏ
                   </button>
                   <button
-                    onClick={handleRunAutoAllocate}
+                    onClick={() => handleRunAutoAllocate(null)}
                     disabled={autoAllocating || filteredRegs.filter((reg) => reg.status === RegistrationStatus.PENDING).length === 0}
                     className="px-6 py-2.5 text-white font-bold text-xs bg-blue-600 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-100 flex items-center gap-1.5"
                   >
                     {autoAllocating ? (
-                      <><Loader2 size={13} className="animate-spin" /> Đang duyệt...</>
+                      <><Loader2 size={13} className="animate-spin" /> Đang xử lý...</>
                     ) : (
-                      <><Rocket size={13} /> Bắt đầu duyệt</>
+                      <><Rocket size={13} /> {simulate ? "Chạy mô phỏng" : "Duyệt thực tế"}</>
                     )}
                   </button>
                 </>
