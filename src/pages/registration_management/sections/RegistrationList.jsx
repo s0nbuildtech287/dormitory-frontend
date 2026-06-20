@@ -1621,7 +1621,24 @@ const RegistrationList = ({
                               <span className="font-bold text-slate-800">{item.student_name}</span>
                               <span className="text-slate-400 font-mono ml-2">({item.student_id})</span>
                             </div>
-                            <span className="text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase">{item.faculty}</span>
+                            <div className="flex items-center gap-2">
+                              {item.basket === 1 && (
+                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full font-bold text-[9px] uppercase">
+                                  Chính sách
+                                </span>
+                              )}
+                              {item.basket === 2 && (
+                                <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full font-bold text-[9px] uppercase">
+                                  Tân sinh viên
+                                </span>
+                              )}
+                              {item.basket === 3 && (
+                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[9px] uppercase">
+                                  Khóa cũ
+                                </span>
+                              )}
+                              <span className="text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase">{item.faculty}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1642,7 +1659,7 @@ const RegistrationList = ({
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
                             <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
-                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Nguồn duyệt</th>
+                            <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Đối tượng</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-xs">
@@ -1653,13 +1670,21 @@ const RegistrationList = ({
                                 <td className="px-4 py-2.5 font-semibold text-slate-950">{item.student_name}</td>
                                 <td className="px-4 py-2.5 text-slate-600">{item.faculty}</td>
                                 <td className="px-4 py-2.5">
-                                  <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase border ${
-                                    item.source?.includes("Phase 2") 
-                                      ? "bg-blue-50 text-blue-700 border-blue-200" 
-                                      : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                  }`}>
-                                    {item.source || "Duyệt tự động"}
-                                  </span>
+                                  {item.basket === 1 && (
+                                    <span className="px-2.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full font-bold text-[9px] uppercase">
+                                      Chính sách
+                                    </span>
+                                  )}
+                                  {item.basket === 2 && (
+                                    <span className="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full font-bold text-[9px] uppercase">
+                                      Tân sinh viên
+                                    </span>
+                                  )}
+                                  {item.basket === 3 && (
+                                    <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[9px] uppercase">
+                                      Khóa cũ
+                                    </span>
+                                  )}
                                 </td>
                               </tr>
                             ))
