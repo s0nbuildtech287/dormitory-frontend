@@ -1,48 +1,38 @@
 @startuml "Invoice Payment Sequence"
-skinparam defaultFontSize 28
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 28
+skinparam sequenceMessageSize 20
+
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
-participant "VNPayController" as VC
-participant "VNPayService" as VS
-participant "InvoiceDAO" as IDAO
-participant "VNPay" as VNPay
-participant "PaymentController" as PC
-participant "PaymentService" as PS
-participant "Ngân hàng" as Bank
-
+participant "Hệ thống\nBackend" as BE
+participant "Cổng thanh toán\n(VNPay/Ngân hàng)" as Gateway
 database "CSDL" as DB
 
-Student -> FE: Chọn hóa đơn + Chọn phương thức
-alt VNPay
-	FE -> VC: POST /api/vnpay/create-payment
-	VC -> VS: createPaymentUrl(args)
-	VS --> VC: paymentUrl
-	VC --> FE: paymentUrl
-	FE -> VNPay: Redirect paymentUrl
-	VNPay --> VC: GET /api/vnpay/ipn
-	VC -> VS: verifySignature(args)
-	VC -> IDAO: markAsPaid(args)
-	IDAO -> DB: UPDATE invoices
-	DB --> IDAO: OK
-	VC --> VNPay: RspCode=00
-	VNPay --> FE: Redirect /payment/result
+Student -> FE: 1. Chọn hóa đơn và thanh toán
+alt Thanh toán trực tuyến VNPay
+  FE -> BE: 2. Yêu cầu tạo link thanh toán
+  BE -> BE: 3. Sinh link thanh toán VNPay
+  BE --> FE: 4. Gửi lại link thanh toán
+  FE -> Gateway: 5. Chuyển hướng sang VNPay
+  Student -> Gateway: 6. Xác nhận thanh toán tiền
+  Gateway -> BE: 7. Gửi thông tin thanh toán (IPN)
+  BE -> BE: 8. Kiểm tra chữ ký bảo mật
+  BE -> DB: 9. Cập nhật trạng thái Đã thanh toán
+  DB --> BE: 10. Xác nhận hoàn tất
+  BE --> Gateway: 11. Phản hồi xác nhận thành công
+  Gateway --> FE: 12. Chuyển hướng về trang kết quả
+  FE --> Student: 13. Hiển thị thông báo thành công
 else Chuyển khoản ngân hàng
-	FE -> PC: POST /api/payments/bank-transfer
-	PC -> PS: createBankTransferRequest(args)
-	PS -> IDAO: get invoice details
-	IDAO -> DB: SELECT invoice
-	DB --> IDAO: invoice
-	PS --> PC: bank transfer info
-	PC --> FE: Thông tin chuyển khoản
-
-	Student -> Bank: Thực hiện chuyển khoản
-	Bank --> PS: Thông báo giao dịch/đối soát
-	PS -> IDAO: markAsPaid(args)
-	IDAO -> DB: UPDATE invoices
-	DB --> IDAO: OK
-	PS --> PC: OK
-	PC --> FE: 200 OK
+  FE -> BE: 14. Yêu cầu thông tin chuyển khoản
+  BE -> DB: 15. Lấy thông tin số tiền hóa đơn
+  DB --> BE: 16. Trả về thông tin hóa đơn
+  BE --> FE: 17. Hiển thị thông tin chuyển khoản (QR)
+  Student -> Gateway: 18. Chuyển tiền qua ngân hàng
+  Gateway -> BE: 19. Thông báo chuyển tiền thành công
+  BE -> DB: 20. Cập nhật trạng thái Đã thanh toán
+  DB --> BE: 21. Xác nhận hoàn tất
+  BE --> FE: 22. Thông báo thanh toán thành công
+  FE --> Student: 23. Hiển thị giao dịch hoàn thành
 end
 @enduml

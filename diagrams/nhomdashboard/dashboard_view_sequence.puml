@@ -1,29 +1,27 @@
 @startuml "Dashboard View Sequence"
-skinparam defaultFontSize 28
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 28
+skinparam sequenceMessageSize 20
+
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
-participant "DashboardController" as DashC
-participant "DashboardService" as DashS
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-Admin -> FE: Mở Dashboard
-FE -> DashC: GET /api/dashboard?range=...
-DashC -> DashS: getOverviewStats(range)
-DashS -> DB: SELECT thống kê tổng quan
-DB --> DashS: Kết quả
-DashS --> DashC: Tổng hợp dữ liệu
-DashC --> FE: 200 OK + dữ liệu
-FE --> Admin: Hiển thị biểu đồ
+Admin -> FE: 1. Mở trang tổng quan
+FE -> BE: 2. Yêu cầu số liệu thống kê
+BE -> DB: 3. Lấy dữ liệu thống kê
+DB --> BE: 4. Trả về dữ liệu
+BE -> BE: 5. Tổng hợp dữ liệu biểu đồ
+BE --> FE: 6. Gửi số liệu thống kê
+FE --> Admin: 7. Hiển thị các biểu đồ số liệu
 
-== Lọc theo các tiêu chí ở mỗi mục ==
-Admin -> FE: Chọn filter  
-FE -> DashC: GET /api/dashboard?range=filter
-DashC -> DashS: getOverviewStats(custom)
-DashS -> DB: SELECT theo filter
-DB --> DashS: Kết quả
-DashS --> DashC: Tổng hợp dữ liệu
-DashC --> FE: 200 OK + dữ liệu
-FE --> Admin: Cập nhật biểu đồ
+== Lọc theo các tiêu chí khác ==
+Admin -> FE: 8. Chọn bộ lọc thời gian
+FE -> BE: 9. Yêu cầu thống kê theo bộ lọc
+BE -> DB: 10. Truy vấn theo bộ lọc
+DB --> BE: 11. Trả về kết quả
+BE -> BE: 12. Tổng hợp dữ liệu mới
+BE --> FE: 13. Gửi số liệu đã lọc
+FE --> Admin: 14. Cập nhật các biểu đồ số liệu
 @enduml

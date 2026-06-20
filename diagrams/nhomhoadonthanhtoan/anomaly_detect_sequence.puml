@@ -1,36 +1,20 @@
 @startuml "Anomaly Detect Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
-' Sequence Diagram: Phát hiện bất thường hóa đơn điện/nước
+skinparam sequenceMessageSize 20
+
 actor "Kế toán" as Accountant
-participant "Giao diện\n(BillList)" as FE
-participant "AnomalyModal" as Modal
-participant "InvoiceController" as IC
-participant "InvoiceService" as IS
-participant "InvoiceDAO" as IDAO
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-Accountant -> FE: Nhấn nút "Bất thường"
-FE -> Modal: isOpen = true
-Modal -> IC: GET /api/invoices/anomalies
-IC -> IS: detectAnomalies()
-IS -> IDAO: getAnomalyData(4 tháng)
-IDAO -> DB: SELECT invoices JOIN rooms\nWHERE billing_month >= now - 4 months
-DB --> IDAO: rows[]
-IDAO --> IS: rows[]
-
-IS -> IS: Nhóm theo room_id
-loop Mỗi phòng
-  IS -> IS: Tách latest (tháng hiện tại)\nvà history (3 tháng trước)
-  IS -> IS: Tính avgElectric, avgWater\navgElectricAmount, avgWaterAmount
-  IS -> IS: So sánh với ngưỡng 50%
-  alt Tăng > 50%
-    IS -> IS: Thêm vào danh sách bất thường\n(kèm %, chênh lệch tiền)
-  end
-end
-IS -> IS: Sắp xếp theo mức tăng giảm dần
-IS --> IC: { total, threshold_pct, anomalies[] }
-IC --> Modal: 200 OK + data
-Modal --> Accountant: Hiển thị danh sách phòng bất thường\n(điện/nước: lượng dùng + tiền + % tăng)
+Accountant -> FE: 1. Nhấn nút kiểm tra bất thường
+FE -> BE: 2. Yêu cầu danh sách hóa đơn bất thường
+BE -> DB: 3. Lấy dữ liệu hóa đơn 4 tháng gần nhất
+DB --> BE: 4. Trả về lịch sử hóa đơn các phòng
+BE -> BE: 5. Tính lượng tiêu thụ điện/nước trung bình
+BE -> BE: 6. Lọc các phòng vượt ngưỡng tăng 50%
+BE -> BE: 7. Sắp xếp danh sách bất thường giảm dần
+BE --> FE: 8. Gửi danh sách phòng bất thường
+FE --> Accountant: 9. Hiển thị danh sách cảnh báo bất thường
 @enduml

@@ -1,26 +1,26 @@
 @startuml "Asset Import Export Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
+
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
-participant "AssetController" as AC
-participant "AssetService" as AS
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-== Nhập kho ==
-Admin -> FE: Nhập kho
-FE -> AC: POST /api/assets/import
-AC -> AS: importAsset(args)
-AS -> DB: INSERT asset_imports
-DB --> AS: OK
-AC --> FE: 201 Created
+== Nhập kho tài sản ==
+Admin -> FE: 1. Nhập thông tin phiếu nhập kho tài sản
+FE -> BE: 2. Gửi yêu cầu nhập kho tài sản
+BE -> DB: 3. Lưu thông tin phiếu nhập kho
+DB --> BE: 4. Xác nhận nhập kho thành công
+BE --> FE: 5. Trả về kết quả nhập kho
+FE --> Admin: 6. Hiển thị thông báo thành công
 
-== Xuất kho ==
-Admin -> FE: Xuất kho vào phòng
-FE -> AC: POST /api/assets/export
-AC -> AS: exportAsset(args)
-AS -> DB: INSERT asset_exports
-DB --> AS: OK
-AC --> FE: 201 Created
+== Xuất kho tài sản vào phòng ==
+Admin -> FE: 7. Chọn tài sản và phòng cần phân bổ
+FE -> BE: 8. Gửi yêu cầu xuất kho tài sản
+BE -> DB: 9. Lưu phiếu xuất và phân bổ tài sản phòng
+DB --> BE: 10. Xác nhận phân bổ thành công
+BE --> FE: 11. Trả về kết quả xuất kho
+FE --> Admin: 12. Cập nhật giao diện phòng ở
 @enduml

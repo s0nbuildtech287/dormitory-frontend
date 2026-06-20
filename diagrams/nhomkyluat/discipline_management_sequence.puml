@@ -1,44 +1,37 @@
 @startuml "Discipline Management Sequence"
-skinparam defaultFontSize 28
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 28
+skinparam sequenceMessageSize 20
 
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
-participant "DisciplinaryController" as DC
-participant "DisciplinaryService" as DS
-participant "DisciplinaryDAO" as DDAO
-participant "EmailService" as Email
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống\nEmail" as Mail
 database "CSDL" as DB
 
 == Quản lý phiếu vi phạm ==
-Admin -> FE: Xem/Tạo/Sửa/Xóa phiếu
-FE -> DC: GET|POST|PUT|DELETE /api/disciplinary
-DC -> DS: CRUD operations
-DS -> DDAO: query/create/update/delete
-DDAO -> DB: SELECT/INSERT/UPDATE disciplinary_records
-DB --> DDAO: OK
-DS -> DDAO: updateConductScore(student_id)
-DDAO -> DB: UPDATE students (conduct_score)
-DB --> DDAO: OK
-alt Đạt ngưỡng cảnh báo
-  DS -> Email: sendWarningEmail(student)
-  Email --> DS: OK
+Admin -> FE: 1. Tạo hoặc cập nhật phiếu vi phạm
+FE -> BE: 2. Gửi yêu cầu cập nhật vi phạm
+BE -> DB: 3. Lưu thông tin phiếu vi phạm mới
+DB --> BE: 4. Xác nhận lưu thành công
+BE -> DB: 5. Tính toán lại điểm rèn luyện sinh viên
+DB --> BE: 6. Xác nhận cập nhật điểm rèn luyện
+alt Sinh viên đạt ngưỡng cảnh báo
+  BE -> Mail: 7. Gửi email cảnh báo vi phạm kỷ luật
+  Mail --> BE: 8. Xác nhận đã gửi
 end
-DC --> FE: 200 OK
+BE --> FE: 9. Trả về kết quả cập nhật vi phạm
+FE --> Admin: 10. Hiển thị thông báo thành công
 
 == Quản lý quy định vi phạm ==
-Admin -> FE: Xem/Thêm/Sửa quy định
-FE -> DC: GET|POST|PUT /api/disciplinary/rules
-DC -> DS: getRules|createRule|updateRule
-DS -> DDAO: query/create/update rules
-DDAO -> DB: SELECT/INSERT/UPDATE violation_rules
-DB --> DDAO: OK
-alt Sửa quy định
-  DS -> DDAO: logChange(rule_id)
-  DDAO -> DB: INSERT rule_change_logs
-  DB --> DDAO: OK
+Admin -> FE: 11. Xem hoặc sửa đổi quy chế kỷ luật
+FE -> BE: 12. Gửi yêu cầu lưu quy chế mới
+BE -> DB: 13. Lưu quy định vi phạm mới
+DB --> BE: 14. Xác nhận lưu thành công
+alt Có sự sửa đổi quy định
+  BE -> DB: 15. Ghi log lịch sử thay đổi quy chế
+  DB --> BE: 16. Xác nhận ghi log
 end
-DC --> FE: 200 OK
-
+BE --> FE: 17. Trả về danh sách quy chế mới
+FE --> Admin: 18. Cập nhật giao diện nội quy
 @enduml

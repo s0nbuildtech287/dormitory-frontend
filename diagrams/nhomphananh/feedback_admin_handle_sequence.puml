@@ -1,27 +1,26 @@
 @startuml "Feedback Admin Handle Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
+
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
-participant "FeedbackController" as FC
-participant "FeedbackService" as FS
-participant "FeedbackDAO" as FDAO
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-Admin -> FE: Chọn phản ánh
-FE -> FC: POST /api/feedbacks/{id}/status
-FC -> FS: updateFeedbackStatus(args)
-FS -> FDAO: update status/response
-FDAO -> DB: UPDATE feedbacks
-DB --> FDAO: OK
-FC --> FE: 200 OK
+== Xử lý phản ánh ==
+Admin -> FE: 1. Chọn phản ánh và nhập nội dung phản hồi
+FE -> BE: 2. Gửi yêu cầu cập nhật trạng thái/phản hồi
+BE -> DB: 3. Cập nhật phản hồi vào phản ánh
+DB --> BE: 4. Xác nhận lưu thành công
+BE --> FE: 5. Trả về kết quả xử lý phản ánh
+FE --> Admin: 6. Hiển thị thông báo thành công
 
-Admin -> FE: Xóa phản ánh (tuỳ chọn)
-FE -> FC: DELETE /api/feedbacks/{id}
-FC -> FS: deleteFeedback(args)
-FS -> FDAO: delete
-FDAO -> DB: UPDATE deleted_at
-DB --> FDAO: OK
-FC --> FE: 200 OK
+== Xóa phản ánh (tùy chọn) ==
+Admin -> FE: 7. Yêu cầu xóa phản ánh không phù hợp
+FE -> BE: 8. Gửi yêu cầu xóa phản ánh
+BE -> DB: 9. Đánh dấu xóa phản ánh (soft delete)
+DB --> BE: 10. Xác nhận xóa thành công
+BE --> FE: 11. Báo xóa phản ánh thành công
+FE --> Admin: 12. Cập nhật danh sách hiển thị
 @enduml

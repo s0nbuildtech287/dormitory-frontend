@@ -1,28 +1,24 @@
 @startuml "AI Chatbot Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
-' Sequence Diagram: Chatbot AI hỗ trợ sinh viên
-actor "Sinh viên" as Student
-participant "Giao diện\n(ChatBot)" as FE
-participant "AiController" as AIC
-participant "openaiService" as AIS
-participant "Gemini API" as Gemini
+skinparam sequenceMessageSize 20
 
-Student -> FE: Nhập câu hỏi + nhấn Gửi
-FE -> AIC: POST /api/ai/chat\n{ messages[], model }
-AIC -> AIS: createChatCompletion(args)
-AIS -> AIS: Gắn SYSTEM_PROMPT vào đầu messages
-AIS -> Gemini: Chat Completion request
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống AI\n(Gemini)" as Gemini
+
+Student -> FE: 1. Gửi câu hỏi cần giải đáp
+FE -> BE: 2. Gửi yêu cầu hỏi đáp
+BE -> BE: 3. Đính kèm cấu hình chỉ dẫn (system prompt)
+BE -> Gemini: 4. Gửi câu hỏi sang Gemini
 alt Thành công
-  Gemini --> AIS: { reply }
-  AIS --> AIC: reply
-  AIC --> FE: 200 OK + { reply }
-  FE --> Student: Hiển thị câu trả lời AI
+  Gemini --> BE: 5. Trả về phản hồi từ AI
+  BE --> FE: 6. Gửi câu trả lời
+  FE --> Student: 7. Hiển thị câu trả lời AI
 else Lỗi API
-  Gemini --> AIS: Error
-  AIS --> AIC: throw Error
-  AIC --> FE: 500
-  FE --> Student: Thông báo lỗi, thử lại
+  Gemini --> BE: 8. Báo lỗi dịch vụ AI
+  BE --> FE: 9. Báo lỗi hệ thống
+  FE --> Student: 10. Hiển thị thông báo lỗi
 end
 @enduml

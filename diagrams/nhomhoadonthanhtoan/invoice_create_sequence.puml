@@ -1,36 +1,31 @@
 @startuml "Invoice Management Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 28
+skinparam sequenceMessageSize 20
 actor "Kế toán" as Accountant
-actor "Scheduler" as Cron
+actor "Hệ thống\n(Tự động)" as Cron
 participant "Giao diện" as FE
-participant "InvoiceController" as IC
-participant "InvoiceService" as IS
-participant "InvoiceDAO" as IDAO
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-== Quản lý hóa đơn và bảng giá ==
-Accountant -> FE: Xem/Tạo/Sửa/Xóa hóa đơn\nhoặc điều chỉnh bảng giá
-FE -> IC: API request (GET/POST/PUT/DELETE)
-IC -> IS: Xử lý nghiệp vụ
-IS -> IDAO: Thao tác CSDL
-IDAO -> DB: Query/Insert/Update/Delete
-DB --> IDAO: Kết quả
-IC --> FE: Response
+== Quản lý hóa đơn thủ công ==
+Accountant -> FE: 1. Nhập thông tin hóa đơn hoặc bảng giá
+FE -> BE: 2. Gửi yêu cầu lưu thông tin
+BE -> DB: 3. Lưu thông tin hóa đơn/bảng giá
+DB --> BE: 4. Xác nhận lưu thành công
+BE --> FE: 5. Phản hồi kết quả xử lý
+FE --> Accountant: 6. Hiển thị thông báo thành công
 
-== Hệ thống tự tạo hóa đơn theo phòng ==
-Cron -> IS: createInvoicesForAllRooms()
-IS -> IDAO: query rooms + meter readings
-IDAO -> DB: SELECT rooms + meter_readings
-DB --> IDAO: data
-IS -> IDAO: create invoices
-IDAO -> DB: INSERT invoices
-DB --> IDAO: OK
+== Hệ thống tự tạo hóa đơn hàng tháng ==
+Cron -> BE: 7. Kích hoạt tiến trình tạo hóa đơn tự động
+BE -> DB: 8. Truy vấn thông tin phòng và chỉ số sử dụng
+DB --> BE: 9. Trả về dữ liệu sử dụng
+BE -> BE: 10. Tính toán tiền điện, nước, phòng
+BE -> DB: 11. Tạo hóa đơn điện nước tương ứng
+DB --> BE: 12. Xác nhận lưu hóa đơn thành công
 
-== Hệ thống tự cập nhật trạng thái ==
-Cron -> IS: updateOverdueInvoices()
-IS -> IDAO: update overdue status
-IDAO -> DB: UPDATE invoices (status)
-DB --> IDAO: OK
+== Hệ thống tự động kiểm tra quá hạn ==
+Cron -> BE: 13. Kích hoạt kiểm tra quá hạn đóng tiền
+BE -> DB: 14. Cập nhật các hóa đơn chưa thanh toán quá hạn
+DB --> BE: 15. Xác nhận cập nhật trạng thái hóa đơn
 @enduml

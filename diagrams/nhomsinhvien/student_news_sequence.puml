@@ -1,35 +1,43 @@
 @startuml "Student News Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
+
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
-participant "NewsController" as NC
-participant "NewsService" as NS
-participant "TLU Website" as TLU
-participant "Image Proxy" as Proxy
-database "Cache" as Cache
+participant "Hệ thống\nBackend" as BE
+participant "Trang tin\n(TLU)" as TLU
+participant "Hệ thống AI\n(Gemini)" as Gemini
 
-Student -> FE: Xem danh sách tin TLU
-FE -> NC: GET /api/news
-NC -> NS: getNews()
-alt Cache còn hạn
-	NS -> Cache: Read cached news
-	Cache --> NS: data
-else Cache hết hạn
-	NS -> TLU: GET các trang tin
-	TLU --> NS: HTML
-	NS -> NS: Cào & trích xuất tin
-	NS -> Cache: Save cached news
+== 1. Xem danh sách tin tức ==
+Student -> FE: 1. Truy cập trang tin tức
+FE -> BE: 2. Yêu cầu danh sách tin
+alt Tin lưu tạm còn hạn
+  BE -> BE: 3. Đọc dữ liệu từ bộ nhớ đệm
+else Hết hạn lưu tạm
+  BE -> TLU: 4. Lấy dữ liệu từ web trường
+  TLU --> BE: 5. Trả về nội dung tin tức
+  BE -> BE: 6. Trích xuất tin và lưu tạm
 end
-NS --> NC: data
-NC --> FE: 200 OK
+BE --> FE: 7. Gửi danh sách tin tức
+FE --> Student: 8. Hiển thị danh sách tin tức
 
-FE -> Proxy: GET /api/news/image-proxy?url=...
-Proxy -> TLU: GET image (Referer TLU)
-TLU --> Proxy: image bytes
-Proxy --> FE: image
+== 2. AI phân tích & hỏi đáp ==
+Student -> FE: 9. Chọn bài viết và yêu cầu AI tóm tắt
+FE -> BE: 10. Yêu cầu phân tích bài viết
+BE -> TLU: 11. Lấy chi tiết nội dung từ nguồn
+TLU --> BE: 12. Trả về nội dung bài viết
+BE -> Gemini: 13. Gửi văn bản yêu cầu phân tích
+Gemini --> BE: 14. Trả về kết quả phân tích
+BE --> FE: 15. Gửi nội dung tóm tắt
+FE --> Student: 16. Hiển thị tóm tắt AI
 
-Student -> FE: Xem chi tiết tin
-FE -> FE: Hiển thị chi tiết từ dữ liệu đã tải
+opt Sinh viên hỏi thêm
+  Student -> FE: 17. Nhập câu hỏi về bài viết
+  FE -> BE: 18. Gửi câu hỏi kèm ngữ cảnh
+  BE -> Gemini: 19. Yêu cầu AI trả lời câu hỏi
+  Gemini --> BE: 20. Trả về câu trả lời
+  BE --> FE: 21. Gửi lại câu trả lời
+  FE --> Student: 22. Hiển thị câu trả lời AI
+end
 @enduml

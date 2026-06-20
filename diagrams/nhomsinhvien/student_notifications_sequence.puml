@@ -1,27 +1,28 @@
 @startuml "Student Notifications Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
+
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
-participant "StudentController" as SC
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-Student -> FE: Xem thông báo
-FE -> SC: GET /api/student/notifications
-SC -> DB: SELECT notifications
-DB --> SC: data
-SC --> FE: 200 OK
+== Xem danh sách thông báo ==
+Student -> FE: 1. Xem danh sách thông báo cá nhân
+FE -> BE: 2. Yêu cầu danh sách thông báo
+BE -> DB: 3. Lấy danh sách thông báo của sinh viên
+DB --> BE: 4. Trả về dữ liệu thông báo
+BE --> FE: 5. Gửi danh sách thông báo
+FE --> Student: 6. Hiển thị danh sách thông báo
 
-Student -> FE: Xem chi tiết thông báo
-FE -> SC: GET /api/student/notifications/{id}
-SC -> DB: SELECT notification by id
-DB --> SC: data
-SC --> FE: 200 OK
-
-Student -> FE: Đánh dấu đã đọc
-FE -> SC: PUT /api/student/notifications/{id}/read
-SC -> DB: UPDATE notifications (read_at)
-DB --> SC: OK
-SC --> FE: 200 OK
+== Xem chi tiết và đánh dấu đã đọc ==
+Student -> FE: 7. Chọn một thông báo để xem chi tiết
+FE -> BE: 8. Yêu cầu chi tiết thông báo
+BE -> DB: 9. Lấy chi tiết thông báo
+DB --> BE: 10. Trả về chi tiết thông báo
+BE -> DB: 11. Cập nhật trạng thái Đã đọc
+DB --> BE: 12. Xác nhận cập nhật thành công
+BE --> FE: 13. Gửi thông tin chi tiết thông báo
+FE --> Student: 14. Hiển thị nội dung chi tiết
 @enduml

@@ -1,41 +1,37 @@
 @startuml "Campaign Launcher Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
 
 actor "Quản lý tòa nhà" as Admin
 participant "Giao diện" as FE
-participant "RegistrationController" as RegC
-participant "RegistrationService" as RegS
-participant "ContractService" as ConS
-participant "EmailService" as MailS
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống\nEmail" as Mail
 database "CSDL" as DB
 
 == 1. Dự báo Cung - Cầu ==
-Admin -> FE: Xem trang chuẩn bị đợt mới
-FE -> RegC: GET /api/registrations/room-forecast?days=30
-RegC -> RegS: getRoomForecast(30)
-RegS -> DB: Query tổng slot trống + HĐ sắp hết hạn
-DB --> RegS: Kết quả
-RegS --> FE: 200 OK (Room Forecast)
-
-FE -> RegC: GET /api/registrations/demand-forecast
-RegC -> RegS: getDemandForecast()
-RegS -> DB: Query số lượng hồ sơ năm trước
-DB --> RegS: Kết quả
-RegS --> FE: 200 OK (Demand Forecast)
+Admin -> FE: 1. Truy cập trang chuẩn bị mở đợt mới
+FE -> BE: 2. Yêu cầu dự báo cung phòng trống
+BE -> DB: 3. Lấy thông tin phòng trống và HĐ sắp hết hạn
+DB --> BE: 4. Trả về số liệu phòng
+BE --> FE: 5. Hiển thị báo cáo dự báo cung
+FE -> BE: 6. Yêu cầu dự báo cầu đăng ký
+BE -> DB: 7. Lấy số lượng hồ sơ các đợt trước
+DB --> BE: 8. Trả về số liệu hồ sơ
+BE --> FE: 9. Hiển thị báo cáo dự báo cầu
 
 == 2. Gửi Email thông báo hết hạn ==
-Admin -> FE: Xác nhận gửi email thông báo
-FE -> ConS: POST /api/contracts/send-renewal-emails
-ConS -> DB: Query thông tin hợp đồng sắp hết hạn + email học sinh
-DB --> ConS: Dữ liệu
-loop Từng hợp đồng sắp hết hạn
-  alt Sinh viên Năm cuối (Year 4)
-    ConS -> MailS: sendEmail(thông báo kết thúc thuê & trả phòng)
-  else Sinh viên Khóa dưới (Year 1-3)
-    ConS -> MailS: sendEmail(thông báo nhắc gia hạn)
+Admin -> FE: 10. Nhấn gửi email nhắc nhở/trả phòng
+FE -> BE: 11. Yêu cầu gửi email thông báo
+BE -> DB: 12. Truy vấn danh sách hợp đồng sắp hết hạn
+DB --> BE: 13. Trả về thông tin hợp đồng và email
+loop Mỗi hợp đồng sắp hết hạn
+  alt Sinh viên năm cuối
+    BE -> Mail: 14. Gửi mail thông báo kết thúc hợp đồng
+  else Sinh viên khóa dưới
+    BE -> Mail: 15. Gửi mail thông báo nhắc gia hạn
   end
 end
-ConS --> FE: 200 OK (Đã gửi email thành công)
+BE --> FE: 16. Phản hồi số lượng email gửi thành công
+FE --> Admin: 17. Hiển thị thông báo hoàn tất gửi
 @enduml

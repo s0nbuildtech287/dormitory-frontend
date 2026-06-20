@@ -1,25 +1,43 @@
 @startuml "Asset Management Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
 
 actor "Ban quản lý" as Admin
-participant "Hệ thống" as System
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
 
 == 1. CRUD tài sản (Thêm / Sửa / Xóa) ==
-Admin -> System: Thêm/Sửa/Xóa tài sản
-System --> Admin: Xác nhận và cập nhật danh sách tài sản (200 OK)
+Admin -> FE: 1. Thêm, sửa hoặc xóa danh mục tài sản
+FE -> BE: 2. Gửi yêu cầu thay đổi tài sản
+BE -> DB: 3. Lưu thông tin tài sản mới
+DB --> BE: 4. Xác nhận lưu thành công
+BE --> FE: 5. Trả về thông tin danh mục mới
+FE --> Admin: 6. Cập nhật giao diện tài sản
 
 == 2. Nhập kho & Xuất kho tài sản ==
 alt Nhập kho
-  Admin -> System: Yêu cầu Nhập kho tài sản (số lượng, thông tin)
-  System --> Admin: Lưu lịch sử và cập nhật tồn kho thành công (201 Created)
+  Admin -> FE: 7. Gửi thông tin phiếu nhập kho tài sản
+  FE -> BE: 8. Gửi yêu cầu nhập kho
+  BE -> DB: 9. Tăng số lượng tồn kho và lưu phiếu
+  DB --> BE: 10. Xác nhận nhập thành công
+  BE --> FE: 11. Báo nhập kho thành công
+  FE --> Admin: 12. Cập nhật tồn kho hiển thị
 else Xuất kho đến phòng
-  Admin -> System: Yêu cầu Xuất kho đến phòng (chọn tài sản, phòng, số lượng)
-  System --> Admin: Kiểm tra, trừ tồn kho và gán phòng thành công (201 Created)
+  Admin -> FE: 13. Chọn phòng và số lượng xuất tài sản
+  FE -> BE: 14. Gửi yêu cầu phân bổ phòng
+  BE -> DB: 15. Khấu trừ tồn kho và gán vào phòng
+  DB --> BE: 16. Xác nhận phân bổ thành công
+  BE --> FE: 17. Báo phân bổ thành công
+  FE --> Admin: 18. Cập nhật giao diện phân bổ phòng
 end
 
 == 3. Điều chỉnh giới hạn định mức phòng ==
-Admin -> System: Thay đổi giới hạn định mức tài sản tối đa của phòng
-System --> Admin: Lưu cấu hình định mức phòng thành công (200 OK)
+Admin -> FE: 19. Điều chỉnh định mức tài sản tối đa phòng
+FE -> BE: 20. Gửi cấu hình định mức mới
+BE -> DB: 21. Lưu cấu hình định mức phòng vào CSDL
+DB --> BE: 22. Xác nhận lưu thành công
+BE --> FE: 23. Báo lưu định mức thành công
+FE --> Admin: 24. Cập nhật giao diện định mức
 @enduml

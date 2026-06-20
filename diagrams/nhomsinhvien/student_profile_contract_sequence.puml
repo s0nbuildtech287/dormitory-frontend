@@ -1,21 +1,26 @@
 @startuml "Student Profile Contract Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
+
 actor "Sinh viên" as Student
 participant "Giao diện" as FE
-participant "StudentController" as SC
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
-Student -> FE: Mở hồ sơ
-FE -> SC: GET /api/student/profile
-SC -> DB: SELECT profile
-DB --> SC: data
-SC --> FE: 200 OK
+== Xem thông tin cá nhân ==
+Student -> FE: 1. Xem trang thông tin cá nhân
+FE -> BE: 2. Yêu cầu dữ liệu cá nhân
+BE -> DB: 3. Lấy thông tin tài khoản sinh viên
+DB --> BE: 4. Trả về thông tin cá nhân
+BE --> FE: 5. Gửi thông tin cá nhân
+FE --> Student: 6. Hiển thị thông tin cá nhân
 
-Student -> FE: Xem hợp đồng
-FE -> SC: GET /api/student/contracts
-SC -> DB: SELECT contracts
-DB --> SC: data
-SC --> FE: 200 OK
+== Xem hợp đồng ký túc xá ==
+Student -> FE: 7. Xem trang hợp đồng ký túc xá
+FE -> BE: 8. Yêu cầu danh sách hợp đồng
+BE -> DB: 9. Lấy danh sách hợp đồng của sinh viên
+DB --> BE: 10. Trả về danh sách hợp đồng
+BE --> FE: 11. Gửi danh sách hợp đồng
+FE --> Student: 12. Hiển thị thông tin hợp đồng
 @enduml

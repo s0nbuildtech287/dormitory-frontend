@@ -1,32 +1,30 @@
-Mô tả: Quản lý hợp đồng đăng ký (tạo hợp đồng chờ xếp phòng, gán phòng thủ công, gán phòng tự động hàng loạt, gửi thông báo, chấm dứt hợp đồng).
+Mô tả: Quản lý hợp đồng đăng ký (gán phòng thủ công, gán phòng tự động hàng loạt, gửi thông báo, xác nhận tiền cọc/bản cứng, chấm dứt hợp đồng).
 Tác nhân: Ban quản lý.
-Các ràng buộc: Hồ sơ đã duyệt; phòng còn giường trống; phòng cùng giới tính với sinh viên.
+Các ràng buộc: Hồ sơ đăng ký đã được duyệt (hệ thống tự động tạo hợp đồng Chờ gán phòng); phòng còn giường trống; phòng cùng giới tính với sinh viên.
 Điều kiện kích hoạt: Ban quản lý mở mục Quản lý hợp đồng đăng ký.
 
 Luồng sự kiện chính:
-1. Hệ thống hiển thị danh sách hợp đồng và danh sách hồ sơ đã được duyệt.
-2. Ban quản lý chọn hồ sơ để tạo hợp đồng.
-3. Ban quản lý xác nhận trạng thái tiền cọc và bản cứng hợp đồng.
-4. Hệ thống tạo hợp đồng ở trạng thái Chờ gán phòng.
-5. Ban quản lý thực hiện xếp phòng cho sinh viên theo một trong hai cách:
+1. Hệ thống hiển thị danh sách hợp đồng (Chờ gán phòng, Đang hoạt động, Đã chấm dứt, Quá hạn).
+2. Ban quản lý chọn một hợp đồng ở trạng thái Chờ gán phòng để xem chi tiết.
+3. Ban quản lý xác nhận và cập nhật trạng thái đã nộp tiền cọc và đã thu bản cứng hợp đồng.
+4. Ban quản lý thực hiện xếp phòng cho sinh viên theo một trong hai cách:
    Cách A: Gán phòng thủ công từng người:
-     - Ban quản lý chọn một hợp đồng Chờ gán phòng và yêu cầu gợi ý phòng.
-     - Hệ thống lọc phòng phù hợp (giới tính, khoa, khóa học) và đưa ra danh sách 5 phòng tốt nhất.
+     - Ban quản lý chọn yêu cầu gợi ý phòng cho hợp đồng.
+     - Hệ thống lọc phòng phù hợp (giới tính, khoa, khóa học) và đưa ra danh sách 5 phòng tốt nhất (ưu tiên phòng có bạn cùng năm/cùng khoa).
      - Ban quản lý chọn một phòng trong danh sách để gán.
    Cách B: Gán phòng tự động hàng loạt:
-     - Ban quản lý chọn khoa cần xếp (tùy chọn) và nhấn nút Gán tự động.
-     - Hệ thống tự động so khớp giới tính, khoa, khóa học của toàn bộ sinh viên chờ duyệt với các phòng trống để phân bổ hàng loạt.
-6. Hệ thống cập nhật trạng thái hợp đồng thành Đang hoạt động, lưu số phòng và cập nhật số người hiện có trong các phòng.
-7. Ban quản lý gửi email thông báo số phòng và ngày bắt đầu ở cho sinh viên.
-8. Hệ thống gửi thông báo hoàn tất thành công.
+     - Ban quản lý lọc theo khoa (tùy chọn) và nhấn nút Gán tự động.
+     - Hệ thống tự động so khớp giới tính, nhóm đối tượng (Tân sinh viên, Lưu sinh viên, Lưu học sinh quốc tế) của sinh viên chờ xếp phòng với cấu hình phòng trống tương ứng, đồng thời ưu tiên phân bổ vào phòng có nhiều sinh viên cùng khóa/cùng khoa để xếp nhóm tối ưu.
+5. Hệ thống cập nhật trạng thái hợp đồng thành Đang hoạt động (khi đã gán phòng, nộp tiền cọc và nhận bản cứng), lưu số phòng và cập nhật số người hiện có trong phòng.
+6. Ban quản lý gửi email thông báo số phòng và ngày bắt đầu ở cho sinh viên.
+7. Hệ thống gửi thông báo hoàn tất thành công.
 
 Luồng rẽ nhánh:
-4.1 Lỗi tạo hợp đồng → hiển thị thông báo thất bại.
-5.1.A Phòng đã đầy khi chọn thủ công → thông báo và yêu cầu chọn phòng khác.
-5.1.B Không tìm thấy phòng phù hợp cho sinh viên khi gán tự động → sinh viên giữ trạng thái Chờ gán phòng để ban quản lý xử lý thủ công.
-7.1 Lỗi gửi email thông báo → thông báo gửi thư thất bại và ghi lại log hệ thống.
+4.1 Lỗi gán phòng (phòng đã đầy hoặc giới tính không khớp) -> hiển thị thông báo thất bại.
+4.2 Không tìm thấy phòng phù hợp khi gán tự động -> sinh viên giữ trạng thái Chờ gán phòng để ban quản lý xử lý thủ công.
+6.1 Lỗi gửi email thông báo -> hiển thị thông báo lỗi và ghi nhận log hệ thống.
 
 Quy trình chấm dứt hợp đồng:
-9. Ban quản lý chọn hợp đồng cần chấm dứt và nhập lý do chấm dứt.
-10. Hệ thống kiểm tra và cập nhật trạng thái hợp đồng thành Đã chấm dứt, giải phóng giường trống của phòng đó.
-11. Hệ thống thông báo hoàn thành.
+8. Ban quản lý chọn hợp đồng đang hoạt động cần chấm dứt và nhập lý do.
+9. Hệ thống cập nhật trạng thái hợp đồng thành Đã chấm dứt, giải phóng giường trống của phòng đó.
+10. Hệ thống hiển thị thông báo thành công.

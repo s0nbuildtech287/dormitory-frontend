@@ -1,40 +1,27 @@
 @startuml "Feedback Sentiment Sequence"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
-skinparam sequenceMessageSize 22
+skinparam sequenceMessageSize 20
 
 actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
-participant "FeedbackController" as FC
-participant "FeedbackService" as FS
-participant "FeedbackDAO" as FDAO
+participant "Hệ thống\nBackend" as BE
 database "CSDL" as DB
 
 == 1. Tải thống kê phân tích cảm xúc AI ==
-Admin -> FE: Mở mục Thống kê phản ánh & AI
-FE -> FC: GET /api/feedbacks/ai-statistics
-FC -> FS: getAIStatistics()
-FS -> FDAO: getAIStatistics()
-activate FDAO
-FDAO -> DB: SELECT statistics
-DB --> FDAO: data
-FDAO --> FS: data
-deactivate FDAO
-FS --> FC: statistics
-FC --> FE: 200 OK
-FE --> Admin: Hiển thị biểu đồ
+Admin -> FE: 1. Truy cập trang phân tích phản ánh
+FE -> BE: 2. Yêu cầu dữ liệu thống kê cảm xúc
+BE -> DB: 3. Lấy dữ liệu phân tích cảm xúc
+DB --> BE: 4. Trả về kết quả phân tích
+BE -> BE: 5. Tính toán tỷ lệ phần trăm cảm xúc
+BE --> FE: 6. Gửi số liệu thống kê cảm xúc
+FE --> Admin: 7. Hiển thị các biểu đồ cảm xúc
 
 == 2. Lọc dữ liệu thống kê (Tùy chọn) ==
-Admin -> FE: Chọn bộ lọc (thời gian, danh mục, tòa nhà)
-FE -> FC: GET /api/feedbacks/statistics
-FC -> FS: getStatistics(args)
-FS -> FDAO: searchAndFilter(args)
-activate FDAO
-FDAO -> DB: SELECT filtered statistics
-DB --> FDAO: data
-FDAO --> FS: data
-deactivate FDAO
-FS --> FC: data
-FC --> FE: 200 OK
-FE --> Admin: Cập nhật biểu đồ
+Admin -> FE: 8. Chọn bộ lọc (thời gian, tòa nhà)
+FE -> BE: 9. Yêu cầu thống kê theo bộ lọc
+BE -> DB: 10. Truy vấn dữ liệu theo bộ lọc
+DB --> BE: 11. Trả về số liệu đã lọc
+BE --> FE: 12. Gửi kết quả thống kê mới
+FE --> Admin: 13. Cập nhật biểu đồ thống kê
 @enduml
