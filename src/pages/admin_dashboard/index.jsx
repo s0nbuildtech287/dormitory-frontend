@@ -74,8 +74,8 @@ const AdminDashboard = () => {
             setFeedbacks(Array.isArray(feedbacksData.data) ? feedbacksData.data : []);
             break;
           case "asset-stats":
-            const assetsData = await getAssets();
-            setAssets(Array.isArray(assetsData.data) ? assetsData.data : []);
+            const assetsData = await getAssets({ summary: "true" });
+            setAssets(Array.isArray(assetsData) ? assetsData : assetsData.data || []);
             break;
           default:
             break;
