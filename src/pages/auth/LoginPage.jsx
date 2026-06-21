@@ -145,11 +145,11 @@ const LoginPage = ({ onLogin }) => {
 
   return (
     <>
-    <div className="min-h-screen flex items-center justify-center p-4 relative"
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 relative"
       style={{ backgroundImage: `url(${tluBg})`, backgroundSize: "cover", backgroundPosition: "center" }}
     >
       <div className="absolute inset-0 bg-black/20" />
-      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl relative z-10">
+      <div className="flex rounded-2xl shadow-2xl overflow-hidden w-full max-w-md md:max-w-4xl relative z-10">
 
         {/* Bên trái — slideshow */}
         <div className="hidden md:flex md:w-[52%] shrink-0 bg-white p-2 lg:p-3 rounded-l-2xl overflow-hidden">
@@ -162,15 +162,15 @@ const LoginPage = ({ onLogin }) => {
         </div>
 
         {/* Bên phải — form đăng nhập */}
-        <div className="flex-1 bg-white flex flex-col justify-center px-5 py-9 lg:px-8 lg:py-13">
+        <div className="flex-1 bg-white flex flex-col justify-center px-5 py-6 sm:px-8 sm:py-9 lg:py-13">
           {/* Logo + tiêu đề */}
-          <div className="bg-sky-100 rounded-xl px-4 py-5 text-center mb-6">
-            <img src={logoImg} alt="Logo trường" className="w-16 h-16 lg:w-20 lg:h-20 object-contain mx-auto mb-2" />
-            <h1 className="text-sm lg:text-base font-bold text-sky-800">Ký túc xá trường Đại học Thuỷ Lợi</h1>
-            <p className="text-sky-500 text-xs mt-0.5">Hệ thống Dormitory Unis</p>
+          <div className="bg-sky-100 rounded-xl px-4 py-4 text-center mb-4 sm:mb-6">
+            <img src={logoImg} alt="Logo trường" className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 object-contain mx-auto mb-2" />
+            <h1 className="text-xs sm:text-sm lg:text-base font-bold text-sky-800">Ký túc xá trường Đại học Thuỷ Lợi</h1>
+            <p className="text-sky-500 text-[10px] sm:text-xs mt-0.5">Hệ thống Dormitory Unis</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
             {/* Email / tài khoản */}
             <div className={showOtp ? "opacity-50 pointer-events-none" : ""}>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email / Tài khoản</label>
@@ -183,7 +183,7 @@ const LoginPage = ({ onLogin }) => {
                   value={idInput}
                   onChange={(e) => { setIdInput(e.target.value); setIdError(null); }}
                   placeholder="email@tlu.edu.vn"
-                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border ${idError ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
+                  className={`w-full pl-10 pr-4 py-2 sm:py-2.5 bg-gray-50 border ${idError ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
                   disabled={isLoading || showOtp}
                 />
               </div>
@@ -202,7 +202,7 @@ const LoginPage = ({ onLogin }) => {
                   value={passwordInput}
                   onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(null); }}
                   placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border ${passwordError ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
+                  className={`w-full pl-10 pr-4 py-2 sm:py-2.5 bg-gray-50 border ${passwordError ? "border-red-300 focus:ring-red-100 focus:border-red-400" : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"} rounded-xl outline-none focus:ring-4 transition-all text-gray-800 placeholder-gray-400 text-sm`}
                   disabled={isLoading || showOtp}
                 />
               </div>
@@ -248,7 +248,7 @@ const LoginPage = ({ onLogin }) => {
             )}
 
             <button type="submit" disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-all active:scale-95">
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 sm:py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md shadow-blue-100 transition-all active:scale-95">
               {isLoading
                 ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 : <><span>{showOtp ? "Xác nhận OTP" : "Đăng nhập"}</span><LogIn size={18} /></>
@@ -262,7 +262,7 @@ const LoginPage = ({ onLogin }) => {
               <div className="flex-1 h-px bg-gray-200" />
             </div>
             <button type="button" onClick={() => setShowRegister(true)}
-              className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 text-sm">
+              className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 py-2 sm:py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 text-sm">
               <ClipboardList size={18} />
               Đăng ký thuê ký túc xá
             </button>
