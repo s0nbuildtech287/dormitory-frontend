@@ -1,0 +1,20 @@
+Mô tả: Quản lý kỷ luật (xem/tạo/sửa/xóa phiếu vi phạm, quản lý quy định, trừ điểm, cảnh báo, thống kê).
+Tác nhân: Ban quản lý.
+Các ràng buộc: Sinh viên tồn tại; mức điểm trừ hợp lệ; quy định vi phạm đã được cấu hình.
+Điều kiện kích hoạt: Ban quản lý mở mục Quản lý kỷ luật.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách phiếu vi phạm (có thể lọc theo sinh viên, loại vi phạm, thời gian).
+2. Ban quản lý chọn thao tác (tạo/sửa/xóa phiếu vi phạm).
+3. Khi tạo phiếu: Ban quản lý chọn sinh viên, chọn loại vi phạm từ danh sách quy định, nhập mô tả chi tiết.
+4. Hệ thống tự động tính điểm trừ theo quy định.
+5. Hệ thống lưu phiếu vi phạm và trừ điểm rèn luyện của sinh viên.
+6. Hệ thống gửi email cảnh báo khi sinh viên đạt ngưỡng vi phạm nghiêm trọng.
+7. Ban quản lý có thể chuyển sang tab Bảng quy định để xem/thêm/sửa quy định vi phạm (tên vi phạm, mức điểm trừ, mô tả).
+8. Hệ thống hiển thị thống kê vi phạm theo sinh viên, phòng, loại vi phạm và danh sách sinh viên có nguy cơ bị xử lý kỷ luật.
+Luồng rẽ nhánh:
+3.1 Dữ liệu không hợp lệ → thông báo lỗi.
+5.1 Lưu thất bại → thông báo thất bại, rollback điểm.
+6.1 Gửi email thất bại → ghi log, hiển thị cảnh báo cho admin.
+7.1 Quy định trùng tên → thông báo lỗi.
+7.2 Lưu quy định thất bại → thông báo thất bại.

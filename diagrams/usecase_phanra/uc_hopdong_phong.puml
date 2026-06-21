@@ -1,0 +1,39 @@
+@startuml "UC Phân rã - Quản lý hợp đồng đăng ký"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam ArrowColor Black
+skinparam ArrowThickness 1
+skinparam shadowing false
+
+actor "<b>Ban quản lý</b>" as Admin
+
+usecase "<b>Xem danh sách hợp đồng</b>" as UC1
+usecase "<b>Xem chi tiết hợp đồng</b>" as UC2
+usecase "<b>Tạo hợp đồng từ hồ sơ đã duyệt</b>" as UC3
+usecase "<b>Gán phòng cho hợp đồng</b>" as UC4
+usecase "<b>Gợi ý phòng phù hợp tự động</b>" as UC5
+usecase "<b>Chấm dứt hợp đồng</b>" as UC6
+usecase "<b>Xem thống kê hợp đồng</b>" as UC7
+usecase "<b>Gửi email thông báo</b>" as UC8
+
+UC4 ..> UC5 : <<extend>>
+UC3 ..> UC4 : <<include>>
+UC4 ..> UC8 : <<include>>
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+@enduml

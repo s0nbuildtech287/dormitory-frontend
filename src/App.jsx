@@ -1,52 +1,48 @@
-import React, { useState } from "react";
+import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
+import { NavigationProvider } from "./contexts/NavigationContext.jsx";
+import { NotificationProvider } from "./contexts/NotificationContext.jsx";
+import { ChatBotProvider } from "./contexts/ChatBotContext.jsx";
 import Layout from "./components/Layout.jsx";
 import AIChatBot from "./components/AIChatBot.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
-import { UserRole } from "./utils/types.js";
-import { MOCK_ADMIN, MOCK_STUDENT } from "./utils/constants.jsx";
-import { getComponentByRouteId } from "./router/index.js";
+import RouteConfig from "./router/RouteConfig.jsx";
 
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+const AppContent = () => {
+  const { user, isLoading, login, logout } = useAuth();
 
-  /**
-   * Handle user logout
-   */
-  const handleLogout = () => {
-    setUser(null);
-  };
-
-  /**
-   * Handle login and set initial active tab
-   */
-  const handleLogin = (userData) => {
-    setUser(userData);
-    const initialTab = userData.role === UserRole.ADMIN ? "dashboard" : "profile";
-    setActiveTab(initialTab);
-  };
-
-  if (!user) {
-    return <LoginPage onLogin={handleLogin} />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    );
   }
 
-  const renderContent = () => {
-    const Component = getComponentByRouteId(activeTab, user.role);
-    if (!Component) {
-      const defaultTab = user.role === UserRole.ADMIN ? "dashboard" : "profile";
-      const DefaultComponent = getComponentByRouteId(defaultTab, user.role);
-      return DefaultComponent ? <DefaultComponent user={user} tab={activeTab} /> : <div className="text-center py-10">Trang không tìm thấy</div>;
-    }
-    return <Component user={user} tab={activeTab} />;
-  };
+  if (!user) {
+    return <LoginPage onLogin={login} />;
+  }
 
   return (
-    <>
-      <Layout user={user} onLogout={handleLogout} activeTab={activeTab} setActiveTab={setActiveTab}>
-        <div className="animate-in fade-in duration-500">{renderContent()}</div>
-      </Layout>
-      <AIChatBot />
-    </>
+    <NotificationProvider user={user}>
+      <ChatBotProvider>
+        <Layout user={user} onLogout={logout}>
+          <div className="animate-in fade-in duration-500">
+            <RouteConfig />
+          </div>
+        </Layout>
+        <AIChatBot />
+      </ChatBotProvider>
+    </NotificationProvider>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <NavigationProvider>
+        <AppContent />
+      </NavigationProvider>
+    </AuthProvider>
   );
 };
 

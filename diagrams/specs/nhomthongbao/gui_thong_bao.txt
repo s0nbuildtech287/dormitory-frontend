@@ -1,0 +1,14 @@
+Mô tả: Tạo và gửi thông báo đến toàn bộ hoặc nhóm sinh viên.
+Tác nhân: Ban quản lý.
+Các ràng buộc: Nội dung thông báo không rỗng; danh sách người nhận hợp lệ.
+Điều kiện kích hoạt: Ban quản lý chọn “Tạo thông báo”.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị form tạo thông báo.
+2. Ban quản lý nhập nội dung và chọn đối tượng nhận.
+3. Hệ thống lưu thông báo.
+4. Hệ thống gửi thông báo (realtime/email).
+5. Hệ thống thông báo gửi thành công.
+Luồng rẽ nhánh:
+2.1 Thiếu nội dung → thông báo lỗi.
+4.1 Gửi thất bại một phần → hiển thị danh sách lỗi.

@@ -1,0 +1,55 @@
+@startuml "UC Phân rã - Quản lý tài khoản"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor "<b>Ban quản lý</b>" as Admin
+actor "<b>Quản trị viên</b>" as SuperAdmin
+actor "<b>Sinh viên</b>" as SV
+
+usecase "<b>Xem thông tin cá nhân</b>" as UC1
+usecase "<b>Cập nhật thông tin cá nhân</b>" as UC2
+usecase "<b>Đổi mật khẩu</b>" as UC3
+usecase "<b>Tạo tài khoản quản trị mới</b>" as UC4
+usecase "<b>Khoá / mở chế độ mã OTP</b>" as UC5
+
+usecase "<b>Đăng nhập</b>" as UC6
+usecase "<b>Đăng xuất</b>" as UC7
+usecase "<b>Quên mật khẩu</b>" as UC8
+usecase "<b>Gửi OTP qua email</b>" as UC9
+usecase "<b>Xác thực mã OTP</b>" as UC10
+usecase "<b>Đặt lại mật khẩu mới</b>" as UC11
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+
+SuperAdmin --> UC4
+SuperAdmin --> UC5
+SuperAdmin --> UC6
+SuperAdmin --> UC7
+
+SV --> UC6
+SV --> UC7
+SV --> UC8
+
+SV --> UC1
+SV --> UC2
+SV --> UC3
+
+UC8 ..> UC9 : <<include>>
+UC8 ..> UC10 : <<include>>
+UC8 ..> UC11 : <<include>>
+@enduml

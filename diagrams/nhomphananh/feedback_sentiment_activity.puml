@@ -1,0 +1,24 @@
+@startuml "Feedback Sentiment Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Ban quản lý|
+start
+:Mở mục Thống kê phản ánh & AI;
+|Hệ thống|
+:Tải dữ liệu phân tích cảm xúc (AI Statistics);
+:Tổng hợp phân bố cảm xúc (Tích cực/Tiêu cực/Trung lập);
+:Thống kê Top cảm xúc & Phản ánh ưu tiên cao;
+:Hiển thị biểu đồ thống kê trực quan;
+|Ban quản lý|
+:Đọc biểu đồ xu hướng và phân tích cảm xúc;
+if (Lọc dữ liệu theo thời gian/tòa nhà?) then (Có)
+  :Chọn tiêu chí lọc;
+  |Hệ thống|
+  :Truy vấn dữ liệu theo bộ lọc;
+  :Cập nhật các biểu đồ thống kê;
+  |Ban quản lý|
+else (Không)
+endif
+:Nắm bắt tình hình và lên phương án giải quyết;
+stop
+@enduml

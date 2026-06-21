@@ -1,0 +1,37 @@
+@startuml "Discipline Management Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống\nEmail" as Mail
+database "CSDL" as DB
+
+== Quản lý phiếu vi phạm ==
+Admin -> FE: 1. Tạo hoặc cập nhật phiếu vi phạm
+FE -> BE: 2. Gửi yêu cầu cập nhật vi phạm
+BE -> DB: 3. Lưu thông tin phiếu vi phạm mới
+DB --> BE: 4. Xác nhận lưu thành công
+BE -> DB: 5. Tính toán lại điểm rèn luyện sinh viên
+DB --> BE: 6. Xác nhận cập nhật điểm rèn luyện
+alt Sinh viên đạt ngưỡng cảnh báo
+  BE -> Mail: 7. Gửi email cảnh báo vi phạm kỷ luật
+  Mail --> BE: 8. Xác nhận đã gửi
+end
+BE --> FE: 9. Trả về kết quả cập nhật vi phạm
+FE --> Admin: 10. Hiển thị thông báo thành công
+
+== Quản lý quy định vi phạm ==
+Admin -> FE: 11. Xem hoặc sửa đổi quy chế kỷ luật
+FE -> BE: 12. Gửi yêu cầu lưu quy chế mới
+BE -> DB: 13. Lưu quy định vi phạm mới
+DB --> BE: 14. Xác nhận lưu thành công
+alt Có sự sửa đổi quy định
+  BE -> DB: 15. Ghi log lịch sử thay đổi quy chế
+  DB --> BE: 16. Xác nhận ghi log
+end
+BE --> FE: 17. Trả về danh sách quy chế mới
+FE --> Admin: 18. Cập nhật giao diện nội quy
+@enduml

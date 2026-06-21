@@ -1,0 +1,66 @@
+@startuml "Admin Account Management Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Người dùng" as User
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
+
+== 1. Xác thực tài khoản (Đăng nhập & OTP) ==
+alt Đăng nhập hệ thống
+  User -> FE: 1. Nhập email và mật khẩu
+  FE -> BE: 2. Gửi yêu cầu đăng nhập
+  BE -> DB: 3. Kiểm tra thông tin tài khoản
+  DB --> BE: 4. Trả về thông tin tài khoản
+  BE -> BE: 5. Xác thực mật khẩu và tạo token
+  BE --> FE: 6. Trả về token và thông tin người dùng
+  FE --> User: 7. Chuyển hướng vào trang chủ
+else Quên mật khẩu và đặt lại bằng OTP
+  User -> FE: 8. Nhập email yêu cầu cấp lại mật khẩu
+  FE -> BE: 9. Yêu cầu cấp OTP qua email
+  BE -> DB: 10. Truy vấn tài khoản và gửi mail OTP
+  DB --> BE: 11. Trả về thông tin xác nhận
+  BE --> FE: 12. Hiển thị trang xác thực OTP
+  User -> FE: 13. Nhập mã OTP và mật khẩu mới
+  FE -> BE: 14. Gửi yêu cầu đặt lại mật khẩu
+  BE -> BE: 15. Kiểm tra OTP và đổi mật khẩu mới
+  BE -> DB: 16. Cập nhật mật khẩu mới vào CSDL
+  DB --> BE: 17. Xác nhận cập nhật thành công
+  BE --> FE: 18. Báo đổi mật khẩu thành công
+  FE --> User: 19. Báo đổi mật khẩu thành công
+end
+
+== 2. Quản lý thông tin tài khoản (Khi đã đăng nhập) ==
+User -> FE: 20. Xem trang thông tin cá nhân
+FE -> BE: 21. Yêu cầu dữ liệu cá nhân
+BE -> DB: 22. Lấy thông tin tài khoản
+DB --> BE: 23. Trả về thông tin cá nhân
+BE --> FE: 24. Hiển thị thông tin cá nhân
+
+alt Cập nhật thông tin cá nhân
+  User -> FE: 25. Nhập thông tin mới và lưu
+  FE -> BE: 26. Gửi yêu cầu cập nhật
+  BE -> DB: 27. Cập nhật hồ sơ tài khoản
+  DB --> BE: 28. Xác nhận cập nhật thành công
+  BE --> FE: 29. Báo cập nhật thành công
+else Đổi mật khẩu trong trang cá nhân
+  User -> FE: 30. Nhập mật khẩu cũ và mới
+  FE -> BE: 31. Gửi yêu cầu đổi mật khẩu
+  BE -> DB: 32. Kiểm tra và cập nhật mật khẩu mới
+  DB --> BE: 33. Xác nhận đổi mật khẩu thành công
+  BE --> FE: 34. Báo đổi mật khẩu thành công
+end
+
+== 3. Tính năng quản trị nâng cao (Chỉ dành cho Admin) ==
+alt Tạo tài khoản Admin mới
+  User -> FE: 35. Nhập thông tin admin mới cần tạo
+  FE -> BE: 36. Gửi yêu cầu tạo admin mới
+  BE -> DB: 37. Kiểm tra quyền Admin của người thực hiện
+  DB --> BE: 38. Xác nhận đủ quyền Admin
+  BE -> DB: 39. Tạo tài khoản admin mới
+  DB --> BE: 40. Xác nhận tạo thành công
+  BE --> FE: 41. Báo tạo thành công tài khoản
+end
+@enduml

@@ -1,0 +1,28 @@
+@startuml "Auth Login Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+' Activity Diagram: Login (User vs System)
+|Người dùng|
+start
+:Chọn đăng nhập;
+|Hệ thống|
+:Hiển thị form đăng nhập;
+|Người dùng|
+:Nhập email + mật khẩu;
+:Nhấn "Đăng nhập";
+|Hệ thống|
+:Nhận thông tin đăng nhập;
+:Kiểm tra email + mật khẩu;
+if (Hợp lệ?) then (Có)
+  :Tạo token đăng nhập;
+  :Trả thông tin người dùng;
+  |Người dùng|
+  :Chuyển đến trang chức năng;
+  stop
+else (Không)
+  :Trả lỗi đăng nhập;
+  |Người dùng|
+  :Hiển thị thông báo sai thông tin;
+  stop
+endif
+@enduml

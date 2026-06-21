@@ -1,0 +1,32 @@
+@startuml "UC Phân rã - Sinh viên đăng ký hồ sơ"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam ArrowColor Black
+skinparam ArrowThickness 1
+skinparam shadowing false
+
+actor "<b>Sinh viên</b>" as SV
+
+usecase "<b>Điền thông tin hồ sơ</b>" as UC1
+usecase "<b>Tải lên ảnh minh chứng</b>" as UC2
+usecase "<b>Gửi hồ sơ đăng ký</b>" as UC3
+usecase "<b>Nhận thông báo kết quả</b>" as UC4
+
+UC3 ..> UC2 : <<include>>
+UC3 ..> UC1 : <<include>>
+UC3 ..> UC4 : <<include>>
+
+SV --> UC1
+SV --> UC2
+SV --> UC3
+SV --> UC4
+@enduml

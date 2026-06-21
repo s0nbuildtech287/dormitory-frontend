@@ -1,0 +1,68 @@
+@startuml "Admin Account Management Activity"
+skinparam defaultFontSize 24
+skinparam defaultFontName "Times New Roman"
+|Ban quản lý|
+start
+:Đăng nhập
+hệ thống;
+:Vào mục
+Quản lý tài khoản;
+:Chọn chức
+năng;
+if (Xem thông
+tin?) then (Có)
+  |Hệ thống|
+  :Truy vấn thông
+  tin cá nhân;
+  |Ban quản lý|
+  :Xem thông
+  tin;
+elseif (Cập nhật
+thông tin?) then (Có)
+  |Ban quản lý|
+  :Nhập thông
+  tin cập nhật;
+  |Hệ thống|
+  :Kiểm tra hợp
+  lệ;
+  :Lưu cập
+  nhật;
+  |Ban quản lý|
+  :Nhận thông
+  báo thành công;
+elseif (Đổi mật
+khẩu?) then (Có)
+  |Ban quản lý|
+  :Nhập mật khẩu
+  cũ + mới;
+  |Hệ thống|
+  :Xác thực mật
+  khẩu cũ;
+  :Cập nhật mật
+  khẩu mới;
+  |Ban quản lý|
+  :Nhận thông
+  báo thành công;
+elseif (Tạo admin
+mới?) then (Có)
+  |Ban quản lý|
+  :Nhập thông tin
+  admin mới;
+  |Hệ thống|
+  :Tạo tài khoản;
+  |Ban quản lý|
+  :Nhận thông báo
+  thành công;
+else (Bật/tắt OTP)
+  |Ban quản lý|
+  :Chọn bật/tắt
+  OTP;
+  |Hệ thống|
+  :Cập nhật trạng
+  thái OTP;
+  |Ban quản lý|
+  :Nhận thông báo
+  thành công;
+endif
+stop
+@enduml

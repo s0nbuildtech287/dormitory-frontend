@@ -1,0 +1,22 @@
+@startuml "Registration Submit Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Sinh viên|
+start
+:Truy cập trang đăng ký hồ sơ;
+:Nhập thông tin cá nhân;
+:Đính kèm ảnh minh chứng;
+:Chọn “Gửi hồ sơ”;
+|Hệ thống|
+:Kiểm tra dữ liệu;
+if (Hợp lệ?) then (Có)
+  :Lưu hồ sơ vào CSDL;
+  :Đặt trạng thái = PENDING;
+  :Thông báo gửi thành công;
+else (Không)
+  :Thông báo lỗi và yêu cầu sửa;
+endif
+|Sinh viên|
+:Hoàn tất;
+stop
+@enduml

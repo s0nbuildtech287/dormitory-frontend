@@ -1,0 +1,51 @@
+@startuml
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam ArrowColor Black
+skinparam ArrowThickness 1
+skinparam shadowing false
+
+actor "<b>Sinh viên</b>" as SV
+
+together {
+  usecase "<b>Xem thông tin cá nhân</b>" as UC1
+  usecase "<b>Xem điểm rèn luyện</b>" as UC2
+  usecase "<b>Xem lịch sử kỷ luật</b>" as UC7
+}
+
+together {
+  usecase "<b>Xem danh sách hợp đồng</b>" as UC3
+  usecase "<b>Xem chi tiết hợp đồng</b>" as UC4
+  usecase "<b>Xem thông tin phòng đang ở</b>" as UC5
+  usecase "<b>Xem trạng thái tiền cọc</b>" as UC6
+}
+
+UC1 -[hidden]-> UC2
+UC2 -[hidden]-> UC7
+
+UC3 -[hidden]-> UC4
+UC4 -[hidden]-> UC5
+UC5 -[hidden]-> UC6
+
+UC1 -[hidden]right-> UC3
+UC2 -[hidden]right-> SV
+SV -[hidden]right-> UC4
+UC7 -[hidden]right-> UC5
+
+UC1 <-- SV
+UC2 <-- SV
+SV --> UC7
+
+UC3 <-- SV
+SV --> UC4
+SV --> UC5
+SV --> UC6
+@enduml

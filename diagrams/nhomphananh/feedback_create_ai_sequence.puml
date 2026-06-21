@@ -1,0 +1,22 @@
+@startuml "Feedback Create AI Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống AI\n(Gemini)" as Gemini
+database "CSDL" as DB
+
+Student -> FE: 1. Nhập nội dung phản ánh mới
+FE -> BE: 2. Gửi yêu cầu lưu phản ánh
+BE -> DB: 3. Lưu phản ánh vào cơ sở dữ liệu
+DB --> BE: 4. Xác nhận lưu thành công
+BE -> Gemini: 5. Gửi nội dung phản ánh đi phân tích
+Gemini --> BE: 6. Trả về thái độ và mức ưu tiên
+BE -> DB: 7. Cập nhật kết quả phân tích AI
+DB --> BE: 8. Xác nhận cập nhật
+BE --> FE: 9. Báo gửi phản ánh thành công
+FE --> Student: 10. Hiển thị thông báo hoàn tất
+@enduml

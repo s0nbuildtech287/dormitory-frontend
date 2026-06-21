@@ -11,7 +11,8 @@ export const routeUtils = {
    * @returns {Array} Menu items
    */
   getMenuItems: (role) => {
-    return role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
+    const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.STAFF;
+    return isAdmin ? ADMIN_ROUTES : STUDENT_ROUTES;
   },
 
   /**
@@ -31,7 +32,8 @@ export const routeUtils = {
    * @returns {string} Default route id
    */
   getDefaultRoute: (role) => {
-    return role === UserRole.ADMIN ? 'dashboard' : 'profile';
+    const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.STAFF;
+    return isAdmin ? 'dashboard' : 'profile';
   },
 
   /**

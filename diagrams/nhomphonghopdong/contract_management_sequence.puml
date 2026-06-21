@@ -1,0 +1,33 @@
+@startuml "Contract Management Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
+
+== Tạo và gán phòng hợp đồng ==
+Admin -> FE: 1. Xem thông tin hợp đồng chờ gán
+FE -> BE: 2. Yêu cầu gợi ý phòng phù hợp
+BE -> DB: 3. Truy vấn phòng trống cùng tiêu chí
+DB --> BE: 4. Trả về danh sách phòng gợi ý
+BE --> FE: 5. Hiển thị danh sách phòng gợi ý
+Admin -> FE: 6. Chọn một phòng và xác nhận gán
+FE -> BE: 7. Gửi yêu cầu gán phòng
+BE -> DB: 8. Cập nhật trạng thái hợp đồng và số người
+DB --> BE: 9. Xác nhận lưu thành công
+BE --> FE: 10. Trả về kết quả gán phòng
+Admin -> FE: 11. Yêu cầu gửi email thông báo
+FE -> BE: 12. Gửi email thông tin phòng cho sinh viên
+BE --> FE: 13. Xác nhận đã gửi email thành công
+
+== Chấm dứt hợp đồng ==
+Admin -> FE: 14. Chọn hợp đồng cần chấm dứt
+FE -> BE: 15. Gửi yêu cầu chấm dứt hợp đồng
+BE -> DB: 16. Cập nhật hợp đồng và giải phóng giường
+DB --> BE: 17. Xác nhận cập nhật thành công
+BE --> FE: 18. Báo chấm dứt hợp đồng thành công
+FE --> Admin: 19. Cập nhật danh sách hợp đồng
+@enduml

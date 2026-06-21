@@ -1,0 +1,23 @@
+@startuml "Invoice Management Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Kế toán|
+start
+:Mở quản lý hóa đơn;
+:Xem danh sách hóa đơn;
+:Tạo/Sửa/Xóa hóa đơn;
+:Điều chỉnh bảng giá (điện/nước/phí);
+|Hệ thống|
+:Tự động tạo hóa đơn theo phòng;
+:Tự động chuyển trạng thái theo kỳ hạn;
+|Kế toán|
+:Xem/kiểm tra hóa đơn;
+|Hệ thống|
+:Kiểm tra dữ liệu;
+:Tính tiền điện/nước/phí;
+:Tạo hóa đơn;
+|Kế toán|
+:Nhận kết quả;
+stop
+@enduml
+

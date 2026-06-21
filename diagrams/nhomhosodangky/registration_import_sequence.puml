@@ -1,0 +1,29 @@
+@startuml "Registration Import Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống AI\n(OCR Vision)" as Vision
+database "CSDL" as DB
+
+Admin -> FE: 1. Tải lên file Excel hoặc link Google Sheets
+FE -> BE: 2. Gửi dữ liệu hồ sơ cần nhập
+BE -> DB: 3. Lưu tạm danh sách hồ sơ mới
+DB --> BE: 4. Xác nhận lưu tạm thành công
+
+loop Mỗi hồ sơ vừa nhập
+  BE -> BE: 5. Tính điểm ưu tiên và điểm xét tuyển
+  opt Có ảnh minh chứng diện chính sách
+    BE -> Vision: 6. Gửi ảnh minh chứng để quét OCR
+    Vision --> BE: 7. Trả về kết quả phân tích ảnh
+  end
+  BE -> DB: 8. Cập nhật điểm và gợi ý xét duyệt
+  DB --> BE: 9. Xác nhận cập nhật
+end
+
+BE --> FE: 10. Trả về kết quả nhập dữ liệu
+FE --> Admin: 11. Hiển thị danh sách hồ sơ kèm gợi ý duyệt
+@enduml

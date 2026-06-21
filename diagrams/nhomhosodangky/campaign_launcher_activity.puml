@@ -1,0 +1,26 @@
+@startuml "Campaign Launcher Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Quản lý tòa nhà|
+start
+:Kích hoạt chuẩn bị đợt mới;
+|Hệ thống|
+:Tính toán dự báo\ncung chỗ ở;
+:Tính toán dự báo\ncầu chỗ ở;
+:Hiển thị báo cáo\nđối chiếu Cung-Cầu;
+|Quản lý tòa nhà|
+:Kiểm tra và\nxác nhận số liệu;
+:Chọn gửi email thông báo\nhết hạn hợp đồng;
+|Hệ thống|
+fork
+  :Lọc hợp đồng năm cuối (Year 4);
+  :Gửi email thông báo\nkết thúc thuê phòng\n& yêu cầu trả phòng;
+fork again
+  :Lọc hợp đồng khóa dưới (Year 1-3);
+  :Gửi email nhắc nhở\ngia hạn hợp đồng mới;
+end fork
+|Quản lý tòa nhà|
+:Thiết lập chỉ tiêu \ncho Tân SV / Khóa cũ\nvà từng Khoa (Tân SV / Lưu SV);
+:Kích hoạt "Mở đợt đăng ký mới";
+stop
+@enduml

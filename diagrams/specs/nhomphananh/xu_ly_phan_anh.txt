@@ -1,0 +1,14 @@
+Mô tả: Ban quản lý xem danh sách, cập nhật trạng thái, phản hồi hoặc xóa phản ánh.
+Tác nhân: Ban quản lý.
+Các ràng buộc: Có quyền xử lý phản ánh.
+Điều kiện kích hoạt: Ban quản lý mở mục phản ánh.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách phản ánh.
+2. Ban quản lý chọn phản ánh để xem chi tiết.
+3. Ban quản lý cập nhật trạng thái hoặc phản hồi.
+4. Hệ thống lưu thay đổi.
+5. Hệ thống thông báo kết quả.
+Luồng rẽ nhánh:
+3.1 Ban quản lý chọn xóa phản ánh → hệ thống yêu cầu xác nhận.
+4.1 Lỗi cập nhật → thông báo thất bại.

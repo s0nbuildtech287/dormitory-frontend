@@ -32,7 +32,7 @@ export const IMAGES = {
  * @returns {string} Avatar URL
  */
 export const getAvatarUrl = (name, role = 'STUDENT') => {
-  const bgColor = role === 'ADMIN' ? '1e40af' : '10b981';
+  const bgColor = role !== 'STUDENT' ? '1e40af' : '10b981';
   return `https://ui-avatars.com/api/?name=${name}&background=${bgColor}&color=fff`;
 };
 

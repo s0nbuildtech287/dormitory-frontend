@@ -1,0 +1,27 @@
+@startuml "Asset Import Export Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Ban quản lý|
+start
+:Chọn nhập/xuất tài sản;
+if (Nhập kho?) then (Có)
+  :Nhập thông tin nhập kho;
+  |Hệ thống|
+  :Kiểm tra dữ liệu;
+  :Cập nhật tồn kho;
+  :Lưu nhập kho;
+  |Ban quản lý|
+  :Nhận kết quả;
+  stop
+else (Xuất kho)
+  :Chọn tài sản + phòng nhận;
+  :Nhập số lượng xuất;
+  |Hệ thống|
+  :Kiểm tra tồn kho;
+  :Cập nhật tồn kho;
+  :Lưu xuất kho;
+  |Ban quản lý|
+  :Nhận kết quả;
+  stop
+endif
+@enduml

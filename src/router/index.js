@@ -1,70 +1,105 @@
-import React from 'react';
-import AdminDashboard from '../pages/AdminDashboard.jsx';
-import RegistrationManagement from '../pages/RegistrationManagement.jsx';
-import StudentDashboard from '../pages/StudentDashboard.jsx';
-import RoomManagement from '../pages/RoomManagement.jsx';
-import StudentManagement from '../pages/StudentManagement.jsx';
-import BillingManagement from '../pages/BillingManagement.jsx';
-import NotificationManagement from '../pages/NotificationManagement.jsx';
-import FeedbackManagement from '../pages/FeedbackManagement.jsx';
-import { UserRole } from '../utils/types.js';
+import React from "react";
+import AdminDashboard from "../pages/admin_dashboard/index.jsx";
+import RegistrationManagement from "../pages/registration_management/index.jsx";
+import StudentDashboard from "../pages/student/index.jsx";
+import RoomManagement from "../pages/room_management/index.jsx";
+import AssetManagement from "../pages/asset_management/index.jsx";
+import ContractManagement from "../pages/contract_management/index.jsx";
+import DisciplineManagement from "../pages/discipline_management/index.jsx";
+import BillingManagement from "../pages/billing_management/index.jsx";
+import NotificationManagement from "../pages/notification_management/index.jsx";
+import FeedbackManagement from "../pages/feedback_management/index.jsx";
+import ProfileAdmin from "../pages/profile_admin/index.jsx";
+import { UserRole } from "../utils/types.js";
 
 // Admin Routes
 export const ADMIN_ROUTES = [
   {
-    id: 'dashboard',
-    label: 'Tổng quan',
-    path: '/dashboard',
+    id: "dashboard",
+    label: "Tổng quan",
+    path: "/dashboard",
     component: AdminDashboard,
-    icon: 'LayoutDashboard',
+    icon: "LayoutDashboard",
     role: UserRole.ADMIN,
   },
   {
-    id: 'registrations',
-    label: 'Hồ sơ đăng ký',
-    path: '/registrations',
+    id: "registrations",
+    label: "Hồ sơ đăng ký",
+    path: "/registrations",
     component: RegistrationManagement,
-    icon: 'FileText',
+    icon: "FileText",
     role: UserRole.ADMIN,
   },
   {
-    id: 'rooms',
-    label: 'Quản lý phòng',
-    path: '/rooms',
+    id: "students",
+    label: "Hợp đồng sinh viên",
+    path: "/students",
+    component: ContractManagement,
+    icon: "ScrollText",
+    role: UserRole.ADMIN,
+    submenu: [
+      {
+        id: "students-list",
+        label: "Thông tin sinh viên",
+        path: "/students",
+        component: ContractManagement,
+        icon: "UserCheck",
+      },
+      {
+        id: "discipline",
+        label: "Cảnh báo kỷ luật",
+        path: "/discipline",
+        component: DisciplineManagement,
+        icon: "ShieldAlert",
+      },
+    ],
+  },
+  {
+    id: "rooms",
+    label: "Quản lý phòng",
+    path: "/rooms",
     component: RoomManagement,
-    icon: 'Home',
+    icon: "Building2",
     role: UserRole.ADMIN,
+    submenu: [
+      {
+        id: "rooms-list",
+        label: "Thông tin phòng",
+        path: "/rooms",
+        component: RoomManagement,
+        icon: "DoorOpen",
+      },
+      {
+        id: "assets",
+        label: "Cơ sở vật chất",
+        path: "/assets",
+        component: AssetManagement,
+        icon: "Package",
+      },
+    ],
   },
   {
-    id: 'students',
-    label: 'Sinh viên & Hợp đồng',
-    path: '/students',
-    component: StudentManagement,
-    icon: 'Users',
-    role: UserRole.ADMIN,
-  },
-  {
-    id: 'billing',
-    label: 'Hóa đơn',
-    path: '/billing',
+    id: "billing",
+    label: "Hóa đơn",
+    path: "/billing",
     component: BillingManagement,
-    icon: 'CreditCard',
+    icon: "CreditCard",
     role: UserRole.ADMIN,
   },
   {
-    id: 'notifications',
-    label: 'Thông báo',
-    path: '/notifications',
+    id: "notifications",
+    label: "Thông báo",
+    path: "/notifications",
     component: NotificationManagement,
-    icon: 'Bell',
+    icon: "Bell",
     role: UserRole.ADMIN,
   },
   {
-    id: 'feedback',
-    label: 'Phản ánh',
-    path: '/feedback',
+    id: "feedback",
+    label: "Phản ánh",
+    path: "/feedback",
     component: FeedbackManagement,
-    icon: 'MessageSquare',
+    icon: "MessageSquare",
     role: UserRole.ADMIN,
   },
 ];
@@ -72,43 +107,59 @@ export const ADMIN_ROUTES = [
 // Student Routes
 export const STUDENT_ROUTES = [
   {
-    id: 'profile',
-    label: 'Thông tin cá nhân',
-    path: '/profile',
+    id: "profile",
+    label: "Thông tin cá nhân",
+    path: "/profile",
     component: StudentDashboard,
-    icon: 'UserCircle',
+    icon: "UserCircle",
     role: UserRole.STUDENT,
   },
   {
-    id: 'contract',
-    label: 'Hợp đồng KTX',
-    path: '/contract',
+    id: "contract",
+    label: "Hợp đồng sinh viên",
+    path: "/contract",
     component: StudentDashboard,
-    icon: 'FileText',
+    icon: "FileText",
     role: UserRole.STUDENT,
   },
   {
-    id: 'bills',
-    label: 'Theo dõi hóa đơn',
-    path: '/bills',
+    id: "bills",
+    label: "Theo dõi hóa đơn",
+    path: "/bills",
     component: StudentDashboard,
-    icon: 'CreditCard',
+    icon: "CreditCard",
     role: UserRole.STUDENT,
   },
   {
-    id: 'notifications',
-    label: 'Thông báo',
-    path: '/notifications',
+    id: "home",
+    label: "Thông báo",
+    path: "/home",
     component: StudentDashboard,
-    icon: 'Bell',
+    icon: "Bell",
     role: UserRole.STUDENT,
   },
   {
-    id: 'feedback',
-    label: 'Gửi phản ánh',
-    path: '/feedback',
+    id: "news",
+    label: "Tin tức TLU",
+    path: "/news",
     component: StudentDashboard,
-    icon: 'MessageSquare',
+    icon: "Newspaper",
+    role: UserRole.STUDENT,
+  },
+  {
+    id: "feedback",
+    label: "Gửi phản ánh",
+    path: "/feedback",
+    component: StudentDashboard,
+    icon: "MessageSquare",
+    role: UserRole.STUDENT,
+  },
+  {
+    id: "regulations",
+    label: "Nội quy",
+    path: "/regulations",
+    component: StudentDashboard,
+    icon: "BookOpen",
     role: UserRole.STUDENT,
   },
 ];
@@ -119,7 +170,8 @@ export const STUDENT_ROUTES = [
  * @returns {Array} Routes for the role
  */
 export const getRoutesByRole = (role) => {
-  return role === UserRole.ADMIN ? ADMIN_ROUTES : STUDENT_ROUTES;
+  const isAdmin = role === UserRole.ADMIN || role === UserRole.SUPER_ADMIN || role === UserRole.STAFF;
+  return isAdmin ? ADMIN_ROUTES : STUDENT_ROUTES;
 };
 
 /**

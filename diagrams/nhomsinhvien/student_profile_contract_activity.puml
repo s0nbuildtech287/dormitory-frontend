@@ -1,0 +1,13 @@
+@startuml "Student Profile Contract Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Sinh viên|
+start
+:Đăng nhập;
+:Vào hồ sơ cá nhân;
+|Hệ thống|
+:Lấy thông tin hồ sơ + hợp đồng;
+|Sinh viên|
+:Xem chi tiết;
+stop
+@enduml

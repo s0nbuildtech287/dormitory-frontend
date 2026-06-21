@@ -1,0 +1,37 @@
+@startuml "UC Phân rã - Sử dụng Chatbot AI"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor "<b>Sinh viên</b>" as SV
+actor "<b>OpenAI API</b>" as AI
+
+usecase "<b>Mở cửa sổ chatbot</b>" as UC1
+usecase "<b>Gửi câu hỏi</b>" as UC2
+usecase "<b>Nhận câu trả lời từ AI</b>" as UC3
+usecase "<b>Hỏi tiếp trong cùng hội thoại</b>" as UC4
+usecase "<b>Bắt đầu hội thoại mới</b>" as UC5
+usecase "<b>Chọn model AI</b>" as UC6
+usecase "<b>Phân tích bài báo qua chatbot</b>" as UC7
+
+UC2 ..> UC3 : <<include>>
+UC4 ..> UC3 : <<include>>
+UC7 ..> UC2 : <<include>>
+
+SV --> UC1
+SV --> UC2
+SV --> UC4
+SV --> UC5
+SV --> UC6
+SV --> UC7
+AI --> UC3
+@enduml

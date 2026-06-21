@@ -1,0 +1,26 @@
+@startuml "Room Assignment Activity"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+|Ban quản lý|
+start
+if (Chọn phương thức xếp phòng?) then (Gán thủ công từng người)
+  :Chọn hồ sơ sinh viên cần xếp phòng;
+  |Hệ thống|
+  :Tìm kiếm phòng trống phù hợp\n(Cùng giới tính, khóa học, khoa);
+  :Gợi ý danh sách 5 phòng tối ưu;
+  |Ban quản lý|
+  :Chọn một phòng cụ thể trong danh sách;
+  |Hệ thống|
+  :Gán phòng cho sinh viên;\n:Chuyển trạng thái hợp đồng thành hoạt động;\n:Cập nhật số người ở trong phòng;
+else (Gán tự động hàng loạt)
+  |Ban quản lý|
+  :Chọn khoa cần xếp phòng (tùy chọn);\n:Bấm chạy gán tự động;
+  |Hệ thống|
+  :Lấy danh sách các hợp đồng chờ gán;\n:Lấy danh sách các phòng trống;
+  :Sắp xếp sinh viên theo ưu tiên;\n:Tự động tìm phòng khớp giới tính, khóa học, khoa;
+  :Gán phòng cho sinh viên;\n:Chuyển trạng thái hợp đồng thành hoạt động;\n:Cập nhật số người ở trong các phòng;
+endif
+|Ban quản lý|
+:Xem báo cáo kết quả xếp phòng;
+stop
+@enduml

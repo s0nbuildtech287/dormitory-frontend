@@ -1,0 +1,15 @@
+Mô tả: Quản lý phòng ở (xem, thêm, sửa, xóa, cập nhật chỉ số điện/nước).
+Tác nhân: Ban quản lý.
+Các ràng buộc: Phòng không được xóa khi có hợp đồng đang hiệu lực.
+Điều kiện kích hoạt: Ban quản lý mở mục Quản lý phòng ở.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách phòng.
+2. Ban quản lý chọn thao tác (thêm/sửa/xóa/cập nhật chỉ số).
+3. Hệ thống kiểm tra dữ liệu.
+4. Hệ thống lưu thay đổi.
+5. Hệ thống thông báo kết quả.
+Luồng rẽ nhánh:
+2.1 Xóa phòng đang có hợp đồng → thông báo không thể xóa.
+3.1 Dữ liệu không hợp lệ → thông báo lỗi.
+4.1 Lưu thất bại → thông báo thất bại.

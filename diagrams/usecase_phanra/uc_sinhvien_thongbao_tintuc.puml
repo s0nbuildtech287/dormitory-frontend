@@ -1,0 +1,33 @@
+@startuml "UC Phân rã - Sinh viên: Thông báo & Tin tức"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+  ArrowColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+
+actor "<b>Sinh viên</b>" as SV
+
+usecase "<b>Xem danh sách thông báo</b>" as UC1
+usecase "<b>Xem chi tiết thông báo</b>" as UC2
+usecase "<b>Nhận thông báo thời gian thực</b>" as UC3
+usecase "<b>Xem danh sách tin tức TLU</b>" as UC4
+usecase "<b>Lọc tin tức theo danh mục</b>" as UC5
+usecase "<b>Phân tích bài báo bằng AI</b>" as UC6
+usecase "<b>Hỏi thêm về bài báo qua chatbot</b>" as UC7
+
+UC1 ..> UC3 : <<include>>
+UC4 ..> UC5 : <<extend>>
+UC6 ..> UC7 : <<extend>>
+
+SV --> UC1
+SV --> UC2
+SV --> UC4
+SV --> UC6
+@enduml

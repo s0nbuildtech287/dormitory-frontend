@@ -1,0 +1,38 @@
+@startuml "Registration Review Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Quản lý tòa nhà" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
+
+alt Chế độ 1: Duyệt thủ công
+  Admin -> FE: 1. Chọn hồ sơ & ghi chú duyệt/từ chối
+  FE -> BE: 2. Yêu cầu duyệt hoặc từ chối
+  BE -> DB: 3. Cập nhật trạng thái hồ sơ
+  opt Trường hợp duyệt thành công
+    BE -> DB: 4. Tạo tài khoản & hợp đồng mới
+  end
+  BE -> DB: 5. Lưu thông tin thông báo
+  BE --> FE: 6. Kết quả xử lý đơn
+  FE --> Admin: 7. Hiển thị trạng thái mới
+
+else Chế độ 2: Duyệt tự động hàng loạt
+  Admin -> FE: 1. Thiết lập chỉ tiêu & chạy duyệt
+  FE -> BE: 2. Gửi yêu cầu duyệt tự động
+  BE -> DB: 3. Lấy cài đặt chỉ tiêu & đơn chờ
+  BE -> BE: 4. Sắp xếp hồ sơ & phân bổ chỉ tiêu
+  
+  opt Chạy duyệt thật (không mô phỏng)
+    BE -> DB: 5. Cập nhật đơn, tạo tài khoản & hợp đồng
+    opt Có chỉ tiêu tạm thời
+      BE -> DB: 6. Lưu cấu hình chỉ tiêu mới
+    end
+  end
+  
+  BE --> FE: 7. Kết quả phân bổ (mô phỏng hoặc thật)
+  FE --> Admin: 8. Hiển thị báo cáo & nút xác nhận duyệt
+end
+@enduml

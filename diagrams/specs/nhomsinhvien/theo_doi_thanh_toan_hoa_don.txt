@@ -1,0 +1,21 @@
+Mô tả: Sinh viên theo dõi hóa đơn, gửi chỉ số điện/nước và thanh toán qua VNPay hoặc chuyển khoản ngân hàng.
+Tác nhân: Sinh viên, VNPay, Ngân hàng.
+Các ràng buộc: Hợp đồng đang hiệu lực; hóa đơn chưa thanh toán; thông tin chuyển khoản hợp lệ.
+Điều kiện kích hoạt: Sinh viên mở mục hóa đơn.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách hóa đơn và form nhập chỉ số.
+2. Sinh viên nhập chỉ số và gửi.
+3. Hệ thống kiểm tra và cập nhật hóa đơn.
+4. Sinh viên chọn hóa đơn và chọn phương thức thanh toán.
+5. Thanh toán qua VNPay: hệ thống tạo URL, VNPay xử lý và gửi callback.
+6. Thanh toán qua ngân hàng: sinh viên chuyển khoản theo thông tin hệ thống cung cấp.
+7. Hệ thống đối soát giao dịch và cập nhật trạng thái hóa đơn.
+8. Hệ thống hiển thị kết quả thanh toán.
+Luồng rẽ nhánh:
+2.1 Quá hạn nộp chỉ số → thông báo từ chối.
+3.1 Chỉ số không hợp lệ → thông báo lỗi.
+4.1 Tạo link thanh toán thất bại → thông báo lỗi.
+5.1 Thanh toán VNPay bị hủy/thất bại → cập nhật trạng thái FAILED.
+6.1 Chuyển khoản không khớp thông tin → thông báo lỗi.
+7.1 Đối soát thất bại → thông báo lỗi.

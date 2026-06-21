@@ -1,0 +1,21 @@
+Mô tả: Quản lý tài sản (thêm/sửa/xóa, điều chỉnh giới hạn, xem thống kê; nhập/xuất kho là quy trình riêng).
+Tác nhân: Ban quản lý.
+Các ràng buộc: Mã tài sản duy nhất; số lượng tồn không âm.
+Điều kiện kích hoạt: Ban quản lý mở mục tài sản.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị danh sách tài sản.
+2. Ban quản lý chọn thao tác thêm/sửa/xóa/điều chỉnh giới hạn.
+3. Hệ thống kiểm tra dữ liệu.
+4. Hệ thống lưu thay đổi.
+5. Hệ thống thông báo kết quả và cập nhật thống kê tài sản.
+Luồng phụ: Nhập/Xuất kho
+5.1 Ban quản lý chọn nhập kho hoặc xuất kho.
+5.2 Hệ thống kiểm tra dữ liệu/tồn kho.
+5.3 Hệ thống cập nhật tồn kho và lưu phiếu nhập/xuất.
+5.4 Hệ thống thông báo kết quả.
+Luồng rẽ nhánh:
+2.1 Xóa tài sản đã gán phòng → thông báo không thể xóa.
+3.1 Dữ liệu không hợp lệ → thông báo lỗi.
+4.1 Lưu thất bại → thông báo thất bại.
+5.2.1 Không đủ tồn kho → thông báo lỗi.

@@ -1,0 +1,23 @@
+@startuml "Student Registration Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Sinh viên|
+start
+:Mở trang đăng ký hồ sơ;
+:Nhập thông tin cá nhân;
+:Nhập học vấn + ưu tiên;
+:Đính kèm minh chứng (nếu có);
+:Gửi hồ sơ;
+|Hệ thống|
+:Kiểm tra dữ liệu;
+if (Hợp lệ?) then (Có)
+  :Lưu hồ sơ vào CSDL;
+  :Đặt trạng thái = Chờ duyệt;
+  :Thông báo gửi thành công;
+else (Không)
+  :Thông báo lỗi và yêu cầu sửa;
+endif
+|Sinh viên|
+:Hoàn tất;
+stop
+@enduml

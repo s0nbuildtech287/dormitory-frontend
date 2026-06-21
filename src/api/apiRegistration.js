@@ -1,0 +1,619 @@
+/**
+ * Registration Management API Functions
+ * Centralized API calls for registration-related operations
+ */
+
+import { API_BASE_URL } from "../config/api.js";
+
+/**
+ * Get auth token from localStorage
+ * @returns {string|null}
+ */
+const getAuthToken = () => localStorage.getItem('token');
+
+/**
+ * Get registrations with filters
+ * @param {Object} filters - Filter parameters
+ * @param {string} filters.status - Registration status
+ * @param {string} filters.gender - Gender filter
+ * @param {string} filters.search - Search term
+ * @param {string} filters.aiSuggestion - AI suggestion filter
+ * @param {number} filters.limit - Limit results
+ * @returns {Promise<Object>} Response with registrations list
+ */
+export const getRegistrations = async (filters = {}) => {
+  try {
+    const params = new URLSearchParams();
+
+    if (filters.status) params.append('status', filters.status);
+    if (filters.gender) params.append('gender', filters.gender);
+    if (filters.search) params.append('search', filters.search);
+    if (filters.aiSuggestion) params.append('aiSuggestion', filters.aiSuggestion);
+    if (filters.limit) params.append('limit', filters.limit);
+
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations?${params.toString()}`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải dữ liệu');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Get registration by ID
+ * @param {string} id - Registration ID
+ * @returns {Promise<Object>} Registration data
+ */
+export const getRegistrationById = async (id) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Không tìm thấy hồ sơ');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Create new registration
+ * @param {Object} registrationData - Registration information
+ * @returns {Promise<Object>} Created registration
+ */
+export const createRegistration = async (registrationData) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(registrationData)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Tạo hồ sơ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Update registration
+ * @param {string} id - Registration ID
+ * @param {Object} updateData - Data to update
+ * @returns {Promise<Object>} Updated registration
+ */
+export const updateRegistration = async (id, updateData) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updateData)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Cập nhật hồ sơ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Approve registration
+ * @param {string} id - Registration ID
+ * @param {string} note - Admin note
+ * @returns {Promise<Object>} Updated registration
+ */
+export const approveRegistration = async (id, note = null) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}/approve`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ note })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Duyệt hồ sơ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Reject registration
+ * @param {string} id - Registration ID
+ * @param {string} note - Rejection reason
+ * @returns {Promise<Object>} Updated registration
+ */
+export const rejectRegistration = async (id, note) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}/reject`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ note })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Từ chối hồ sơ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Delete registration
+ * @param {string} id - Registration ID
+ * @returns {Promise<Object>} Delete result
+ */
+export const deleteRegistration = async (id) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Xóa hồ sơ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Import registrations from CSV/Excel file
+ * @param {File} file - CSV/Excel file
+ * @returns {Promise<Object>} Import result with success count and errors
+ */
+export const importRegistrationFile = async (file) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/import/excel`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
+      } else if (response.status === 403) {
+        throw new Error('Bạn không có quyền thực hiện chức năng này!');
+      }
+      throw new Error(data.message || 'Import thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Get registration statistics
+ * @returns {Promise<Object>} Statistics data
+ */
+export const getRegistrationStatistics = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/statistics`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải thống kê');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Get registration scoring settings
+ * @returns {Promise<Object>} Scoring weights configuration
+ */
+export const getScoringWeights = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/scoring-weights`,
+      { method: 'GET', headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải cài đặt');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Update registration scoring settings
+ * @param {Object} scoringWeights - Scoring weights configuration
+ * @returns {Promise<Object>} Updated settings
+ */
+export const updateScoringWeights = async (scoringWeights) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/scoring-weights`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ scoringWeights })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Cập nhật cài đặt thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Recalculate AI scores for all registrations
+ * Used after updating scoring weights/settings
+ * @returns {Promise<Object>} Recalculation result
+ */
+export const recalculateAllScores = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/recalculate-scores`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Tính lại điểm thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Import registrations from Google Sheets URL
+ * @param {string} sheetUrl - URL Google Sheets
+ * @returns {Promise<Object>} Import result with success count and errors
+ */
+export const importFromGoogleSheets = async (sheetUrl) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/import/sheets`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ sheetUrl })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại!');
+      } else if (response.status === 403) {
+        throw new Error('Bạn không có quyền thực hiện chức năng này!');
+      }
+      throw new Error(data.message || 'Đồng bộ thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Get service account emails (to show admins which emails to share the sheet with)
+ * @returns {Promise<string[]>} List of service account emails
+ */
+export const getServiceAccountEmails = async () => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/service-accounts`,
+      { headers }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi tải danh sách service accounts');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * Validate images for a registration using Vision API
+ * @param {string} id - Registration ID
+ * @returns {Promise<Object>} Validation result
+ */
+export const validateRegistrationImages = async (id) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/${id}/validate-images`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Xác thực ảnh thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};
+
+/**
+ * CAMPAIGN LAUNCHER API
+ */
+
+/**
+ * Get room availability forecast
+ * @param {number} days - Số ngày dự báo
+ * @returns {Promise<Object>} { available_now, available_soon, total, forecast_days }
+ */
+export const getRoomForecast = async (days = 30) => {
+  const token = getAuthToken();
+  const response = await fetch(`${API_BASE_URL}/registrations/room-forecast?days=${days}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Lỗi tải dự báo phòng');
+  return data;
+};
+
+/**
+ * Get demand forecast (năm trước +10%)
+ * @returns {Promise<Object>} { last_year, estimated, growth_rate, year }
+ */
+export const getDemandForecast = async () => {
+  const token = getAuthToken();
+  const response = await fetch(`${API_BASE_URL}/registrations/demand-forecast`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Lỗi tải dự báo nhu cầu');
+  return data;
+};
+/**
+ * Duyệt hàng loạt hồ sơ chờ duyệt → tạo hợp đồng Pending (chưa gán phòng)
+ * @param {string} faculty - Faculty filter (optional)
+ * @param {boolean} simulate - Chạy thử nghiệm
+ * @param {boolean} allowOverflow - Cho phép dồn chỉ tiêu thừa
+ * @param {Object} tempQuotas - Chỉ tiêu tạm thời chỉnh trong modal
+ * @returns {Promise<Object>} Bulk approve results
+ */
+export const autoAllocateRegistrations = async (faculty = null, simulate = false, allowOverflow = false, tempQuotas = null) => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Vui lòng đăng nhập');
+    }
+
+    const response = await fetch(
+      `${API_BASE_URL}/registrations/auto-allocate`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ faculty, simulate, allowOverflow, tempQuotas })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Duyệt hồ sơ tự động thất bại');
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Lỗi kết nối đến server');
+  }
+};

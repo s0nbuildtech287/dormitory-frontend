@@ -1,0 +1,31 @@
+@startuml "Invoice Management Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+actor "Kế toán" as Accountant
+actor "Hệ thống\n(Tự động)" as Cron
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
+
+== Quản lý hóa đơn thủ công ==
+Accountant -> FE: 1. Nhập thông tin hóa đơn hoặc bảng giá
+FE -> BE: 2. Gửi yêu cầu lưu thông tin
+BE -> DB: 3. Lưu thông tin hóa đơn/bảng giá
+DB --> BE: 4. Xác nhận lưu thành công
+BE --> FE: 5. Phản hồi kết quả xử lý
+FE --> Accountant: 6. Hiển thị thông báo thành công
+
+== Hệ thống tự tạo hóa đơn hàng tháng ==
+Cron -> BE: 7. Kích hoạt tiến trình tạo hóa đơn tự động
+BE -> DB: 8. Truy vấn thông tin phòng và chỉ số sử dụng
+DB --> BE: 9. Trả về dữ liệu sử dụng
+BE -> BE: 10. Tính toán tiền điện, nước, phòng
+BE -> DB: 11. Tạo hóa đơn điện nước tương ứng
+DB --> BE: 12. Xác nhận lưu hóa đơn thành công
+
+== Hệ thống tự động kiểm tra quá hạn ==
+Cron -> BE: 13. Kích hoạt kiểm tra quá hạn đóng tiền
+BE -> DB: 14. Cập nhật các hóa đơn chưa thanh toán quá hạn
+DB --> BE: 15. Xác nhận cập nhật trạng thái hóa đơn
+@enduml

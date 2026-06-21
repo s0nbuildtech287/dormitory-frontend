@@ -1,0 +1,17 @@
+@startuml "Student Notifications Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Sinh viên|
+start
+:Vào mục Thông báo;
+|Hệ thống|
+:Lấy danh sách thông báo từ Ban quản lý;
+|Sinh viên|
+:Xem danh sách thông báo;
+:Chọn thông báo để xem chi tiết;
+|Hệ thống|
+:Hiển thị nội dung thông báo;
+|Sinh viên|
+:Đánh dấu đã đọc (nếu cần);
+stop
+@enduml

@@ -1,0 +1,13 @@
+Mô tả: Sinh viên sử dụng chatbot AI để hỏi đáp và nhận kết quả.
+Tác nhân: Sinh viên, Hệ thống (AI).
+Các ràng buộc: Người dùng đã đăng nhập; dịch vụ AI khả dụng.
+Điều kiện kích hoạt: Sinh viên mở cửa sổ chatbot.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị giao diện chatbot.
+2. Sinh viên nhập câu hỏi và gửi.
+3. Hệ thống gọi AI xử lý.
+4. Hệ thống hiển thị câu trả lời.
+Luồng rẽ nhánh:
+2.1 Câu hỏi rỗng → thông báo lỗi.
+3.1 AI lỗi → thông báo thất bại và gợi ý thử lại.

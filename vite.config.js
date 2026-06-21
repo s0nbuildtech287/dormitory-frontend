@@ -4,10 +4,21 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
+  const proxyTarget =
+    (env.VITE_BACKEND_URL || "").trim() ||
+    (env.VITE_API_URL || "").trim() ||
+    "http://localhost:1234";
+
   return {
     server: {
-      port: 3000,
+      port: 2807,
       host: "0.0.0.0",
+      proxy: {
+        "/api": {
+          target: proxyTarget.replace(/\/api\/?$/, ""),
+          changeOrigin: true,
+        },
+      },
     },
     plugins: [react()],
     define: {
@@ -17,6 +28,18 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve("./src"),
       },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              return id.toString().split("node_modules/")[1].split("/")[0].toString();
+            }
+          },
+        },
+      },
+      chunkSizeWarningLimit: 600,
     },
   };
 });

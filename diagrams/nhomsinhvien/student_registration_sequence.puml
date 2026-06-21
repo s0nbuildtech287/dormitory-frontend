@@ -1,0 +1,27 @@
+@startuml "Student Registration Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Sinh viên" as Student
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+participant "Hệ thống AI\n(OCR Vision)" as Vision
+database "CSDL" as DB
+
+Student -> FE: 1. Nhập thông tin và tải lên minh chứng
+FE -> FE: 2. Kiểm tra tính hợp lệ dữ liệu ban đầu
+FE -> BE: 3. Gửi yêu cầu đăng ký hồ sơ
+BE -> BE: 4. Kiểm tra dữ liệu và tính điểm tự động
+
+alt Hồ sơ hợp lệ
+  BE -> DB: 5. Lưu hồ sơ vào CSDL
+  DB --> BE: 6. Xác nhận lưu thành công
+  BE -> Vision: 7. Bắt đầu quét kiểm tra ảnh minh chứng
+  BE --> FE: 8. Trả về kết quả đăng ký thành công
+  FE --> Student: 9. Hiển thị thông báo đăng ký hoàn tất
+else Hồ sơ không hợp lệ
+  BE --> FE: 10. Trả về thông báo lỗi chi tiết
+  FE --> Student: 11. Yêu cầu sửa đổi thông tin
+end
+@enduml

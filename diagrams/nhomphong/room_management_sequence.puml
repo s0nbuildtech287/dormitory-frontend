@@ -1,0 +1,26 @@
+@startuml "Room Management Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
+
+== Quản lý phòng ở ==
+Admin -> FE: 1. Tạo, sửa hoặc xóa phòng ở
+FE -> BE: 2. Gửi yêu cầu thay đổi thông tin phòng
+BE -> DB: 3. Lưu thông tin phòng ở
+DB --> BE: 4. Xác nhận lưu thành công
+BE --> FE: 5. Trả về kết quả xử lý
+FE --> Admin: 6. Hiển thị thông báo thành công
+
+== Cập nhật chỉ số điện nước phòng ==
+Admin -> FE: 7. Nhập chỉ số điện nước mới của phòng
+FE -> BE: 8. Gửi chỉ số điện nước đã nhập
+BE -> DB: 9. Cập nhật chỉ số điện nước phòng
+DB --> BE: 10. Xác nhận cập nhật thành công
+BE --> FE: 11. Báo cập nhật thành công
+FE --> Admin: 12. Cập nhật giao diện quản lý
+@enduml

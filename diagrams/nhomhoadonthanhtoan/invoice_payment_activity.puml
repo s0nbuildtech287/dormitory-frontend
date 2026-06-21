@@ -1,0 +1,38 @@
+@startuml "Invoice Payment Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Sinh viên|
+start
+:Chọn hóa đơn cần thanh toán;
+:Chọn phương thức thanh toán;
+if (VNPay?) then (Có)
+	|Hệ thống|
+	:Tạo URL thanh toán;
+	|Sinh viên|
+	:Chuyển sang VNPay;
+	:Hoàn tất thanh toán;
+	|Hệ thống|
+	:Nhận IPN từ VNPay;
+	:Cập nhật hóa đơn = Đã thanh toán;
+	|Sinh viên|
+	:Nhận kết quả thanh toán;
+else (Chuyển khoản)
+	|Hệ thống|
+	:Hiển thị thông tin chuyển khoản;
+	|Sinh viên|
+	:Thực hiện chuyển khoản;
+	:Nhập/đính kèm thông tin giao dịch (nếu cần);
+	|Hệ thống|
+	:Đối soát giao dịch;
+	if (Hợp lệ?) then (Có)
+		:Cập nhật hóa đơn = Đã thanh toán;
+		|Sinh viên|
+		:Nhận kết quả thanh toán;
+	else (Không)
+		:Thông báo lỗi/không khớp;
+		|Sinh viên|
+		:Kiểm tra lại giao dịch;
+	endif
+endif
+stop
+@enduml

@@ -1,0 +1,38 @@
+@startuml "UC Phân rã - Gửi thông báo"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam ArrowColor Black
+skinparam ArrowThickness 1
+skinparam shadowing false
+
+actor "<b>Ban quản lý</b>" as Admin
+actor "<b>Sinh viên</b>" as SV
+
+usecase "<b>Tạo thông báo mới</b>" as UC1
+usecase "<b>Gửi đến tất cả sinh viên</b>" as UC2
+usecase "<b>Gửi đến nhóm sinh viên cụ thể</b>" as UC3
+usecase "<b>Cập nhật thông báo</b>" as UC4
+usecase "<b>Xóa thông báo</b>" as UC5
+usecase "<b>Xem danh sách thông báo (admin)</b>" as UC6
+usecase "<b>Xem thông báo (sinh viên)</b>" as UC7
+usecase "<b>Nhận thông báo thời gian thực</b>" as UC8
+
+UC1 ..> UC2 : <<extend>>
+UC1 ..> UC3 : <<extend>>
+UC7 ..> UC8 : <<include>>
+
+Admin --> UC1
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+SV --> UC7
+@enduml

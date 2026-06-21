@@ -1,0 +1,30 @@
+@startuml "AI Chatbot Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+' Activity Diagram: Chatbot AI hỗ trợ sinh viên
+|Sinh viên|
+start
+:Mở giao diện Chatbot;
+:Nhập câu hỏi;
+:Nhấn Gửi;
+|Hệ thống|
+:Nhận message từ sinh viên;
+:Gắn SYSTEM_PROMPT vào context;
+:Gọi OpenAI API với lịch sử hội thoại;
+if (API phản hồi thành công?) then (Có)
+  :Nhận câu trả lời từ AI;
+  :Trả kết quả về giao diện;
+  |Sinh viên|
+  :Đọc câu trả lời;
+  if (Cần hỏi thêm?) then (Có)
+    :Nhập câu hỏi tiếp theo;
+  else (Không)
+    stop
+  endif
+else (Không)
+  :Trả thông báo lỗi;
+  |Sinh viên|
+  :Thử lại;
+  stop
+endif
+@enduml

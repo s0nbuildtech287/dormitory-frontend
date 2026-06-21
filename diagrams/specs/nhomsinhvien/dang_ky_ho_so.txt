@@ -1,0 +1,15 @@
+Mô tả: Sinh viên đăng ký hồ sơ trực tuyến trên website khi chưa kịp đăng ký qua Google Forms.
+Tác nhân: Sinh viên.
+Các ràng buộc: Thông tin bắt buộc đầy đủ; minh chứng hợp lệ.
+Điều kiện kích hoạt: Sinh viên mở trang đăng ký hồ sơ.
+Luồng sự kiện:
+Luồng sự kiện chính:
+1. Hệ thống hiển thị form đăng ký hồ sơ.
+2. Sinh viên nhập thông tin và đính kèm minh chứng.
+3. Sinh viên gửi hồ sơ.
+4. Hệ thống kiểm tra dữ liệu và lưu vào CSDL.
+5. Hệ thống đặt trạng thái hồ sơ = PENDING.
+6. Hệ thống thông báo gửi thành công.
+Luồng rẽ nhánh:
+2.1 Thiếu thông tin/đính kèm → thông báo lỗi.
+4.1 Lưu thất bại → thông báo thất bại.

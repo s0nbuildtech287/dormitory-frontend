@@ -1,0 +1,23 @@
+@startuml "Volunteer Role Assignment Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Quản lý tòa nhà" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+database "CSDL" as DB
+
+Admin -> FE: 1. Chọn sinh viên và chọn vai trò "Trưởng ban"
+FE -> BE: 2. Gửi yêu cầu phân quyền Trưởng ban
+BE -> DB: 3. Truy vấn Trưởng ban cũ trong tòa nhà
+DB --> BE: 4. Trả về thông tin Trưởng ban cũ (nếu có)
+opt Có Trưởng ban cũ hoạt động
+  BE -> DB: 5. Hạ quyền Trưởng ban cũ xuống thành Xung kích
+  DB --> BE: 6. Xác nhận cập nhật thành công
+end
+BE -> DB: 7. Nâng quyền Trưởng ban mới cho sinh viên
+DB --> BE: 8. Xác nhận nâng quyền thành công
+BE --> FE: 9. Trả về kết quả phân quyền thành công
+FE --> Admin: 10. Cập nhật giao diện thành viên
+@enduml

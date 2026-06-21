@@ -1,0 +1,17 @@
+@startuml "Student News Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Sinh viên|
+start
+:Vào mục Tin tức;
+|Hệ thống|
+:Tải danh sách tin TLU;
+|Sinh viên|
+:Xem danh sách tin;
+:Chọn tin để xem chi tiết;
+|Hệ thống|
+:Hiển thị nội dung tin;
+|Sinh viên|
+:Quay lại danh sách (nếu cần);
+stop
+@enduml

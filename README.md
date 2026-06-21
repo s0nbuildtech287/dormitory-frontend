@@ -1,4 +1,4 @@
-# 🏢 Hệ Thống Quản Lý Ký Túc Xá - DormiManage
+# 🏢 Hệ Thống Quản Lý Ký Túc Xá - Dormitory Unis
 
 Hệ thống quản lý ký túc xá hiện đại được xây dựng bằng **React + JavaScript**, tích hợp **AI (Google Gemini)** để hỗ trợ phân tích và duyệt hồ sơ tự động.
 
@@ -174,5 +174,5 @@ Mọi đóng góp đều được chào đón! Vui lòng tạo Pull Request ho�
 
 ---
 
-**Phát triển bởi:** Team DormiManage
+**Phát triển bởi:** Team Dormitory Unis
 **Năm:** 2026

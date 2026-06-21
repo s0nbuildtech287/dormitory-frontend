@@ -1,0 +1,43 @@
+@startuml "Asset Management Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+|Ban quản lý|
+start
+:Mở mục tài sản;
+
+|Hệ thống|
+:Hiển thị danh sách tài sản;
+
+|Ban quản lý|
+:Chọn thao tác\n(Thêm/Sửa/Xóa/\nĐiều chỉnh giới hạn);
+
+if (Thao tác xóa?) then (Có)
+  |Hệ thống|
+  if (Tài sản đã gán phòng?) then (Có)
+    :Thông báo không thể xóa;
+    stop
+  endif
+endif
+
+|Hệ thống|
+:Kiểm tra dữ liệu;
+
+if (Dữ liệu hợp lệ?) then (Không)
+  :Thông báo lỗi;
+  stop
+else (Có)
+  :Lưu thay đổi;
+  
+  if (Lưu thành công?) then (Không)
+    :Thông báo thất bại;
+    stop
+  else (Có)
+    :Thông báo kết quả;
+    :Cập nhật thống kê tài sản;
+  endif
+endif
+
+|Ban quản lý|
+:Nhận kết quả;
+stop
+@enduml

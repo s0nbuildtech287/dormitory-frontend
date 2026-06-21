@@ -1,0 +1,37 @@
+3.3.1. Các đối tượng và trạng thái
+
+Gợi ý trình bày dạng bảng (copy vào Word/Excel):
+
+| Đối tượng | Trạng thái | Ý nghĩa | Ghi chú/Điều kiện chuyển |
+|---|---|---|---|
+| User (Sinh viên/Ban quản lý) | Đang hoạt động/Đã khóa | Mở/khóa tài khoản | Admin khóa/mở tài khoản |
+| RegisterForm (Hồ sơ đăng ký) | Chờ duyệt | Hồ sơ mới gửi, chờ xét | Trạng thái mặc định khi tạo |
+| RegisterForm | Chấp nhận | Hồ sơ được duyệt | Admin duyệt hồ sơ |
+| RegisterForm | Từ chối | Hồ sơ bị từ chối | Admin từ chối hồ sơ |
+| StudentContract (Hợp đồng) | Chờ gán phòng | Đã duyệt hồ sơ nhưng chưa gán phòng | Mặc định sau khi duyệt hồ sơ |
+| StudentContract | Đang hiệu lực | Hợp đồng đang hiệu lực | Khi đã ký/đã kích hoạt |
+| StudentContract | Hết hạn | Hợp đồng hết hạn | Sau ngày kết thúc |
+| StudentContract | Chấm dứt | Hợp đồng bị chấm dứt | Do vi phạm hoặc yêu cầu chấm dứt |
+| Room (Phòng) | Đang hoạt động | Phòng đang hoạt động | Phòng có thể gán sinh viên |
+| Room | Ngừng sử dụng | Phòng không sử dụng | Tạm ngưng khai thác |
+| Room | Đang bảo trì | Phòng đang bảo trì | Không cho gán phòng |
+| Invoice (Hóa đơn) | Chưa thanh toán | Hóa đơn chưa được trả | Trạng thái mặc định khi tạo |
+| Invoice | Đã thanh toán | Hóa đơn đã được trả | Sau khi thanh toán |
+| Invoice | Quá hạn | Hóa đơn quá hạn | Quá hạn thanh toán |
+| Notification (Thông báo) | Đã xuất bản/Chưa xuất bản | Đã xuất bản/chưa xuất bản | Có thể hẹn xuất bản/hết hiệu lực |
+| Feedback (Phản hồi) | Mới | Phản hồi mới | Trạng thái mặc định |
+| Feedback | Đang xử lý | Đang xử lý | Admin tiếp nhận xử lý |
+| Feedback | Đã xử lý | Đã xử lý xong | Admin xác nhận hoàn tất |
+| Asset (Tài sản) | Sẵn sàng | Có thể cấp phát | Ở kho hoặc chưa gán phòng |
+| Asset | Đang sử dụng | Đang được dùng | Gán cho phòng |
+| Asset | Hư hỏng | Cần sửa chữa | Khi hỏng hóc |
+| Asset | Đang bảo trì | Đang bảo trì | Tạm ngừng sử dụng |
+| Asset | Thanh lý | Đã thanh lý | Không còn sử dụng |
+| DisciplinaryRecord (Kỷ luật) | Chờ xử lý | Biên bản mới | Trạng thái mặc định |
+| DisciplinaryRecord | Đã xử lý | Đã xử lý kỷ luật | Admin kết thúc xử lý |
+| DisciplinaryRecord | Đã khiếu nại | Sinh viên khiếu nại | Có phát sinh khiếu nại |
+| DisciplinaryRecord | Đã hủy | Hủy quyết định | Khi có quyết định hủy |
+
+Ghi chú thêm:
+- Các trạng thái lấy từ enum trong database/schema.sql.
+- Một số đối tượng không có enum trạng thái riêng: Setting, LogSystem (thường không cần trạng thái).

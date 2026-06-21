@@ -1,0 +1,44 @@
+@startuml "UC Phân rã - Quản lý kỷ luật"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+left to right direction
+skinparam usecase {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor White
+  BorderColor Black
+}
+skinparam ArrowColor Black
+skinparam ArrowThickness 1
+skinparam shadowing false
+
+actor "<b>Ban quản lý</b>" as Admin
+actor "<b>Sinh viên</b>" as SV
+
+usecase "<b>Xem danh sách vi phạm</b>" as UC1
+usecase "<b>Xem chi tiết phiếu vi phạm</b>" as UC2
+usecase "<b>Lập phiếu vi phạm mới</b>" as UC3
+usecase "<b>Cập nhật phiếu vi phạm</b>" as UC4
+usecase "<b>Xóa phiếu vi phạm</b>" as UC5
+usecase "<b>Tự động trừ điểm rèn luyện</b>" as UC6
+usecase "<b>Tự động gửi email cảnh báo\nkhi đến ngưỡng vi phạm" as UC7
+usecase "<b>Điều chỉnh mức điểm trừ\ntheo loại vi phạm</b>" as UC8
+usecase "<b>Xem thống kê vi phạm</b>" as UC9
+usecase "<b>Xem lịch sử kỷ luật cá nhân</b>" as UC10
+usecase "<b>Xem điểm rèn luyện</b>" as UC11
+
+UC3 ..> UC6 : <<include>>
+UC6 ..> UC7 : <<extend>>
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC8
+Admin --> UC9
+SV --> UC10
+SV --> UC11
+@enduml

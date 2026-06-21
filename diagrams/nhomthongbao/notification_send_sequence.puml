@@ -1,0 +1,29 @@
+@startuml "Notification Send Sequence"
+skinparam defaultFontSize 20
+skinparam defaultFontName "Times New Roman"
+skinparam sequenceMessageSize 20
+
+actor "Ban quản lý" as Admin
+participant "Giao diện" as FE
+participant "Hệ thống\nBackend" as BE
+participant "Giao diện\nSinh viên" as Student
+database "CSDL" as DB
+
+alt Gửi cho tất cả sinh viên
+  Admin -> FE: 1. Nhập nội dung thông báo chung
+  FE -> BE: 2. Gửi yêu cầu thông báo toàn hệ thống
+  BE -> DB: 3. Lưu thông báo vào cơ sở dữ liệu
+  DB --> BE: 4. Xác nhận lưu thành công
+  BE -> Student: 5. Phát thông báo thời gian thực (Socket.IO)
+  BE --> FE: 6. Trả về kết quả gửi thành công
+  FE --> Admin: 7. Báo gửi thông báo hoàn tất
+else Gửi cho một số sinh viên cụ thể
+  Admin -> FE: 8. Chọn các sinh viên nhận thông báo
+  FE -> BE: 9. Gửi yêu cầu thông báo nhóm riêng biệt
+  BE -> DB: 10. Lưu thông báo nhóm vào cơ sở dữ liệu
+  DB --> BE: 11. Xác nhận lưu thành công
+  BE -> Student: 12. Phát thông báo thời gian thực đến người nhận
+  BE --> FE: 13. Trả về kết quả gửi thành công
+  FE --> Admin: 14. Báo gửi thông báo hoàn tất
+end
+@enduml

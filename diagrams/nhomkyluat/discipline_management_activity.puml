@@ -1,0 +1,32 @@
+@startuml "Discipline Management Activity"
+skinparam defaultFontSize 22
+skinparam defaultFontName "Times New Roman"
+
+|Ban quản lý|
+start
+:Mở quản lý kỷ luật;
+
+|Hệ thống|
+:Hiển thị danh sách phiếu vi phạm;
+
+|Ban quản lý|
+if (Chọn tab?) then (Phiếu vi phạm)
+  :Tạo/Sửa/Xóa phiếu vi phạm;
+  |Hệ thống|
+  :Tính điểm trừ, lưu phiếu\ncập nhật điểm rèn luyện;
+  if (Đạt ngưỡng cảnh báo?) then (Có)
+    :Gửi email cảnh báo;
+  else (Không)
+  endif
+elseif (Chọn tab?) then (Bảng quy định)
+  :Thêm/Sửa quy định vi phạm;
+  |Hệ thống|
+  :Lưu quy định, ghi log;
+endif
+
+|Hệ thống|
+:Hiển thị kết quả xử lý;
+|Ban quản lý|
+:Nhận kết quả;
+stop
+@enduml

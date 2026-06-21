@@ -1,0 +1,527 @@
+import { Package, TrendingUp, MapPin, BarChart3, DollarSign, ChevronDown, ChevronUp, TrendingDown, ArrowUpFromLine, ArrowDownToLine } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getAssetsByBuilding } from "../../../api/apiAsset.js";
+import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+
+// Tông màu xanh từ đậm đến nhạt (đồng bộ với ContractStatistics)
+const ASSET_COLORS = [
+  "#1e40af", "#2563eb", "#3b82f6", "#60a5fa",
+  "#93c5fd", "#bfdbfe", "#dbeafe", "#eff6ff"
+];
+
+const BUILDING_COLORS = [
+  "#1e40af", // Tòa A
+  "#2563eb", // Tòa B
+  "#3b82f6", // Tòa C
+  "#60a5fa", // Tòa D
+  "#93c5fd"  // Kho
+];
+
+const AssetAnalytics = ({ assets }) => {
+  const { getBuildingLabel } = useBuildingDisplayNames();
+  const [buildingData, setBuildingData] = useState([]);
+  const [expandedSections, setExpandedSections] = useState({
+    category: false,
+    assetType: false,
+    location: false
+  });
+  
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+  
+  // Fetch building distribution data
+  useEffect(() => {
+    const fetchBuildingData = async () => {
+      try {
+        const response = await getAssetsByBuilding();
+        setBuildingData(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error("Error fetching building data:", error);
+        setBuildingData([]);
+      }
+    };
+    fetchBuildingData();
+  }, []);
+
+  // Ensure assets is always an array
+  const safeAssets = Array.isArray(assets) ? assets : [];
+
+  // Calculate statistics
+  const totalAssets = safeAssets.reduce((sum, asset) => sum + (parseInt(asset.total_quantity) || 0), 0);
+  const totalValue = safeAssets.reduce((sum, asset) => sum + (parseInt(asset.total_quantity) || 0) * (parseFloat(asset.purchase_price) || 0), 0);
+
+  const inUse = safeAssets.reduce((sum, asset) => sum + (parseInt(asset.in_use) || 0), 0);
+  const available = safeAssets.reduce((sum, asset) => sum + (parseInt(asset.in_stock) || 0), 0);
+  const damaged = safeAssets.reduce((sum, asset) => sum + (parseInt(asset.damaged) || 0), 0);
+
+  // Group by category
+  const byCategory = safeAssets.reduce((acc, asset) => {
+    const cat = asset.category_name || "Khác";
+    const qty = parseInt(asset.total_quantity) || 0;
+    const value = qty * (parseFloat(asset.purchase_price) || 0);
+    
+    if (!acc[cat]) {
+      acc[cat] = { quantity: 0, value: 0, items: [] };
+    }
+    acc[cat].quantity += qty;
+    acc[cat].value += value;
+    acc[cat].items.push(asset);
+    return acc;
+  }, {});
+
+  // Asset distribution by location (rooms vs warehouse)
+  const locationDistribution = safeAssets.map(asset => ({
+    name: asset.name,
+    asset_code: asset.asset_code,
+    total: parseInt(asset.total_quantity) || 0,
+    inUse: parseInt(asset.in_use) || 0,
+    inStock: parseInt(asset.in_stock) || 0,
+    damaged: parseInt(asset.damaged) || 0,
+    value: (parseInt(asset.total_quantity) || 0) * (parseFloat(asset.purchase_price) || 0),
+    unitPrice: parseFloat(asset.purchase_price) || 0,
+  }));
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("vi-VN").format(value || 0);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100">
+              <Package size={20} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Tổng số tài sản</p>
+              <p className="text-2xl font-bold text-slate-900">{totalAssets}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-100">
+              <TrendingUp size={20} className="text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Đang sử dụng</p>
+              <p className="text-2xl font-bold text-slate-900">{inUse}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-orange-100">
+              <Package size={20} className="text-orange-600" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Tồn kho</p>
+              <p className="text-2xl font-bold text-slate-900">{available}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-100">
+              <DollarSign size={20} className="text-purple-600" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-500">Tổng giá trị</p>
+              <p className="text-lg font-bold text-slate-900">{formatCurrency(totalValue)} đ</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Analysis */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => toggleSection('category')}
+          className="w-full p-6 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
+        >
+          <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+            <BarChart3 size={20} />
+            Phân loại theo danh mục
+          </h3>
+          {expandedSections.category ? (
+            <ChevronUp size={20} className="text-blue-700" />
+          ) : (
+            <ChevronDown size={20} className="text-blue-700" />
+          )}
+        </button>
+        
+        {expandedSections.category && (
+          <div className="px-6 pb-6 border-t border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+              {/* Left side - Nội thất và Thiết bị an ninh */}
+              <div>
+                <h4 className="text-md font-semibold text-slate-800 mb-4">Nội thất & Thiết bị an ninh</h4>
+                <div className="space-y-3">
+                  {Object.entries(byCategory)
+                    .filter(([category]) => category === 'Nội thất' || category === 'Thiết bị an ninh')
+                    .map(([category, data], index) => (
+                    <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 1}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">{category}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{data.quantity} cái</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(data.value)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((data.quantity / totalAssets) * 100).toFixed(1)}% tổng số • {((data.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right side - Điện và Mạng */}
+              <div>
+                <h4 className="text-md font-semibold text-slate-800 mb-4">Điện & Mạng</h4>
+                <div className="space-y-3">
+                  {Object.entries(byCategory)
+                    .filter(([category]) => category === 'Thiết bị điện' || category === 'Thiết bị mạng')
+                    .map(([category, data], index) => (
+                    <div key={category} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 1}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">{category}</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{data.quantity} cái</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(data.value)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((data.quantity / totalAssets) * 100).toFixed(1)}% tổng số • {((data.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Asset Type Analysis */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => toggleSection('assetType')}
+          className="w-full p-6 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
+        >
+          <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+            <BarChart3 size={20} />
+            Phân tích theo loại tài sản
+          </h3>
+          {expandedSections.assetType ? (
+            <ChevronUp size={20} className="text-blue-700" />
+          ) : (
+            <ChevronDown size={20} className="text-blue-700" />
+          )}
+        </button>
+        
+        {expandedSections.assetType && (
+          <div className="px-6 pb-6 border-t border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+              {/* Left side - 4 items */}
+              <div className="space-y-3">
+                {locationDistribution.slice(0, 4).map((asset, index) => (
+                  <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                        <span className="text-xs font-bold text-blue-700">{index + 1}</span>
+                      </div>
+                      <span className="text-sm font-medium text-slate-700">{asset.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
+                      <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
+                      <div className="text-xs text-slate-400">
+                        Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right side - 4 items */}
+              <div className="space-y-3">
+                {locationDistribution.slice(4, 8).map((asset, index) => (
+                  <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                        <span className="text-xs font-bold text-blue-700">{index + 5}</span>
+                      </div>
+                      <span className="text-sm font-medium text-slate-700">{asset.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
+                      <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
+                      <div className="text-xs text-slate-400">
+                        Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Remaining items - centered */}
+            {locationDistribution.length > 8 && (
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <div className="flex justify-center">
+                  <div className="w-full lg:w-1/2 space-y-3">
+                    {locationDistribution.slice(8).map((asset, index) => (
+                      <div key={asset.asset_code} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                            <span className="text-xs font-bold text-blue-700">{index + 9}</span>
+                          </div>
+                          <span className="text-sm font-medium text-slate-700">{asset.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-slate-900">{asset.total} cái</div>
+                          <div className="text-xs text-slate-500">{formatCurrency(asset.value)} đ</div>
+                          <div className="text-xs text-slate-400">
+                            Chiếm {((asset.total / totalAssets) * 100).toFixed(1)}% tổng số • {((asset.value / totalValue) * 100).toFixed(1)}% tổng giá trị
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Asset Distribution by Location */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <button
+          onClick={() => toggleSection('location')}
+          className="w-full p-6 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors"
+        >
+          <h3 className="text-lg font-bold text-blue-900 flex items-center gap-2">
+            <MapPin size={20} />
+            Phân bổ tài sản theo vị trí
+          </h3>
+          {expandedSections.location ? (
+            <ChevronUp size={20} className="text-blue-700" />
+          ) : (
+            <ChevronDown size={20} className="text-blue-700" />
+          )}
+        </button>
+        
+        {expandedSections.location && (
+          <div className="px-6 pb-6 border-t border-slate-200">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+              {/* Left side - Tòa A, B */}
+              <div className="space-y-3">
+                {buildingData.slice(0, 2).map((building, index) => {
+                  const totalBuilding = parseInt(building.total_quantity) || 0;
+                  const buildingValue = parseFloat(building.total_value) || 0;
+                  
+                  return (
+                    <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 1}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">
+                          {getBuildingLabel(building.building)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right side - Tòa C, D */}
+              <div className="space-y-3">
+                {buildingData.slice(2, 4).map((building, index) => {
+                  const totalBuilding = parseInt(building.total_quantity) || 0;
+                  const buildingValue = parseFloat(building.total_value) || 0;
+                  
+                  return (
+                    <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                          <span className="text-xs font-bold text-blue-700">{index + 3}</span>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">
+                          {getBuildingLabel(building.building)}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
+                        <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
+                        <div className="text-xs text-slate-400">
+                          Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Kho tổng - centered at bottom */}
+            {buildingData.length > 4 && (
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <div className="flex justify-center">
+                  <div className="w-full lg:w-1/2">
+                    {buildingData.slice(4).map((building, index) => {
+                      const totalBuilding = parseInt(building.total_quantity) || 0;
+                      const buildingValue = parseFloat(building.total_value) || 0;
+                      
+                      return (
+                        <div key={building.building} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded bg-blue-100 flex items-center justify-center">
+                              <span className="text-xs font-bold text-blue-700">{index + 5}</span>
+                            </div>
+                            <span className="text-sm font-medium text-slate-700">
+                              {getBuildingLabel(building.building)}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-semibold text-slate-900">{totalBuilding} tài sản</div>
+                            <div className="text-xs text-slate-500">{formatCurrency(buildingValue)} đ</div>
+                            <div className="text-xs text-slate-400">
+                              Chiếm {((totalBuilding / totalAssets) * 100).toFixed(1)}% tổng số • {((buildingValue / totalValue) * 100).toFixed(1)}% tổng giá trị
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Import/Export Statistics - Fake Data */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Import Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <ArrowDownToLine size={20} className="text-blue-600" />
+              Thống kê nhập kho
+            </h3>
+            <div className="text-sm text-slate-500">12 tháng qua</div>
+          </div>
+          
+          {/* Bar Chart */}
+          <div className="space-y-3">
+            {[
+              { month: 'Tháng 2', value: 45, label: '45 tài sản' },
+              { month: 'Tháng 4', value: 28, label: '28 tài sản' },
+              { month: 'Tháng 6', value: 52, label: '52 tài sản' },
+              { month: 'Tháng 9', value: 38, label: '38 tài sản' },
+              { month: 'Tháng 11', value: 42, label: '42 tài sản' },
+            ].map((item, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="w-20 text-xs font-medium text-slate-600">{item.month}</div>
+                <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-600 to-blue-800 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                    style={{ width: `${(item.value / 60) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white">{item.label}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Summary */}
+          <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">205</div>
+              <div className="text-xs text-slate-500">Tổng nhập kho</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">5</div>
+              <div className="text-xs text-slate-500">Lần nhập kho</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Export Chart */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <ArrowUpFromLine size={20} className="text-cyan-600" />
+              Thống kê xuất kho
+            </h3>
+            <div className="text-sm text-slate-500">12 tháng qua</div>
+          </div>
+          
+          {/* Bar Chart */}
+          <div className="space-y-3">
+            {[
+              { month: 'Tháng 1', value: 22, label: '22 tài sản' },
+              { month: 'Tháng 3', value: 18, label: '18 tài sản' },
+              { month: 'Tháng 5', value: 15, label: '15 tài sản' },
+              { month: 'Tháng 8', value: 25, label: '25 tài sản' },
+              { month: 'Tháng 10', value: 12, label: '12 tài sản' },
+              { month: 'Tháng 12', value: 20, label: '20 tài sản' },
+            ].map((item, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="w-20 text-xs font-medium text-slate-600">{item.month}</div>
+                <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full flex items-center justify-end pr-3 transition-all duration-500"
+                    style={{ width: `${(item.value / 30) * 100}%` }}
+                  >
+                    <span className="text-xs font-semibold text-white">{item.label}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Summary */}
+          <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-cyan-600">112</div>
+              <div className="text-xs text-slate-500">Tổng xuất kho</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-cyan-600">6</div>
+              <div className="text-xs text-slate-500">Lần xuất kho</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AssetAnalytics;
