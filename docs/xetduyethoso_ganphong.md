@@ -113,7 +113,7 @@ Hệ thống tính toán điểm tương thích của từng phòng trống đ�
 * Xếp cùng khóa học: Ưu tiên gán sinh viên học cùng năm học (ví dụ cùng năm thứ nhất) vào chung một phòng để các em có nếp sống tương đồng, dễ hòa nhập.
 * Xếp cùng khoa đào tạo: Ưu tiên gán sinh viên học cùng khoa đào tạo vào chung phòng để hỗ trợ nhau trong học tập chuyên ngành.
 * Tối ưu hóa lấp đầy phòng: Ưu tiên xếp dồn vào các phòng đang ở dở dang trước nhằm sử dụng tối đa hiệu suất phòng ở, tránh phân bổ rải rác lãng phí tài nguyên điện nước và khó quản lý tập trung.
-* Ưu tiên vai trò trưởng phòng: Sinh viên có vai trò tình nguyện viên sẽ được ưu tiên xếp vào phòng trước để làm trưởng phòng tự quản.
+* Phòng dành riêng cho đối tượng: Tự động gán sinh viên vào các phòng đặc thù được thiết lập riêng (ví dụ: phòng dành riêng cho đội xung kích, phòng dành riêng cho lưu học sinh nước ngoài).
 
 3. Kích hoạt hợp đồng và bàn giao:
-Khi tìm được phòng phù hợp nhất, hệ thống tự động gán sinh viên vào phòng, tăng số lượng người ở thực tế của phòng đó lên, tự động tạo mã QR thanh toán hóa đơn động và kích hoạt hợp đồng thuê phòng sang trạng thái Hoạt động. Sinh viên nhận được thông báo số phòng ở và có thể đến nhận phòng.
+Khi tìm được phòng phù hợp nhất, hệ thống tự động gán sinh viên vào phòng, tăng số lượng người ở thực tế của phòng đó lên, cấp tài khoản cho sinh viên và kích hoạt hợp đồng thuê phòng sang trạng thái Hoạt động. Sinh viên nhận được thông báo số phòng ở và có thể đến nhận phòng.
