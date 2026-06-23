@@ -880,15 +880,17 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                   <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex gap-3">
                     <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-xs text-amber-800 font-medium">
-                      Có <strong>{pendingContracts.length}</strong> hợp đồng chờ gán phòng. Hệ thống sẽ ưu tiên phòng chuyên biệt (quốc tế / tân SV / khóa cũ), sau đó phòng thường.
+                      Có <strong>{pendingContracts.length}</strong> hợp đồng chờ gán phòng. Hệ thống sẽ tự động ghép và xếp phòng tối ưu theo các quy chế bên dưới.
                     </p>
                   </div>
                   <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl">
-                    <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2 mb-2"><Info size={14} /> Quy chế gán phòng</h4>
-                    <ul className="text-xs text-blue-800 space-y-1 list-disc pl-4">
-                      <li>Cùng giới tính, còn chỗ trống</li>
-                      <li>Ưu tiên phòng <code>quốc tế</code> / <code>tân sinh viên</code> / <code>khóa cũ</code></li>
-                      <li>Hết phòng → giữ trạng thái Chờ gán phòng</li>
+                    <h4 className="font-bold text-blue-900 text-sm flex items-center gap-2 mb-2"><Info size={14} /> Quy chế gán phòng tự động</h4>
+                    <ul className="text-xs text-blue-800 space-y-1.5 list-disc pl-4">
+                      <li>Cùng giới tính, còn chỗ trống.</li>
+                      <li>Ưu tiên xếp sinh viên vào đúng phòng chuyên dụng đã cấu hình (Phòng quốc tế / Tân sinh viên / Khóa cũ).</li>
+                      <li>Ưu tiên cao ghép các sinh viên <strong>cùng khoa học</strong> và <strong>cùng năm học/khóa học</strong> vào chung phòng.</li>
+                      <li>Tự động gom nhóm các <strong>lưu học sinh / sinh viên quốc tế</strong> vào cùng phòng để tiện giao tiếp, sinh hoạt.</li>
+                      <li>Hết phòng phù hợp → giữ trạng thái Chờ gán phòng.</li>
                     </ul>
                   </div>
                 </div>

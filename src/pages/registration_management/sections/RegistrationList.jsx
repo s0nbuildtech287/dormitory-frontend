@@ -136,6 +136,7 @@ const RegistrationList = ({
   });
   const [facultiesList, setFacultiesList] = useState([]);
   const [isQuotasCollapsed, setIsQuotasCollapsed] = useState(true);
+  const [facultyDetailOpen, setFacultyDetailOpen] = useState(false);
   const [roomStats, setRoomStats] = useState({
     available_now: 0,
     available_soon: 0,
@@ -351,6 +352,7 @@ const RegistrationList = ({
       };
       fetchQuotasForModal();
       setIsQuotasCollapsed(true);
+      setFacultyDetailOpen(false);
     }
   }, [isOpenAutoAllocateModal]);
 
@@ -1651,42 +1653,52 @@ const RegistrationList = ({
 
                   {/* Chi tiết hạn mức theo Khoa */}
                   {autoAllocateResult.overflowDetails && Object.keys(autoAllocateResult.overflowDetails).length > 0 && (
-                    <div className="space-y-3 text-left">
-                      <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Chi tiết phân bổ chỉ tiêu theo Khoa</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(autoAllocateResult.overflowDetails).map(([facName, detail]) => {
-                          const leftover = detail.leftover || 0;
-                          const excess = detail.excess || 0;
-                          return (
-                            <div key={facName} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-blue-300 transition-all space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="font-bold text-slate-900 text-sm">{facName}</span>
-                                <span className="text-[11px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full font-bold">
-                                  Chỉ tiêu: {detail.quota || "0 (Không giới hạn)"}
-                                </span>
-                              </div>
-                              <div className="grid grid-cols-4 gap-2 text-center">
-                                <div className="bg-white p-1.5 rounded-xl border border-slate-100">
-                                  <span className="block text-[9px] text-slate-400 font-bold uppercase">Hồ sơ</span>
-                                  <span className="font-bold text-xs text-slate-700">{detail.applied}</span>
+                    <div className="text-left border border-slate-200 rounded-2xl overflow-hidden">
+                      <button
+                        onClick={() => setFacultyDetailOpen(prev => !prev)}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors"
+                      >
+                        <h4 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Chi tiết phân bổ chỉ tiêu theo Khoa</h4>
+                        {facultyDetailOpen ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                      </button>
+                      {facultyDetailOpen && (
+                        <div className="p-4 space-y-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {Object.entries(autoAllocateResult.overflowDetails).map(([facName, detail]) => {
+                              const leftover = detail.leftover || 0;
+                              const excess = detail.excess || 0;
+                              return (
+                                <div key={facName} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 hover:border-blue-300 transition-all space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-bold text-slate-900 text-sm">{facName}</span>
+                                    <span className="text-[11px] bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full font-bold">
+                                      Chỉ tiêu: {detail.quota || "0 (Không giới hạn)"}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-4 gap-2 text-center">
+                                    <div className="bg-white p-1.5 rounded-xl border border-slate-100">
+                                      <span className="block text-[9px] text-slate-400 font-bold uppercase">Hồ sơ</span>
+                                      <span className="font-bold text-xs text-slate-700">{detail.applied}</span>
+                                    </div>
+                                    <div className="bg-emerald-50/50 p-1.5 rounded-xl border border-emerald-100">
+                                      <span className="block text-[9px] text-emerald-500 font-bold uppercase">Duyệt</span>
+                                      <span className="font-bold text-xs text-emerald-700">{detail.approved}</span>
+                                    </div>
+                                    <div className="bg-blue-50/50 p-1.5 rounded-xl border border-blue-100">
+                                      <span className="block text-[9px] text-blue-500 font-bold uppercase">Dư</span>
+                                      <span className="font-bold text-xs text-blue-700">{leftover}</span>
+                                    </div>
+                                    <div className="bg-red-50/50 p-1.5 rounded-xl border border-red-100">
+                                      <span className="block text-[9px] text-red-500 font-bold uppercase">Vượt</span>
+                                      <span className="font-bold text-xs text-red-700">{excess}</span>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="bg-emerald-50/50 p-1.5 rounded-xl border border-emerald-100">
-                                  <span className="block text-[9px] text-emerald-500 font-bold uppercase">Duyệt</span>
-                                  <span className="font-bold text-xs text-emerald-700">{detail.approved}</span>
-                                </div>
-                                <div className="bg-blue-50/50 p-1.5 rounded-xl border border-blue-100">
-                                  <span className="block text-[9px] text-blue-500 font-bold uppercase">Dư</span>
-                                  <span className="font-bold text-xs text-blue-700">{leftover}</span>
-                                </div>
-                                <div className="bg-red-50/50 p-1.5 rounded-xl border border-red-100">
-                                  <span className="block text-[9px] text-red-500 font-bold uppercase">Vượt</span>
-                                  <span className="font-bold text-xs text-red-700">{excess}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
