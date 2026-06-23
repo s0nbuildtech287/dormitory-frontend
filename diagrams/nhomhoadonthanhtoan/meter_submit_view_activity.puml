@@ -3,13 +3,19 @@ skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
 |Sinh viên|
 start
-:Chọn gửi chỉ số điện nước;
-:Nhập số điện + số nước;
+:Nhập chỉ số điện nước cuối kỳ (ngày 1-5);
+:Gửi chỉ số lên hệ thống;
+
 |Hệ thống|
-:Kiểm tra thời gian (1-5);
-:Kiểm tra dữ liệu hợp lệ;
-:Update hóa đơn hiện tại;
-|Sinh viên|
-:Xem danh sách hóa đơn;
+:Kiểm tra tính hợp lệ (ngày 1-5, số cuối >= số đầu);
+if (Hợp lệ?) then (Có)
+  :Cập nhật chỉ số tạm tính và đặt trạng thái Chờ duyệt;
+  :Thông báo gửi thành công;
+  |Sinh viên|
+  :Chờ kế toán chốt số và email thông báo thanh toán;
+else (Không)
+  |Hệ thống|
+  :Thông báo lỗi cho Sinh viên;
+endif
 stop
 @enduml

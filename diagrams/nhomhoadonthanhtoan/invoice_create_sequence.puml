@@ -3,6 +3,7 @@ skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 20
 actor "Kế toán" as Accountant
+actor "Sinh viên" as Student
 actor "Hệ thống\n(Tự động)" as Cron
 participant "Giao diện" as FE
 participant "Hệ thống\nBackend" as BE
@@ -24,8 +25,40 @@ BE -> BE: 10. Tính toán tiền điện, nước, phòng
 BE -> DB: 11. Tạo hóa đơn điện nước tương ứng
 DB --> BE: 12. Xác nhận lưu hóa đơn thành công
 
-== Hệ thống tự động kiểm tra quá hạn ==
-Cron -> BE: 13. Kích hoạt kiểm tra quá hạn đóng tiền
-BE -> DB: 14. Cập nhật các hóa đơn chưa thanh toán quá hạn
-DB --> BE: 15. Xác nhận cập nhật trạng thái hóa đơn
+== 2. Kế toán kiểm tra & Duyệt hóa đơn ==
+Accountant -> FE: 13. Mở quản lý hóa đơn & xem danh sách
+FE -> BE: 14. Yêu cầu danh sách hóa đơn
+BE -> DB: 15. Truy vấn hóa đơn hiện tại
+DB --> BE: 16. Trả về danh sách hóa đơn
+BE --> FE: 17. Hiển thị danh sách hóa đơn
+
+opt Yêu cầu kiểm tra bất thường
+  Accountant -> FE: 18. Nhấn nút kiểm tra bất thường
+  FE -> BE: 19. Yêu cầu phân tích bất thường
+  BE -> DB: 20. Lấy lịch sử hóa đơn 4 tháng gần nhất
+  DB --> BE: 21. Trả về lịch sử hóa đơn
+  BE -> BE: 22. Tính trung bình điện/nước 3 tháng & lọc phòng tăng > 50%
+  BE --> FE: 23. Trả về danh sách cảnh báo bất thường
+  FE --> Accountant: 24. Hiển thị danh sách cảnh báo bất thường
+end
+
+alt Có sai sót
+  Accountant -> FE: 25. Chỉnh sửa số liệu điện/nước/phí trực tiếp
+  FE -> BE: 26. Gửi số liệu cập nhật
+  BE -> BE: 27. Tính toán lại tổng tiền
+  BE -> DB: 28. Cập nhật thông tin hóa đơn
+  DB --> BE: 29. Xác nhận
+end
+Accountant -> FE: 30. Phê duyệt ban hành hóa đơn
+FE -> BE: 31. Gửi yêu cầu duyệt hóa đơn
+BE -> DB: 32. Đổi trạng thái hóa đơn, đặt is_approved = TRUE & lưu lịch sử log
+DB --> BE: 33. Xác nhận lưu
+BE --> FE: 34. Báo duyệt hóa đơn thành công
+FE --> Accountant: 35. Hiển thị thông báo hoàn tất
+
+== 3. Sinh viên nhận hóa đơn & Thanh toán ==
+BE -> Student: 36. Gửi email chốt số và thông báo thanh toán hóa đơn
+Student -> FE: 37. Xem chi tiết hóa đơn & Chọn thanh toán
+FE -> BE: 38. Yêu cầu thanh toán (VNPay / Tiền mặt)
+... Quy trình thanh toán tiếp diễn ...
 @enduml

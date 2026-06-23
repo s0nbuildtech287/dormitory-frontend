@@ -7,17 +7,42 @@ start
 :Xem danh sách hóa đơn;
 :Tạo/Sửa/Xóa hóa đơn;
 :Điều chỉnh bảng giá (điện/nước/phí);
+
 |Hệ thống|
 :Tự động tạo hóa đơn theo phòng;
 :Tự động chuyển trạng thái theo kỳ hạn;
+
 |Kế toán|
 :Xem/kiểm tra hóa đơn;
-|Hệ thống|
-:Kiểm tra dữ liệu;
-:Tính tiền điện/nước/phí;
-:Tạo hóa đơn;
+if (Yêu cầu kiểm tra bất thường?) then (Có)
+  |Hệ thống|
+  :Lấy dữ liệu hóa đơn 4 tháng gần nhất;
+  fork
+    :Tính trung bình điện 3 tháng trước;
+  fork again
+    :Tính trung bình nước 3 tháng trước;
+  end fork
+  :Lọc các phòng vượt ngưỡng tăng 50%;
+  :Trả danh sách cảnh báo bất thường;
+  |Kế toán|
+  :Xem danh sách cảnh báo bất thường;
+else (Không)
+endif
+
 |Kế toán|
-:Nhận kết quả;
+if (Phát hiện sai sót?) then (Có)
+  :Chỉnh sửa số liệu điện/nước/phí;
+else (Không)
+endif
+:Xác nhận & duyệt hóa đơn;
+
+|Hệ thống|
+:Tạo hóa đơn chính thức (ban hành hóa đơn);
+:Email thông báo chốt số và yêu cầu thanh toán đến toàn bộ sinh viên;
+
+|Sinh viên|
+:Nhận email thông báo chốt số và yêu cầu thanh toán;
+:Thực hiện thanh toán (VNPay / Tiền mặt);
 stop
 @enduml
 

@@ -224,49 +224,76 @@ const StudentBills = () => {
                   <X size={16} className="text-slate-500" />
                 </button>
               </div>
-              <form onSubmit={async (e) => { await handleSubmitMeter(e); if (!submitMsg || submitMsg.type === "success") setShowMeterModal(false); }} className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-500 block mb-1.5 flex items-center gap-1.5">
-                      <Zap size={12} className="text-amber-500" /> Số điện cuối kỳ (kWh)
-                    </label>
-                    <input type="number" min="0" step="0.01" value={electricEnd}
-                      onChange={e => setElectricEnd(e.target.value)}
-                      placeholder="VD: 1250"
-                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
-                      required />
+              {submitMsg && submitMsg.type === "success" ? (
+                <div className="p-6 text-center space-y-4">
+                  <div className="mx-auto w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center">
+                    <CheckCircle size={24} />
                   </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-500 block mb-1.5 flex items-center gap-1.5">
-                      <Droplets size={12} className="text-sky-500" /> Số nước cuối kỳ (m³)
-                    </label>
-                    <input type="number" min="0" step="0.01" value={waterEnd}
-                      onChange={e => setWaterEnd(e.target.value)}
-                      placeholder="VD: 45"
-                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
-                      required />
+                  <div className="space-y-1">
+                    <h3 className="text-base font-bold text-slate-900">Gửi thành công!</h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Chỉ số điện nước đã được cập nhật vào hệ thống.
+                    </p>
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-left mt-2">
+                      <p className="text-xs font-bold text-blue-700">Lưu ý quan trọng:</p>
+                      <p className="text-[11px] text-blue-600 mt-0.5 leading-relaxed">
+                        Vui lòng đợi email thông báo chốt hóa đơn các phòng từ Ban quản lý rồi mới thực hiện thanh toán tiền phòng & điện nước.
+                      </p>
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => { setShowMeterModal(false); setSubmitMsg(null); }}
+                    className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-700 transition-all"
+                  >
+                    Đồng ý
+                  </button>
                 </div>
-                <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <Info size={11} /> Chỉ cần 1 người trong phòng gửi. Gửi lại sẽ lấy số liệu mới nhất.
-                </p>
-                {submitMsg && (
-                  <p className={`text-xs font-semibold flex items-center gap-1.5 ${submitMsg.type === "success" ? "text-green-600" : "text-red-500"}`}>
-                    {submitMsg.type === "success" ? <CheckCircle size={13} /> : <AlertCircle size={13} />}
-                    {submitMsg.text}
+              ) : (
+                <form onSubmit={handleSubmitMeter} className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-500 block mb-1.5 flex items-center gap-1.5">
+                        <Zap size={12} className="text-amber-500" /> Số điện cuối kỳ (kWh)
+                      </label>
+                      <input type="number" min="0" step="0.01" value={electricEnd}
+                        onChange={e => setElectricEnd(e.target.value)}
+                        placeholder="VD: 1250"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+                        required />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-slate-500 block mb-1.5 flex items-center gap-1.5">
+                        <Droplets size={12} className="text-sky-500" /> Số nước cuối kỳ (m³)
+                      </label>
+                      <input type="number" min="0" step="0.01" value={waterEnd}
+                        onChange={e => setWaterEnd(e.target.value)}
+                        placeholder="VD: 45"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+                        required />
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                    <Info size={11} /> Chỉ cần 1 người trong phòng gửi. Gửi lại sẽ lấy số liệu mới nhất.
                   </p>
-                )}
-                <div className="flex gap-3 pt-1">
-                  <button type="button" onClick={() => { setShowMeterModal(false); setSubmitMsg(null); }}
-                    className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-all">
-                    Hủy
-                  </button>
-                  <button type="submit" disabled={submitting || !electricEnd || !waterEnd}
-                    className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-700 disabled:opacity-40 transition-all flex items-center justify-center gap-2">
-                    {submitting ? "Đang gửi..." : <><Send size={14} /> Gửi số liệu</>}
-                  </button>
-                </div>
-              </form>
+                  {submitMsg && (
+                    <p className={`text-xs font-semibold flex items-center gap-1.5 ${submitMsg.type === "success" ? "text-green-600" : "text-red-500"}`}>
+                      {submitMsg.type === "success" ? <CheckCircle size={13} /> : <AlertCircle size={13} />}
+                      {submitMsg.text}
+                    </p>
+                  )}
+                  <div className="flex gap-3 pt-1">
+                    <button type="button" onClick={() => { setShowMeterModal(false); setSubmitMsg(null); }}
+                      className="flex-1 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-slate-200 transition-all">
+                      Hủy
+                    </button>
+                    <button type="submit" disabled={submitting || !electricEnd || !waterEnd}
+                      className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-700 disabled:opacity-40 transition-all flex items-center justify-center gap-2">
+                      {submitting ? "Đang gửi..." : <><Send size={14} /> Gửi số liệu</>}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         )}
@@ -523,6 +550,17 @@ const StudentBills = () => {
             )}
             {selected.status !== "Đã thanh toán" && (
               <div className="mx-5 mb-5 space-y-3">
+                {today.getDate() <= 5 && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
+                    <Info size={14} className="shrink-0 mt-0.5 text-blue-500" />
+                    <div>
+                      <span className="font-bold">Lưu ý chốt số liệu (Ngày 1-5):</span>
+                      <p className="mt-0.5 text-blue-600 leading-relaxed">
+                        Hệ thống đang trong thời gian đối chiếu số liệu điện nước. Vui lòng chờ email thông báo chốt hóa đơn từ Ban quản lý trước khi thực hiện thanh toán.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-sm text-amber-700">
                   <span className="font-semibold">Hạn thanh toán:</span> {fmtDate(selected.due_date)}
                 </div>
