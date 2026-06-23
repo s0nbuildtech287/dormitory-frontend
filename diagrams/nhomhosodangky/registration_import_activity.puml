@@ -10,7 +10,7 @@ start
 if (Nguồn hợp lệ?) then (Có)
   :Đọc dữ liệu và\nvalidate thông tin;
   :Lưu hồ sơ tạm vào CSDL;
-  :Tính toán điểm rèn luyện,\nđiểm ưu tiên & điểm xét tuyển;
+  :Tính toán điểm xét tuyển,\nđiểm ưu tiên ;
   fork
     :Xác thực ảnh minh chứng\n(Vision API);
   fork again
