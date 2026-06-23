@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { X, Zap, Droplets, TrendingUp, AlertTriangle, RefreshCw, Building2 } from "lucide-react";
 import { detectInvoiceAnomalies } from "../../../api/apiInvoice.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import { usePagination } from "../../../hooks/usePagination.js";
+import Pagination from "../../../components/common/Pagination.jsx";
 
 /**
  * Modal hiển thị các bất thường điện/nước trong hóa đơn
@@ -13,6 +15,10 @@ const AnomalyModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const anomaliesList = data?.anomalies || [];
+  const pagination = usePagination(anomaliesList, 5); // 5 items per page
+  const { currentItems, goToPage } = pagination;
+
   useEffect(() => {
     if (isOpen) fetchAnomalies();
   }, [isOpen]);
@@ -22,7 +28,10 @@ const AnomalyModal = ({ isOpen, onClose }) => {
     setError("");
     try {
       const res = await detectInvoiceAnomalies();
-      if (res.success) setData(res.data);
+      if (res.success) {
+        setData(res.data);
+        goToPage(1);
+      }
       else setError("Không thể tải dữ liệu bất thường.");
     } catch (e) {
       setError(e.message || "Lỗi kết nối server.");
@@ -112,10 +121,15 @@ const AnomalyModal = ({ isOpen, onClose }) => {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {data.anomalies.map((item) => (
-                    <AnomalyCard key={item.invoice_id} item={item} />
-                  ))}
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    {currentItems.map((item) => (
+                      <AnomalyCard key={item.invoice_id} item={item} />
+                    ))}
+                  </div>
+                  <div className="flex justify-end pt-2 border-t border-slate-100">
+                    <Pagination pagination={pagination} />
+                  </div>
                 </div>
               )}
             </>
@@ -137,6 +151,7 @@ const AnomalyModal = ({ isOpen, onClose }) => {
 };
 
 const AnomalyCard = ({ item }) => {
+  const { getRoomLabel } = useBuildingDisplayNames();
   const hasElectric = item.electric_anomaly;
   const hasWater = item.water_anomaly;
 
@@ -179,9 +194,19 @@ const AnomalyCard = ({ item }) => {
                 <span className="text-slate-500">Tháng này</span>
                 <span className="font-bold text-amber-700">{item.electric_usage} kWh</span>
               </div>
+              {item.electric_prev !== null && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">Tháng trước</span>
+                  <span className={`font-semibold ${Math.abs(item.electric_change_prev_pct) >= 50 ? "text-rose-600 font-bold" : "text-slate-600"}`}>
+                    {item.electric_prev} kWh ({item.electric_change_prev_pct >= 0 ? "+" : ""}{item.electric_change_prev_pct}%)
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-xs">
-                <span className="text-slate-500">TB {item.months_compared} tháng trước</span>
-                <span className="text-slate-500">{item.electric_avg} kWh</span>
+                <span className="text-slate-500">TB 3 tháng trước</span>
+                <span className={`font-semibold ${Math.abs(item.electric_increase_pct) >= 50 ? "text-rose-600 font-bold" : "text-slate-600"}`}>
+                  {item.electric_avg} kWh ({item.electric_increase_pct >= 0 ? "+" : ""}{item.electric_increase_pct}%)
+                </span>
               </div>
               {/* Tiền */}
               <div className="pt-1.5 border-t border-amber-100 space-y-1">
@@ -194,10 +219,12 @@ const AnomalyCard = ({ item }) => {
                   <span className="text-slate-500">{(item.electric_amount_avg || 0).toLocaleString("vi-VN")}đ</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold pt-0.5">
-                  <span className="text-slate-600">Chênh lệch</span>
+                  <span className="text-slate-600">Chênh lệch (vs TB)</span>
                   <span className="text-rose-600">
-                    +{(item.electric_amount_diff || 0).toLocaleString("vi-VN")}đ
-                    <span className="text-rose-400 font-normal ml-1">(+{item.electric_increase_pct}%)</span>
+                    {item.electric_amount_diff >= 0 ? "+" : ""}{(item.electric_amount_diff || 0).toLocaleString("vi-VN")}đ
+                    <span className="text-rose-400 font-normal ml-1">
+                      ({item.electric_increase_pct >= 0 ? "+" : ""}{item.electric_increase_pct}%)
+                    </span>
                   </span>
                 </div>
               </div>
@@ -217,9 +244,19 @@ const AnomalyCard = ({ item }) => {
                 <span className="text-slate-500">Tháng này</span>
                 <span className="font-bold text-blue-700">{item.water_usage} m³</span>
               </div>
+              {item.water_prev !== null && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">Tháng trước</span>
+                  <span className={`font-semibold ${Math.abs(item.water_change_prev_pct) >= 50 ? "text-rose-600 font-bold" : "text-slate-600"}`}>
+                    {item.water_prev} m³ ({item.water_change_prev_pct >= 0 ? "+" : ""}{item.water_change_prev_pct}%)
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-xs">
-                <span className="text-slate-500">TB {item.months_compared} tháng trước</span>
-                <span className="text-slate-500">{item.water_avg} m³</span>
+                <span className="text-slate-500">TB 3 tháng trước</span>
+                <span className={`font-semibold ${Math.abs(item.water_increase_pct) >= 50 ? "text-rose-600 font-bold" : "text-slate-600"}`}>
+                  {item.water_avg} m³ ({item.water_increase_pct >= 0 ? "+" : ""}{item.water_increase_pct}%)
+                </span>
               </div>
               {/* Tiền */}
               <div className="pt-1.5 border-t border-blue-100 space-y-1">
@@ -232,10 +269,12 @@ const AnomalyCard = ({ item }) => {
                   <span className="text-slate-500">{(item.water_amount_avg || 0).toLocaleString("vi-VN")}đ</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold pt-0.5">
-                  <span className="text-slate-600">Chênh lệch</span>
+                  <span className="text-slate-600">Chênh lệch (vs TB)</span>
                   <span className="text-rose-600">
-                    +{(item.water_amount_diff || 0).toLocaleString("vi-VN")}đ
-                    <span className="text-rose-400 font-normal ml-1">(+{item.water_increase_pct}%)</span>
+                    {item.water_amount_diff >= 0 ? "+" : ""}{(item.water_amount_diff || 0).toLocaleString("vi-VN")}đ
+                    <span className="text-rose-400 font-normal ml-1">
+                      ({item.water_increase_pct >= 0 ? "+" : ""}{item.water_increase_pct}%)
+                    </span>
                   </span>
                 </div>
               </div>
