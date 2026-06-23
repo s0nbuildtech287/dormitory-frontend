@@ -1,7 +1,9 @@
 @startuml "Registration Import Activity"
 skinparam defaultFontSize 22
 skinparam defaultFontName "Times New Roman"
-|Ban quản lý|
+skinparam swimlaneWidth same
+
+|Ban quản lý tòa nhà|
 start
 :Chọn Import hồ sơ;
 :Chọn Excel hoặc\nGoogle Sheets;
@@ -10,19 +12,16 @@ start
 if (Nguồn hợp lệ?) then (Có)
   :Đọc dữ liệu và\nvalidate thông tin;
   :Lưu hồ sơ tạm vào CSDL;
-  :Tính toán điểm xét tuyển,\nđiểm ưu tiên ;
-  fork
-    :Xác thực ảnh minh chứng\n(Vision API);
-  fork again
-    :Phân loại vào các\nnhóm chỉ tiêu (Nhóm 1, 2, 3);
-  end fork
+  :Tính toán điểm xét tuyển,\nđiểm ưu tiên & phân loại nhóm\n(Nhóm 1, 2, 3);
   :Lưu điểm xét duyệt\n& đề xuất vào CSDL;
-  |Ban quản lý|
+  :Kích hoạt xác thực ảnh\nminh chứng nền (Vision API);
+  |Ban quản lý tòa nhà|
   :Thông báo nhập hồ sơ\nvà xử lý điểm thành công;
   stop
 else (Không)
+  |Hệ thống|
   :Thông báo lỗi\nđịnh dạng/URL;
-  |Ban quản lý|
+  |Ban quản lý tòa nhà|
   :Sửa nguồn và thử lại;
   stop
 endif

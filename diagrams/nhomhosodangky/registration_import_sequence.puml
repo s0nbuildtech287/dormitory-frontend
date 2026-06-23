@@ -3,7 +3,7 @@ skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 20
 
-actor "Ban quản lý" as Admin
+actor "Ban quản lý tòa nhà" as Admin
 participant "Giao diện" as FE
 participant "Hệ thống\nBackend" as BE
 participant "Hệ thống AI\n(OCR Vision)" as Vision
