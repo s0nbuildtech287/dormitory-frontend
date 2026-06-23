@@ -195,8 +195,22 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     return matchSearch && matchStatus && matchGender && matchCohort && matchFaculty && matchDateFrom && matchDateTo;
   });
 
+  // Sắp xếp Chờ gán phòng lên đầu
+  const sortedFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const aPending = a.status === "Pending" ? 1 : 0;
+      const bPending = b.status === "Pending" ? 1 : 0;
+      if (aPending !== bPending) {
+        return bPending - aPending;
+      }
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bTime - aTime;
+    });
+  }, [filtered]);
+
   // Hooks
-  const pagination = usePagination(filtered, 10);
+  const pagination = usePagination(sortedFiltered, 10);
   const { currentItems, totalItems } = pagination;
   const { 
     selectedItems: selectedContracts, 
@@ -205,7 +219,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
     handleSelectItem: handleSelectContract, 
     handleSelectAll, 
     clearSelection 
-  } = useSelection(filtered.map(c => c.id));
+  } = useSelection(sortedFiltered.map(c => c.id));
 
   // Batch manual room allocation states
   const [isOpenManualAssignModal, setIsOpenManualAssignModal] = useState(false);
@@ -857,7 +871,11 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {(autoAssignResult.allocations || []).map((item, idx) => (
+                        {[...(autoAssignResult.allocations || [])].sort((a, b) => {
+                          const aPending = a.status === "Pending" ? 1 : 0;
+                          const bPending = b.status === "Pending" ? 1 : 0;
+                          return bPending - aPending; // Sắp xếp Chờ gán lên đầu
+                        }).map((item, idx) => (
                           <tr key={idx}>
                             <td className="px-4 py-2 text-xs font-mono">{item.student_id}</td>
                             <td className="px-4 py-2 text-xs">{item.student_name}</td>
