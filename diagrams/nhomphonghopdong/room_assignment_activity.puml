@@ -21,7 +21,7 @@ else (Gán tự động hàng loạt)
   |Hệ thống|
   :Lấy danh sách các\nhợp đồng chờ gán;
   :Lấy danh sách\ncác phòng trống;
-  :Sắp xếp sinh viên\ntheo ưu tiên;
+  :Xếp thứ tự hàng đợi\ntheo thứ tự ưu tiên;
   :Tự động tìm phòng\nkhớp giới tính,\nđối tượng phòng\n(Tân SV/Quốc tế),\nkhoa và năm học;
   :Gán phòng cho sinh viên;
   :Chuyển trạng thái hợp đồng\nthành hoạt động;
