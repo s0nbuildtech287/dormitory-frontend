@@ -4,23 +4,30 @@ skinparam defaultFontName "Times New Roman"
 |Ban quản lý|
 start
 if (Chọn phương thức xếp phòng?) then (Gán thủ công từng người)
-  :Chọn hồ sơ sinh viên cần xếp phòng;
+  :Chọn hồ sơ sinh viên\ncần xếp phòng;
   |Hệ thống|
-  :Tìm kiếm phòng trống phù hợp\n(Cùng giới tính, khoa, năm học);
-  :Gợi ý danh sách 5 phòng tối ưu;
+  :Tìm kiếm phòng trống\nphù hợp\n(Cùng giới tính,\nkhoa, năm học);
+  :Gợi ý danh sách\n5 phòng tối ưu;
   |Ban quản lý|
-  :Chọn một phòng cụ thể trong danh sách;
+  :Chọn một phòng cụ thể\ntrong danh sách;
   |Hệ thống|
-  :Gán phòng cho sinh viên;\n:Chuyển trạng thái hợp đồng thành hoạt động;\n:Cập nhật số người ở trong phòng;
+  :Gán phòng cho sinh viên;
+  :Chuyển trạng thái hợp đồng\nthành hoạt động;
+  :Cập nhật số người\nở trong phòng;
 else (Gán tự động hàng loạt)
   |Ban quản lý|
-  :Chọn khoa cần xếp phòng (tùy chọn);\n:Bấm chạy gán tự động;
+  :Chọn khoa cần xếp phòng\n(tùy chọn);
+  :Bấm chạy gán tự động;
   |Hệ thống|
-  :Lấy danh sách các hợp đồng chờ gán;\n:Lấy danh sách các phòng trống;
-  :Sắp xếp sinh viên theo ưu tiên;\n:Tự động tìm phòng khớp giới tính, khoa, năm học;
-  :Gán phòng cho sinh viên;\n:Chuyển trạng thái hợp đồng thành hoạt động;\n:Cập nhật số người ở trong các phòng;
+  :Lấy danh sách các\nhợp đồng chờ gán;
+  :Lấy danh sách\ncác phòng trống;
+  :Sắp xếp sinh viên\ntheo ưu tiên;
+  :Tự động tìm phòng\nkhớp giới tính,\nđối tượng phòng\n(Tân SV/Quốc tế),\nkhoa và năm học;
+  :Gán phòng cho sinh viên;
+  :Chuyển trạng thái hợp đồng\nthành hoạt động;
+  :Cập nhật số người\nở trong các phòng;
 endif
 |Ban quản lý|
-:Xem báo cáo kết quả xếp phòng;
+:Xem báo cáo kết quả\nxếp phòng;
 stop
 @enduml
