@@ -28,7 +28,7 @@ else Chế độ 2: Gán phòng tự động hàng loạt
   BE -> DB: 3. Lấy danh sách hợp đồng chờ xếp & phòng trống
   DB --> BE: 4. Dữ liệu hợp đồng & phòng
   BE -> BE: 5. Xếp thứ tự hàng đợi theo thứ tự ưu tiên
-  BE -> BE: 6. Tự động so khớp giới tính, đối tượng phòng,\nkhoa và năm học
+  BE -> BE: 6. Tự động so khớp giới tính, đối tượng phòng,\nkhoa và khóa
   BE -> DB: 7. Cập nhật các hợp đồng & số người trong các phòng
   DB --> BE: 8. Xác nhận hoàn tất
   BE --> FE: 9. Kết quả gán phòng hàng loạt
