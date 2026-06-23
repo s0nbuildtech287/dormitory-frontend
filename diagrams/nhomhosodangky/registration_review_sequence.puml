@@ -23,7 +23,11 @@ else Chế độ 2: Duyệt tự động hàng loạt
   Admin -> FE: 1. Thiết lập chỉ tiêu & chạy duyệt
   FE -> BE: 2. Gửi yêu cầu duyệt tự động
   BE -> DB: 3. Lấy cài đặt chỉ tiêu & đơn chờ
-  BE -> BE: 4. Sắp xếp hồ sơ & phân bổ chỉ tiêu
+  BE -> BE: 4. Sắp xếp hồ sơ & phân bổ chỉ tiêu ban đầu
+  opt Nếu bật chế độ dồn chỉ tiêu & có khoa/đối tượng dư chỉ tiêu
+    BE -> BE: 4.1. Thu gom chỉ tiêu dư thừa
+    BE -> BE: 4.2. Phân bổ bổ sung cho các nhóm bị quá tải (theo thứ tự điểm từ cao xuống thấp)
+  end
   
   opt Chạy duyệt thật (không mô phỏng)
     BE -> DB: 5. Cập nhật đơn, tạo tài khoản & hợp đồng
