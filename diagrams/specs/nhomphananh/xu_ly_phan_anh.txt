@@ -1,14 +1,17 @@
-Mô tả: Ban quản lý xem danh sách, cập nhật trạng thái, phản hồi hoặc xóa phản ánh.
+Mô tả: Ban quản lý xem danh sách phản ánh, theo dõi thống kê cảm xúc AI, lọc dữ liệu và thực hiện cập nhật trạng thái, gửi câu trả lời phản hồi hoặc xóa phản ánh.
 Tác nhân: Ban quản lý.
 Các ràng buộc: Có quyền xử lý phản ánh.
-Điều kiện kích hoạt: Ban quản lý mở mục phản ánh.
+Điều kiện kích hoạt: Ban quản lý mở mục Phản ánh.
+
 Luồng sự kiện:
 Luồng sự kiện chính:
-1. Hệ thống hiển thị danh sách phản ánh.
-2. Ban quản lý chọn phản ánh để xem chi tiết.
-3. Ban quản lý cập nhật trạng thái hoặc phản hồi.
-4. Hệ thống lưu thay đổi.
-5. Hệ thống thông báo kết quả.
+1. Hệ thống hiển thị danh sách phản ánh và biểu đồ thống kê cảm xúc AI.
+2. Ban quản lý chọn bộ lọc (thời gian, tòa nhà) để cập nhật thống kê (nếu cần).
+3. Ban quản lý chọn phản ánh cụ thể để xem chi tiết.
+4. Ban quản lý cập nhật trạng thái trực tiếp hoặc mở modal nhập nội dung phản hồi cho sinh viên.
+5. Hệ thống lưu các thay đổi vào CSDL và ghi nhận hoạt động vào Nhật ký hệ thống (LogSystem).
+6. Hệ thống thông báo kết quả thành công, đóng modal và cập nhật giao diện hiển thị.
+
 Luồng rẽ nhánh:
-3.1 Ban quản lý chọn xóa phản ánh → hệ thống yêu cầu xác nhận.
-4.1 Lỗi cập nhật → thông báo thất bại.
+4.1 Ban quản lý chọn xóa phản ánh → hệ thống yêu cầu xác nhận, tiến hành xóa bản ghi và ghi nhận Nhật ký hệ thống.
+5.1 Lỗi kết nối hoặc cập nhật thất bại → hệ thống hiển thị thông báo lỗi và giữ nguyên trạng thái cũ.
