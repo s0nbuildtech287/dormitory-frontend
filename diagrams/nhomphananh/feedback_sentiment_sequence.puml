@@ -24,4 +24,12 @@ BE -> DB: 10. Truy vấn dữ liệu theo bộ lọc
 DB --> BE: 11. Trả về số liệu đã lọc
 BE --> FE: 12. Gửi kết quả thống kê mới
 FE --> Admin: 13. Cập nhật biểu đồ thống kê
+
+== 3. Xử lý và Phản hồi phản ánh ==
+Admin -> FE: 14. Chọn phản ánh ưu tiên & Nhập câu trả lời
+FE -> BE: 15. Gửi yêu cầu phản hồi (status, adminResponse)
+BE -> DB: 16. Cập nhật trạng thái & câu trả lời vào CSDL
+DB --> BE: 17. Xác nhận cập nhật thành công
+BE --> FE: 18. Phản hồi kết quả xử lý thành công
+FE --> Admin: 19. Cập nhật giao diện & đóng modal phản hồi
 @enduml
