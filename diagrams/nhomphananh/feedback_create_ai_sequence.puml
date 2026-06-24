@@ -4,19 +4,27 @@ skinparam defaultFontName "Times New Roman"
 skinparam sequenceMessageSize 20
 
 actor "Sinh viên" as Student
+actor "Ban quản lý" as Admin
 participant "Giao diện" as FE
 participant "Hệ thống\nBackend" as BE
 participant "Hệ thống AI\n(Gemini)" as Gemini
 database "CSDL" as DB
 
+== 1. Sinh viên gửi phản ánh ==
 Student -> FE: 1. Nhập nội dung phản ánh mới
 FE -> BE: 2. Gửi yêu cầu lưu phản ánh
-BE -> DB: 3. Lưu phản ánh vào cơ sở dữ liệu
+BE -> DB: 3. Lưu phản ánh vào CSDL
 DB --> BE: 4. Xác nhận lưu thành công
-BE -> Gemini: 5. Gửi nội dung phản ánh đi phân tích
-Gemini --> BE: 6. Trả về thái độ và mức ưu tiên
-BE -> DB: 7. Cập nhật kết quả phân tích AI
-DB --> BE: 8. Xác nhận cập nhật
-BE --> FE: 9. Báo gửi phản ánh thành công
-FE --> Student: 10. Hiển thị thông báo hoàn tất
+BE -> Admin: 5. Đẩy cảnh báo phản ánh mới realtime (Socket.IO)
+BE --> FE: 6. Báo gửi phản ánh thành công (HTTP Response)
+FE --> Student: 7. Hiển thị thông báo hoàn tất
+
+== 2. Tiến trình phân tích cảm xúc AI chạy nền (Asynchronous) ==
+BE -> Gemini: 8. Gửi nội dung phản ánh đi phân tích
+Gemini --> BE: 9. Trả về nhãn cảm xúc và mức ưu tiên
+BE -> DB: 10. Cập nhật kết quả phân tích AI
+DB --> BE: 11. Xác nhận cập nhật
+alt Nếu cảm xúc Tiêu cực hoặc mức ưu tiên Cao
+  BE -> Admin: 12. Đẩy cảnh báo khẩn cấp realtime (Socket.IO)
+end
 @enduml

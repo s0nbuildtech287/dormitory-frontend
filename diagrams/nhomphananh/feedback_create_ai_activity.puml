@@ -1,15 +1,27 @@
 @startuml "Feedback Create AI Activity"
-skinparam defaultFontSize 22
+skinparam defaultFontSize 20
 skinparam defaultFontName "Times New Roman"
+
 |Sinh viên|
 start
 :Nhập nội dung phản ánh;
 :Nhấn gửi;
 |Hệ thống|
-:Lưu phản ánh;
-:Gọi AI phân tích sentiment;
-:Cập nhật nhãn ưu tiên/cảm xúc phía ban quản lý;
-|Sinh viên|
-:Nhận thông báo gửi thành công;
-stop
+:Lưu phản ánh vào CSDL;
+:Gửi cảnh báo có phản ánh mới cho Admin (Socket.IO);
+split
+  |Sinh viên|
+  :Nhận thông báo gửi thành công;
+  stop
+split again
+  |Hệ thống|
+  :Kích hoạt tiến trình phân tích AI chạy nền (setImmediate);
+  :Gọi AI phân tích cảm xúc & độ ưu tiên;
+  :Cập nhật nhãn cảm xúc/ưu tiên vào CSDL;
+  if (Cảm xúc Tiêu cực hoặc Ưu tiên Cao?) then (Có)
+    :Đẩy cảnh báo realtime cho Admin;
+  else (Không)
+  endif
+  stop
+end split
 @enduml
