@@ -54,6 +54,7 @@ entity "<b>Rooms</b>" as rooms {
   capacity : INTEGER
   gender_type : gender_type
   status : room_status
+  reserved_for : VARCHAR
 }
 
 entity "<b>Student Contracts</b>" as student_contracts {
