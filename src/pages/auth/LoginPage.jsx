@@ -33,6 +33,44 @@ const LoginPage = ({ onLogin }) => {
     return () => clearInterval(t);
   }, []);
 
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
+  const [showClosedAlert, setShowClosedAlert] = useState(false);
+  useEffect(() => {
+    const checkRegistrationStatus = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/registrations/status`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          setIsRegistrationOpen(data.data.registration_open);
+        }
+      } catch (error) {
+        console.error("Error checking registration status:", error);
+      }
+    };
+    checkRegistrationStatus();
+  }, []);
+
+  const handleOpenRegister = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/registrations/status`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        const isOpen = data.data.registration_open;
+        setIsRegistrationOpen(isOpen);
+        if (isOpen) {
+          setShowRegister(true);
+        } else {
+          setShowClosedAlert(true);
+        }
+      } else {
+        setShowRegister(true);
+      }
+    } catch (error) {
+      console.error("Error checking status before opening register:", error);
+      setShowRegister(true);
+    }
+  };
+
   useEffect(() => {
     if (showOtp) otpRefs.current[0]?.focus();
   }, [showOtp]);
@@ -261,11 +299,20 @@ const LoginPage = ({ onLogin }) => {
               <span className="text-xs text-gray-400">hoặc</span>
               <div className="flex-1 h-px bg-gray-200" />
             </div>
-            <button type="button" onClick={() => setShowRegister(true)}
-              className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 py-2 sm:py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 text-sm">
-              <ClipboardList size={18} />
-              Đăng ký thuê ký túc xá
-            </button>
+            {isRegistrationOpen ? (
+              <button type="button" onClick={handleOpenRegister}
+                className="w-full border-2 border-blue-200 text-blue-600 hover:bg-blue-50 py-2 sm:py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all active:scale-95 text-sm">
+                <ClipboardList size={18} />
+                Đăng ký thuê ký túc xá
+              </button>
+            ) : (
+              <button type="button" disabled
+                className="w-full border-2 border-slate-200 text-slate-400 bg-slate-50 py-2 sm:py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-not-allowed text-sm"
+                title="Đợt đăng ký trực tuyến hiện đang đóng">
+                <ClipboardList size={18} />
+                Đợt đăng ký đang đóng
+              </button>
+            )}
           </form>
 
           <p className="text-center text-xs text-gray-400 mt-5">© 2025 Dormitory Unis — Hệ thống quản lý giáo dục</p>
@@ -277,6 +324,21 @@ const LoginPage = ({ onLogin }) => {
     {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
     {/* Modal quên mật khẩu */}
     {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
+    {/* Modal thông báo đợt đăng ký đã đóng */}
+    {showClosedAlert && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-200 p-6 text-center">
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">⚠️</div>
+          <h3 className="font-bold text-gray-800 text-lg mb-2">Đợt đăng ký đang đóng</h3>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            Đợt đăng ký trực tuyến hiện tại đang đóng hoặc đã kết thúc. Vui lòng liên hệ Ban quản lý ký túc xá để được hướng dẫn thêm.
+          </p>
+          <button onClick={() => setShowClosedAlert(false)} className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+            Đồng ý
+          </button>
+        </div>
+      </div>
+    )}
     </>
   );
 };

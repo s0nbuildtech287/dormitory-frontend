@@ -16,7 +16,7 @@ import {
   Building2,
   GraduationCap,
 } from "lucide-react";
-import { getRoomForecast, getDemandForecast } from "../../../api/apiRegistration.js";
+import { getRoomForecast, getDemandForecast, getScoringWeights, updateScoringWeights } from "../../../api/apiRegistration.js";
 import { getExpiringContracts, sendRenewalEmails } from "../../../api/apiContract.js";
 import StatCard from "../../../components/common/StatCard.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
@@ -31,6 +31,54 @@ const CampaignLauncher = () => {
   const [demandForecast, setDemandForecast] = useState(null);
   const [expiringContracts, setExpiringContracts] = useState([]);
   const [expiringDays, setExpiringDays] = useState(30);
+
+  const [fullSettings, setFullSettings] = useState(null);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const fetchStatus = async () => {
+    try {
+      const res = await getScoringWeights();
+      if (res.success && res.data && res.data.value) {
+        setFullSettings(res.data.value);
+        if (res.data.value.quotas) {
+          setRegistrationOpen(res.data.value.quotas.registration_open !== false);
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching settings:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const handleToggleRegistration = async (e) => {
+    const newVal = e.target.checked;
+    setRegistrationOpen(newVal);
+    setUpdatingStatus(true);
+    try {
+      const updatedValue = {
+        ...fullSettings,
+        quotas: {
+          ...fullSettings?.quotas,
+          registration_open: newVal
+        }
+      };
+      await updateScoringWeights(updatedValue);
+      const res = await getScoringWeights();
+      if (res.success && res.data && res.data.value) {
+        setFullSettings(res.data.value);
+      }
+    } catch (err) {
+      console.error("Error updating registration status:", err);
+      alert("Cập nhật trạng thái thất bại. Vui lòng thử lại!");
+      setRegistrationOpen(!newVal);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   const [loadingForecast, setLoadingForecast] = useState(false);
   const [loadingContracts, setLoadingContracts] = useState(false);
@@ -224,6 +272,34 @@ const CampaignLauncher = () => {
               Công cụ hỗ trợ vận hành — kiểm tra sẵn sàng trước khi mở đợt
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* Toggle Mở Đợt Đăng Ký Trực Tuyến */}
+      <div className="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-3.5 rounded-xl ${registrationOpen ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-100 text-slate-400 border border-slate-200"}`}>
+            <Rocket className={registrationOpen ? "animate-pulse" : ""} size={22} />
+          </div>
+          <div className="text-left">
+            <h3 className="font-bold text-slate-900 text-base">Cấu hình Đợt Đăng Ký Trực Tuyến</h3>
+            <p className="text-xs text-slate-500 mt-1">Bật/tắt cho phép sinh viên nộp đơn đăng ký trực tiếp từ nút ngoài trang đăng nhập</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${registrationOpen ? "bg-green-100 text-green-700 border border-green-200" : "bg-slate-100 text-slate-600 border border-slate-200"}`}>
+            {registrationOpen ? "Đợt đăng ký đang MỞ" : "Đợt đăng ký đang ĐÓNG"}
+          </span>
+          <label className="relative inline-flex items-center cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={registrationOpen}
+              onChange={handleToggleRegistration}
+              disabled={updatingStatus}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
         </div>
       </div>
 

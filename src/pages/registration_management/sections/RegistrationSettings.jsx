@@ -9,6 +9,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
     freshmen: 60,
     seniors: 40,
     waterfall_enabled: true,
+    registration_open: true,
     facultyQuotas: {},
   });
   const [facultiesList, setFacultiesList] = useState([]);
@@ -105,6 +106,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             freshmen: settingsValue.quotas.freshmen !== undefined ? settingsValue.quotas.freshmen : 60,
             seniors: settingsValue.quotas.seniors !== undefined ? settingsValue.quotas.seniors : 40,
             waterfall_enabled: settingsValue.quotas.waterfall_enabled !== undefined ? settingsValue.quotas.waterfall_enabled : true,
+            registration_open: settingsValue.quotas.registration_open !== undefined ? settingsValue.quotas.registration_open : true,
             facultyQuotas: loadedFacultyQuotas,
           });
         }
@@ -129,7 +131,6 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
               },
             });
           }
-        }
         
         // Load score mappings
         if (settingsValue.scoreMappings) {
@@ -164,6 +165,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             },
           });
         }
+      }
     } catch (error) {
       console.error("Error fetching settings:", error);
     } finally {
