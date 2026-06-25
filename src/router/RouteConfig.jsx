@@ -10,8 +10,8 @@ import PaymentResult from "../pages/payment/PaymentResult.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 
 /**
- * Route Configuration Component
- * Handles all route rendering with proper props
+ * Component Cấu hình Tuyến đường (Route Config)
+ * Quản lý render tất cả các route kèm theo các thuộc tính (props) tương ứng
  */
 const RouteConfig = () => {
   const { user } = useAuth();
@@ -25,7 +25,7 @@ const RouteConfig = () => {
   const getProps = (routeId) => {
     const props = { user, tab: routeId };
 
-    // Add specific props based on route
+    // Bổ sung các props đặc thù theo từng tuyến đường
     switch (routeId) {
       case "students":
         props.initialFilter = contractFilter;
@@ -52,7 +52,7 @@ const RouteConfig = () => {
   return (
     <Routes>
       {routes.map((route) => {
-        // Render main route
+        // Render tuyến đường chính
         const mainRoute = (
           <Route
             key={route.id}
@@ -61,7 +61,7 @@ const RouteConfig = () => {
           />
         );
 
-        // Render submenu routes if they exist
+        // Render các tuyến đường con (submenu) nếu có
         const submenuRoutes = route.submenu?.map((subRoute) => (
           <Route
             key={subRoute.id}
@@ -78,13 +78,13 @@ const RouteConfig = () => {
         );
       })}
       
-      {/* Profile Admin Route */}
+      {/* Tuyến đường hồ sơ cá nhân Admin */}
       <Route path="/profile-admin" element={<ProfileAdmin user={user} />} />
 
-      {/* Payment Result Route */}
+      {/* Tuyến đường kết quả thanh toán VNPay */}
       <Route path="/payment/result" element={<PaymentResult />} />
       
-      {/* Default redirect */}
+      {/* Điều hướng mặc định nếu không khớp route */}
       <Route path="/" element={<Navigate to={defaultPath} replace />} />
       <Route path="*" element={<Navigate to={defaultPath} replace />} />
     </Routes>

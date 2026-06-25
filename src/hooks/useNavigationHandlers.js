@@ -2,8 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useNavigation } from "../contexts/NavigationContext.jsx";
 
 /**
- * Custom hook for navigation handlers
- * Centralizes all navigation logic
+ * Hook tùy chỉnh hỗ trợ các điều hướng liên kết giữa các chức năng
+ * Tập trung hóa các logic điều hướng liên kết trong ứng dụng
  */
 export const useNavigationHandlers = () => {
   const navigate = useNavigate();

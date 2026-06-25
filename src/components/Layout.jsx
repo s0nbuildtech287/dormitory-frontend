@@ -53,10 +53,10 @@ const Layout = ({ user, onLogout, children }) => {
     return IconComponent ? <IconComponent size={20} className="shrink-0" /> : null;
   };
 
-  // Current active route from URL
+  // Lấy route đang hoạt động từ URL
   const activePath = location.pathname;
   
-  // Find active item (including submenu items)
+  // Tìm kiếm mục menu đang active (bao gồm cả các submenu con)
   let activeItem = null;
   for (const item of menuItems) {
     if (item.submenu) {
@@ -73,7 +73,7 @@ const Layout = ({ user, onLogout, children }) => {
   }
   if (!activeItem) activeItem = menuItems[0];
 
-  // Auto-open submenu if current path is in submenu
+  // Tự động mở submenu nếu đường dẫn hiện tại thuộc submenu đó
   useEffect(() => {
     for (const item of menuItems) {
       if (item.submenu) {
@@ -90,7 +90,7 @@ const Layout = ({ user, onLogout, children }) => {
     setOpenSubmenu(openSubmenu === itemId ? null : itemId);
   };
 
-  // Check if a menu item or its submenu is active
+  // Kiểm tra xem một mục menu chính hoặc các mục con của nó có đang hoạt động hay không
   const isMenuItemActive = (item) => {
     if (item.submenu) {
       return item.submenu.some((sub) => sub.path === activePath);
@@ -98,24 +98,24 @@ const Layout = ({ user, onLogout, children }) => {
     return item.path === activePath;
   };
 
-  // Handle menu item click
+  // Xử lý sự kiện click vào mục menu
   const handleMenuItemClick = (item) => {
     if (item.submenu) {
-      // If has submenu, toggle it and navigate to first submenu item
+      // Nếu có submenu, chuyển đổi trạng thái đóng mở và điều hướng đến mục đầu tiên của submenu
       const isCurrentlyOpen = openSubmenu === item.id;
       setOpenSubmenu(isCurrentlyOpen ? null : item.id);
       
-      // Navigate to first submenu item
+      // Điều hướng đến mục đầu tiên của submenu
       if (!isCurrentlyOpen && item.submenu.length > 0) {
         navigate(item.submenu[0].path);
       }
     } else {
-      // No submenu, just navigate
+      // Không có submenu, điều hướng trực tiếp
       navigate(item.path);
     }
   };
 
-  // Close notifications dropdown when clicking outside
+  // Đóng dropdown thông báo và menu cá nhân khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {

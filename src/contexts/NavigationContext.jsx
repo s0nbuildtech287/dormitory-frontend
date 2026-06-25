@@ -11,7 +11,7 @@ export const NavigationProvider = ({ children }) => {
   const location = useLocation();
   const currentPath = location.pathname.replace("/", "") || "dashboard";
 
-  // Auto-reset filters when leaving pages
+  // Tự động xóa các bộ lọc điều hướng khi rời khỏi trang
   useEffect(() => {
     if (currentPath !== "students") setContractFilter(null);
     if (currentPath !== "billing") setInvoiceFilter(null);

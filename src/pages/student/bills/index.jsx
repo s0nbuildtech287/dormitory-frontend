@@ -46,7 +46,7 @@ const StudentBills = () => {
   const [copied, setCopied] = useState(null);
   const [payLoading, setPayLoading] = useState(false);
 
-  // Meter reading form state
+  // Trạng thái biểu mẫu nhập chỉ số điện nước
   const [electricEnd, setElectricEnd] = useState("");
   const [waterEnd, setWaterEnd]       = useState("");
   const [submitting, setSubmitting]   = useState(false);

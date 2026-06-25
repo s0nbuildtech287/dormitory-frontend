@@ -2,29 +2,17 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 
 /**
- * Reusable StatCard component for displaying key metrics.
- * Supports different variants, sizes, and interactive states.
- *
- * @param {Object} props
- * @param {ReactNode|elementType} props.icon - Lucide icon component or element
- * @param {string} props.title - Main label/title of the stat
- * @param {string|number} props.value - Main value to display
- * @param {string} props.subtitle - Optional secondary text or subValue
- * @param {string} props.color - Base color name (e.g., 'blue', 'emerald', 'rose') 
- * @param {string} props.colorClass - Direct custom classes for the icon container (overrides color)
- * @param {string} props.variant - 'horizontal' | 'vertical' (default is 'horizontal')
- * @param {string} props.size - 'default' | 'large'
- * @param {boolean} props.alert - Whether to show a red pulsing alert dot
- * @param {function} props.onClick - Optional click handler. Makes card interactive.
+ * Component hiển thị thông tin số liệu thống kê (StatCard) dùng chung.
+ * Hỗ trợ các biến thể dọc/ngang, kích thước và trạng thái tương tác click.
  */
 const StatCard = ({
   icon,
   icon: Icon,
   title,
-  label, // alias for title
+  label, // Bí danh cho title
   value,
   subtitle,
-  subValue, // alias for subtitle
+  subValue, // Bí danh cho subtitle
   color = "blue",
   colorClass,
   variant = "horizontal",
@@ -36,7 +24,7 @@ const StatCard = ({
   const displayTitle = title || label;
   const displaySubtitle = subtitle || subValue;
 
-  // Render Icon whether it's passed as a component type or an element
+  // Hiển thị Icon cho dù nó được truyền dưới dạng một Component hay một Element React
   const renderIcon = () => {
     if (React.isValidElement(icon)) {
       return icon;
@@ -87,7 +75,7 @@ const StatCard = ({
     );
   }
 
-  // default variant: horizontal
+  // Biến thể mặc định: nằm ngang (horizontal)
   return (
     <div
       onClick={onClick}

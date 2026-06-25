@@ -12,7 +12,7 @@ import FeedbackManagement from "../pages/feedback_management/index.jsx";
 import ProfileAdmin from "../pages/profile_admin/index.jsx";
 import { UserRole } from "../utils/types.js";
 
-// Admin Routes
+// Danh sách tuyến đường của quản trị viên (Admin Routes)
 export const ADMIN_ROUTES = [
   {
     id: "dashboard",
@@ -104,7 +104,7 @@ export const ADMIN_ROUTES = [
   },
 ];
 
-// Student Routes
+// Danh sách tuyến đường của sinh viên (Student Routes)
 export const STUDENT_ROUTES = [
   {
     id: "profile",

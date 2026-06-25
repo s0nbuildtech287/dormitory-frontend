@@ -43,7 +43,7 @@ const RoomXungKich = ({
   const [filterRole, setFilterRole] = useState("All");
   const { getBuildingLabel } = useBuildingDisplayNames();
 
-  // Modals state
+  // Trạng thái hiển thị của các modal
   const [selectedRoomDetail, setSelectedRoomDetail] = useState(null);
   const [composeEmail, setComposeEmail] = useState(null);
   const [showXungKichPicker, setShowXungKichPicker] = useState(false);
@@ -60,7 +60,7 @@ const RoomXungKich = ({
 
   const safeRooms = Array.isArray(rooms) ? rooms : [];
 
-  // Dynamic filter options from data
+  // Tạo động các tùy chọn bộ lọc từ dữ liệu phòng
   const uniqueBuildings = [...new Set(safeRooms.map((r) => r.building).filter(Boolean))].sort();
   const uniqueRoomNumbers = [...new Set(
     safeRooms
@@ -83,7 +83,7 @@ const RoomXungKich = ({
     setFilterRole("All");
   };
 
-  // Compute and filter volunteer students flat list
+  // Tính toán và lọc danh sách phẳng sinh viên xung kích
   const filteredStudents = useMemo(() => {
     const xungKichRooms = safeRooms.filter((r) => (r.reserved_for || "general") === "xung_kich");
 
@@ -124,19 +124,19 @@ const RoomXungKich = ({
         return matchesBuilding && matchesRoom && matchesRole && matchesSearch;
       })
       .sort((a, b) => {
-        // Group by room_number first so roommates stay together
+        // Nhóm theo room_number trước để giữ các sinh viên chung phòng ở gần nhau
         const roomCompare = String(a.room_number || "").localeCompare(String(b.room_number || ""));
         if (roomCompare !== 0) return roomCompare;
-        // Sort by name inside room
+        // Sắp xếp theo tên sinh viên trong cùng phòng
         return String(a.student_name || "").localeCompare(String(b.student_name || ""));
       });
   }, [safeRooms, filterBuilding, filterFloor, filterRole, searchTerm]);
 
-  // Pagination hook
+  // Hook quản lý phân trang
   const pagination = usePagination(filteredStudents, 10);
   const { currentItems, totalItems } = pagination;
 
-  // Xung kích assignment helpers
+  // Các hàm hỗ trợ gán chỗ xung kích
   const openXungKichPicker = () => {
     setXungKichSearch("");
     setXungKichTargetRoom(null);
@@ -223,7 +223,7 @@ const RoomXungKich = ({
     }
   };
 
-  // Room picker candidate filtering
+  // Bộ lọc tìm kiếm các phòng có thể chọn làm phòng xung kích
   const xungKichCandidates = safeRooms.filter((room) => {
     const currentReserved = room.reserved_for || "general";
     if (currentReserved === "xung_kich") return false;
@@ -236,7 +236,7 @@ const RoomXungKich = ({
     return room.room_number?.toLowerCase().includes(q) || String(room.building || "").toLowerCase().includes(q);
   });
 
-  // Columns definition
+  // Định nghĩa cấu hình các cột trong bảng
   const columns = useMemo(() => [
     {
       header: "Mã sinh viên",
@@ -606,11 +606,11 @@ const RoomXungKich = ({
                   <div className="max-h-[300px] overflow-y-auto border border-slate-200 rounded-2xl divide-y divide-slate-100">
                     {(() => {
                       const filteredContracts = xungKichActiveContracts.filter(c => {
-                        // Exclude international students
+                        // Loại trừ sinh viên quốc tế
                         const priorityReasons = c.rf_priority_reasons || c.priority_reasons || "";
                         if (hasAnyKeyword(priorityReasons, INTERNATIONAL_KEYWORDS)) return false;
 
-                        // Search filter
+                        // Bộ lọc theo từ khóa tìm kiếm
                         if (!xungKichAssignSearch.trim()) return true;
                         const q = xungKichAssignSearch.toLowerCase();
                         return (

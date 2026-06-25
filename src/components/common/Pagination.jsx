@@ -56,10 +56,10 @@ const Pagination = ({ pagination }) => {
             <ChevronLeft size={16} />
           </button>
           
-          {/* Page Numbers */}
+          {/* Danh sách số trang */}
           <div className="flex items-center px-1 gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => {
-              // Show first, last, current, and +-1 pages
+              // Hiển thị trang đầu, trang cuối, trang hiện tại và các trang lân cận (+-1)
               if (
                 number === 1 ||
                 number === totalPages ||
@@ -79,7 +79,7 @@ const Pagination = ({ pagination }) => {
                   </button>
                 );
               }
-              // Show ellipsis
+              // Hiển thị dấu ba chấm rút gọn
               if (number === currentPage - 2 || number === currentPage + 2) {
                 return (
                   <span key={number} className="w-6 text-center text-slate-400">

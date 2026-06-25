@@ -27,5 +27,5 @@ export const BillStatus = {
   PAID: "Đã thanh toán",
 };
 
-// Note: These are now plain JavaScript objects instead of TypeScript types
-// Type definitions are implicit through usage
+// Lưu ý: Đây là các đối tượng JavaScript thuần túy thay vì các kiểu dữ liệu TypeScript
+// Định nghĩa các hằng số enum dùng chung trong toàn hệ thống

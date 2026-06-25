@@ -27,8 +27,8 @@ export const useSelection = (currentItemsIds) => {
   }, []);
 
   const handleSelectAll = useCallback(() => {
-    // If all are selected on current page (or all items if passed entirely), clear them. Otherwise, select them all.
-    // Assuming currentItemsIds is an array of IDs for the items we want to select all of
+    // Nếu tất cả các phần tử đã được chọn, thực hiện bỏ chọn toàn bộ. Ngược lại, chọn tất cả.
+    // Giả định currentItemsIds là một mảng chứa ID của các bản ghi hiện tại
     if (selectedItems.size === currentItemsIds.length && currentItemsIds.length > 0) {
       setSelectedItems(new Set());
     } else {

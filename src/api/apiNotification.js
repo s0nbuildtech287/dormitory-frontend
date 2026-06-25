@@ -59,8 +59,8 @@ export const deleteNotification = async (id) => {
 };
 
 /**
- * Search students by name or student code via the contracts search API
- * Returns contracts with student_name, user_id, snapshot_student_id
+ * Tìm kiếm sinh viên theo tên hoặc mã sinh viên thông qua API tìm kiếm hợp đồng
+ * Trả về danh sách hợp đồng kèm student_name, user_id, snapshot_student_id
  */
 export const searchStudentByCode = async (query) => {
     const res = await fetch(
@@ -69,7 +69,7 @@ export const searchStudentByCode = async (query) => {
     );
     const data = await res.json();
     if (!data.success) throw new Error(data.message || "Lỗi tìm sinh viên");
-    // De-duplicate by user_id so each student appears once
+    // Loại bỏ trùng lặp theo user_id để mỗi sinh viên chỉ xuất hiện một lần
     const seen = new Set();
     return (data.data || []).filter((c) => {
         if (!c.user_id || seen.has(c.user_id)) return false;

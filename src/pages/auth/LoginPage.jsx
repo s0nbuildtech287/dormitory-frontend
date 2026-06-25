@@ -20,7 +20,7 @@ const LoginPage = ({ onLogin }) => {
   const [showRegister, setShowRegister] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
-  // OTP inline state
+  // Trạng thái mã OTP
   const [showOtp, setShowOtp] = useState(false);
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [otpError, setOtpError] = useState(null);

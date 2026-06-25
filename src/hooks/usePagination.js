@@ -4,21 +4,21 @@ export const usePagination = (data, initialItemsPerPage = 10) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
 
-  // Pagination calculations
+  // Các phép toán tính toán phân trang
   const totalItems = data.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
-  // Ensure current page is valid when data changes
+  // Đảm bảo trang hiện tại nằm trong giới hạn khi dữ liệu thay đổi
   if (currentPage > totalPages) {
     setCurrentPage(Math.max(1, totalPages));
   }
 
-  // Get current items
+  // Lấy danh sách các dòng cho trang hiện tại
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Handlers
+  // Các hàm điều hướng phân trang
   const goToPage = (page) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
