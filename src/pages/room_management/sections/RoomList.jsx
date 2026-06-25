@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Search, Eye, Users, FileText, BarChart2, X, Home, Wifi, Car, Droplet, Zap, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, AlertTriangle, ArrowRight, Info, Send, Square, CheckSquare } from "lucide-react";
 import { usePagination } from "../../../hooks/usePagination.js";
 import { useSelection } from "../../../hooks/useSelection.js";
@@ -403,13 +403,13 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Số phòng",
               align: "center",
-              width: showCheckboxColumn ? "w-[11%]" : "w-[12%]",
-              accessor: (room) => <span className="text-xs font-mono font-semibold text-slate-900">{room.room_number || room.name}</span>,
+              width: showCheckboxColumn ? "w-[15%]" : "w-[16%]",
+              accessor: (room) => <span className="text-xs font-mono font-semibold text-slate-900 whitespace-nowrap">{room.room_number || room.name}</span>,
             },
             {
               header: "Vị trí",
               align: "center",
-              width: "w-[15%]",
+              width: "w-[14%]",
               accessor: (room) => (
                 <span className="text-xs font-semibold text-slate-900">
                   {getBuildingLabel(room.building)} - Tầng {room.floor}
@@ -419,7 +419,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Nhóm đang ở",
               align: "center",
-              width: "w-[18%]",
+              width: "w-[16%]",
               accessor: (room) => {
                 const students = Array.isArray(room.students) ? room.students : [];
                 const groupCounts = students.reduce((acc, student) => {
@@ -448,7 +448,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Sinh viên",
               align: "center",
-              width: "w-[13%]",
+              width: "w-[12%]",
               accessor: (room) => (
                 <div className="flex items-center justify-center gap-1">
                   <span className="text-xs font-semibold text-slate-700">
@@ -493,7 +493,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "TT thanh toán",
               align: "center",
-              width: "w-[14%]",
+              width: "w-[12%]",
               accessor: (room) => (
                 <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-xs font-black">Chờ</span>
               ),
@@ -501,7 +501,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Trạng thái",
               align: "center",
-              width: "w-[14%]",
+              width: "w-[12%]",
               accessor: (room) => (
                 <div className="flex items-center justify-center gap-1.5">
                   <span
@@ -531,7 +531,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             {
               header: "Hành động",
               align: "center",
-              width: "w-[15%]",
+              width: "w-[14%]",
               accessor: (room) => (
                 <div className="flex items-center justify-center gap-2">
                   <button onClick={() => setSelectedRoomDetail(room)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Xem chi tiết">

@@ -50,21 +50,21 @@ const PRIORITY_LABEL = {
 };
 
 const SentimentBadge = ({ value }) => {
-  if (!value) return <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Đang phân tích...</span>;
+  if (!value) return <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 whitespace-nowrap">Đang phân tích...</span>;
   const cfg = SENTIMENT_CFG[value];
   const cls = SENTIMENT_BADGE[value] || "bg-slate-50 text-slate-600 border-slate-200";
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap ${cls}`}>
       {cfg?.icon}{cfg?.label || value}
     </span>
   );
 };
 
 const PriorityBadge = ({ value }) => {
-  if (!value) return <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">Đang phân tích...</span>;
+  if (!value) return <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 whitespace-nowrap">Đang phân tích...</span>;
   const cls = PRIORITY_BADGE[value] || "bg-slate-50 text-slate-600 border-slate-200";
   return (
-    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}`}>
+    <span className={`inline-flex items-center justify-center text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap ${cls}`}>
       {PRIORITY_LABEL[value] || value}
     </span>
   );
