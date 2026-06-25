@@ -568,15 +568,25 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
               header: "Phòng",
               align: "center",
               width: "w-[10%]",
-              accessor: (c) =>
-                c.room_number ? (
-                  <span className="font-semibold text-blue-700 text-xs">
-                    {c.room_number}
+              accessor: (c) => {
+                if (!c.room_number) {
+                  return <span className="text-amber-600 text-xs font-semibold italic">Chưa có phòng</span>;
+                }
+                const roomNum = c.room_number;
+                let displayRoom = roomNum;
+                if (typeof roomNum === "string" && roomNum.startsWith("room-")) {
+                  const parts = roomNum.split("-");
+                  if (parts.length >= 2) {
+                    displayRoom = `Phòng ${parts[1]}`;
+                  }
+                }
+                return (
+                  <span className="font-semibold text-blue-700 text-xs whitespace-nowrap">
+                    {displayRoom}
                     {c.building ? ` (${c.building})` : ""}
                   </span>
-                ) : (
-                  <span className="text-amber-600 text-xs font-semibold italic">Chưa có phòng</span>
-                ),
+                );
+              },
             },
             {
               header: "Trạng thái",

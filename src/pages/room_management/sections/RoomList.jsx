@@ -404,7 +404,21 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               header: "Số phòng",
               align: "center",
               width: showCheckboxColumn ? "w-[15%]" : "w-[16%]",
-              accessor: (room) => <span className="text-xs font-mono font-semibold text-slate-900 whitespace-nowrap">{room.room_number || room.name}</span>,
+              accessor: (room) => {
+                const roomNum = room.room_number || room.name;
+                let displayRoom = roomNum;
+                if (typeof roomNum === "string" && roomNum.startsWith("room-")) {
+                  const parts = roomNum.split("-");
+                  if (parts.length >= 2) {
+                    displayRoom = `Phòng ${parts[1]}`;
+                  }
+                }
+                return (
+                  <span className="text-xs font-semibold text-slate-900 whitespace-nowrap">
+                    {displayRoom}
+                  </span>
+                );
+              },
             },
             {
               header: "Vị trí",
