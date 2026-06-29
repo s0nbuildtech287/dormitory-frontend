@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infographic – Hệ thống Quản lý Ký túc xá TLU</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap');
+  
+  :root {
+    --blue-dark:#0d2e6e; --blue-mid:#1558b0; --blue-light:#2a7de1;
+    --teal:#0f9e8e; --teal-light:#e8f8f6;
+    --gold:#f59e0b; --green:#16a34a; --green-light:#dcfce7;
+    --red:#dc2626; --red-light:#fee2e2;
+    --sky:#e8f2ff; --bg:#f4f6fb; --card:#ffffff;
+    --text-dark:#0f1f3d; --text-mid:#374151; --text-muted:#6b7280;
+    --border:#dde3ef;
+    --shadow:0 2px 12px rgba(13,46,110,.09);
+  }
+  
+  *{box-sizing:border-box;margin:0;padding:0;}
+  
+  html, body {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    overflow: auto; /* Allow normal scrolling of page */
+    background: var(--bg);
+  }
+
+  body {
+    font-family:'Be Vietnam Pro',sans-serif;
+    color:var(--text-dark);
+    font-size:9.5px;
+    line-height:1.45;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  /* MAIN INFOGRAPHIC PAGE - STABLE SIZE FOR PRINT/SCREEN CAPTURE */
+  .page {
+    width: 1440px;
+    height: auto;
+    min-height: 1020px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: visible;
+    position: relative;
+    padding: 0;
+    margin: 20px auto;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(13, 46, 110, 0.12);
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 55%, var(--blue-light) 100%);
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 250px;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 110'%3E%3Ccircle cx='240' cy='15' r='80' fill='%23ffffff07'/%3E%3Ccircle cx='290' cy='90' r='55' fill='%23ffffff05'/%3E%3C/svg%3E") no-repeat center;
+  }
+  .h-icon {
+    width: 38px;
+    height: 38px;
+    background: rgba(255,255,255,.15);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,.25);
+  }
+  .h-main { flex: 1; }
+  .h-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 20px;
+    padding: 1px 8px;
+    font-size: 8.5px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    color: #c9deff;
+  }
+  .h-title {
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -.2px;
+  }
+  .h-title span { color: #7ec8ff; }
+  .h-sub {
+    font-size: 9.5px;
+    color: rgba(255,255,255,.72);
+    margin-top: 1px;
+  }
+  .h-meta {
+    display: flex;
+    gap: 3px;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+  .m-pill {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 8.5px;
+    color: #ddeeff;
+    font-weight: 500;
+    text-align: right;
+  }
+  .m-pill strong { color: #fff; font-weight: 700; }
+
+  /* TAGLINE */
+  .tagline {
+    background: var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 4px 20px;
+    flex-shrink: 0;
+  }
+  .tag-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 600;
+  }
+  .tag-item span { font-size: 11px; }
+
+  /* ROWS CONTAINER */
+  .rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+  }
+  
+  .row {
+    display: grid;
+    gap: 12px;
+    padding: 0;
+  }
+  .r1 { grid-template-columns: repeat(4, 1fr); }
+  .r2 { grid-template-columns: 1.15fr 1fr 1fr 1fr; }
+  .r3 { grid-template-columns: 1.05fr 1.55fr 1.4fr; }
+
+  /* CARD STYLING */
+  .card {
+    background: var(--card);
+    border-radius: 9px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+  }
+  .ch {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px 5px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .ci {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .ch h2 {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    color: var(--blue-dark);
+  }
+  .ch .num {
+    margin-left: auto;
+    background: var(--blue-dark);
+    color: #fff;
+    font-size: 7.5px;
+    font-weight: 700;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  /* NO INTERNAL SCROLLBARS - ALL TEXT FULLY VISIBLE */
+  .cb {
+    padding: 8px 10px;
+    overflow: visible; /* Prevent any scrollbar inside cards */
+  }
+
+  /* THEMES */
+  .t-blue .ch{background:var(--sky);} .t-blue .ci{background:var(--blue-light);color:#fff;}
+  .t-teal .ch{background:var(--teal-light);} .t-teal .ci{background:var(--teal);color:#fff;}
+  .t-green .ch{background:var(--green-light);} .t-green .ci{background:var(--green);color:#fff;}
+  .t-gold .ch{background:#fef3c7;} .t-gold .ci{background:var(--gold);color:#fff;}
+  .t-red .ch{background:var(--red-light);} .t-red .ci{background:var(--red);color:#fff;}
+  .t-purple .ch{background:#f3e8ff;} .t-purple .ci{background:#7c3aed;color:#fff;}
+  .t-indigo .ch{background:#e0e7ff;} .t-indigo .ci{background:#4338ca;color:#fff;}
+  .t-rose .ch{background:#ffe4e6;} .t-rose .ci{background:#e11d48;color:#fff;}
+  .t-slate .ch{background:#f1f5f9;} .t-slate .ci{background:#475569;color:#fff;}
+
+  /* BULLET LIST */
+  .bl { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .bl li { display: flex; align-items: flex-start; gap: 5px; font-size: 9.5px; color: var(--text-mid); }
+  .dot { width: 4.5px; height: 4.5px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .db{background:var(--blue-light);} .dt{background:var(--teal);} .dg{background:var(--green);}
+  .do{background:var(--gold);} .dr{background:var(--red);} .dp{background:#7c3aed;}
+  em.kw{color:var(--blue-dark);font-style:normal;font-weight:700;}
+  em.tc{color:var(--teal);font-style:normal;font-weight:700;}
+  em.gc{color:var(--green);font-style:normal;font-weight:700;}
+  em.oc{color:#b45309;font-style:normal;font-weight:700;}
+  em.rc{color:var(--red);font-style:normal;font-weight:700;}
+
+  /* PAIN TABLE */
+  .pt{width:100%;border-collapse:collapse;font-size:9px;margin-top:5px;}
+  .pt th{background:var(--blue-dark);color:#fff;padding:3px 5px;text-align:left;font-size:8.5px;}
+  .pt td{padding:3px 5px;border-bottom:1px solid #eef1f8;vertical-align:top;}
+  .pt tr:last-child td{border-bottom:none;}
+  .pt tr:nth-child(even) td{background:#f8faff;}
+  .pb{display:inline-block;border-radius:3px;padding:0.5px 3.5px;font-size:8px;font-weight:700;}
+  .pb-r{background:var(--red-light);color:var(--red);}
+  .pb-o{background:#fef3c7;color:#92400e;}
+  .pb-b{background:var(--sky);color:var(--blue-mid);}
+
+  /* ARCH FLOW */
+  .arch{display:flex;align-items:stretch;border-radius:7px;overflow:hidden;border:1px solid var(--border);background:#f8faff;}
+  .an{flex:1;padding:5px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;position:relative;border-right:1px solid var(--border);}
+  .an:last-child{border-right:none;}
+  .an-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+  .an-title{font-size:8px;font-weight:800;color:var(--blue-dark);line-height:1.2;}
+  .an-sub{font-size:7.5px;color:var(--text-muted);line-height:1.2;}
+  .an-arr{position:absolute;right:-7px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--blue-light);z-index:1;}
+
+  /* PROCESS */
+  .proc{display:flex;align-items:center;gap:0;overflow-x:auto;}
+  .ps{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;min-width:52px;flex-shrink:0;}
+  .pi{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:1.5px solid;}
+  .pl{font-size:7.5px;font-weight:600;color:var(--text-mid);line-height:1.2;}
+  .pa{font-size:11px;color:var(--blue-light);flex-shrink:0;margin:0 1px;}
+
+  /* FEATURE CHIPS */
+  .fg{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+  .fc{display:flex;align-items:flex-start;gap:4px;background:#f8faff;border:1px solid var(--border);border-radius:6px;padding:3.5px 5px;}
+  .fc-i{font-size:11px;flex-shrink:0;margin-top:1px;}
+  .fc-t{font-size:8.5px;color:var(--text-mid);font-weight:500;line-height:1.2;}
+  .fc-t strong{display:block;font-weight:700;color:var(--blue-dark);font-size:8.5px;}
+
+  /* TECH CHIPS */
+  .tl{display:flex;flex-wrap:wrap;gap:3px;}
+  .tc2{display:flex;align-items:center;gap:2.5px;background:var(--sky);border:1px solid #bdd5f5;border-radius:10px;padding:1px 6px;font-size:8px;font-weight:600;color:var(--blue-dark);}
+  .tc2.te{background:var(--teal-light);border-color:#a0dbd6;color:#0b6f64;}
+  .tc2.tg{background:var(--green-light);border-color:#86efac;color:#166534;}
+  .tc2.to{background:#fef3c7;border-color:#fcd34d;color:#92400e;}
+  .tc2.tp{background:#f3e8ff;border-color:#c4b5fd;color:#5b21b6;}
+  .tc2.tr{background:var(--red-light);border-color:#fca5a5;color:#991b1b;}
+
+  /* STAT BOXES */
+  .sr{display:flex;gap:3px;}
+  .sb{flex:1;background:var(--sky);border:1px solid #bdd5f5;border-radius:7px;padding:4px 5px;text-align:center;}
+  .sb .v{font-size:13px;font-weight:900;color:var(--blue-dark);line-height:1;}
+  .sb .l{font-size:7.5px;color:var(--text-muted);font-weight:500;margin-top:1px;}
+  .sb.st{background:var(--teal-light);border-color:#a0dbd6;} .sb.st .v{color:var(--teal);}
+  .sb.sg{background:var(--green-light);border-color:#86efac;} .sb.sg .v{color:var(--green);}
+  .sb.so{background:#fef3c7;border-color:#fcd34d;} .sb.so .v{color:#b45309;}
+
+  /* FORMULA */
+  .fbox{background:linear-gradient(120deg,#0d2e6e,#1558b0);border-radius:7px;padding:6px 9px;color:#fff;}
+  .fbox .fl{font-size:7.5px;font-weight:700;color:#93c5fd;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;}
+  .fbox .ft{font-size:9.5px;font-weight:700;font-family:'Courier New',monospace;color:#fff;}
+  .fbox .fv{font-size:8px;color:#bfdbfe;margin-top:2px;line-height:1.45;}
+
+  /* WEIGHT BLOCKS */
+  .wr{display:flex;gap:3px;margin-top:3.5px;}
+  .wb{flex:1;border-radius:6px;padding:3.5px 5px;text-align:center;}
+  .wv{font-size:12px;font-weight:900;line-height:1;}
+  .wl{font-size:7.5px;font-weight:600;margin-top:1px;}
+  .wbp{background:#dbeafe;} .wbp .wv{color:var(--blue-dark);}
+  .wby{background:var(--green-light);} .wby .wv{color:var(--green);}
+  .wbg{background:#fef3c7;} .wbg .wv{color:#b45309;}
+
+  /* RESULT TABLE */
+  .rt{width:100%;border-collapse:collapse;font-size:8.5px;}
+  .rt th{background:var(--blue-dark);color:#fff;padding:2.5px 5px;text-align:left;font-size:8px;}
+  .rt td{padding:2.5px 5px;border-bottom:1px solid #eef1f8;vertical-align:top;}
+  .rt tr:last-child td{border-bottom:none;}
+  .rt tr:nth-child(even) td{background:#f8faff;}
+  .ck{color:var(--green);font-weight:700;}
+
+  /* FUTURE */
+  .fi{display:flex;align-items:flex-start;gap:5px;background:#f8faff;border-left:2px solid var(--blue-light);border-radius:0 5px 5px 0;padding:4.5px 7px;margin-bottom:3px;}
+  .fi:last-child{margin-bottom:0;}
+  .fi-i{font-size:12px;flex-shrink:0;}
+  .fi-t{font-size:8.5px;color:var(--text-mid);}
+  .fi-t strong{display:block;color:var(--blue-dark);font-weight:700;font-size:8.5px;margin-bottom:1px;}
+
+  /* SEC BADGE */
+  .secb{display:flex;align-items:center;gap:4.5px;background:#f0f4ff;border:1px solid #c7d8f8;border-radius:5px;padding:3.5px 6px;margin-bottom:3.5px;font-size:8.5px;color:var(--text-mid);}
+  .secb:last-child{margin-bottom:0;}
+  .secb .si{font-size:12px;}
+  .secb strong{color:var(--blue-dark);font-weight:700;}
+
+  /* ROLE CARD */
+  .rc2{background:var(--sky);border:1px solid #bdd5f5;border-radius:7px;padding:5px 7px;margin-bottom:3.5px;}
+  .rc2:last-child{margin-bottom:0;}
+  .rh{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+  .ra{font-size:12px;}
+  .rn{font-size:9px;font-weight:800;color:var(--blue-dark);}
+  .rtg{background:var(--blue-dark);color:#fff;border-radius:3.5px;padding:0.5px 3.5px;font-size:7.5px;font-weight:700;margin-left:auto;}
+  .rc2.sv{background:var(--teal-light);border-color:#a0dbd6;}
+  .rc2.sv .rn{color:var(--teal);}
+  .rc2.sv .rtg{background:var(--teal);}
+
+  /* FOOTER */
+  .footer {
+    background: var(--blue-dark);
+    color: rgba(255,255,255,.7);
+    font-size: 8.5px;
+    text-align: center;
+    padding: 5px 14px;
+    margin: 8px 10px 8px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .footer strong { color: #fff; }
+
+  .span2 { grid-column: span 2; }
+  .span3 { grid-column: span 3; }
+
+  /* MEDIA PRINT FOR FIT-TO-PAGE PRINTING */
+  @media print {
+    body {
+      background: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .page {
+      width: 297mm !important; /* A4 landscape width */
+      height: 210mm !important; /* A4 landscape height */
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header" style="justify-content: center; text-align: center; padding: 12px 20px;">
+    <div class="h-main">
+      <div class="h-title" style="font-size: 17px;">XÂY DỰNG HỆ THỐNG THÔNG TIN <span>QUẢN LÝ KÝ TÚC XÁ</span> TRƯỜNG ĐẠI HỌC THỦY LỢI</div>
+    </div>
+  </div>
+
+
+
+  <!-- MAIN INFOGRAPHIC CONTAINER -->
+  <div class="rows-container">
+  
+    <!-- ROW 1: Bối cảnh | Mục tiêu | Kiến trúc | Công nghệ -->
+    <div class="row r2">
+
+      <!-- 1. BỐI CẢNH -->
+      <div class="card t-blue">
+        <div class="ch"><div class="ci">📍</div><h2>1. Bối Cảnh &amp; Vấn Đề</h2><div class="num">1</div></div>
+        <div class="cb">
+          <ul class="bl">
+            <li><span class="dot db"></span>ĐH Thủy Lợi có <em class="kw">hàng chục nghìn SV</em>, nhu cầu lưu trú lớn, biến động mỗi kỳ tuyển sinh.</li>
+            <li><span class="dot dr"></span>Quản lý hiện tại <em class="rc">vẫn thủ công</em>: hồ sơ giấy, bảng tính Excel rời rạc, thiếu đồng bộ dữ liệu.</li>
+            <li><span class="dot dr"></span>Nhu cầu KTX <em class="rc">vượt cung</em>, phân bổ phòng thiếu công bằng và minh bạch.</li>
+            <li><span class="dot do"></span>Sinh viên <em class="oc">không thể tự tra cứu</em> hóa đơn, hợp đồng — phải gặp trực tiếp BQL.</li>
+            <li><span class="dot dt"></span>Tiếng nói SV chưa được lắng nghe; kỷ luật quản lý còn lỏng lẻo.</li>
+          </ul>
+          <table class="pt">
+            <tr><th>Hạn chế</th><th>Hệ luỵ</th></tr>
+            <tr><td>Nhập liệu thủ công</td><td><span class="pb pb-r">Sai sót, mất đồng bộ</span></td></tr>
+            <tr><td>Thiếu nền tảng SV</td><td><span class="pb pb-o">Thiếu minh bạch</span></td></tr>
+            <tr><td>Bất cân đối cung–cầu</td><td><span class="pb pb-r">Tranh chấp, bất công</span></td></tr>
+            <tr><td>Hóa đơn tính tay</td><td><span class="pb pb-o">Thắc mắc điện nước</span></td></tr>
+            <tr><td>Kỷ luật lỏng lẻo</td><td><span class="pb pb-b">Vi phạm nội quy</span></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. MỤC TIÊU -->
+      <div class="card t-teal">
+        <div class="ch"><div class="ci">🎯</div><h2>2. Mục Tiêu</h2><div class="num">2</div></div>
+        <div class="cb">
+          <ul class="bl">
+            <li><span class="dot db"></span><em class="kw">Tập trung hóa dữ liệu:</em> Chuyển 100% từ giấy tờ sang nền tảng số duy nhất, đồng bộ thời gian thực.</li>
+            <li><span class="dot dt"></span><em class="tc">Xét duyệt công bằng:</em> Thuật toán chấm điểm tự động + Google Cloud Vision OCR xác thực hồ sơ.</li>
+            <li><span class="dot dg"></span><em class="gc">Minh bạch tài chính:</em> Hóa đơn rõ ràng, thanh toán online VNPay / VietQR cho sinh viên.</li>
+            <li><span class="dot do"></span><em class="oc">Chatbot AI 24/7:</em> Giải đáp nội quy, thủ tục, hóa đơn tức thời ngoài giờ hành chính.</li>
+            <li><span class="dot dp"></span><em class="kw">Phân tích cảm xúc:</em> Phân loại phản ánh SV theo mức bức xúc, ưu tiên xử lý kịp thời.</li>
+            <li><span class="dot db"></span><em class="kw">Kỷ luật nghiêm minh:</em> Module ghi nhận vi phạm, trừ điểm rèn luyện, tạo tính răn đe.</li>
+          </ul>
+          <div class="sr">
+            <div class="sb"><div class="v">100%</div><div class="l">Tin học hoá hồ sơ</div></div>
+            <div class="sb st"><div class="v">50–70%</div><div class="l">Giảm thủ công</div></div>
+            <div class="sb sg"><div class="v">30/30</div><div class="l">Test Cases PASS</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. KIẾN TRÚC & CÔNG NGHỆ -->
+      <div class="card t-blue span2">
+        <div class="ch"><div class="ci">🏗️</div><h2>4. Kiến Trúc Hệ Thống &amp; Công Nghệ</h2><div class="num">4</div></div>
+        <div class="cb">
+          <div class="arch">
+            <div class="an">
+              <div class="an-icon" style="background:#dbeafe;">🖥️</div>
+              <div class="an-title">CLIENT<br>Frontend</div>
+              <div class="an-sub">React 19 + Vite<br>Tailwind CSS 4<br>Recharts · Socket.IO</div>
+              <div class="an-arr">›</div>
+            </div>
+            <div class="an">
+              <div class="an-icon" style="background:#dcfce7;">⚙️</div>
+              <div class="an-title">SERVER<br>Backend</div>
+              <div class="an-sub">Node.js · Express 5<br>RESTful API<br>MVC + DAO Pattern</div>
+              <div class="an-arr">›</div>
+            </div>
+            <div class="an">
+              <div class="an-icon" style="background:#e0e7ff;">⚡</div>
+              <div class="an-title">REALTIME<br>Socket.IO</div>
+              <div class="an-sub">Thông báo đẩy<br>Đồng bộ tức thì<br>&lt;200ms latency</div>
+              <div class="an-arr">›</div>
+            </div>
+            <div class="an">
+              <div class="an-icon" style="background:#fef3c7;">🗄️</div>
+              <div class="an-title">DATABASE<br>&amp; Cache</div>
+              <div class="an-sub">PostgreSQL 16<br>Redis (Cache)<br>Rate-limit DDoS</div>
+              <div class="an-arr">›</div>
+            </div>
+            <div class="an">
+              <div class="an-icon" style="background:#ffe4e6;">🔌</div>
+              <div class="an-title">EXTERNAL<br>Services</div>
+              <div class="an-sub">Google Cloud · VNPay<br>OpenAI · Nodemailer<br>Google Drive/Sheets</div>
+            </div>
+          </div>
+          
+          <div style="margin-top:6px;">
+            <div class="dlabel">🛠 Công nghệ sử dụng</div>
+            <div class="tl">
+              <span class="tc2">⚛️ React 19</span>
+              <span class="tc2">⚡ Vite 6</span>
+              <span class="tc2 tp">🎨 Tailwind 4</span>
+              <span class="tc2 tg">🟢 Node.js 20</span>
+              <span class="tc2">🚂 Express 5</span>
+              <span class="tc2 te">🔌 Socket.IO 4</span>
+              <span class="tc2 tp">🐘 PostgreSQL 16</span>
+              <span class="tc2 tr">⚡ Redis</span>
+              <span class="tc2 to">🔑 JWT · Bcrypt</span>
+              <span class="tc2 te">👁️ Google Vision</span>
+              <span class="tc2 to">📊 Google Sheets</span>
+              <span class="tc2">💳 VNPay</span>
+              <span class="tc2 tg">🤖 OpenAI API</span>
+              <span class="tc2 tp">📧 Nodemailer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end row 1 -->
+
+    <!-- ROW 2: Đối tượng | Quy trình | Chức năng Admin | Chức năng SV -->
+    <div class="row" style="grid-template-columns:200px 1fr 1fr 1fr;gap:8px;">
+
+      <!-- 3. ĐỐI TƯỢNG -->
+      <div class="card t-indigo">
+        <div class="ch"><div class="ci">👥</div><h2>3. Đối Tượng Sử Dụng</h2><div class="num">3</div></div>
+        <div class="cb" style="display: flex; flex-direction: column; gap: 6px; justify-content: center;">
+          <div class="rc2" style="margin: 0; padding: 6px 8px;">
+            <div class="rh"><span class="ra">🔧</span><span class="rn">Ban Quản Lý</span><span class="rtg">ADMIN</span></div>
+            <p style="font-size: 9px; color: var(--text-mid); margin-top: 2px; line-height: 1.3;">Quản trị toàn bộ hệ thống buồng phòng, hồ sơ, hợp đồng, hóa đơn tài chính và nhân sự nội trú.</p>
+          </div>
+          <div class="rc2 sv" style="margin: 0; padding: 6px 8px;">
+            <div class="rh"><span class="ra">🎓</span><span class="rn">Sinh Viên Nội Trú</span><span class="rtg">STUDENT</span></div>
+            <p style="font-size: 9px; color: var(--text-mid); margin-top: 2px; line-height: 1.3;">Đăng ký ở trực tuyến, tự quản lý hợp đồng cá nhân, hóa đơn dịch vụ và thanh toán trực tuyến.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. QUY TRÌNH -->
+      <div class="card t-green">
+        <div class="ch"><div class="ci">🔄</div><h2>5. Quy Trình Hoạt Động</h2><div class="num">5</div></div>
+        <div class="cb">
+          <div class="proc">
+            <div class="ps"><div class="pi" style="background:#dbeafe;border-color:var(--blue-light);">📝</div><div class="pl">SV đăng ký<br>hồ sơ online</div></div>
+            <div class="pa">›</div>
+            <div class="ps"><div class="pi" style="background:#fef3c7;border-color:var(--gold);">🤖</div><div class="pl">AI chấm điểm<br>+ OCR ảnh</div></div>
+            <div class="pa">›</div>
+            <div class="ps"><div class="pi" style="background:#dcfce7;border-color:var(--green);">✅</div><div class="pl">BQL duyệt<br>(tự động/lô)</div></div>
+            <div class="pa">›</div>
+            <div class="ps"><div class="pi" style="background:#e0e7ff;border-color:#4338ca;">🏠</div><div class="pl">Phân phòng<br>tự động</div></div>
+            <div class="pa">›</div>
+            <div class="ps"><div class="pi" style="background:#ffe4e6;border-color:#e11d48;">📄</div><div class="pl">Tạo HĐ<br>+ gửi email</div></div>
+            <div class="pa">›</div>
+            <div class="ps"><div class="pi" style="background:#fef3c7;border-color:var(--gold);">🧾</div><div class="pl">Lập hóa đơn<br>hàng tháng</div></div>
+            <div class="pa">›</div>
+            <div class="ps"><div class="pi" style="background:#dcfce7;border-color:var(--green);">💳</div><div class="pl">Thanh toán<br>VNPay / QR</div></div>
+          </div>
+          <div style="margin-top:6px;padding:5px 7px;background:#f0f9ff;border-radius:6px;border-left:3px solid var(--teal);font-size:8.5px;color:var(--text-mid);line-height:1.35;">
+            🔁 <em class="tc">Tự động liên thông:</em> Phê duyệt hồ sơ → tự tạo tài khoản SV (dùng email &amp; CCCD làm mật khẩu), tạo HĐ chờ kích hoạt và gửi email. Lập hóa đơn tự động cảnh báo <em class="kw">bất thường chỉ số &gt;50%</em>.
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. CHỨC NĂNG ADMIN -->
+      <div class="card t-indigo">
+        <div class="ch"><div class="ci">🔧</div><h2>6. Chức Năng BQL (Admin)</h2><div class="num">6</div></div>
+        <div class="cb">
+          <div class="fg">
+            <div class="fc"><span class="fc-i">📂</span><div class="fc-t"><strong>Quản lý Hồ sơ</strong>Duyệt tự động theo lô, import Excel</div></div>
+            <div class="fc"><span class="fc-i">📋</span><div class="fc-t"><strong>Quản lý Hợp đồng</strong>Ký HĐ điện tử, tự động gán phòng</div></div>
+            <div class="fc"><span class="fc-i">🏘️</span><div class="fc-t"><strong>Quản lý Phòng</strong>Giám sát sức chứa, trạng thái RT</div></div>
+            <div class="fc"><span class="fc-i">🧾</span><div class="fc-t"><strong>Quản lý Hóa đơn</strong>Tự lập hóa đơn dịch vụ hàng tháng</div></div>
+            <div class="fc"><span class="fc-i">🪑</span><div class="fc-t"><strong>Quản lý Tài sản</strong>Kiểm kê, quét QR code thiết bị</div></div>
+            <div class="fc"><span class="fc-i">⚖️</span><div class="fc-t"><strong>Kỷ Luật SV</strong>Ghi vi phạm, trừ điểm rèn luyện</div></div>
+            <div class="fc"><span class="fc-i">💬</span><div class="fc-t"><strong>Xử lý Phản ánh</strong>AI phân loại cảm xúc &amp; ưu tiên</div></div>
+            <div class="fc"><span class="fc-i">📊</span><div class="fc-t"><strong>Dashboard</strong>Xem doanh thu, tỷ lệ lấp đầy biểu đồ</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. CHỨC NĂNG SV -->
+      <div class="card t-teal">
+        <div class="ch"><div class="ci">🎓</div><h2>7. Chức Năng Sinh Viên</h2><div class="num">7</div></div>
+        <div class="cb">
+          <div class="fg">
+            <div class="fc"><span class="fc-i">📝</span><div class="fc-t"><strong>Đăng ký Online</strong>Nộp minh chứng không cần tài khoản</div></div>
+            <div class="fc"><span class="fc-i">👤</span><div class="fc-t"><strong>Thông tin cá nhân</strong>Xem HĐ, điểm rèn luyện, vi phạm</div></div>
+            <div class="fc"><span class="fc-i">💰</span><div class="fc-t"><strong>Hóa đơn &amp; Thanh toán</strong>Xem chi tiết &amp; thanh toán VNPay</div></div>
+            <div class="fc"><span class="fc-i">🔔</span><div class="fc-t"><strong>Thông báo Realtime</strong>Đẩy thông báo qua Socket.IO</div></div>
+            <div class="fc"><span class="fc-i">📢</span><div class="fc-t"><strong>Gửi Phản ánh</strong>Gửi yêu cầu sửa chữa, vệ sinh</div></div>
+            <div class="fc"><span class="fc-i">🤖</span><div class="fc-t"><strong>Chatbot AI</strong>Trợ lý ảo hỏi đáp quy chế 24/7</div></div>
+            <div class="fc"><span class="fc-i">📰</span><div class="fc-t"><strong>Tin tức TLU</strong>Đọc thông báo cào tự động + AI tóm tắt</div></div>
+            <div class="fc"><span class="fc-i">📄</span><div class="fc-t"><strong>Xuất HĐ PDF</strong>Hỗ trợ in ấn và lưu trữ hợp đồng</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end row 2 -->
+
+    <!-- ROW 3: Thuật toán (lớn) | Bảo mật | Kết quả + Hướng phát triển -->
+    <div class="row r3">
+
+      <!-- 8. THUẬT TOÁN -->
+      <div class="card t-gold">
+        <div class="ch"><div class="ci">🧮</div><h2>8. Thuật Toán Chấm Điểm &amp; Xếp Phòng Tự Động</h2><div class="num">8</div></div>
+        <div class="cb">
+          <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:10px;align-items:start;">
+            <div>
+              <div class="fbox">
+                <div class="fl">📐 Công thức chấm điểm xếp hạng hồ sơ (IEEE)</div>
+                <div class="ft">Score = (P · wPrior) + (Y · wYear) + (G · wGPA)</div>
+                <div class="fv">
+                  P = Điểm ưu tiên chính sách (0–100)<br>
+                  Y = Điểm năm học (Y1=100, Y2=60, Y3=40, Y4=20)<br>
+                  G = Điểm GPA quy đổi (Khóa cũ: GPA × 25; Tân SV: 50)<br>
+                  wPrior, wYear, wGPA = Trọng số nhóm xét tuyển (Admin cấu hình)
+                </div>
+              </div>
+              <div class="wr">
+                <div class="wb wbp"><div class="wv">wPrior</div><div class="wl">Nhóm Chính sách<br>(Hộ nghèo, liệt sĩ…)</div></div>
+                <div class="wb wby"><div class="wv">wYear</div><div class="wl">Nhóm Tân SV<br>(Ưu tiên năm nhất)</div></div>
+                <div class="wb wbg"><div class="wv">wGPA</div><div class="wl">Nhóm Khóa cũ<br>(Ưu tiên GPA)</div></div>
+              </div>
+            </div>
+            <div>
+              <ul class="bl">
+                <li><span class="dot db"></span><em class="kw">Google Cloud Vision OCR:</em> Tự động trích xuất thông tin ảnh minh chứng đối tượng chính sách để đối soát.</li>
+                <li><span class="dot dg"></span><em class="gc">Phân bổ chỉ tiêu &amp; Duyệt lô:</em> Chạy mô phỏng trước khi áp dụng chính thức; tự động điều chuyển chỉ tiêu dư thừa giữa các Khoa.</li>
+                <li><span class="dot dt"></span><em class="tc">Xếp phòng thông minh:</em> Gán phòng tự động dựa trên Điểm hồ sơ, Giới tính và Sức chứa hiện tại của buồng phòng.</li>
+                <li><span class="dot do"></span><em class="oc">Điều kiện điểm sàn:</em> Sinh viên khóa cũ bắt buộc đạt GPA tích lũy tối thiểu 2.0 để tham gia xét duyệt.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9+10. BẢO MẬT & HIỆU NĂNG + AI (wrapped) -->
+      <div style="display:flex;flex-direction:column;gap:8px;height:100%;">
+        
+        <!-- 9. BẢO MẬT & HIỆU NĂNG -->
+        <div class="card t-red" style="flex: 1.1;">
+          <div class="ch"><div class="ci">🔐</div><h2>9. Bảo Mật &amp; Hiệu Năng</h2><div class="num">9</div></div>
+          <div class="cb">
+            <div class="secb"><span class="si">🔑</span><div><strong>JWT Authorization</strong> — stateless token phân quyền Admin/Student</div></div>
+            <div class="secb"><span class="si">🔒</span><div><strong>Bcrypt Hashing</strong> — mã hóa mật khẩu một chiều bảo mật DB</div></div>
+            <div class="secb"><span class="si">🛡️</span><div><strong>Redis Rate-limiting</strong> — ngăn chặn spam request và tấn công DDoS</div></div>
+            <div class="secb"><span class="si">✉️</span><div><strong>OTP Email Verification</strong> — mã xác minh 2 lớp cho đăng ký/quên mật khẩu</div></div>
+            <div class="sr">
+              <div class="sb st"><div class="v">&lt;200ms</div><div class="l">Độ trễ Socket.IO<br>(50 user đồng thời)</div></div>
+              <div class="sb sg"><div class="v">30/30</div><div class="l">Kịch bản kiểm thử<br>đạt PASS</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. TÍCH HỢP AI & CLOUD -->
+        <div class="card t-purple" style="flex: 0.9;">
+          <div class="ch"><div class="ci">🤖</div><h2>10. Tích Hợp AI &amp; Cloud</h2><div class="num">10</div></div>
+          <div class="cb">
+            <ul class="bl">
+              <li><span class="dot dp"></span><em class="kw">Google Cloud Vision (OCR):</em> Nhận dạng, xác thực ảnh minh chứng.</li>
+              <li><span class="dot dp"></span><em class="kw">OpenAI API (NLP):</em> Phân tích cảm xúc phản ánh SV để phân thứ tự ưu tiên.</li>
+              <li><span class="dot dp"></span><em class="kw">Chatbot AI 24/7:</em> Trợ lý ảo ghi nhớ ngữ cảnh tư vấn quy chế, biểu phí.</li>
+              <li><span class="dot dt"></span><em class="tc">Tóm tắt Tin tức:</em> AI tự động tổng hợp tin cào từ website TLU.</li>
+              <li><span class="dot dt"></span><em class="tc">Google Sheets &amp; Drive:</em> Đồng bộ Excel, lưu trữ đám mây.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 11+12. KẾT QUẢ + HƯỚNG PHÁT TRIỂN (wrapped) -->
+      <div style="display:flex;flex-direction:column;gap:8px;height:100%;">
+
+        <!-- 11. KẾT QUẢ ĐẠT ĐƯỢC -->
+        <div class="card t-green" style="flex: 1.15;">
+          <div class="ch"><div class="ci">✅</div><h2>11. Kết Quả Nghiệm Thu</h2><div class="num">11</div></div>
+          <div class="cb">
+            <table class="rt">
+              <tr><th>Hạng mục đánh giá</th><th>Trạng thái</th></tr>
+              <tr><td>Phân hệ quản lý Admin</td><td><span class="ck">✓</span> Hoàn thiện 100%</td></tr>
+              <tr><td>Cổng thông tin Sinh viên</td><td><span class="ck">✓</span> Cá nhân hóa hoàn chỉnh</td></tr>
+              <tr><td>Chatbot AI tư vấn 24/7</td><td><span class="ck">✓</span> Ghi nhớ ngữ cảnh tốt</td></tr>
+              <tr><td>OCR đối soát minh chứng</td><td><span class="ck">✓</span> Quét chính xác dữ liệu</td></tr>
+              <tr><td>Thanh toán VNPAY/QR</td><td><span class="ck">✓</span> IPN cập nhật tự động</td></tr>
+              <tr><td>Đồng bộ Realtime Socket.IO</td><td><span class="ck">✓</span> Độ trễ cực thấp &lt;200ms</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- 12. HƯỚNG PHÁT TRIỂN -->
+        <div class="card t-blue" style="flex: 0.85;">
+          <div class="ch"><div class="ci">🚀</div><h2>12. Hướng Phát Triển</h2><div class="num">12</div></div>
+          <div class="cb">
+            <div class="fi"><span class="fi-i">📱</span><div class="fi-t"><strong>Mobile App di động</strong>Xây dựng app Native tối ưu trải nghiệm</div></div>
+            <div class="fi"><span class="fi-i">🔌</span><div class="fi-t"><strong>Tích hợp thiết bị IoT</strong>Khóa cửa vân tay, đồng hồ tự cập nhật</div></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- end row 3 -->
+  
+  </div><!-- end rows-container -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>🏛️ <strong>Trường Đại học Thủy Lợi</strong> · Khoa Công nghệ Thông tin</span>
+    <span>📌 Đồ án tốt nghiệp 2026 · Ngành Hệ thống thông tin · Mã số: <strong>7480104</strong></span>
+    <span>👨‍💻 <strong>Bùi Xuân Sơn</strong> · GVHD: <strong>ThS. Kiều Tuấn Dũng</strong></span>
+  </div>
+
+</div>
+
+</body>
+</html>
