@@ -72,14 +72,14 @@ const ModelimportCSV = ({ onImportSuccess }) => {
         onClick={handleImportClick}
         className="w-full h-full flex items-center justify-center px-1 py-3 bg-slate-50/50 text-slate-700 border-2 border-slate-300 rounded-xl hover:bg-slate-100/50 transition-all shadow-lg shadow-gray-100 font-bold text-xs whitespace-nowrap"
       >
-        <FileSpreadsheet size={14} className="mr-1 flex-shrink-0" /> Import CSV
+        <FileSpreadsheet size={14} className="mr-1 flex-shrink-0" /> Tải dữ liệu
       </button>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[100]">
           <div className="relative top-20 mx-auto p-8 border w-[500px] shadow-lg rounded-md bg-white">
             <div className="mt-3 text-center">
-              <h3 className="text-lg font-medium text-gray-900">Import CSV File</h3>
+              <h3 className="text-lg font-medium text-gray-900">Tải dữ liệu</h3>
               <div className="mt-2 px-7 py-3">
                 <input
                   type="file"

@@ -120,6 +120,21 @@ const RegistrationList = ({
   const [filterVision, setFilterVision] = useState("All");
   const [filterFaculty, setFilterFaculty] = useState("All");
 
+  const [isOpenSkippedModal, setIsOpenSkippedModal] = useState(false);
+
+  const skippedPendingRegs = useMemo(() => {
+    return (regs || []).filter(r => {
+      if (r.status !== "Chờ duyệt" || !r.note) return false;
+      const noteStr = String(r.note);
+      return (
+        noteStr.includes("Hết chỉ tiêu toàn KTX") ||
+        noteStr.includes("Hết chỗ trống KTX (khi dồn chỉ tiêu)") ||
+        noteStr.includes("Hết chỉ tiêu nhóm đối tượng") ||
+        noteStr.includes("Vượt quá chỉ tiêu khoa")
+      );
+    });
+  }, [regs]);
+
   // Auto-allocate states
   const [isOpenAutoAllocateModal, setIsOpenAutoAllocateModal] = useState(false);
   const [autoAllocating, setAutoAllocating] = useState(false);
@@ -591,17 +606,28 @@ const RegistrationList = ({
             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
             : 'bg-rose-50 text-rose-700 border border-rose-200'
             }`}>
-            <p className="text-xs font-semibold">
-              {syncMsg.type === 'success' ? '✅ ' : '❌ '}{syncMsg.text}
-            </p>
-            {syncMsg.type === 'success' && (
-              <button
-                onClick={() => { if (onRefresh) onRefresh(); }}
-                className="ml-3 flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900 underline whitespace-nowrap"
-              >
-                <RefreshCw size={11} /> Làm mới ngay
-              </button>
-            )}
+            <div className="flex items-center gap-2 flex-1">
+              <p className="text-xs font-semibold">
+                {syncMsg.type === 'success' ? '✅ ' : '❌ '}{syncMsg.text}
+              </p>
+              {syncMsg.type === 'success' && (
+                <button
+                  onClick={() => { if (onRefresh) onRefresh(); }}
+                  className="ml-3 flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900 underline whitespace-nowrap"
+                >
+                  <RefreshCw size={11} /> Làm mới ngay
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setSyncMsg(null)}
+              className={`p-1 rounded-full hover:bg-black/5 transition-colors ml-3 ${
+                syncMsg.type === 'success' ? 'text-emerald-500 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-700'
+              }`}
+              title="Đóng"
+            >
+              <X size={14} />
+            </button>
           </div>
         )}
       </div>
@@ -619,11 +645,19 @@ const RegistrationList = ({
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-2xl border border-purple-200 shadow-sm flex items-center justify-between">
+        <div 
+          onClick={() => setIsOpenSkippedModal(true)}
+          className="p-4 rounded-2xl border bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:border-purple-400 cursor-pointer hover:shadow-md flex items-center justify-between transition-all"
+          title="Nhấn để xem danh sách hồ sơ bị bỏ qua và lý do"
+        >
           <div>
             <p className="text-[10px] text-purple-600 font-bold uppercase tracking-wider text-left">Hồ sơ chờ duyệt</p>
             <p className="text-xl font-black text-purple-900 mt-0.5 text-left">{actualPendingCount} hồ sơ</p>
-            {actualPendingCount > roomStats.available_now ? (
+            {skippedPendingRegs.length > 0 ? (
+              <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 bg-amber-100 text-amber-800 border border-amber-200 rounded text-[9px] font-bold">
+                ⚠️ Bị bỏ qua ({skippedPendingRegs.length})
+              </span>
+            ) : actualPendingCount > roomStats.available_now ? (
               <span className="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 bg-rose-200 text-rose-800 rounded text-[9px] font-bold">
                 <AlertTriangle size={9} /> Quá tải ({actualPendingCount - roomStats.available_now} chỗ)
               </span>
@@ -2193,6 +2227,100 @@ const RegistrationList = ({
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: DANH SÁCH HỒ SƠ BỊ BỎ QUA */}
+      {isOpenSkippedModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="bg-amber-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-xl text-white">
+                  <AlertTriangle size={20} />
+                </div>
+                <div>
+                  <h2 className="text-white text-xl font-black text-left">Hồ sơ bị bỏ qua trong lần duyệt tự động trước</h2>
+                  <p className="text-amber-100 text-xs text-left mt-0.5">Danh sách các hồ sơ chưa được duyệt do hết chỉ tiêu hoặc hết giường</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsOpenSkippedModal(false)}
+                className="text-white hover:bg-white/20 p-2 rounded-lg transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {skippedPendingRegs.length > 0 ? (
+                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200">
+                        <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Mã SV</th>
+                        <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Tên sinh viên</th>
+                        <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Khoa</th>
+                        <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Đối tượng</th>
+                        <th className="px-4 py-3 text-xs font-bold text-slate-500 uppercase">Lý do</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-xs text-left">
+                      {skippedPendingRegs.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-2.5 font-mono font-bold text-slate-700">{item.student_id}</td>
+                          <td className="px-4 py-2.5 font-semibold text-slate-900">{item.student_name}</td>
+                          <td className="px-4 py-2.5 text-slate-600">{item.faculty}</td>
+                          <td className="px-4 py-2.5">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              item.priority_reasons && String(item.priority_reasons).trim() !== ""
+                                ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                : item.year === 1
+                                  ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            }`}>
+                              {item.priority_reasons && String(item.priority_reasons).trim() !== "" 
+                                ? "Chính sách" 
+                                : item.year === 1 
+                                  ? "Tân SV" 
+                                  : "Lưu SV"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-full font-bold text-[9px] uppercase">
+                              {item.note}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12 px-4 space-y-3 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 border border-emerald-100">
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-700">Không có hồ sơ nào bị bỏ qua</p>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Hiện chưa ghi nhận hồ sơ nào bị bỏ qua do hết chỉ tiêu hoặc hết giường trong lần chạy duyệt tự động thực tế gần nhất.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 px-6 py-4 flex justify-end items-center rounded-b-3xl border-t border-slate-200 flex-shrink-0">
+              <button
+                onClick={() => setIsOpenSkippedModal(false)}
+                className="px-6 py-2.5 text-white font-bold text-xs bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
+              >
+                Đóng
+              </button>
             </div>
           </div>
         </div>
