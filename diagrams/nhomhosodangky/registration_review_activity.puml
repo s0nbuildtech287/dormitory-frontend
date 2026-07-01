@@ -19,7 +19,7 @@ else (Tự động theo lô)
   |Hệ thống|
   :Xác định hạn mức chỉ tiêu\nvà chế độ duyệt (mô phỏng, dồn chỉ tiêu);
   :Sắp xếp hồ sơ theo nhóm\nvà điểm xét tuyển giảm dần;
-  while (Còn chỉ tiêu nhóm & khoa\n& danh sách hồ sơ?) is (Có)
+  while (Còn chỉ tiêu nhóm & khoa\n& giới tính?) is (Có)
     :Xếp sinh viên vào danh sách duyệt;
   endwhile (Không)
   if (Bật dồn chỉ tiêu?) then (Có)
