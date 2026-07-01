@@ -434,3 +434,38 @@ export const updateBatchReservedFor = async (payload) => {
     throw error;
   }
 };
+
+/**
+ * Batch update gender for rooms of a building or building/floor
+ * @param {Object} payload { building, floor, gender }
+ * @returns {Promise<Object>}
+ */
+export const updateBatchGender = async (payload) => {
+  try {
+    const token = getAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}/rooms/batch/gender`,
+      {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Lỗi khi cập nhật hàng loạt giới tính');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in updateBatchGender API call:', error);
+    throw error;
+  }
+};

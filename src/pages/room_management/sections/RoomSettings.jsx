@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, Fragment } from "react";
-import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, Search, Save, RotateCcw, Edit, X } from "lucide-react";
-import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames, updateBatchReservedFor } from "../../../api/apiRoom.js";
+import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, Search, Save, RotateCcw, Edit, X, Lock } from "lucide-react";
+import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames, updateBatchReservedFor, updateBatchGender } from "../../../api/apiRoom.js";
 
 // ─── Toggle switch helper ──────────────────────────────────────────────────────
 const Toggle = ({ checked, onChange }) => (
@@ -65,6 +65,35 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
   const [isSavingReserved, setIsSavingReserved] = useState(false);
   const [reservedError, setReservedError] = useState(null);
   const [reservedSuccess, setReservedSuccess] = useState(false);
+  const [genderUpdateStatus, setGenderUpdateStatus] = useState(null);
+
+  const handleGenderChange = async (type, buildingId, floorNum, roomId, newGender) => {
+    setGenderUpdateStatus(null);
+    try {
+      if (type === "room") {
+        const res = await updateRoom(roomId, { gender_type: newGender });
+        if (res.success) {
+          setGenderUpdateStatus({ type: "success", message: `Đã đổi giới tính phòng sang ${newGender} thành công` });
+          if (onRefresh) await onRefresh();
+        }
+      } else {
+        const payload = {
+          building: buildingId,
+          floor: type === "floor" ? Number(floorNum) : undefined,
+          gender: newGender
+        };
+        const res = await updateBatchGender(payload);
+        if (res.success) {
+          setGenderUpdateStatus({ type: "success", message: `Đã đổi giới tính ${type === "floor" ? `tầng ${floorNum}` : `tòa ${buildingId}`} sang ${newGender} thành công` });
+          if (onRefresh) await onRefresh();
+        }
+      }
+      setTimeout(() => setGenderUpdateStatus(null), 3000);
+    } catch (error) {
+      setGenderUpdateStatus({ type: "error", message: error.message || "Cập nhật giới tính thất bại" });
+      setTimeout(() => setGenderUpdateStatus(null), 4000);
+    }
+  };
 
   const handleOpenFloorEdit = (buildingId, floorNum, currentReservedList) => {
     const defaultVal = currentReservedList && currentReservedList.length > 0 ? currentReservedList[0] : "general";
@@ -367,6 +396,17 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {genderUpdateStatus && (
+        <div className={`p-4 rounded-2xl border flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${
+          genderUpdateStatus.type === "success" 
+            ? "bg-emerald-50 border-emerald-200 text-emerald-800" 
+            : "bg-rose-50 border-rose-200 text-rose-800"
+        }`}>
+          {genderUpdateStatus.type === "success" ? <CheckCircle size={18} className="shrink-0" /> : <AlertCircle size={18} className="shrink-0" />}
+          <span className="text-sm font-bold">{genderUpdateStatus.message}</span>
+        </div>
+      )}
+
       {/* ── Header ────────────────────────────────────────────────────── */}
       <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
         <div className="flex items-start justify-between gap-4">
@@ -466,20 +506,21 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                       </td>
                       <td className="px-6 py-4 text-center border-r-2 border-slate-200">
                         <div className="flex flex-wrap justify-center gap-1">
-                          {b.genderDisplay === "Chưa rõ" ? (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">Chưa rõ</span>
+                          {b.occupancy > 0 ? (
+                            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-500" title="Không thể đổi giới tính vì tòa đang có sinh viên ở">
+                              <Lock size={10} className="text-slate-400" />
+                              <span>{b.genderDisplay}</span>
+                            </div>
                           ) : (
-                            b.genderDisplay.split(", ").map(g => (
-                              <span key={g} className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                g === "Nam" 
-                                  ? "bg-blue-50 text-blue-600 border border-blue-100" 
-                                  : g === "Nữ"
-                                    ? "bg-rose-50 text-rose-600 border border-rose-100"
-                                    : "bg-slate-50 text-slate-600 border border-slate-100"
-                              }`}>
-                                {g}
-                              </span>
-                            ))
+                            <select
+                              value={b.genderDisplay.includes(", ") ? "" : b.genderDisplay}
+                              onChange={(e) => handleGenderChange("building", b.id, null, null, e.target.value)}
+                              className="px-2 py-0.5 border border-slate-200 rounded-lg text-[10px] font-bold focus:ring-2 focus:ring-indigo-50 outline-none bg-white text-slate-700 cursor-pointer"
+                            >
+                              {b.genderDisplay.includes(", ") && <option value="">Hỗn hợp ({b.genderDisplay})</option>}
+                              <option value="Nam">Nam</option>
+                              <option value="Nữ">Nữ</option>
+                            </select>
                           )}
                         </div>
                       </td>
@@ -564,20 +605,21 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                                         <td className="px-4 py-3 font-bold text-slate-900">Tầng {fl.floor}</td>
                                         <td className="px-4 py-3 text-center">
                                           <div className="flex flex-wrap justify-center gap-1">
-                                            {fl.genderDisplay === "Chưa rõ" ? (
-                                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">Chưa rõ</span>
+                                            {fl.occupancy > 0 ? (
+                                              <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[10px] font-bold text-slate-500" title="Không thể đổi giới tính vì tầng đang có sinh viên ở">
+                                                <Lock size={10} className="text-slate-400" />
+                                                <span>{fl.genderDisplay}</span>
+                                              </div>
                                             ) : (
-                                              fl.genderDisplay.split(", ").map(g => (
-                                                <span key={g} className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                                  g === "Nam" 
-                                                    ? "bg-blue-50 text-blue-600 border border-blue-100" 
-                                                    : g === "Nữ"
-                                                      ? "bg-rose-50 text-rose-600 border border-rose-100"
-                                                      : "bg-slate-50 text-slate-600 border border-slate-100"
-                                                }`}>
-                                                  {g}
-                                                </span>
-                                              ))
+                                              <select
+                                                value={fl.genderDisplay.includes(", ") ? "" : fl.genderDisplay}
+                                                onChange={(e) => handleGenderChange("floor", b.id, fl.floor, null, e.target.value)}
+                                                className="px-2 py-0.5 border border-slate-200 rounded-lg text-[10px] font-bold focus:ring-2 focus:ring-indigo-50 outline-none bg-white text-slate-700 cursor-pointer"
+                                              >
+                                                {fl.genderDisplay.includes(", ") && <option value="">Hỗn hợp ({fl.genderDisplay})</option>}
+                                                <option value="Nam">Nam</option>
+                                                <option value="Nữ">Nữ</option>
+                                              </select>
                                             )}
                                           </div>
                                         </td>
@@ -639,13 +681,25 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                                           <td className="px-4 py-3 font-mono font-bold text-slate-900">{room.room_number || room.name}</td>
                                           <td className="px-4 py-3 text-center">{room.floor}</td>
                                           <td className="px-4 py-3 text-center">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                              (room.gender || room.gender_type) === "Nam" 
-                                                ? "bg-blue-50 text-blue-600 border border-blue-100" 
-                                                : "bg-rose-50 text-rose-600 border border-rose-100"
-                                            }`}>
-                                              {room.gender || room.gender_type || "Chung"}
-                                            </span>
+                                            {(room.currentOccupancy || room.current_occupancy || 0) > 0 ? (
+                                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                (room.gender || room.gender_type) === "Nam" 
+                                                  ? "bg-blue-50 text-blue-600 border border-blue-100" 
+                                                  : "bg-rose-50 text-rose-600 border border-rose-100"
+                                              }`} title="Không thể đổi giới tính vì phòng đang có sinh viên ở">
+                                                <Lock size={10} className="shrink-0" />
+                                                {room.gender || room.gender_type || "Chung"}
+                                              </span>
+                                            ) : (
+                                              <select
+                                                value={room.gender || room.gender_type || "Nam"}
+                                                onChange={(e) => handleGenderChange("room", b.id, null, room.id, e.target.value)}
+                                                className="px-2 py-0.5 border border-slate-200 rounded-lg text-[10px] font-bold focus:ring-2 focus:ring-indigo-50 outline-none bg-white text-slate-700 cursor-pointer"
+                                              >
+                                                <option value="Nam">Nam</option>
+                                                <option value="Nữ">Nữ</option>
+                                              </select>
+                                            )}
                                           </td>
                                           <td className="px-4 py-3 text-center font-bold">{room.capacity}</td>
                                           <td className="px-4 py-3 text-center font-bold text-indigo-600">{room.currentOccupancy || room.current_occupancy || 0}</td>
@@ -912,14 +966,21 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               {/* Gender */}
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-900">Giới tính phòng</label>
-                <select
-                  value={quickForm.gender}
-                  onChange={(e) => setQuickForm((f) => ({ ...f, gender: e.target.value }))}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-blue-50 outline-none bg-white text-slate-700"
-                >
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                </select>
+                {((quickRoom.currentOccupancy || quickRoom.current_occupancy || 0) > 0) ? (
+                  <div className="w-full px-4 py-3 border border-amber-250 bg-amber-50/50 rounded-xl text-sm font-bold text-slate-600 flex items-center gap-2">
+                    <Lock size={16} className="text-amber-500 shrink-0" />
+                    <span>{quickRoom.gender || quickRoom.gender_type} (Không thể thay đổi vì phòng có người ở)</span>
+                  </div>
+                ) : (
+                  <select
+                    value={quickForm.gender}
+                    onChange={(e) => setQuickForm((f) => ({ ...f, gender: e.target.value }))}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-blue-50 outline-none bg-white text-slate-700"
+                  >
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </select>
+                )}
                 <p className="text-xs text-slate-500">Giới tính quy định sinh viên được phép ở phòng này</p>
               </div>
 
