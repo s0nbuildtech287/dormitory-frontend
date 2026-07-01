@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect, Fragment } from "react";
 import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, AlertCircle, CheckCircle, Search, Save, RotateCcw, Edit, X, Lock } from "lucide-react";
 import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames, updateBatchReservedFor, updateBatchGender } from "../../../api/apiRoom.js";
+import { usePagination } from "../../../hooks/usePagination.js";
+import Pagination from "../../../components/common/Pagination.jsx";
 
 // ─── Toggle switch helper ──────────────────────────────────────────────────────
 const Toggle = ({ checked, onChange }) => (
@@ -299,6 +301,23 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
   const [quickForm, setQuickForm] = useState({});
   const [isSavingQuick, setIsSavingQuick] = useState(false);
   const [quickStatus, setQuickStatus] = useState(null);
+
+  // Filter cho bảng danh sách phòng trong section 3
+  const [quickListSearch, setQuickListSearch] = useState("");
+  const [quickListBuilding, setQuickListBuilding] = useState("All");
+
+  const quickListFiltered = useMemo(() => {
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    return safeRooms.filter((r) => {
+      const matchB = quickListBuilding === "All" || r.building === quickListBuilding;
+      const matchS = !quickListSearch.trim() ||
+        r.room_number?.toLowerCase().includes(quickListSearch.toLowerCase()) ||
+        r.name?.toLowerCase().includes(quickListSearch.toLowerCase());
+      return matchB && matchS;
+    });
+  }, [rooms, quickListBuilding, quickListSearch]);
+
+  const quickListPagination = usePagination(quickListFiltered, 10);
 
   const quickResults = useMemo(() => {
     if (!quickSearch.trim()) return [];
@@ -900,9 +919,102 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
         title="3. Chỉnh nhanh thông số Phòng"
         subtitle="Tìm một phòng và điều chỉnh sức chứa, giới tính, giá phòng hoặc ghi chú"
       >
+        {/* Bảng danh sách phòng để tra cứu nhanh */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Lọc theo số phòng..."
+                value={quickListSearch}
+                onChange={(e) => { setQuickListSearch(e.target.value); quickListPagination.goToPage(1); }}
+                className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-blue-50 outline-none bg-slate-50/50"
+              />
+            </div>
+            <select
+              value={quickListBuilding}
+              onChange={(e) => { setQuickListBuilding(e.target.value); quickListPagination.goToPage(1); }}
+              className="text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 sm:w-48"
+            >
+              <option value="All">Tất cả tòa</option>
+              {uniqueBuildings.map((b) => (
+                <option key={b} value={b}>{getDisplayName(b)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="rounded-2xl border-2 border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider border-b-2 border-slate-200">
+                    <th className="px-4 py-3 border-r border-slate-200">Số phòng</th>
+                    <th className="px-4 py-3 border-r border-slate-200">Tòa</th>
+                    <th className="px-4 py-3 border-r border-slate-200 text-center">Tầng</th>
+                    <th className="px-4 py-3 border-r border-slate-200 text-center">Giới tính</th>
+                    <th className="px-4 py-3 border-r border-slate-200 text-center">Sức chứa</th>
+                    <th className="px-4 py-3 border-r border-slate-200 text-center">Đang ở</th>
+                    <th className="px-4 py-3 border-r border-slate-200 text-center">Giá (VNĐ)</th>
+                    <th className="px-4 py-3 border-r border-slate-200 text-center">Trạng thái</th>
+                    <th className="px-4 py-3 text-center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                  {quickListPagination.currentItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-8 text-center text-slate-400 font-normal text-sm">
+                        Không tìm thấy phòng nào
+                      </td>
+                    </tr>
+                  ) : (
+                    quickListPagination.currentItems.map((r) => (
+                      <tr
+                        key={r.id}
+                        className={`hover:bg-blue-50/30 transition-colors ${quickRoom?.id === r.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}`}
+                      >
+                        <td className="px-4 py-3 font-mono font-bold text-slate-900 border-r border-slate-100">{r.room_number || r.name}</td>
+                        <td className="px-4 py-3 border-r border-slate-100">{getDisplayName(r.building)}</td>
+                        <td className="px-4 py-3 text-center border-r border-slate-100">{r.floor}</td>
+                        <td className="px-4 py-3 text-center border-r border-slate-100">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            (r.gender || r.gender_type) === "Nam"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-rose-100 text-rose-700"
+                          }`}>
+                            {r.gender || r.gender_type || "—"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center font-bold border-r border-slate-100">{r.capacity}</td>
+                        <td className="px-4 py-3 text-center font-bold text-indigo-600 border-r border-slate-100">{r.currentOccupancy || r.current_occupancy || 0}</td>
+                        <td className="px-4 py-3 text-center border-r border-slate-100">{Number(r.rent_price || 0).toLocaleString()}</td>
+                        <td className="px-4 py-3 text-center border-r border-slate-100"><StatusBadge room={r} /></td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => {
+                              selectQuickRoom(r);
+                              setQuickSearch(r.room_number || r.name || "");
+                            }}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold transition-colors flex items-center gap-1 mx-auto"
+                          >
+                            <Edit size={11} />
+                            Chỉnh sửa
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <Pagination pagination={quickListPagination} />
+        </div>
+
+        <div className="border-t-2 border-dashed border-slate-200 pt-6">
         {/* Search */}
         <div className="space-y-2">
-          <label className="text-sm font-bold text-slate-900">Tìm và chọn phòng</label>
+          <label className="text-sm font-bold text-slate-900">Hoặc tìm nhanh và chọn phòng</label>
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -1053,8 +1165,9 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
         )}
 
         {!quickRoom && !quickSearch && (
-          <div className="p-6 text-center text-slate-400 text-sm bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Nhập số phòng ở ô tìm kiếm để bắt đầu chỉnh sửa</div>
+          <div className="p-6 text-center text-slate-400 text-sm bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Nhập số phòng ở ô tìm kiếm hoặc nhấn Chỉnh sửa từ bảng để bắt đầu</div>
         )}
+        </div>
       </Section>
 
       {/* ── Section 4: Cài đặt mặc định ─────────────────────────────── */}
