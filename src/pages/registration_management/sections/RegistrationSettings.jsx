@@ -11,6 +11,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
     waterfall_enabled: true,
     registration_open: true,
     facultyQuotas: {},
+    genderQuotas: { male: 0, female: 0 },
   });
   const [facultiesList, setFacultiesList] = useState([]);
 
@@ -108,6 +109,7 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
             waterfall_enabled: settingsValue.quotas.waterfall_enabled !== undefined ? settingsValue.quotas.waterfall_enabled : true,
             registration_open: settingsValue.quotas.registration_open !== undefined ? settingsValue.quotas.registration_open : true,
             facultyQuotas: loadedFacultyQuotas,
+            genderQuotas: settingsValue.quotas.genderQuotas || { male: 0, female: 0 },
           });
         }
 
@@ -368,6 +370,58 @@ const RegistrationSettings = ({ onSettingsUpdated }) => {
               </div>
             </div>
 
+            {/* Cấu hình chỉ tiêu theo Giới tính */}
+            <div className="space-y-4 border-t border-slate-100 pt-6 mt-6">
+              <div className="text-left">
+                <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Cấu hình Chỉ tiêu theo Giới tính (Tùy chọn)</h4>
+                <p className="text-xs text-slate-500 mt-1">Đặt bằng 0 nếu không muốn giới hạn riêng theo Giới tính (hệ thống sẽ lấy full)</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="text-left">
+                    <span className="font-semibold text-slate-800 text-sm block">Sinh viên Nam</span>
+                    <span className="text-xs text-slate-500 mt-1">Giới hạn tối đa hồ sơ Nam được duyệt</span>
+                  </div>
+                  <input
+                    type="number"
+                    value={quotas.genderQuotas?.male === 0 ? "" : (quotas.genderQuotas?.male || "")}
+                    placeholder="Không giới hạn"
+                    onChange={(e) => setQuotas({
+                      ...quotas,
+                      genderQuotas: {
+                        ...(quotas.genderQuotas || { male: 0, female: 0 }),
+                        male: parseInt(e.target.value) || 0
+                      }
+                    })}
+                    className="w-32 px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center bg-white"
+                    min="0"
+                    step="50"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="text-left">
+                    <span className="font-semibold text-slate-800 text-sm block">Sinh viên Nữ</span>
+                    <span className="text-xs text-slate-500 mt-1">Giới hạn tối đa hồ sơ Nữ được duyệt</span>
+                  </div>
+                  <input
+                    type="number"
+                    value={quotas.genderQuotas?.female === 0 ? "" : (quotas.genderQuotas?.female || "")}
+                    placeholder="Không giới hạn"
+                    onChange={(e) => setQuotas({
+                      ...quotas,
+                      genderQuotas: {
+                        ...(quotas.genderQuotas || { male: 0, female: 0 }),
+                        female: parseInt(e.target.value) || 0
+                      }
+                    })}
+                    className="w-32 px-3 py-2 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-center bg-white"
+                    min="0"
+                    step="50"
+                  />
+                </div>
+              </div>
+            </div>
 
             {/* Cấu hình chỉ tiêu theo Khoa */}
             {facultiesList && facultiesList.length > 0 && (

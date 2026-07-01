@@ -148,6 +148,7 @@ const RegistrationList = ({
     freshmen: 60,
     seniors: 40,
     facultyQuotas: {},
+    genderQuotas: { male: 0, female: 0 },
   });
   const [facultiesList, setFacultiesList] = useState([]);
   const [isQuotasCollapsed, setIsQuotasCollapsed] = useState(true);
@@ -192,6 +193,7 @@ const RegistrationList = ({
     policy_priority: 0,
     freshmen: 60,
     seniors: 40,
+    genderQuotas: { male: 0, female: 0 },
   });
 
   // Load room forecast stats
@@ -309,6 +311,7 @@ const RegistrationList = ({
               freshmen: settingsQuotas.freshmen !== undefined ? settingsQuotas.freshmen : 60,
               seniors: settingsQuotas.seniors !== undefined ? settingsQuotas.seniors : 40,
               facultyQuotas: loadedFacultyQuotas,
+              genderQuotas: settingsQuotas.genderQuotas || { male: 0, female: 0 },
             };
             setQuotas(updated);
             setModalQuotas(updated);
@@ -2042,6 +2045,57 @@ const RegistrationList = ({
                           </div>
                         )}
 
+                        {/* Chỉ tiêu Giới tính trong Modal */}
+                        <div className="border-t border-slate-200 pt-3.5 space-y-2">
+                          <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider text-left">Chỉ tiêu theo Giới tính (Tùy chọn - Đặt bằng 0 nếu không giới hạn)</span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+                              <div className="text-left min-w-0 pr-2">
+                                <span className="text-xs font-semibold text-slate-800 block">Sinh viên Nam</span>
+                              </div>
+                              <input
+                                type="number"
+                                value={modalQuotas.genderQuotas?.male === 0 ? "" : (modalQuotas.genderQuotas?.male || "")}
+                                placeholder="Không giới hạn"
+                                onChange={e => {
+                                  const val = parseInt(e.target.value) || 0;
+                                  setModalQuotas(prev => ({
+                                    ...prev,
+                                    genderQuotas: {
+                                      ...(prev.genderQuotas || { male: 0, female: 0 }),
+                                      male: val
+                                    }
+                                  }));
+                                }}
+                                className="w-24 px-1.5 py-0.5 border border-slate-200 rounded-lg text-[11px] font-bold text-center focus:ring-2 focus:ring-blue-50 outline-none bg-white"
+                                min="0"
+                              />
+                            </div>
+                            <div className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+                              <div className="text-left min-w-0 pr-2">
+                                <span className="text-xs font-semibold text-slate-800 block">Sinh viên Nữ</span>
+                              </div>
+                              <input
+                                type="number"
+                                value={modalQuotas.genderQuotas?.female === 0 ? "" : (modalQuotas.genderQuotas?.female || "")}
+                                placeholder="Không giới hạn"
+                                onChange={e => {
+                                  const val = parseInt(e.target.value) || 0;
+                                  setModalQuotas(prev => ({
+                                    ...prev,
+                                    genderQuotas: {
+                                      ...(prev.genderQuotas || { male: 0, female: 0 }),
+                                      female: val
+                                    }
+                                  }));
+                                }}
+                                className="w-24 px-1.5 py-0.5 border border-slate-200 rounded-lg text-[11px] font-bold text-center focus:ring-2 focus:ring-blue-50 outline-none bg-white"
+                                min="0"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Faculty Quotas */}
                         {facultiesList && facultiesList.length > 0 && (
                           <div className="border-t border-slate-200 pt-3.5 space-y-2.5">
@@ -2263,14 +2317,14 @@ const RegistrationList = ({
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="bg-amber-600 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
+            <div className="bg-slate-800 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/10 rounded-xl text-white">
                   <AlertTriangle size={20} />
                 </div>
                 <div>
                   <h2 className="text-white text-xl font-black text-left">Hồ sơ bị bỏ qua trong lần duyệt tự động trước</h2>
-                  <p className="text-amber-100 text-xs text-left mt-0.5">Danh sách các hồ sơ chưa được duyệt do hết chỉ tiêu hoặc hết giường</p>
+                  <p className="text-slate-300 text-xs text-left mt-0.5">Danh sách các hồ sơ chưa được duyệt do hết chỉ tiêu hoặc hết giường</p>
                 </div>
               </div>
               <button
