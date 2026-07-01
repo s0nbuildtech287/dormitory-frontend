@@ -87,16 +87,28 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
     const map = {};
     (Array.isArray(rooms) ? rooms : []).forEach((r) => {
       const b = r.building || "?";
-      if (!map[b]) map[b] = { id: b, displayName: `Tòa ${b}`, rooms: 0, capacity: 0, occupancy: 0, floorsSet: new Set() };
+      if (!map[b]) map[b] = { id: b, displayName: `Tòa ${b}`, rooms: 0, capacity: 0, occupancy: 0, floorsSet: new Set(), gendersSet: new Set() };
       map[b].rooms++;
       map[b].capacity += r.capacity || 0;
       map[b].occupancy += r.currentOccupancy || 0;
       if (r.floor) map[b].floorsSet.add(r.floor);
+      const g = r.gender || r.gender_type;
+      if (g) map[b].gendersSet.add(g);
     });
-    return Object.values(map).map(bData => ({
-      ...bData,
-      floorsCount: bData.floorsSet.size
-    })).sort((a, b) => a.id.localeCompare(b.id));
+    return Object.values(map).map(bData => {
+      const genders = Array.from(bData.gendersSet).filter(Boolean);
+      let genderDisplay = "Chưa rõ";
+      if (genders.length === 1) {
+        genderDisplay = genders[0];
+      } else if (genders.length > 1) {
+        genderDisplay = genders.sort().join(", ");
+      }
+      return {
+        ...bData,
+        floorsCount: bData.floorsSet.size,
+        genderDisplay
+      };
+    }).sort((a, b) => a.id.localeCompare(b.id));
   }, [rooms]);
 
   const buildingRooms = useMemo(() => {
@@ -127,13 +139,16 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
           rooms: 0,
           capacity: 0,
           occupancy: 0,
-          reservedForSet: new Set()
+          reservedForSet: new Set(),
+          gendersSet: new Set()
         };
       }
       map[b][f].rooms++;
       map[b][f].capacity += r.capacity || 0;
       map[b][f].occupancy += r.currentOccupancy || 0;
       map[b][f].reservedForSet.add(r.reserved_for || "general");
+      const g = r.gender || r.gender_type;
+      if (g) map[b][f].gendersSet.add(g);
     });
 
     const result = {};
@@ -145,9 +160,17 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
           const sortedReserved = Array.from(fData.reservedForSet).sort((a, b) => {
             return ORDER.indexOf(a) - ORDER.indexOf(b);
           });
+          const genders = Array.from(fData.gendersSet).filter(Boolean);
+          let genderDisplay = "Chưa rõ";
+          if (genders.length === 1) {
+            genderDisplay = genders[0];
+          } else if (genders.length > 1) {
+            genderDisplay = genders.sort().join(", ");
+          }
           return {
             ...fData,
-            reservedForList: sortedReserved
+            reservedForList: sortedReserved,
+            genderDisplay
           };
         });
     });
@@ -389,6 +412,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
               <tr className="bg-slate-50 text-slate-700 text-xs font-black uppercase tracking-widest">
                 <th className="px-6 py-4 border-r-2 border-slate-200">Tòa (ID)</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200">Tên hiển thị</th>
+                <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Giới tính</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Số tầng</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Số phòng</th>
                 <th className="px-6 py-4 border-r-2 border-slate-200 text-center">Sức chứa</th>
@@ -399,7 +423,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
             <tbody className="divide-y divide-slate-100">
               {buildingSummary.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400 text-sm">
+                  <td colSpan={8} className="px-6 py-8 text-center text-slate-400 text-sm">
                     Chưa có dữ liệu tòa
                   </td>
                 </tr>
@@ -440,6 +464,25 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                           className="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-indigo-50 outline-none bg-slate-50/60"
                         />
                       </td>
+                      <td className="px-6 py-4 text-center border-r-2 border-slate-200">
+                        <div className="flex flex-wrap justify-center gap-1">
+                          {b.genderDisplay === "Chưa rõ" ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">Chưa rõ</span>
+                          ) : (
+                            b.genderDisplay.split(", ").map(g => (
+                              <span key={g} className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                g === "Nam" 
+                                  ? "bg-blue-50 text-blue-600 border border-blue-100" 
+                                  : g === "Nữ"
+                                    ? "bg-rose-50 text-rose-600 border border-rose-100"
+                                    : "bg-slate-50 text-slate-600 border border-slate-100"
+                              }`}>
+                                {g}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.floorsCount}</td>
                       <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.rooms}</td>
                       <td className="px-6 py-4 text-center font-bold text-slate-800 border-r-2 border-slate-200">{b.capacity}</td>
@@ -455,7 +498,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={7} className="bg-slate-50/50 p-6 border-b border-slate-200">
+                        <td colSpan={8} className="bg-slate-50/50 p-6 border-b border-slate-200">
                           {/* Tab Selector */}
                           <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
                             <div className="flex items-center gap-3">
@@ -499,18 +542,19 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                               <table className="w-full text-left border-collapse">
                                 <thead>
                                   <tr className="bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider border-b border-slate-200">
-                                    <th className="px-4 py-2.5 w-[20%]">Tầng</th>
+                                    <th className="px-4 py-2.5 w-[15%]">Tầng</th>
+                                    <th className="px-4 py-2.5 text-center w-[15%]">Giới tính</th>
                                     <th className="px-4 py-2.5 text-center w-[12%]">Số phòng</th>
                                     <th className="px-4 py-2.5 text-center w-[12%]">Sức chứa</th>
                                     <th className="px-4 py-2.5 text-center w-[12%]">Đang ở</th>
-                                    <th className="px-4 py-2.5 w-[30%]">Đối tượng sử dụng</th>
-                                    <th className="px-4 py-2.5 text-center w-[14%]">Thao tác</th>
+                                    <th className="px-4 py-2.5 w-[24%]">Đối tượng sử dụng</th>
+                                    <th className="px-4 py-2.5 text-center w-[10%]">Thao tác</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
                                   {floorsInBuilding.length === 0 ? (
                                     <tr>
-                                      <td colSpan={6} className="px-4 py-6 text-center text-slate-400 font-normal">
+                                      <td colSpan={7} className="px-4 py-6 text-center text-slate-400 font-normal">
                                         Không có tầng nào trong tòa này
                                       </td>
                                     </tr>
@@ -518,6 +562,25 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                                     floorsInBuilding.map((fl) => (
                                       <tr key={fl.floor} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-4 py-3 font-bold text-slate-900">Tầng {fl.floor}</td>
+                                        <td className="px-4 py-3 text-center">
+                                          <div className="flex flex-wrap justify-center gap-1">
+                                            {fl.genderDisplay === "Chưa rõ" ? (
+                                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">Chưa rõ</span>
+                                            ) : (
+                                              fl.genderDisplay.split(", ").map(g => (
+                                                <span key={g} className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                  g === "Nam" 
+                                                    ? "bg-blue-50 text-blue-600 border border-blue-100" 
+                                                    : g === "Nữ"
+                                                      ? "bg-rose-50 text-rose-600 border border-rose-100"
+                                                      : "bg-slate-50 text-slate-600 border border-slate-100"
+                                                }`}>
+                                                  {g}
+                                                </span>
+                                              ))
+                                            )}
+                                          </div>
+                                        </td>
                                         <td className="px-4 py-3 text-center font-bold text-slate-800">{fl.rooms}</td>
                                         <td className="px-4 py-3 text-center font-bold text-slate-800">{fl.capacity}</td>
                                         <td className="px-4 py-3 text-center font-bold text-indigo-600">{fl.occupancy}</td>
