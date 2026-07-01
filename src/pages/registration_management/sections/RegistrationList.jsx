@@ -634,16 +634,42 @@ const RegistrationList = ({
 
       {/* KHỐI THỐNG KÊ DUNG LƯỢNG PHÒNG */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider text-left">Chỗ trống hiện tại</p>
-            <p className="text-xl font-black text-blue-900 mt-0.5 text-left">{roomStats.available_now} chỗ</p>
-            <p className="text-[10px] text-blue-500 mt-0.5 text-left">Sẵn sàng gán phòng ngay</p>
-          </div>
-          <div className="bg-blue-200/50 p-2 rounded-xl text-blue-700">
-            <BedDouble size={20} />
-          </div>
-        </div>
+        {(() => {
+          const isCapacityFull = roomStats.available_now - (roomStats.pending_contracts_count || 0) <= 0;
+          return (
+            <div className={`p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all ${
+              isCapacityFull 
+                ? 'bg-slate-50 border-slate-200 opacity-60 filter grayscale' 
+                : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
+            }`}>
+              <div>
+                <p className={`text-[10px] font-bold uppercase tracking-wider text-left ${
+                  isCapacityFull ? 'text-slate-500' : 'text-blue-600'
+                }`}>
+                  Chỗ trống hiện tại
+                </p>
+                <p className={`text-xl font-black mt-0.5 text-left ${
+                  isCapacityFull ? 'text-slate-700' : 'text-blue-900'
+                }`}>
+                  {roomStats.available_now} chỗ
+                </p>
+                <p className={`text-[10px] mt-0.5 text-left font-semibold ${
+                  isCapacityFull ? 'text-amber-600' : 'text-blue-500'
+                }`}>
+                  {isCapacityFull 
+                    ? `⚠️ Đã đặt trước bởi ${roomStats.pending_contracts_count || 0} hồ sơ chờ gán` 
+                    : 'Sẵn sàng gán phòng ngay'
+                  }
+                </p>
+              </div>
+              <div className={`p-2 rounded-xl ${
+                isCapacityFull ? 'bg-slate-200 text-slate-500' : 'bg-blue-200/50 text-blue-700'
+              }`}>
+                <BedDouble size={20} />
+              </div>
+            </div>
+          );
+        })()}
 
         <div 
           onClick={() => setIsOpenSkippedModal(true)}
