@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { ArrowLeft, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCw, Sparkles, Star } from "lucide-react";
+import { ArrowLeft, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCw, Sparkles, Star, ChevronDown } from "lucide-react";
 import { getContractById, getSuggestedRooms, assignRoom, terminateContract } from "../../../api/apiContract.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
@@ -25,16 +25,22 @@ const InfoRow = ({ label, value, highlight }) => (
 // ─── Room assign modal ────────────────────────────────────────────────────────
 const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
   const { getBuildingLabel } = useBuildingDisplayNames();
+  const [suggestedIds, setSuggestedIds] = useState(new Set());
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [expanded, setExpanded] = useState(null);
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     getSuggestedRooms(contractId)
       .then((r) => {
-        if (r.success) setRooms(r.data);
+        if (r.success) {
+          const { suggested = [], all = [] } = r.data;
+          setSuggestedIds(new Set(suggested.map((s) => s.id)));
+          setRooms(all);
+        }
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -54,13 +60,25 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
     }
   };
 
+  const getStudentTypeLabel = (priority, year) => {
+    if (!priority && !year) return { label: "Sinh viên khóa cũ", cls: "bg-slate-100 text-slate-600" };
+    const p = (priority || "").toLowerCase();
+    if (p.includes("lưu học sinh") || p.includes("quốc tế") || p.includes("du học sinh"))
+      return { label: "Lưu học sinh / Quốc tế", cls: "bg-purple-100 text-purple-700" };
+    if (year === 1)
+      return { label: "Tân sinh viên", cls: "bg-blue-100 text-blue-700" };
+    return { label: "Sinh viên khóa cũ", cls: "bg-slate-100 text-slate-600" };
+  };
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-black text-slate-900">Gán phòng cho sinh viên</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Top phòng gợi ý theo giới tính và cùng khoá học</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {rooms.length > 0 ? `${rooms.length} phòng phù hợp · ${suggestedIds.size} gợi ý tốt nhất` : "Danh sách phòng phù hợp"}
+            </p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors">
             ✕
@@ -81,45 +99,84 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
         ) : rooms.length === 0 ? (
           <div className="text-center py-10 text-slate-400 text-sm">Không có phòng trống phù hợp</div>
         ) : (
-          <div className="space-y-3">
-            {rooms.map((room, idx) => (
-              <button
-                key={room.id}
-                onClick={() => setSelected(room.id)}
-                className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
-                  selected === room.id ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {idx === 0 && (
-                      <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black flex items-center gap-1">
-                        <Sparkles size={9} /> Gợi ý
-                      </span>
-                    )}
-                    <div>
-                      <p className="font-black text-slate-900">
-                        Phòng {room.room_number}
-                        <span className="text-slate-500 font-bold text-xs ml-2">({getBuildingLabel(room.building)})</span>
-                      </p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Tầng {room.floor} · {room.available_slots}/{room.capacity} chỗ trống
-                        {room.same_year_count > 0 && <span className="ml-2 text-blue-600 font-bold">· {room.same_year_count} SV cùng khoá</span>}
-                      </p>
+          <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+            {rooms.map((room) => {
+              const isSuggested = suggestedIds.has(room.id);
+              const isExpanded = expanded === room.id;
+              const occupants = Array.isArray(room.occupants) ? room.occupants : [];
+              return (
+                <div
+                  key={room.id}
+                  className={`rounded-2xl border-2 transition-all ${selected === room.id ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300"}`}
+                >
+                  <button onClick={() => setSelected(room.id)} className="w-full text-left p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {isSuggested && (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black flex items-center gap-1 shrink-0">
+                            <Sparkles size={9} /> Gợi ý
+                          </span>
+                        )}
+                        <div>
+                          <p className="font-black text-slate-900">
+                            {getBuildingLabel(room.building)} - Phòng {(() => {
+                              if (typeof room.room_number === "string" && room.room_number.startsWith("room-")) {
+                                return room.room_number.split("-")[1];
+                              }
+                              return room.room_number;
+                            })()}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Tầng {room.floor} · {room.available_slots}/{room.capacity} chỗ trống
+                            {room.same_year_count > 0 && <span className="ml-2 text-blue-600 font-bold">· {room.same_year_count} SV cùng khoá</span>}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-bold text-emerald-700 text-sm">{Number(room.rent_price).toLocaleString("vi-VN")} VNĐ</p>
+                          {room.same_year_faculty_count > 0 && (
+                            <p className="text-[10px] text-amber-600 flex items-center gap-1 justify-end">
+                              <Star size={9} className="fill-amber-400 text-amber-400" />
+                              {room.same_year_faculty_count} SV cùng khoa & khoá
+                            </p>
+                          )}
+                        </div>
+                        {occupants.length > 0 && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setExpanded(isExpanded ? null : room.id); }}
+                            className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+                            title="Xem sinh viên trong phòng"
+                          >
+                            <ChevronDown size={15} className={`transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-emerald-700 text-sm">{Number(room.rent_price).toLocaleString("vi-VN")} VNĐ</p>
-                    {room.year_match_score > 0 && (
-                      <p className="text-[10px] text-amber-600 flex items-center gap-1 justify-end">
-                        <Star size={9} className="fill-amber-400 text-amber-400" />
-                        {room.year_match_score}% cùng khoá
-                      </p>
-                    )}
-                  </div>
+                  </button>
+
+                  {isExpanded && occupants.length > 0 && (
+                    <div className="px-4 pb-4 space-y-2 border-t border-slate-100 pt-3">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Sinh viên trong phòng</p>
+                      {occupants.map((oc, i) => {
+                        const typeTag = getStudentTypeLabel(oc.priority, oc.year);
+                        return (
+                          <div key={i} className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-2 text-xs">
+                            <span className="font-bold text-slate-800">{oc.name || "—"}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-slate-500">Năm {oc.year}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className="text-slate-500">{oc.faculty || "—"}</span>
+                            <span className="text-slate-300">·</span>
+                            <span className={`font-black px-2 py-0.5 rounded-full ${typeTag.cls}`}>{typeTag.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -143,6 +200,7 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
         </div>
       </div>
     </div>
+
   );
 };
 
