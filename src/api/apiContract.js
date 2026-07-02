@@ -175,6 +175,18 @@ export const transferRoom = async (contractId, roomId) => {
 };
 
 /**
+ * Rút phòng: đưa hợp đồng Active về Pending
+ * @param {string} contractId
+ */
+export const unassignRoom = async (contractId) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/${contractId}/unassign-room`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};
+
+/**
  * Set volunteer role for a student contract
  * @param {string} contractId
  * @param {string} volunteerRole - 'truong_xung_kich' or 'xung_kich'

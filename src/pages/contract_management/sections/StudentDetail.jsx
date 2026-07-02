@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { ArrowLeft, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, XCircle, AlertTriangle, RefreshCw, Sparkles, Star, ChevronDown } from "lucide-react";
-import { getContractById, getSuggestedRooms, assignRoom, terminateContract } from "../../../api/apiContract.js";
+import { getContractById, getSuggestedRooms, assignRoom, transferRoom, unassignRoom, terminateContract } from "../../../api/apiContract.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ const InfoRow = ({ label, value, highlight }) => (
 );
 
 // ─── Room assign modal ────────────────────────────────────────────────────────
-const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
+const AssignRoomModal = ({ contractId, mode = "assign", currentRoomId = null, onSuccess, onClose }) => {
   const { getBuildingLabel } = useBuildingDisplayNames();
   const [suggestedIds, setSuggestedIds] = useState(new Set());
   const [rooms, setRooms] = useState([]);
@@ -51,7 +51,8 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
     setAssigning(true);
     setError(null);
     try {
-      const res = await assignRoom(contractId, selected);
+      const apiCall = mode === "transfer" ? transferRoom : assignRoom;
+      const res = await apiCall(contractId, selected);
       if (res.success) onSuccess(res.data);
     } catch (e) {
       setError(e.message);
@@ -75,7 +76,9 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-black text-slate-900">Gán phòng cho sinh viên</h3>
+            <h3 className="text-lg font-black text-slate-900">
+              {mode === "transfer" ? "Chuyển phòng cho sinh viên" : "Gán phòng cho sinh viên"}
+            </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               {rooms.length > 0 ? `${rooms.length} phòng phù hợp · ${suggestedIds.size} gợi ý tốt nhất` : "Danh sách phòng phù hợp"}
             </p>
@@ -102,14 +105,27 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
           <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
             {rooms.map((room) => {
               const isSuggested = suggestedIds.has(room.id);
+              const isCurrent = currentRoomId && room.id === currentRoomId;
               const isExpanded = expanded === room.id;
               const occupants = Array.isArray(room.occupants) ? room.occupants : [];
               return (
                 <div
                   key={room.id}
-                  className={`rounded-2xl border-2 transition-all ${selected === room.id ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300"}`}
+                  className={`rounded-2xl border-2 transition-all relative ${
+                    isCurrent
+                      ? "border-slate-200 hover:border-slate-300"
+                      : selected === room.id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-slate-200 hover:border-slate-300"
+                  }`}
                 >
-                  <button onClick={() => setSelected(room.id)} className="w-full text-left p-4">
+                  {isCurrent && (
+                    <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white z-10" title="Phòng hiện tại" />
+                  )}
+                  <button
+                    onClick={() => setSelected(room.id)}
+                    className="w-full text-left p-4"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         {isSuggested && (
@@ -191,10 +207,10 @@ const AssignRoomModal = ({ contractId, onSuccess, onClose }) => {
           >
             {assigning ? (
               <>
-                <div className="animate-spin w-4 h-4 border-2 border-white/40 border-t-white rounded-full" /> Đang gán...
+                <div className="animate-spin w-4 h-4 border-2 border-white/40 border-t-white rounded-full" /> Đang xử lý...
               </>
             ) : (
-              "Xác nhận gán phòng"
+              mode === "transfer" ? "Xác nhận chuyển phòng" : "Xác nhận gán phòng"
             )}
           </button>
         </div>
@@ -211,6 +227,9 @@ const StudentDetail = ({ contractId, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAssign, setShowAssign] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [unassigning, setUnassigning] = useState(false);
+  const [confirmUnassign, setConfirmUnassign] = useState(false);
   const [terminating, setTerminating] = useState(false);
   const [confirmTerminate, setConfirmTerminate] = useState(false);
   const [actionMsg, setActionMsg] = useState(null);
@@ -235,8 +254,25 @@ const StudentDetail = ({ contractId, onBack }) => {
 
   const handleAssignSuccess = (updated) => {
     setShowAssign(false);
+    setShowTransfer(false);
     setContract(updated);
     setActionMsg("✅ Gán phòng thành công! Hợp đồng đã được kích hoạt.");
+  };
+
+  const handleUnassign = async () => {
+    setUnassigning(true);
+    setConfirmUnassign(false);
+    try {
+      const res = await unassignRoom(contractId);
+      if (res.success) {
+        setContract(res.data);
+        setActionMsg("✅ Đã rút phòng. Hợp đồng về trạng thái chờ gán phòng.");
+      }
+    } catch (e) {
+      setActionMsg(`❌ ${e.message}`);
+    } finally {
+      setUnassigning(false);
+    }
   };
 
   const handleTerminate = async () => {
@@ -313,13 +349,28 @@ const StudentDetail = ({ contractId, onBack }) => {
             </button>
           )}
           {isActive && (
-            <button
-              onClick={() => setConfirmTerminate(true)}
-              disabled={terminating}
-              className="flex items-center gap-2 px-5 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors"
-            >
-              <XCircle size={15} /> Chấm dứt HĐ
-            </button>
+            <>
+              <button
+                onClick={() => setShowTransfer(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors"
+              >
+                <RefreshCw size={15} /> Chuyển phòng
+              </button>
+              <button
+                onClick={() => setConfirmUnassign(true)}
+                disabled={unassigning}
+                className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl text-sm font-bold hover:bg-amber-100 transition-colors disabled:opacity-50"
+              >
+                <Clock size={15} /> Rút về chờ gán
+              </button>
+              <button
+                onClick={() => setConfirmTerminate(true)}
+                disabled={terminating}
+                className="flex items-center gap-2 px-5 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors"
+              >
+                <XCircle size={15} /> Chấm dứt HĐ
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -464,7 +515,31 @@ const StudentDetail = ({ contractId, onBack }) => {
       </div>
 
       {/* Assign Modal */}
-      {showAssign && <AssignRoomModal contractId={contractId} onSuccess={handleAssignSuccess} onClose={() => setShowAssign(false)} />}
+      {showAssign && <AssignRoomModal contractId={contractId} mode="assign" onSuccess={handleAssignSuccess} onClose={() => setShowAssign(false)} />}
+
+      {/* Transfer Modal */}
+      {showTransfer && <AssignRoomModal contractId={contractId} mode="transfer" currentRoomId={contract?.room_id} onSuccess={handleAssignSuccess} onClose={() => setShowTransfer(false)} />}
+
+      {/* Confirm unassign overlay */}
+      {confirmUnassign && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full space-y-5 animate-in fade-in zoom-in-95">
+            <div className="text-center">
+              <AlertTriangle size={32} className="text-amber-500 mx-auto mb-3" />
+              <h3 className="text-lg font-black text-slate-900">Rút phòng về trạng thái chờ gán?</h3>
+              <p className="text-sm text-slate-500 mt-2">Sinh viên sẽ bị rút khỏi phòng hiện tại và hợp đồng về trạng thái Pending.</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmUnassign(false)} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50">
+                Huỷ
+              </button>
+              <button onClick={handleUnassign} disabled={unassigning} className="flex-1 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-bold hover:bg-amber-700 disabled:opacity-50">
+                {unassigning ? "Đang xử lý..." : "Xác nhận rút phòng"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm terminate overlay */}
       {confirmTerminate && (
