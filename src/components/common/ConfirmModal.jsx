@@ -1,5 +1,6 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
+import ModalPortal from '../ModalPortal.jsx';
 
 const ConfirmModal = ({
   isOpen,
@@ -19,7 +20,8 @@ const ConfirmModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
+    <ModalPortal>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[60] animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
         <div className="flex flex-col items-center text-center gap-4">
           <div className={`w-14 h-14 rounded-full ${iconBgColor} flex items-center justify-center`}>
@@ -60,7 +62,8 @@ const ConfirmModal = ({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   );
 };
 

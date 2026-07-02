@@ -18,10 +18,33 @@ const Layout = ({ user, onLogout, children }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
+  const [hasModalOpen, setHasModalOpen] = useState(false);
   const notificationsRef = useRef(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // MutationObserver để tự động phát hiện khi có Modal mở lên
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const hasActiveModal = Array.from(document.querySelectorAll(".fixed.inset-0")).some((el) => {
+        // Loại trừ overlay của sidebar mobile (có class lg:hidden và z-10)
+        if (el.classList.contains("lg:hidden") && el.classList.contains("z-10")) {
+          return false;
+        }
+        // Nhận diện qua background đen hoặc backdrop blur của modal overlay
+        return el.className.includes("bg-black") || el.className.includes("bg-gray-900") || el.className.includes("backdrop-blur");
+      });
+      setHasModalOpen(hasActiveModal);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Đóng sidebar khi resize xuống mobile
   useEffect(() => {
@@ -142,7 +165,7 @@ const Layout = ({ user, onLogout, children }) => {
       {/* Sidebar */}
       <aside
         className={`${isSidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:translate-x-0 lg:w-20"}
-          bg-slate-900 text-white transition-all duration-300 flex flex-col fixed h-full z-20 shadow-xl`}
+          bg-slate-900 text-white transition-all duration-300 flex flex-col fixed h-full shadow-xl ${hasModalOpen ? "z-0" : "z-20"}`}
       >
         {/* Logo */}
         <div className="p-5 flex items-center justify-between border-b border-slate-800">
@@ -231,7 +254,7 @@ const Layout = ({ user, onLogout, children }) => {
         }`}
       >
         {/* Header */}
-        <header className="bg-white border-b border-slate-100 h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 shadow-sm">
+        <header className={`bg-white border-b border-slate-100 h-16 flex items-center justify-between px-4 md:px-8 sticky top-0 shadow-sm transition-all ${hasModalOpen ? "z-0" : "z-10"}`}>
           {/* Hamburger — luôn hiện trên mobile */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Receipt, Home, Zap, Droplet, Wifi, Car, Trash2, Printer, ArrowRight, Pencil, Save, RotateCcw } from "lucide-react";
+import ModalPortal from "../../../components/ModalPortal.jsx";
 import { updateInvoice } from "../../../api/apiInvoice.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 
@@ -127,7 +128,8 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }
     : "—";
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+    <ModalPortal>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 animate-in scale-in-95 duration-200">
 
         {/* Header */}
@@ -427,7 +429,8 @@ const InvoiceDetailModal = ({ invoice, onClose, onNavigateToInvoice, onUpdated }
         </div>
       </div>
     </div>
-  );
+  </ModalPortal>
+);
 };
 
 export default InvoiceDetailModal;

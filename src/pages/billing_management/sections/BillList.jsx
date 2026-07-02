@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus, Download, Printer, Send, CreditCard, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, X, ArrowRight, Trash2, AlertTriangle, Ban, Square, CheckSquare } from "lucide-react";
 import { getInvoices, deleteInvoice } from "../../../api/apiInvoice.js";
 import { getRoomById } from "../../../api/apiRoom.js";
@@ -13,6 +13,7 @@ import CreateInvoiceModal from "./CreateInvoiceModal.jsx";
 import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import AnomalyModal from "./AnomalyModal.jsx";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import ModalPortal from "../../../components/ModalPortal.jsx";
 
 const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter, onNavigateToNotification }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -218,7 +219,8 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All" || !hidePastPaid;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <>
+      <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
       <FilterBar
         title="Bộ lọc hóa đơn"
@@ -478,10 +480,12 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
 
       {/* Pagination */}
       <Pagination pagination={pagination} />
+      </div>
 
       {/* Students Modal */}
       {selectedRoomStudents && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-900">
@@ -536,11 +540,13 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Delete Warning Modal (unpaid / overdue) */}
       {deleteWarning && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 animate-in scale-in-95 duration-200">
             <div className="flex flex-col items-center text-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
@@ -563,6 +569,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Delete Confirm Modal */}
@@ -685,7 +692,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
         isOpen={showAnomalyModal}
         onClose={() => setShowAnomalyModal(false)}
       />
-    </div>
+    </>
   );
 };
 

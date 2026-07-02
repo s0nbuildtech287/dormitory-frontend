@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, Home, Package, Wifi, Car, Droplet, Zap, Users } from "lucide-react";
 import { getAssetsByRoom } from "../../../api/apiAsset.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import ModalPortal from "../../../components/ModalPortal.jsx";
 
 const RoomDetailModal = ({ room, onClose }) => {
     const { getBuildingLabel } = useBuildingDisplayNames();
@@ -30,6 +31,7 @@ const RoomDetailModal = ({ room, onClose }) => {
     if (!room) return null;
 
     return (
+        <ModalPortal>
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
             <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-3xl p-6 animate-in scale-in-95 duration-200 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
@@ -151,6 +153,7 @@ const RoomDetailModal = ({ room, onClose }) => {
                 </button>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 

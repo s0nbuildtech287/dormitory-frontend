@@ -3,6 +3,7 @@ import { X, Mail, Phone, FileText, User, Home, Building2, CheckCircle2, Clock, X
 import { getContractById, getSuggestedRooms, assignRoom, transferRoom, unassignRoom, terminateContract, updateContract } from "../../../api/apiContract.js";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import ModalPortal from "../../../components/ModalPortal.jsx";
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const fmt = (v) => (v !== null && v !== undefined && v !== "" ? v : "—");
@@ -66,6 +67,7 @@ const AssignRoomModal = ({ contractId, mode = "assign", currentRoomId = null, on
   };
 
   return (
+    <ModalPortal>
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between">
@@ -213,6 +215,7 @@ const AssignRoomModal = ({ contractId, mode = "assign", currentRoomId = null, on
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };
 
@@ -323,7 +326,7 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
   const gpa = contract?.rf_gpa;
 
   return (
-    <>
+    <ModalPortal>
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto animate-in scale-in duration-300">
         {/* Header */}
@@ -769,7 +772,7 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
       ]}
       onSend={() => {}}
     />
-    </>
+    </ModalPortal>
   );
 };
 

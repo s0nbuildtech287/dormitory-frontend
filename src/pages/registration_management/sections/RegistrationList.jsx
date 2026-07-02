@@ -11,6 +11,7 @@ import ModelimportCSV from "./ModelimportCSV.jsx";
 import AddRegistrationModal from "./AddRegistrationModal.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
 import { getScoringWeights, createRegistration, deleteRegistration, approveRegistration, rejectRegistration, importFromGoogleSheets, validateRegistrationImages, getRoomForecast, autoAllocateRegistrations } from "../../../api/apiRegistration.js";
+import ModalPortal from "../../../components/ModalPortal.jsx";
 
 // Badge hiển thị trạng thái xác thực ảnh Vision
 const VisionBadge = ({ status }) => {
@@ -543,7 +544,8 @@ const RegistrationList = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <>
+      <div className="space-y-6 animate-in fade-in duration-300">
       {/* KHỐI CHỨC NĂNG DỮ LIỆU ĐẦU VÀO */}
       <div className="bg-white p-6 rounded-3xl shadow-sm border-2 border-slate-200">
         <h3 className="text-slate-800 font-medium text-sm mb-4 uppercase tracking-wider">Đồng bộ dữ liệu đăng ký</h3>
@@ -978,10 +980,12 @@ const RegistrationList = ({
       </div>
 
       <Pagination pagination={pagination} />
+      </div>
 
       {/* DETAIL MODAL */}
       {selectedRegDetail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto animate-in scale-in duration-300">
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b border-blue-800">
               <h3 className="text-white font-bold text-lg">Chi tiết hồ sơ đăng ký</h3>
@@ -1313,6 +1317,7 @@ const RegistrationList = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* CONFIRMATION DIALOG */}
@@ -2314,7 +2319,8 @@ const RegistrationList = ({
 
       {/* MODAL: DANH SÁCH HỒ SƠ BỊ BỎ QUA */}
       {isOpenSkippedModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl my-8 flex flex-col max-h-[calc(100vh-64px)] overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="bg-slate-800 p-6 flex justify-between items-center rounded-t-3xl flex-shrink-0">
@@ -2404,8 +2410,9 @@ const RegistrationList = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
-    </div>
+    </>
   );
 };
 

@@ -5,6 +5,7 @@ import ContractDetailModal from "./sections/ContractDetailModal.jsx";
 import ContractStatistics from "./sections/ContractStatistics.jsx";
 import PageTabs from "../../components/common/PageTabs.jsx";
 import { getContracts, getContractStats, deleteContract } from "../../api/apiContract.js";
+import ModalPortal from "../../components/ModalPortal.jsx";
 
 const ContractManagement = ({ initialFilter }) => {
   const [contracts, setContracts] = useState([]);
@@ -107,7 +108,8 @@ const ContractManagement = ({ initialFilter }) => {
 
       {/* Confirm Delete Dialog */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in scale-in duration-300">
             <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-3">
               <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-red-100 text-red-600">
@@ -126,6 +128,7 @@ const ContractManagement = ({ initialFilter }) => {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );

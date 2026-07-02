@@ -305,7 +305,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   } = useSelection(filteredRooms.map(r => r.id));
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <>
+      <div className="space-y-6 animate-in fade-in duration-300">
       {/* Filters */}
       <FilterBar
         title="Bộ lọc phòng"
@@ -606,7 +607,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
       </div>
 
       {/* Pagination */}
-      <Pagination pagination={pagination} />
+       <Pagination pagination={pagination} />
+      </div>
 
       {/* MODALS */}
       <AddRoomModal
@@ -623,7 +625,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
       {/* Delete Confirm Modal */}
       {roomToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 animate-in scale-in-95 duration-200">
             <div className="flex flex-col items-center text-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
@@ -663,11 +666,13 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Students Modal */}
       {selectedRoomStudents && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-900">Sinh viên phòng {selectedRoomStudents.room_number}</h3>
@@ -717,6 +722,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Invoice Modal - Using InvoiceDetailModal */}
@@ -732,7 +738,8 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
 
       {/* Chart Modal */}
       {chartRoom && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
             {/* Header */}
             <div className="flex justify-between items-start mb-5">
@@ -884,11 +891,13 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Maintenance Reason Modal */}
       {maintenanceReasonModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md p-6 animate-in scale-in-95 duration-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-slate-900">Lý do bảo trì</h3>
@@ -928,6 +937,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
             </button>
           </div>
         </div>
+        </ModalPortal>
       )}
 
       {/* Bulk Email Confirmation Modal */}
@@ -1012,7 +1022,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
           console.log("Gửi email:", { to, subject, body });
         }}
       />
-    </div>
+    </>
   );
 };
 
