@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { getStudentContracts } from "../../../api/apiStudent.js";
 import { createVNPayPayment } from "../../../api/apiVNPay.js";
+import { requestContractRenewal } from "../../../api/apiContract.js";
 import ContractPrintView from "./ContractPrintView.jsx";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
 import { useAuth } from "../../../contexts/AuthContext.jsx";
@@ -79,6 +80,7 @@ const StudentContract = () => {
   const [error, setError]         = useState(null);
   const [selected, setSelected]   = useState(null);
   const [showPayModal, setShowPayModal] = useState(false);
+  const [showRenewModal, setShowRenewModal] = useState(false);
   const [showPrint, setShowPrint]       = useState(false);
   const [copied, setCopied]            = useState(null);
   const [payLoading, setPayLoading]    = useState(false);
@@ -102,6 +104,23 @@ const StudentContract = () => {
       window.location.href = paymentUrl;
     } catch (err) {
       alert(err.message || "Không thể tạo thanh toán");
+    } finally {
+      setPayLoading(false);
+    }
+  };
+
+  const handleRenew = async () => {
+    if (!c) return;
+    setPayLoading(true);
+    try {
+      const res = await requestContractRenewal(c.id);
+      if (res.success && res.data.paymentUrl) {
+        window.location.href = res.data.paymentUrl;
+      } else {
+        throw new Error("Không lấy được link thanh toán");
+      }
+    } catch (err) {
+      alert(err.message || "Không thể tạo thanh toán gia hạn");
     } finally {
       setPayLoading(false);
     }
@@ -159,6 +178,10 @@ const StudentContract = () => {
   const cfg = STATUS_CFG[c.status] || STATUS_CFG.Expired;
   const StatusIcon = cfg.icon;
 
+  const daysLeft = c && c.end_date 
+    ? Math.round((new Date(c.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+
   return (
     <div className="space-y-5">
 
@@ -214,6 +237,45 @@ const StudentContract = () => {
           getBuildingLabel={getBuildingLabel}
           onClose={() => setShowPrint(false)}
         />
+      )}
+
+      {/* ── Banner thông báo gia hạn hợp đồng ── */}
+      {c && (c.status === "Active" || c.status === "Expired") && daysLeft !== null && daysLeft <= 35 && (
+        <>
+          {c.snapshot_year !== 4 && daysLeft >= -7 ? (
+            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in slide-in-from-top duration-300">
+              <div className="flex gap-3">
+                <AlertCircle className="text-blue-600 shrink-0" size={20} />
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">
+                    {daysLeft < 0 
+                      ? `Hợp đồng của bạn đã hết hạn ${Math.abs(daysLeft)} ngày trước` 
+                      : `Hợp đồng của bạn sẽ hết hạn sau ${daysLeft} ngày nữa`}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Hãy gia hạn hợp đồng nội trú (thời hạn 6 tháng) ngay để tiếp tục ở lại ký túc xá.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRenewModal(true)}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all shrink-0 active:scale-95 shadow-sm shadow-slate-200 flex items-center gap-1.5"
+              >
+                <CreditCard size={14} /> Gia hạn hợp đồng (6 tháng)
+              </button>
+            </div>
+          ) : c.snapshot_year === 4 ? (
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 flex gap-3 shadow-sm animate-in slide-in-from-top duration-300">
+              <AlertCircle className="text-rose-600 shrink-0" size={20} />
+              <div>
+                <p className="font-bold text-rose-900 text-sm">Hợp đồng sắp hết hạn và sẽ không được gia hạn</p>
+                <p className="text-xs text-rose-700 mt-0.5 leading-relaxed">
+                  Vì bạn đang là sinh viên năm cuối, vui lòng hoàn tất các thủ tục thanh toán hóa đơn còn thiếu và chuẩn bị trả phòng trước ngày {fmtDate(c.end_date)}.
+                </p>
+              </div>
+            </div>
+          ) : null}
+        </>
       )}
 
       {/* ── Thanh tiến trình (chỉ khi Active) ── */}
@@ -409,6 +471,113 @@ const StudentContract = () => {
                   {payLoading ? "Đang xử lý..." : <><ExternalLink size={14} /> Thanh toán qua VNPay</>}
                 </button>
                 <button onClick={() => setShowPayModal(false)}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-sm transition-all">
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal gia hạn hợp đồng */}
+      {showRenewModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-slate-800 to-slate-900 px-6 py-5 text-white">
+              <button onClick={() => setShowRenewModal(false)}
+                className="absolute top-4 right-4 p-1.5 hover:bg-white/20 rounded-xl transition-colors">
+                <X size={16} />
+              </button>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 bg-white/20 rounded-xl"><FileText size={18} /></div>
+                <div>
+                  <p className="font-black text-base">Gia hạn hợp đồng (6 tháng)</p>
+                  <p className="text-slate-300 text-xs">{c.contract_number}</p>
+                </div>
+              </div>
+              <div className="bg-white/15 rounded-2xl px-4 py-3 flex items-center justify-between">
+                <span className="text-slate-200 text-sm font-semibold">Tổng tiền gia hạn</span>
+                <span className="text-white font-black text-xl">{fmtMoney(Number(c.rent_price || 500000) * 6)}</span>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* QR VietQR động */}
+              <div className="flex flex-col items-center gap-2 py-3">
+                <div className="w-40 h-40 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white flex items-center justify-center">
+                  <img
+                    src={`https://img.vietqr.io/image/VCB-1020914134-compact2.png?amount=${Math.round(Number(c.rent_price || 500000) * 6)}&addInfo=${encodeURIComponent(`RENEW ${c.contract_number || ""}`)}&accountName=${encodeURIComponent("KTX Truong DH Thuy Loi")}`}
+                    alt="QR VietQR"
+                    className="w-full h-full object-contain"
+                    onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "flex"; }}
+                  />
+                  <div style={{ display: "none" }} className="w-full h-full flex flex-col items-center justify-center gap-1 text-slate-300">
+                    <QrCode size={36} />
+                    <p className="text-[10px] font-semibold">Không tải được QR</p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-400">Quét mã để chuyển khoản nhanh</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-slate-100" />
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">hoặc chuyển khoản thủ công</span>
+                <div className="flex-1 h-px bg-slate-100" />
+              </div>
+
+              {/* Thông tin ngân hàng */}
+              <div className="bg-slate-50 rounded-2xl p-4 space-y-3">
+                {[
+                  { label: "Ngân hàng",     value: BANK_INFO.bank,    key: "bank",    icon: Building2 },
+                  { label: "Chi nhánh",     value: BANK_INFO.branch,  key: "branch",  icon: Building2 },
+                  { label: "Số tài khoản",  value: BANK_INFO.account, key: "account", icon: CreditCard },
+                  { label: "Chủ tài khoản", value: BANK_INFO.owner,   key: "owner",   icon: Users },
+                ].map(({ label, value, key, icon: Icon }) => (
+                  <div key={key} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Icon size={13} className="text-slate-400 shrink-0" />
+                      <span className="text-xs text-slate-500 shrink-0">{label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm font-bold text-slate-800 truncate">{value}</span>
+                      <button onClick={() => handleCopy(value, key)}
+                        className="p-1 hover:bg-slate-200 rounded-lg transition-colors shrink-0">
+                        {copied === key
+                          ? <BadgeCheck size={13} className="text-emerald-500" />
+                          : <Copy size={13} className="text-slate-400" />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Nội dung chuyển khoản */}
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Nội dung chuyển khoản</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-slate-800 font-mono">RENEW {c.contract_number}</p>
+                  <button onClick={() => handleCopy(`RENEW ${c.contract_number}`, "content")}
+                    className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+                    {copied === "content"
+                      ? <BadgeCheck size={14} className="text-emerald-500" />
+                      : <Copy size={14} className="text-slate-400" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
+                  <Info size={10} /> Vui lòng ghi đúng nội dung để hệ thống xác nhận tự động.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  onClick={handleRenew}
+                  disabled={payLoading}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-slate-200">
+                  {payLoading ? "Đang xử lý..." : <><ExternalLink size={14} /> Thanh toán qua cổng VNPay</>}
+                </button>
+                <button onClick={() => setShowRenewModal(false)}
                   className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-semibold text-sm transition-all">
                   Đóng
                 </button>

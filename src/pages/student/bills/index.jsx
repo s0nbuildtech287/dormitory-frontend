@@ -80,7 +80,7 @@ const StudentBills = () => {
     bank: "Vietcombank",
     branch: "Chi nhánh Hà Nội",
     account: "1234567890",
-    owner: "KTX TRƯỜNG ĐẠI HỌC THĂNG LONG",
+    owner: "KTX TRƯỜNG ĐẠI HỌC THỦY LỢI",
   };
 
   const today = new Date();

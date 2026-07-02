@@ -47,7 +47,8 @@ const PaymentResult = () => {
   const txnRef = params.txnRef || "";
   const isInvoice = txnRef.startsWith("invoice_");
   const isDeposit = txnRef.startsWith("deposit_");
-  const backPath  = isDeposit ? "/contract" : "/bills";
+  const isRenew   = txnRef.startsWith("renew_");
+  const backPath  = (isDeposit || isRenew) ? "/contract" : "/bills";
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -84,7 +85,9 @@ const PaymentResult = () => {
         <div className="px-6 pb-6 flex flex-col gap-2">
           {isOk && (
             <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-xs text-emerald-700 text-center font-semibold mb-1">
-              Hệ thống sẽ tự động cập nhật trạng thái thanh toán trong vài giây.
+              {isRenew 
+                ? "Gia hạn hợp đồng thành công! Thời hạn hợp đồng của bạn đã được cộng thêm 6 tháng." 
+                : "Hệ thống sẽ tự động cập nhật trạng thái thanh toán trong vài giây."}
             </div>
           )}
           <a
@@ -92,7 +95,7 @@ const PaymentResult = () => {
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
           >
             <ArrowLeft size={15} />
-            {isDeposit ? "Quay về hợp đồng" : "Quay về hóa đơn"}
+            {(isDeposit || isRenew) ? "Quay về hợp đồng" : "Quay về hóa đơn"}
           </a>
         </div>
       </div>

@@ -213,3 +213,15 @@ export const autoAssignPendingContracts = async (faculty = null) => {
   return handleResponse(response);
 };
 
+/**
+ * Yêu cầu gia hạn hợp đồng (tạo VNPay paymentUrl)
+ * @param {string} contractId
+ */
+export const requestContractRenewal = async (contractId) => {
+  const response = await fetch(`${API_BASE_URL}/contracts/${contractId}/request-renewal`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return handleResponse(response);
+};
+
