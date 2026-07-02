@@ -443,6 +443,40 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                     <p className="text-slate-700 font-bold">{Number(gpa).toFixed(2)}</p>
                   </div>
                 )}
+                {(() => {
+                  const p = (contract.rf_priority_reasons || "").toLowerCase();
+                  const yr = contract.snapshot_year || contract.rf_year;
+                  let label, cls;
+                  if (p.includes("lưu học sinh") || p.includes("quốc tế") || p.includes("du học sinh") || p.includes("lao") || p.includes("campuchia")) {
+                    label = "Lưu học sinh / Quốc tế"; cls = "bg-purple-100 text-purple-700 border border-purple-200";
+                  } else if (p.includes("liệt sỹ") || p.includes("liet sy")) {
+                    label = "Con liệt sỹ"; cls = "bg-red-100 text-red-700 border border-red-200";
+                  } else if (p.includes("thương binh")) {
+                    label = "Con thương binh"; cls = "bg-orange-100 text-orange-700 border border-orange-200";
+                  } else if (p.includes("hộ nghèo") || p.includes("ho ngheo") || p.includes("cận nghèo")) {
+                    label = "Hộ nghèo / Cận nghèo"; cls = "bg-yellow-100 text-yellow-700 border border-yellow-200";
+                  } else if (p.includes("khuyết tật") || p.includes("khuyet tat")) {
+                    label = "Khuyết tật"; cls = "bg-blue-100 text-blue-700 border border-blue-200";
+                  } else if (p.includes("hoàn cảnh khó khăn") || p.includes("hoan canh")) {
+                    label = "Hoàn cảnh khó khăn"; cls = "bg-amber-100 text-amber-700 border border-amber-200";
+                  } else if (p.includes("hải đảo") || p.includes("hai dao")) {
+                    label = "Hải đảo"; cls = "bg-cyan-100 text-cyan-700 border border-cyan-200";
+                  } else if (p.includes("vùng sâu") || p.includes("vung sau")) {
+                    label = "Vùng sâu vùng xa"; cls = "bg-green-100 text-green-700 border border-green-200";
+                  } else if (p && p.length > 0) {
+                    label = "Diện chính sách"; cls = "bg-indigo-100 text-indigo-700 border border-indigo-200";
+                  } else if (Number(yr) === 1) {
+                    label = "Tân sinh viên"; cls = "bg-blue-100 text-blue-700 border border-blue-200";
+                  } else {
+                    label = "Sinh viên khóa cũ"; cls = "bg-slate-100 text-slate-600 border border-slate-200";
+                  }
+                  return (
+                    <div className="bg-slate-50 p-4 rounded-xl">
+                      <p className="text-slate-600 text-xs font-semibold mb-2">Đối tượng</p>
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-black ${cls}`}>{label}</span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
