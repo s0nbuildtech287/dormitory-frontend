@@ -852,6 +852,16 @@ const RegistrationList = ({
               accessor: (reg) => <span className="font-semibold text-slate-900 text-sm">{reg.student_name}</span>,
             },
             {
+              header: "Khoa",
+              align: "left",
+              accessor: (reg) => <span className="text-xs text-slate-600 font-medium">{reg.faculty || "—"}</span>,
+            },
+            {
+              header: "Năm học",
+              align: "center",
+              accessor: (reg) => <span className="text-xs text-slate-600 font-medium">Năm {reg.year || "—"}</span>,
+            },
+            {
               header: "Nhóm",
               align: "left",
               accessor: (reg) => (
