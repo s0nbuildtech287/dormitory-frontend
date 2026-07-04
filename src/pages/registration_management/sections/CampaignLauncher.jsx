@@ -30,7 +30,7 @@ const CampaignLauncher = () => {
   const [roomForecast, setRoomForecast] = useState(null);
   const [demandForecast, setDemandForecast] = useState(null);
   const [expiringContracts, setExpiringContracts] = useState([]);
-  const [expiringDays, setExpiringDays] = useState(30);
+  const [expiringDays, setExpiringDays] = useState(35);
 
   const [fullSettings, setFullSettings] = useState(null);
   const [registrationOpen, setRegistrationOpen] = useState(true);
@@ -568,7 +568,7 @@ const CampaignLauncher = () => {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-slate-500">Trong</label>
-            {[30, 60, 90].map((d) => (
+            {[35, 60, 90].map((d) => (
               <button
                 key={d}
                 onClick={() => setExpiringDays(d)}
