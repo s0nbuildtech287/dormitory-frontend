@@ -84,7 +84,8 @@ const StudentBills = () => {
   };
 
   const today = new Date();
-  const isSubmitWindow = today.getDate() <= 5;
+  // Code gốc check 5 ngày: const isSubmitWindow = today.getDate() <= 5;
+  const isSubmitWindow = today.getDate() <= 9;
 
   // Kiểm tra hóa đơn tháng trước đã thanh toán chưa
   const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
@@ -188,7 +189,8 @@ const StudentBills = () => {
             <div className="min-w-0">
               <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Điện / Nước</p>
               <p className={`text-sm font-black mt-0.5 ${canSubmitMeter ? "text-blue-700" : "text-slate-400"}`}>
-                {!isSubmitWindow ? "Đã hết hạn" : isPrevPaid ? "Đã thanh toán" : `Còn ${5 - today.getDate()} ngày`}
+                {/* Code gốc check 5 ngày: {!isSubmitWindow ? "Đã hết hạn" : isPrevPaid ? "Đã thanh toán" : `Còn ${5 - today.getDate()} ngày`} */}
+                {!isSubmitWindow ? "Đã hết hạn" : isPrevPaid ? "Đã thanh toán" : `Còn ${9 - today.getDate()} ngày`}
               </p>
             </div>
           </button>
@@ -550,11 +552,13 @@ const StudentBills = () => {
             )}
             {selected.status !== "Đã thanh toán" && (
               <div className="mx-5 mb-5 space-y-3">
-                {today.getDate() <= 5 && (
+                {/* Code gốc check 5 ngày: {today.getDate() <= 5 && ( */}
+                {today.getDate() <= 9 && (
                   <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 flex items-start gap-2">
                     <Info size={14} className="shrink-0 mt-0.5 text-blue-500" />
                     <div>
-                      <span className="font-bold">Lưu ý chốt số liệu (Ngày 1-5):</span>
+                      {/* Code gốc hiển thị: Lưu ý chốt số liệu (Ngày 1-5) */}
+                      <span className="font-bold">Lưu ý chốt số liệu (Ngày 1-9):</span>
                       <p className="mt-0.5 text-blue-600 leading-relaxed">
                         Hệ thống đang trong thời gian đối chiếu số liệu điện nước. Vui lòng chờ email thông báo chốt hóa đơn từ Ban quản lý trước khi thực hiện thanh toán.
                       </p>
