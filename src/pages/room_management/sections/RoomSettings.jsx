@@ -3,6 +3,7 @@ import { Building2, Wrench, SlidersHorizontal, Info, ChevronDown, ChevronUp, Che
 import { updateRoom, getBuildingDisplayNames, updateBuildingDisplayNames, updateBatchReservedFor, updateBatchGender } from "../../../api/apiRoom.js";
 import { usePagination } from "../../../hooks/usePagination.js";
 import Pagination from "../../../components/common/Pagination.jsx";
+import { getRoomLabel } from "../../../utils/buildingDisplay.js";
 
 // ─── Toggle switch helper ──────────────────────────────────────────────────────
 const Toggle = ({ checked, onChange }) => (
@@ -305,17 +306,28 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
   // Filter cho bảng danh sách phòng trong section 3
   const [quickListSearch, setQuickListSearch] = useState("");
   const [quickListBuilding, setQuickListBuilding] = useState("All");
+  const [quickListFloor, setQuickListFloor] = useState("All");
+
+  const uniqueFloors = useMemo(() => {
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    const filtered = quickListBuilding === "All" 
+      ? safeRooms 
+      : safeRooms.filter(r => r.building === quickListBuilding);
+    const floors = filtered.map(r => r.floor).filter(Boolean);
+    return [...new Set(floors)].sort((a, b) => a - b);
+  }, [rooms, quickListBuilding]);
 
   const quickListFiltered = useMemo(() => {
     const safeRooms = Array.isArray(rooms) ? rooms : [];
     return safeRooms.filter((r) => {
       const matchB = quickListBuilding === "All" || r.building === quickListBuilding;
+      const matchF = quickListFloor === "All" || String(r.floor) === String(quickListFloor);
       const matchS = !quickListSearch.trim() ||
         r.room_number?.toLowerCase().includes(quickListSearch.toLowerCase()) ||
         r.name?.toLowerCase().includes(quickListSearch.toLowerCase());
-      return matchB && matchS;
+      return matchB && matchF && matchS;
     });
-  }, [rooms, quickListBuilding, quickListSearch]);
+  }, [rooms, quickListBuilding, quickListFloor, quickListSearch]);
 
   const quickListPagination = usePagination(quickListFiltered, 10);
 
@@ -697,7 +709,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                                       const audience = AUDIENCE_CONFIG[audienceKey] || AUDIENCE_CONFIG.general;
                                       return (
                                         <tr key={room.id} className="hover:bg-slate-50/50 transition-colors">
-                                          <td className="px-4 py-3 font-mono font-bold text-slate-900">{room.room_number || room.name}</td>
+                                          <td className="px-4 py-3 font-bold text-slate-900">{getRoomLabel(null, room.room_number)}</td>
                                           <td className="px-4 py-3 text-center">{room.floor}</td>
                                           <td className="px-4 py-3 text-center">
                                             {(room.currentOccupancy || room.current_occupancy || 0) > 0 ? (
@@ -838,7 +850,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div>
-                        <p className="font-bold text-slate-900 text-sm">{room.room_number || room.name}</p>
+                        <p className="font-bold text-slate-900 text-sm">{getRoomLabel(null, room.room_number)}</p>
                         <p className="text-xs text-slate-500">
                           {getDisplayName(room.building)} — Tầng {room.floor} — Sức chứa {room.capacity}
                         </p>
@@ -934,12 +946,22 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
             </div>
             <select
               value={quickListBuilding}
-              onChange={(e) => { setQuickListBuilding(e.target.value); quickListPagination.goToPage(1); }}
+              onChange={(e) => { setQuickListBuilding(e.target.value); setQuickListFloor("All"); quickListPagination.goToPage(1); }}
               className="text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 sm:w-48"
             >
               <option value="All">Tất cả tòa</option>
               {uniqueBuildings.map((b) => (
                 <option key={b} value={b}>{getDisplayName(b)}</option>
+              ))}
+            </select>
+            <select
+              value={quickListFloor}
+              onChange={(e) => { setQuickListFloor(e.target.value); quickListPagination.goToPage(1); }}
+              className="text-xs font-bold bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-blue-50 text-slate-700 sm:w-36"
+            >
+              <option value="All">Tất cả tầng</option>
+              {uniqueFloors.map((f) => (
+                <option key={f} value={f}>Tầng {f}</option>
               ))}
             </select>
           </div>
@@ -973,7 +995,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                         key={r.id}
                         className={`hover:bg-blue-50/30 transition-colors ${quickRoom?.id === r.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""}`}
                       >
-                        <td className="px-4 py-3 font-mono font-bold text-slate-900 border-r border-slate-100">{r.room_number || r.name}</td>
+                        <td className="px-4 py-3 font-bold text-slate-900 border-r border-slate-100">{getRoomLabel(null, r.room_number)}</td>
                         <td className="px-4 py-3 border-r border-slate-100">{getDisplayName(r.building)}</td>
                         <td className="px-4 py-3 text-center border-r border-slate-100">{r.floor}</td>
                         <td className="px-4 py-3 text-center border-r border-slate-100">
@@ -1036,7 +1058,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
                   onClick={() => selectQuickRoom(r)}
                   className="w-full flex items-center justify-between px-5 py-3 hover:bg-blue-50 transition-colors text-left border-b border-slate-100 last:border-b-0"
                 >
-                  <span className="font-bold text-slate-900 text-sm">{r.room_number || r.name}</span>
+                  <span className="font-bold text-slate-900 text-sm">{getRoomLabel(r.building, r.room_number, buildingNames)}</span>
                   <span className="text-xs text-slate-500">
                     {getDisplayName(r.building)} – Tầng {r.floor} – {r.capacity} chỗ – <StatusBadge room={r} />
                   </span>
@@ -1051,7 +1073,7 @@ const RoomSettings = ({ rooms = [], onRefresh }) => {
           <div className="space-y-6 p-6 bg-blue-50/50 rounded-2xl border-2 border-blue-100">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-bold text-slate-900">Phòng {quickRoom.room_number || quickRoom.name}</h4>
+                <h4 className="font-bold text-slate-900">{getRoomLabel(quickRoom.building, quickRoom.room_number, buildingNames)}</h4>
                 <p className="text-xs text-slate-500">
                   {getDisplayName(quickRoom.building)} – Tầng {quickRoom.floor}
                 </p>

@@ -9,6 +9,7 @@ import FilterBar from "../../../components/common/FilterBar.jsx";
 import EmailComposeModal, { EMAIL_TEMPLATES } from "../../../components/common/EmailComposeModal.jsx";
 import { revertContract, autoAssignPendingContracts, assignRoom } from "../../../api/apiContract.js";
 import { getRooms } from "../../../api/apiRoom.js";
+import { getRoomLabel } from "../../../utils/buildingDisplay.js";
 
 const STATUS_CONFIG = {
   Pending: { label: "Chờ gán phòng", cls: "bg-amber-100 text-amber-700", icon: <Clock size={11} /> },
@@ -889,7 +890,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                           <tr key={idx}>
                             <td className="px-4 py-2 text-xs font-mono">{item.student_id}</td>
                             <td className="px-4 py-2 text-xs">{item.student_name}</td>
-                            <td className="px-4 py-2 text-xs font-bold text-blue-600">{item.room_number}</td>
+                            <td className="px-4 py-2 text-xs font-bold text-blue-600">{getRoomLabel(null, item.room_number)}</td>
                             <td className="px-4 py-2 text-xs">
                               {item.status === "Active" ? (
                                 <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">Đang nội trú</span>
@@ -1100,7 +1101,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                             disabled={!isEnough}
                             className={!isEnough ? "text-slate-400 italic" : "text-slate-850 font-bold"}
                           >
-                            Phòng {r.room_number} ({remaining}/{r.capacity} chỗ trống - Đối tượng: {AUDIENCE_CONFIG[r.reserved_for]?.label || "Phòng chung"}) {!isEnough ? " - Không đủ chỗ" : ""}
+                            {getRoomLabel(r.building, r.room_number)} ({remaining}/{r.capacity} chỗ trống - Đối tượng: {AUDIENCE_CONFIG[r.reserved_for]?.label || "Phòng chung"}) {!isEnough ? " - Không đủ chỗ" : ""}
                           </option>
                         );
                       })}

@@ -9,6 +9,7 @@ import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
 import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx";
 import { createDisciplinaryRecord, deleteDisciplinaryRecord, getDisciplinaryRecords, updateDisciplinaryRecord } from "../../../api/apiDiscipline.js";
 import { getContracts } from "../../../api/apiContract.js";
+import { getRoomLabel as formatRoomLabel } from "../../../utils/buildingDisplay.js";
 
 const LEVEL_CONFIG = {
   "Nhắc nhở": { color: "bg-blue-100 text-blue-700", dot: "bg-blue-500" },
@@ -48,7 +49,7 @@ const getStudentCode = (record) =>
 
 const getRoomLabel = (record) => {
   if (!record.room_number) return "Chưa gán phòng";
-  return `${record.building ? `${record.building}-` : ""}${record.room_number}`;
+  return formatRoomLabel(record.building, record.room_number);
 };
 
 const getRemainingScore = (record, overrideDeducted) => {
@@ -873,7 +874,7 @@ const AddRecordModal = ({ onClose, onCreated }) => {
       const labelParts = [
         match.student_name ? `SV: ${match.student_name}` : "",
         studentCode ? `Mã SV: ${studentCode}` : "",
-        match.room_number ? `Phòng: ${match.building ? `${match.building}-` : ""}${match.room_number}` : "",
+        match.room_number ? `Phòng: ${formatRoomLabel(match.building, match.room_number)}` : "",
       ].filter(Boolean);
 
       setStudentInfo(labelParts.join(" • "));

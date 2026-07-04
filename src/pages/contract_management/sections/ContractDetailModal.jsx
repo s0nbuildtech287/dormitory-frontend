@@ -19,7 +19,7 @@ const STATUS_CONFIG = {
 
 // ─── Room assign modal (inner) ───────────────────────────────────────────────
 const AssignRoomModal = ({ contractId, mode = "assign", currentRoomId = null, onSuccess, onClose }) => {
-  const { getBuildingLabel } = useBuildingDisplayNames();
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
   const [suggestedIds, setSuggestedIds] = useState(new Set());
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -132,12 +132,7 @@ const AssignRoomModal = ({ contractId, mode = "assign", currentRoomId = null, on
                         )}
                         <div>
                           <p className="font-black text-slate-900">
-                            {getBuildingLabel(room.building)} - Phòng {(() => {
-                              if (typeof room.room_number === "string" && room.room_number.startsWith("room-")) {
-                                return room.room_number.split("-")[1];
-                              }
-                              return room.room_number;
-                            })()}
+                            {getRoomLabel(room.building, room.room_number)}
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5">
                             Tầng {room.floor} · {room.available_slots}/{room.capacity} chỗ trống
@@ -221,7 +216,7 @@ const AssignRoomModal = ({ contractId, mode = "assign", currentRoomId = null, on
 
 // ─── Main Detail Modal ────────────────────────────────────────────────────────
 const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
-  const { getBuildingLabel } = useBuildingDisplayNames();
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -615,7 +610,7 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 text-center">
                       <p className="text-blue-500 text-xs font-semibold mb-1">Số phòng</p>
-                      <p className="text-2xl font-black text-blue-700">{contract.room_number}</p>
+                      <p className="text-2xl font-black text-blue-700">{getRoomLabel(null, contract.room_number)}</p>
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl">
                       <p className="text-slate-600 text-xs font-semibold mb-1">Tòa nhà</p>

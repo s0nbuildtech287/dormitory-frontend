@@ -22,6 +22,7 @@ import StatCard from "../../../components/common/StatCard.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
+import { getRoomLabel } from "../../../utils/buildingDisplay.js";
 import { usePagination } from "../../../hooks/usePagination.js";
 
 const CampaignLauncher = () => {
@@ -222,7 +223,7 @@ const CampaignLauncher = () => {
       header: "Phòng",
       accessor: (row) => (
         <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold">
-          {row.room_number || "—"}
+          {getRoomLabel(row.building, row.room_number)}
         </span>
       ),
     },
