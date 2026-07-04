@@ -20,6 +20,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterMonth, setFilterMonth] = useState("All");
   const [filterBuilding, setFilterBuilding] = useState("All");
+  const [filterFloor, setFilterFloor] = useState("All");
   const [loading, setLoading] = useState(false);
   const [selectedRoomStudents, setSelectedRoomStudents] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -39,6 +40,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
   const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
 
   const uniqueBuildings = [...new Set((Array.isArray(bills) ? bills : []).map((bill) => bill.building).filter(Boolean))].sort();
+  const uniqueFloors = [...new Set((Array.isArray(bills) ? bills : []).map((bill) => bill.floor).filter((f) => f !== undefined && f !== null))].sort((a, b) => a - b);
 
   // Fetch invoices from API
   useEffect(() => {
@@ -161,6 +163,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       bill.student_names?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "All" || bill.status === filterStatus;
     const matchesBuilding = filterBuilding === "All" || bill.building === filterBuilding;
+    const matchesFloor = filterFloor === "All" || (bill.floor !== undefined && bill.floor !== null && String(bill.floor) === String(filterFloor));
     const matchesMonth = filterMonth === "All" || (() => {
       const bm = bill.billing_month || '';
       if (!bm) return false;
@@ -187,7 +190,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
       }
       return billYearMonth >= prevYearMonth || bill.status !== "Đã thanh toán";
     })();
-    return matchesSearch && matchesStatus && matchesBuilding && matchesMonth && matchesHidePastPaid;
+    return matchesSearch && matchesStatus && matchesBuilding && matchesFloor && matchesMonth && matchesHidePastPaid;
   });
 
   // Hooks
@@ -212,11 +215,12 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     setFilterStatus("All");
     setFilterMonth("All");
     setFilterBuilding("All");
+    setFilterFloor("All");
     setHidePastPaid(true);
     pagination.goToPage(1);
   };
 
-  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All" || !hidePastPaid;
+  const hasActiveFilter = searchTerm || filterStatus !== "All" || filterMonth !== "All" || filterBuilding !== "All" || filterFloor !== "All" || !hidePastPaid;
 
   return (
     <>
@@ -236,6 +240,14 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
             options: [
               { value: "All", label: "Tất cả tòa" },
               ...uniqueBuildings.map((building) => ({ value: building, label: getBuildingLabel(building) })),
+            ]
+          },
+          {
+            value: filterFloor,
+            onChange: (val) => handleFilterChange(setFilterFloor, val),
+            options: [
+              { value: "All", label: "Tất cả tầng" },
+              ...uniqueFloors.map((floor) => ({ value: String(floor), label: `Tầng ${floor}` })),
             ]
           },
           {

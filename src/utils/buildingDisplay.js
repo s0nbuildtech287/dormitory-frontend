@@ -10,7 +10,9 @@ export const getRoomLabel = (building, roomNumber, buildingNames = {}) => {
   let displayRoom = roomNumber;
   if (typeof roomNumber === "string" && roomNumber.startsWith("room-")) {
     const parts = roomNumber.split("-");
-    if (parts.length >= 2) {
+    if (parts.length >= 5) {
+      displayRoom = `Phòng ${parts[1]} (Tầng ${parts[4]})`;
+    } else if (parts.length >= 2) {
       displayRoom = `Phòng ${parts[1]}`;
     }
   }
