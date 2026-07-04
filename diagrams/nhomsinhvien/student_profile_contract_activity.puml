@@ -8,6 +8,20 @@ start
 |Hệ thống|
 :Lấy thông tin hồ sơ + hợp đồng;
 |Sinh viên|
-:Xem chi tiết;
+:Xem chi tiết hợp đồng;
+if (Hợp đồng sắp hết hạn hoặc đã quá hạn <= 7 ngày?) then (Có)
+  if (Là sinh viên năm 4?) then (Có)
+    :Xem thông báo yêu cầu trả phòng;
+  else (Không)
+    :Ấn "Gia hạn hợp đồng (6 tháng)";
+    |Hệ thống|
+    :Tạo link thanh toán VNPay;
+    |Sinh viên|
+    :Thanh toán qua cổng VNPay;
+    |Hệ thống|
+    :Xử lý IPN thanh toán & gia hạn hợp đồng thêm 6 tháng;
+  endif
+else (Không)
+endif
 stop
 @enduml
