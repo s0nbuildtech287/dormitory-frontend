@@ -131,7 +131,8 @@ const RegistrationList = ({
         noteStr.includes("Hết chỉ tiêu toàn KTX") ||
         noteStr.includes("Hết chỗ trống KTX (khi dồn chỉ tiêu)") ||
         noteStr.includes("Hết chỉ tiêu nhóm đối tượng") ||
-        noteStr.includes("Vượt quá chỉ tiêu khoa")
+        noteStr.includes("Vượt quá chỉ tiêu khoa") ||
+        noteStr.includes("Vượt quá tỷ lệ tuyển sinh của khoa")
       );
     });
   }, [regs]);
@@ -150,6 +151,7 @@ const RegistrationList = ({
     seniors: 40,
     facultyQuotas: {},
     genderQuotas: { male: 0, female: 0 },
+    facultySelectionRate: 0,
   });
   const [facultiesList, setFacultiesList] = useState([]);
   const [isQuotasCollapsed, setIsQuotasCollapsed] = useState(true);
@@ -313,6 +315,7 @@ const RegistrationList = ({
               seniors: settingsQuotas.seniors !== undefined ? settingsQuotas.seniors : 40,
               facultyQuotas: loadedFacultyQuotas,
               genderQuotas: settingsQuotas.genderQuotas || { male: 0, female: 0 },
+              facultySelectionRate: settingsQuotas.facultySelectionRate !== undefined ? settingsQuotas.facultySelectionRate : 0,
             };
             setQuotas(updated);
             setModalQuotas(updated);
@@ -362,6 +365,8 @@ const RegistrationList = ({
                 freshmen: settingsQuotas.freshmen !== undefined ? settingsQuotas.freshmen : 60,
                 seniors: settingsQuotas.seniors !== undefined ? settingsQuotas.seniors : 40,
                 facultyQuotas: loadedFacultyQuotas,
+                genderQuotas: settingsQuotas.genderQuotas || { male: 0, female: 0 },
+                facultySelectionRate: settingsQuotas.facultySelectionRate !== undefined ? settingsQuotas.facultySelectionRate : 0,
               });
             }
           }
@@ -2059,6 +2064,28 @@ const RegistrationList = ({
                             Tổng tỷ lệ chỉ tiêu (Tân SV + Khóa cũ) phải bằng 100% (Hiện tại: {(modalQuotas.freshmen + modalQuotas.seniors).toFixed(1)}%)
                           </div>
                         )}
+
+                        {/* Tỷ lệ tuyển sinh động theo khoa */}
+                        <div className="border-t border-slate-200 pt-3.5 space-y-2">
+                          <div className="flex items-start gap-2 text-left">
+                            <div className="flex-1">
+                              <span className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Tỷ lệ tuyển sinh theo khoa (%)</span>
+                              <span className="block text-[10px] text-slate-400 mt-0.5">Giới hạn số duyệt mỗi khoa theo % trên tổng hồ sơ chờ của khoa đó. Đặt bằng 0 để không áp dụng.</span>
+                            </div>
+                            <div className="relative flex-shrink-0">
+                              <input
+                                type="number"
+                                value={modalQuotas.facultySelectionRate === 0 ? "" : modalQuotas.facultySelectionRate}
+                                placeholder="0"
+                                onChange={e => setModalQuotas(prev => ({ ...prev, facultySelectionRate: parseFloat(e.target.value) || 0 }))}
+                                className="w-20 px-2 py-1.5 pr-6 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-xs font-bold text-center"
+                                min="0"
+                                max="100"
+                              />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">%</span>
+                            </div>
+                          </div>
+                        </div>
 
                         {/* Chỉ tiêu Giới tính trong Modal */}
                         <div className="border-t border-slate-200 pt-3.5 space-y-2">
