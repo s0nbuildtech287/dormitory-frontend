@@ -20,6 +20,7 @@ const RESERVED_FOR_CONFIG = {
   freshmen: { label: "Tân sinh viên", cls: "bg-blue-100 text-blue-700" },
   returning_students: { label: "Lưu sinh viên", cls: "bg-amber-100 text-amber-700" },
   international: { label: "Quốc tế", cls: "bg-violet-100 text-violet-700" },
+  xung_kich: { label: "Xung kích", cls: "bg-rose-100 text-rose-700" },
 };
 const normalizeText = (value) =>
   String(value ?? "")
@@ -278,17 +279,18 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const hasInternationalStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, INTERNATIONAL_KEYWORDS));
     const matchesReservedFor =
       filterReservedFor === "All" ||
-      (filterReservedFor === "general" && !hasFreshmen && !hasReturningStudents && !hasPolicyStudent && !hasInternationalStudent) ||
-      (filterReservedFor === "freshmen" && hasFreshmen) ||
-      (filterReservedFor === "returning_students" && hasReturningStudents) ||
-      (filterReservedFor === "policy" && hasPolicyStudent) ||
-      (filterReservedFor === "international" && hasInternationalStudent);
+      r.reserved_for === filterReservedFor;
+
+    const isMaintenance = r.status === "Maintenance";
+    const isFull = !isMaintenance && Number(r.currentOccupancy || 0) >= Number(r.capacity || 0);
+    const isOccupied = !isMaintenance && Number(r.currentOccupancy || 0) > 0 && Number(r.currentOccupancy || 0) < Number(r.capacity || 0);
+    const isEmpty = !isMaintenance && Number(r.currentOccupancy || 0) === 0;
 
     let matchesStatus = true;
-    if (filterStatus === "Maintenance") matchesStatus = r.status === "Maintenance";
-    else if (filterStatus === "Full") matchesStatus = r.currentOccupancy >= r.capacity;
-    else if (filterStatus === "Occupied") matchesStatus = r.currentOccupancy > 0 && r.currentOccupancy < r.capacity;
-    else if (filterStatus === "Empty") matchesStatus = r.currentOccupancy === 0;
+    if (filterStatus === "Maintenance") matchesStatus = isMaintenance;
+    else if (filterStatus === "Full") matchesStatus = isFull;
+    else if (filterStatus === "Occupied") matchesStatus = isOccupied;
+    else if (filterStatus === "Empty") matchesStatus = isEmpty;
 
     return matchesBuilding && matchesFloor && matchesSearch && matchesStatus && matchesReservedFor;
   });
@@ -358,7 +360,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               { value: "general", label: "Phòng chung" },
               { value: "freshmen", label: "Tân sinh viên" },
               { value: "returning_students", label: "Lưu sinh viên" },
-              { value: "policy", label: "Chính sách" },
+              { value: "xung_kich", label: "Xung kích" },
               { value: "international", label: "Quốc tế" },
             ]
           }
@@ -433,29 +435,15 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
               ),
             },
             {
-              header: "Nhóm đang ở",
+              header: "Nhóm đối tượng",
               align: "center",
               width: "w-[16%]",
               accessor: (room) => {
-                const students = Array.isArray(room.students) ? room.students : [];
-                const groupCounts = students.reduce((acc, student) => {
-                  const groupKey = getStudentGroupKey(student);
-                  acc[groupKey] = (acc[groupKey] || 0) + 1;
-                  return acc;
-                }, { general: 0, freshmen: 0, returning_students: 0, policy: 0, international: 0 });
-
-                const priorityOrder = ["international", "freshmen", "policy", "returning_students"];
-                const dominantGroup = priorityOrder.reduce((best, key) => {
-                  if (!best) return groupCounts[key] > 0 ? key : null;
-                  return groupCounts[key] > groupCounts[best] ? key : best;
-                }, null);
-
-                const dominantConfig = dominantGroup ? RESERVED_FOR_CONFIG[dominantGroup] : RESERVED_FOR_CONFIG.general;
-
+                const config = RESERVED_FOR_CONFIG[room.reserved_for] || RESERVED_FOR_CONFIG.general;
                 return (
                   <div className="flex items-center justify-center">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${dominantConfig.cls}`}>
-                      {dominantConfig.label}
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-black ${config.cls}`}>
+                      {config.label}
                     </span>
                   </div>
                 );
