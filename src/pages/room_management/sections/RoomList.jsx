@@ -83,7 +83,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
   const [filterFloor, setFilterFloor] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterReservedFor, setFilterReservedFor] = useState("All");
-  const { getBuildingLabel } = useBuildingDisplayNames();
+  const { getBuildingLabel, getRoomLabel } = useBuildingDisplayNames();
 
   // Modal states
   const [selectedRoomDetail, setSelectedRoomDetail] = useState(null);
@@ -278,7 +278,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
     const hasInternationalStudent = students.some((s) => hasAnyKeyword(s.priority_reasons, INTERNATIONAL_KEYWORDS));
     const matchesReservedFor =
       filterReservedFor === "All" ||
-      filterReservedFor === "general" ||
+      (filterReservedFor === "general" && !hasFreshmen && !hasReturningStudents && !hasPolicyStudent && !hasInternationalStudent) ||
       (filterReservedFor === "freshmen" && hasFreshmen) ||
       (filterReservedFor === "returning_students" && hasReturningStudents) ||
       (filterReservedFor === "policy" && hasPolicyStudent) ||
@@ -676,7 +676,7 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-2xl p-6 animate-in scale-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Sinh viên phòng {selectedRoomStudents.room_number}</h3>
+              <h3 className="text-xl font-bold text-slate-900">Sinh viên {getRoomLabel(selectedRoomStudents.building, selectedRoomStudents.room_number)}</h3>
               <button onClick={() => setSelectedRoomStudents(null)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                 <X size={20} />
               </button>
@@ -692,9 +692,31 @@ const RoomList = ({ rooms, isLoadingRooms, onRefresh, selectedRoom, setSelectedR
                       <div>
                         <p className="text-sm font-semibold text-slate-900">{s.student_name || '—'}</p>
                         {s.student_id && <p className="text-xs text-slate-500 font-mono mt-0.5">{s.student_id}</p>}
-                        <p className={`text-[10px] font-bold mt-1 inline-flex px-2 py-0.5 rounded-md ${RESERVED_FOR_CONFIG[getStudentGroupKey(s)]?.cls || RESERVED_FOR_CONFIG.general.cls}`}>
-                          {STUDENT_GROUP_LABELS[getStudentGroupKey(s)] || "Phòng chung"}
-                        </p>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5 max-w-md">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${RESERVED_FOR_CONFIG[getStudentGroupKey(s)]?.cls || RESERVED_FOR_CONFIG.general.cls}`}>
+                            {STUDENT_GROUP_LABELS[getStudentGroupKey(s)] || "Phòng chung"}
+                          </span>
+                          {s.gender && (
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${s.gender === "Nam" ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-rose-50 text-rose-700 border border-rose-100"}`}>
+                              {s.gender}
+                            </span>
+                          )}
+                          {s.snapshot_year && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
+                              Năm {s.snapshot_year}
+                            </span>
+                          )}
+                          {s.faculty && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-teal-50 text-teal-700 border border-teal-100" title={s.faculty}>
+                              Khoa: {s.faculty}
+                            </span>
+                          )}
+                          {s.priority_reasons && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-100" title={s.priority_reasons}>
+                              CS: {s.priority_reasons}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {s.contract_number && (
                         <button
