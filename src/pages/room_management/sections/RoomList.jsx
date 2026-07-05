@@ -13,6 +13,7 @@ import EmailComposeModal from "../../../components/common/EmailComposeModal.jsx"
 import { deleteRoom } from "../../../api/apiRoom.js";
 import { getInvoices } from "../../../api/apiInvoice.js";
 import useBuildingDisplayNames from "../../../hooks/useBuildingDisplayNames.js";
+import ModalPortal from "../../../components/ModalPortal.jsx";
 
 const RESERVED_FOR_CONFIG = {
   general: { label: "Phòng chung", cls: "bg-slate-100 text-slate-700" },
