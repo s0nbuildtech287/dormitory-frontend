@@ -600,16 +600,20 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold ${statusCfg.cls}`}>
                       {statusCfg.icon} {statusCfg.label}
                     </span>
-                    <span
-                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.deposit_paid ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                    >
-                      {c.deposit_paid ? "Đã cọc" : "Chưa cọc"}
-                    </span>
-                    <span
-                      className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.hard_copy_received ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
-                    >
-                      {c.hard_copy_received ? "Đã bản cứng" : "Chưa bản cứng"}
-                    </span>
+                    {c.status !== "Terminated" && (
+                      <>
+                        <span
+                          className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.deposit_paid ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                        >
+                          {c.deposit_paid ? "Đã cọc" : "Chưa cọc"}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.hard_copy_received ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                        >
+                          {c.hard_copy_received ? "Đã bản cứng" : "Chưa bản cứng"}
+                        </span>
+                      </>
+                    )}
                   </div>
                 );
               },
@@ -737,15 +741,18 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
           setBulkDeleteContracts([]);
           clearSelection();
         }}
-        title="Xóa hàng loạt hợp đồng?"
-        confirmText="Xóa tất cả"
+        title="Xóa / Chấm dứt hàng loạt hợp đồng?"
+        confirmText="Xác nhận"
         icon={Trash2}
         iconBgColor="bg-red-50"
         iconColor="text-red-600"
         confirmColor="bg-red-600 hover:bg-red-700 focus:ring-red-200"
       >
         <p className="text-sm text-slate-600">
-          Số hợp đồng sẽ xóa: <span className="font-bold text-slate-900">{bulkDeleteContracts.length}</span>
+          Số hợp đồng được chọn: <span className="font-bold text-slate-900">{bulkDeleteContracts.length}</span>
+        </p>
+        <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+          Hệ thống sẽ chuyển trạng thái các hợp đồng đang hoạt động/chờ duyệt thành "Chấm dứt" (giải phóng phòng), và xóa vĩnh viễn các hợp đồng vốn đã ở trạng thái "Chấm dứt".
         </p>
       </ConfirmModal>
 

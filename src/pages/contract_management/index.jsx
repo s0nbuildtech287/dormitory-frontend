@@ -107,29 +107,43 @@ const ContractManagement = ({ initialFilter }) => {
       )}
 
       {/* Confirm Delete Dialog */}
-      {confirmDelete && (
-        <ModalPortal>
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in scale-in duration-300">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-3">
-              <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-red-100 text-red-600">
-                <AlertTriangle size={16} />
+      {(() => {
+        if (!confirmDelete) return null;
+        const targetContract = contracts.find((c) => c.id === confirmDelete);
+        const isTerminated = targetContract?.status === "Terminated";
+
+        return (
+          <ModalPortal>
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 animate-in scale-in duration-300">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 bg-red-100 text-red-600">
+                    <AlertTriangle size={16} />
+                  </div>
+                  {isTerminated ? "Xóa vĩnh viễn hợp đồng?" : "Chấm dứt hợp đồng?"}
+                </h3>
+                <p className="text-slate-500 text-sm mb-8 leading-relaxed ml-9">
+                  {isTerminated
+                    ? "Hợp đồng này sẽ bị xóa vĩnh viễn khỏi hệ thống cùng với tài khoản sinh viên liên quan. Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa?"
+                    : "Hợp đồng sẽ được chuyển sang trạng thái 'Chấm dứt' và giải phóng chỗ ở trong phòng (nếu đang hoạt động). Bạn có chắc chắn muốn chấm dứt?"}
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={() => setConfirmDelete(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all">
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleDeleteContract}
+                    disabled={deleting}
+                    className="flex-1 py-3 rounded-xl font-bold text-white transition-all bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {deleting ? "Đang xử lý..." : isTerminated ? "Xóa vĩnh viễn" : "Chấm dứt"}
+                  </button>
+                </div>
               </div>
-              Xóa hợp đồng?
-            </h3>
-            <p className="text-slate-500 text-sm mb-8 leading-relaxed ml-9">Hợp đồng sẽ bị xóa vĩnh viễn. Nếu hợp đồng đang hoạt động, phòng sẽ được giải phóng. Bạn có chắc chắn muốn xóa?</p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmDelete(null)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-all">
-                Hủy
-              </button>
-              <button onClick={handleDeleteContract} disabled={deleting} className="flex-1 py-3 rounded-xl font-bold text-white transition-all bg-red-600 hover:bg-red-700 disabled:opacity-50">
-                {deleting ? "Đang xóa..." : "Xóa"}
-              </button>
             </div>
-          </div>
-        </div>
-        </ModalPortal>
-      )}
+          </ModalPortal>
+        );
+      })()}
     </div>
   );
 };

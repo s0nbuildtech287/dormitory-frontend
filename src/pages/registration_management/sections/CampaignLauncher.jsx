@@ -177,7 +177,7 @@ const CampaignLauncher = () => {
       header: (
         <button onClick={toggleSelectAll} className="flex items-center justify-center">
           {pagination.currentItems.length > 0 &&
-           pagination.currentItems.every((c) => selectedIds.includes(c.id)) ? (
+            pagination.currentItems.every((c) => selectedIds.includes(c.id)) ? (
             <CheckSquare size={16} className="text-blue-600" />
           ) : (
             <Square size={16} className="text-slate-400" />
@@ -234,8 +234,8 @@ const CampaignLauncher = () => {
         const color = daysLeft <= 14
           ? "bg-rose-100 text-rose-700 border border-rose-200"
           : daysLeft <= 30
-          ? "bg-amber-100 text-amber-700 border border-amber-200"
-          : "bg-slate-100 text-slate-600 border border-slate-200";
+            ? "bg-amber-100 text-amber-700 border border-amber-200"
+            : "bg-slate-100 text-slate-600 border border-slate-200";
         const isYear4 = row.snapshot_year === 4;
         return (
           <div className="space-y-1">
@@ -402,10 +402,10 @@ const CampaignLauncher = () => {
                       <Building2 size={15} className="text-slate-500" />
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tỉ lệ lấp đầy theo tòa / tầng</p>
                       <div className="ml-auto flex items-center gap-3 text-[10px] font-semibold">
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-100 inline-block"/>{"<50%"}</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-200 inline-block"/>50–80%</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-100 inline-block"/>80–95%</span>
-                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-100 inline-block"/>{"≥95%"}</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-100 inline-block" />{"<50%"}</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-50 border border-yellow-200 inline-block" />50–80%</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-100 inline-block" />80–95%</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-100 inline-block" />{"≥95%"}</span>
                       </div>
                     </div>
                     <div className="overflow-x-auto">
@@ -459,7 +459,7 @@ const CampaignLauncher = () => {
             <TrendingUp size={20} className="text-violet-600" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900">Dự báo nhu cầu đăng ký</h3>
+            <h3 className="font-bold text-slate-900">Số lượng nhu cầu đăng ký những năm gần đây</h3>
             <p className="text-xs text-slate-500">Ước tính dựa trên số đăng ký năm trước + 10% tăng trưởng</p>
           </div>
         </div>
@@ -506,8 +506,8 @@ const CampaignLauncher = () => {
                     <GraduationCap size={15} className="text-slate-500" />
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lịch sử đăng ký theo đối tượng (6 năm)</p>
                     <div className="ml-auto flex items-center gap-3 text-[10px] font-semibold text-slate-400">
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block"/>Ước tính</span>
-                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block"/>Thực tế</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" />Ước tính</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Thực tế</span>
                     </div>
                   </div>
                   <div className="overflow-x-auto">
@@ -573,11 +573,10 @@ const CampaignLauncher = () => {
               <button
                 key={d}
                 onClick={() => setExpiringDays(d)}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-colors ${
-                  expiringDays === d
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-colors ${expiringDays === d
                     ? "bg-amber-500 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+                  }`}
               >
                 {d} ngày
               </button>
@@ -589,11 +588,10 @@ const CampaignLauncher = () => {
           {/* Send result banner */}
           {sendResult && (
             <div
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold ${
-                sendResult.success
+              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold ${sendResult.success
                   ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
                   : "bg-rose-50 border border-rose-200 text-rose-700"
-              }`}
+                }`}
             >
               {sendResult.success ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
               {sendResult.success
