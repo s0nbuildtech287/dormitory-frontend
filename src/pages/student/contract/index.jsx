@@ -295,11 +295,11 @@ const StudentContract = () => {
           <InfoRow icon={Calendar}   label="Ngày bắt đầu"        value={fmtDate(c.start_date)} />
           <InfoRow icon={Calendar}   label="Ngày kết thúc"       value={fmtDate(c.end_date)} />
           <InfoRow icon={CreditCard} label="Phí nội trú / tháng" value={fmtMoney(c.rent_price)} accent />
-          <InfoRow icon={CreditCard} label="Tiền cọc"            value={fmtMoney(c.deposit_amount)} />
+          <InfoRow icon={CreditCard} label="Tiền thuê (6 tháng)"    value={fmtMoney(c.rent_price * 6)} />
           <div className="flex items-center gap-3 py-3 border-b border-slate-100">
             <div className="p-2 bg-slate-50 rounded-lg shrink-0"><Shield size={14} className="text-slate-400" /></div>
             <div className="flex-1">
-              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Đã đóng cọc</p>
+              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Thanh toán phòng</p>
               <p className={`text-sm font-semibold mt-0.5 ${c.deposit_paid ? "text-emerald-600" : "text-rose-500"}`}>
                 {c.deposit_paid ? "✓ Đã đóng" : "✗ Chưa đóng"}
               </p>

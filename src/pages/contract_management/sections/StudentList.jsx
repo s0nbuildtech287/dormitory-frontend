@@ -397,9 +397,9 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                 <option value="Expired">Hết hạn</option>
                 <option value="Terminated">Chấm dứt</option>
               </optgroup>
-              <optgroup label="— Tiền cọc">
-                <option value="deposit_paid">Đã cọc</option>
-                <option value="deposit_unpaid">Chưa cọc</option>
+              <optgroup label="— Thanh toán tiền thuê">
+                <option value="deposit_paid">Đã đóng tiền</option>
+                <option value="deposit_unpaid">Chưa đóng tiền</option>
               </optgroup>
               <optgroup label="— Bản cứng hợp đồng">
                 <option value="hardcopy_received">Đã có bản cứng</option>
@@ -605,7 +605,7 @@ const StudentList = ({ contracts = [], loading, onViewDetail, onRefresh, onDelet
                         <span
                           className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.deposit_paid ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
                         >
-                          {c.deposit_paid ? "Đã cọc" : "Chưa cọc"}
+                          {c.deposit_paid ? "Đã đóng tiền" : "Chưa đóng tiền"}
                         </span>
                         <span
                           className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold ${c.hard_copy_received ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}

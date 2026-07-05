@@ -497,8 +497,8 @@ const StudentDetail = ({ contractId, onBack }) => {
               <InfoRow label="Ngày bắt đầu" value={fmtDate(contract.start_date)} />
               <InfoRow label="Ngày kết thúc" value={fmtDate(contract.end_date)} />
               <InfoRow label="Tiền thuê/tháng" value={fmtMoney(contract.rent_price)} />
-              <InfoRow label="Tiền cọc" value={fmtMoney(contract.deposit_amount)} />
-              <InfoRow label="Đã nộp cọc" value={contract.deposit_paid ? "Đã nộp" : "Chưa nộp"} />
+              <InfoRow label="Tiền thuê (6 tháng)" value={fmtMoney(contract.rent_price * 6)} />
+              <InfoRow label="Trạng thái đóng" value={contract.deposit_paid ? "Đã đóng" : "Chưa đóng"} />
               {contract.termination_reason && (
                 <div className="col-span-3">
                   <InfoRow label="Lý do chấm dứt" value={contract.termination_reason} />

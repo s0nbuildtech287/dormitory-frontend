@@ -536,9 +536,9 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
                   <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${contract.deposit_paid ? "bg-slate-800 border-slate-800" : "border-slate-400"}`}>
                     {contract.deposit_paid && <CheckCircle2 size={10} className="text-white" />}
                   </div>
-                  <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">Tiền cọc</span>
+                  <span className="text-xs text-slate-700 font-semibold whitespace-nowrap">Đóng tiền thuê</span>
                   <span className={`ml-auto text-xs font-bold whitespace-nowrap ${contract.deposit_paid ? "text-emerald-600" : "text-slate-400"}`}>
-                    {contract.deposit_paid ? "Đã cọc" : "Chưa cọc"}
+                    {contract.deposit_paid ? "Đã đóng" : "Chưa đóng"}
                   </span>
                   {flagSaving === "deposit_paid" && <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin flex-shrink-0" />}
                 </button>
@@ -595,7 +595,7 @@ const ContractDetailModal = ({ contractId, onClose, onRefresh }) => {
               </div>
               {(!contract.deposit_paid || !contract.hard_copy_received) && (
                 <p className="text-[11px] text-slate-400 mt-1.5 px-1">
-                  Cần tích đủ "Đã cọc" và "Đã nhận bản cứng" trước khi gửi email.
+                  Cần tích đủ "Đã đóng" và "Đã nhận bản cứng" trước khi gửi email.
                 </p>
               )}
             </div>
