@@ -22,10 +22,13 @@ import StatCard from "../../../components/common/StatCard.jsx";
 import DataTable from "../../../components/common/DataTable.jsx";
 import Pagination from "../../../components/common/Pagination.jsx";
 import ConfirmModal from "../../../components/common/ConfirmModal.jsx";
-import { getRoomLabel } from "../../../utils/buildingDisplay.js";
+import { getRoomLabel, getBuildingLabel } from "../../../utils/buildingDisplay.js";
 import { usePagination } from "../../../hooks/usePagination.js";
+import { useNavigationHandlers } from "../../../hooks/useNavigationHandlers.js";
 
 const CampaignLauncher = () => {
+  const { handleNavigateToInvoice } = useNavigationHandlers();
+
   // ─── STATE ────────────────────────────────────────────────
   const [forecastDays, setForecastDays] = useState(30);
   const [roomForecast, setRoomForecast] = useState(null);
@@ -220,11 +223,50 @@ const CampaignLauncher = () => {
       ),
     },
     {
-      header: "Phòng",
+      header: "Tòa",
+      align: "center",
       accessor: (row) => (
-        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold">
-          {getRoomLabel(row.building, row.room_number)}
+        <span className="font-semibold text-slate-700 text-xs whitespace-nowrap">
+          {getBuildingLabel(row.building)}
         </span>
+      ),
+    },
+    {
+      header: "Phòng",
+      align: "center",
+      accessor: (row) => {
+        let displayRoom = row.room_number || "—";
+        if (typeof row.room_number === "string" && row.room_number.startsWith("room-")) {
+          const parts = row.room_number.split("-");
+          if (parts.length >= 2) {
+            displayRoom = `Phòng ${parts[1]}`;
+          }
+        }
+        if (row.floor) {
+          displayRoom = `${displayRoom} - Tầng ${row.floor}`;
+        }
+        return (
+          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold whitespace-nowrap">
+            {displayRoom}
+          </span>
+        );
+      },
+    },
+    {
+      header: "Hóa đơn",
+      align: "center",
+      accessor: (row) => (
+        <button
+          onClick={() => handleNavigateToInvoice(row.room_number)}
+          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-transform hover:scale-105 active:scale-95 cursor-pointer ${
+            row.has_unpaid_invoices
+              ? "bg-rose-100 text-rose-700 border-rose-200 hover:bg-rose-200"
+              : "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200"
+          }`}
+          title="Nhấp để xem chi tiết hóa đơn phòng"
+        >
+          {row.has_unpaid_invoices ? "Còn nợ" : "Không nợ"}
+        </button>
       ),
     },
     {

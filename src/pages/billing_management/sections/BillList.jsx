@@ -52,6 +52,7 @@ const BillList = ({ bills, setBills, onNavigateToContract, initialInvoiceFilter,
     if (initialInvoiceFilter?.searchTerm) {
       setSearchTerm(initialInvoiceFilter.searchTerm);
       setHighlightedInvoice(initialInvoiceFilter.searchTerm);
+      setHidePastPaid(false); // Turn off hiding old paid invoices so the redirect target invoice shows up!
 
       // Scroll to highlighted row after a short delay
       setTimeout(() => {
