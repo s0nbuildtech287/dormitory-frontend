@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line } from "recharts";
-import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp, CheckCircle2, Clock, XCircle, Gauge } from "lucide-react";
+import { Users, MapPin, Target, School, GraduationCap, UserCheck, TrendingUp, CheckCircle2, Clock, XCircle, Gauge, ChevronDown, ChevronUp } from "lucide-react";
 import { RegistrationStatus } from "../../../utils/types.js";
 import { getScoringWeights } from "../../../api/apiRegistration.js";
 import StatCard from "../../../components/common/StatCard.jsx";
@@ -16,6 +16,9 @@ const RegistrationStatistics = ({ regs }) => {
     seniors: 40,
   });
 
+  const [showFreshmenBreakdown, setShowFreshmenBreakdown] = useState(true);
+  const [showSeniorsBreakdown, setShowSeniorsBreakdown] = useState(true);
+
   useEffect(() => {
     const fetchQuota = async () => {
       try {
@@ -27,6 +30,8 @@ const RegistrationStatistics = ({ regs }) => {
             policy_priority: q.policy_priority !== undefined ? q.policy_priority : 0,
             freshmen: q.freshmen ?? 60,
             seniors: q.seniors ?? 40,
+            facultyQuotas: q.facultyQuotas || {},
+            facultySelectionRate: q.facultySelectionRate !== undefined ? Number(q.facultySelectionRate) : 0,
           });
         }
       } catch (e) {
@@ -87,6 +92,30 @@ const RegistrationStatistics = ({ regs }) => {
     // Phân bổ nhóm của các hồ sơ ĐÃ DUYỆT (để so sánh với chỉ tiêu)
     const approvedYear1Count = approvedRegs.filter((r) => r.year === 1).length;
     const approvedYear2PlusCount = approvedRegs.filter((r) => r.year > 1).length;
+
+    // Chi tiết phân bổ theo khoa của hồ sơ ĐÃ DUYỆT
+    const approvedFreshmenFaculties = {};
+    const approvedSeniorsFaculties = {};
+    approvedRegs.forEach((r) => {
+      const fac = r.faculty || "Không xác định";
+      if (r.year === 1) {
+        approvedFreshmenFaculties[fac] = (approvedFreshmenFaculties[fac] || 0) + 1;
+      } else {
+        approvedSeniorsFaculties[fac] = (approvedSeniorsFaculties[fac] || 0) + 1;
+      }
+    });
+
+    // Chi tiết tổng số hồ sơ nộp của từng khoa
+    const appliedFreshmenFaculties = {};
+    const appliedSeniorsFaculties = {};
+    activeBatchRegs.forEach((r) => {
+      const fac = r.faculty || "Không xác định";
+      if (r.year === 1) {
+        appliedFreshmenFaculties[fac] = (appliedFreshmenFaculties[fac] || 0) + 1;
+      } else {
+        appliedSeniorsFaculties[fac] = (appliedSeniorsFaculties[fac] || 0) + 1;
+      }
+    });
 
     const maleCount = activeBatchRegs.filter((r) => r.gender === "Nam").length;
     const femaleCount = activeBatchRegs.filter((r) => r.gender === "Nữ").length;
@@ -211,6 +240,10 @@ const RegistrationStatistics = ({ regs }) => {
       countRejected,
       approvedYear1Count,
       approvedYear2PlusCount,
+      approvedFreshmenFaculties,
+      approvedSeniorsFaculties,
+      appliedFreshmenFaculties,
+      appliedSeniorsFaculties,
       policyCount: policyRegs.length,
       baskets: [
         { name: "Tân sinh viên", count: activeYear1.length, color: "#3498db" },
@@ -238,6 +271,56 @@ const RegistrationStatistics = ({ regs }) => {
     if (diff > 0) return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">+{diff} vượt</span>;
     if (diff < 0) return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">{diff} thiếu</span>;
     return <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">vừa đủ</span>;
+  };
+
+  const getFacultyExplanation = (facName, approvedCount, isFreshman) => {
+    const totalApplied = isFreshman 
+      ? (statsData.appliedFreshmenFaculties?.[facName] || 0)
+      : (statsData.appliedSeniorsFaculties?.[facName] || 0);
+
+    const selectionRate = quotaSettings.facultySelectionRate || 0;
+    const facQuota = quotaSettings.facultyQuotas?.[facName];
+    
+    let limitVal = null;
+    let limitType = ""; // "rate" | "quota" | "none"
+
+    if (selectionRate > 0) {
+      limitVal = Math.max(1, Math.round(totalApplied * (selectionRate / 100)));
+      limitType = "rate";
+    } else if (facQuota) {
+      if (typeof facQuota === "object") {
+        limitVal = isFreshman ? (facQuota.freshmen || 0) : (facQuota.seniors || 0);
+      } else {
+        limitVal = Number(facQuota) || 0;
+      }
+      if (limitVal > 0) {
+        limitType = "quota";
+      }
+    }
+
+    const appliedStr = `Khoa nộp ${totalApplied} hồ sơ`;
+
+    if (limitType === "rate") {
+      if (approvedCount > limitVal) {
+        const excess = approvedCount - limitVal;
+        return `${appliedStr}. Đã duyệt ${approvedCount} em (gồm ${limitVal} em đạt mốc ${selectionRate}% chỉ tiêu khoa + cộng dồn thêm ${excess} em điểm cao từ chỉ tiêu thừa).`;
+      }
+      return `${appliedStr}. Đã duyệt đúng hạn mức ${approvedCount} em (tương đương ${selectionRate}% chỉ tiêu khoa).`;
+    }
+
+    if (limitType === "quota") {
+      if (approvedCount > limitVal) {
+        const excess = approvedCount - limitVal;
+        return `${appliedStr}. Đã duyệt ${approvedCount} em (gồm ${limitVal} em theo chỉ tiêu cứng khoa + cộng dồn thêm ${excess} em từ chỉ tiêu thừa của khoa khác).`;
+      }
+      return `${appliedStr}. Đã duyệt đúng chỉ tiêu cứng của khoa (${approvedCount} em).`;
+    }
+
+    // Unlimited faculty-wise
+    if (approvedCount === totalApplied) {
+      return `${appliedStr}. Đã duyệt toàn bộ ${approvedCount} em nộp (xét tuyển tự do theo điểm từ cao xuống thấp).`;
+    }
+    return `${appliedStr}. Đã duyệt ${approvedCount} em điểm cao nhất (xét tuyển tự do theo điểm từ cao xuống thấp).`;
   };
 
   return (
@@ -334,27 +417,57 @@ const RegistrationStatistics = ({ regs }) => {
             const diff = basket2Count - quotaBasket2;
             const pct = quotaBasket2 > 0 ? Math.min((basket2Count / quotaBasket2) * 100, 150) : 0;
             return (
-              <div className="flex items-center gap-4 px-6 py-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
-                <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Tân sinh viên</p>
-                  <p className="text-xs text-slate-400">
-                    {freshmen}% chỉ tiêu = {quotaBasket2} suất
-                  </p>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                    <span>{basket2Count} hồ sơ</span>
-                    <span>{Math.round(pct)}%</span>
+              <div className="flex flex-col divide-y divide-slate-50/50">
+                <div className="flex items-center gap-4 px-6 py-4">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
+                  <div className="w-40 shrink-0">
+                    <div className="flex items-center gap-1.5 cursor-pointer select-none" onClick={() => setShowFreshmenBreakdown(v => !v)}>
+                      <p className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">Tân sinh viên</p>
+                      {showFreshmenBreakdown ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {freshmen}% chỉ tiêu = {quotaBasket2} suất
+                    </p>
                   </div>
-                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-400" : "bg-blue-700"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                      <span>{basket2Count} hồ sơ</span>
+                      <span>{Math.round(pct)}%</span>
+                    </div>
+                    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-400" : "bg-blue-700"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className="w-36 shrink-0 flex items-center justify-end gap-2">
+                    <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
+                    <DiffBadge diff={diff} />
                   </div>
                 </div>
-                <div className="w-36 shrink-0 flex items-center justify-end gap-2">
-                  <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
-                  <DiffBadge diff={diff} />
-                </div>
+                {showFreshmenBreakdown && (
+                  <div className="px-14 py-3 bg-slate-50/50">
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-left">Chi tiết số lượng theo khoa (Đã duyệt):</span>
+                    {Object.keys(statsData.approvedFreshmenFaculties || {}).length === 0 ? (
+                      <span className="text-xs text-slate-450 italic">Không có tân sinh viên nào được duyệt</span>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Object.entries(statsData.approvedFreshmenFaculties)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([fac, count]) => (
+                            <div key={fac} className="flex flex-col text-xs bg-white border border-slate-150 p-3 rounded-xl shadow-sm text-left gap-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-900 font-bold truncate pr-2" title={fac}>{fac}</span>
+                                <span className="font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[11px] shrink-0">{count} SV đã duyệt</span>
+                              </div>
+                              <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                                {getFacultyExplanation(fac, count, true)}
+                              </p>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -364,27 +477,57 @@ const RegistrationStatistics = ({ regs }) => {
             const diff = basket3Count - quotaBasket3;
             const pct = quotaBasket3 > 0 ? Math.min((basket3Count / quotaBasket3) * 100, 150) : 0;
             return (
-              <div className="flex items-center gap-4 px-6 py-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0" />
-                <div className="w-40 shrink-0">
-                  <p className="text-sm font-bold text-slate-800">Sinh viên khóa cũ</p>
-                  <p className="text-xs text-slate-400">
-                    {seniors}% chỉ tiêu = {quotaBasket3} suất
-                  </p>
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
-                    <span>{basket3Count} hồ sơ</span>
-                    <span>{Math.round(pct)}%</span>
+              <div className="flex flex-col divide-y divide-slate-50/50">
+                <div className="flex items-center gap-4 px-6 py-4">
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0" />
+                  <div className="w-40 shrink-0">
+                    <div className="flex items-center gap-1.5 cursor-pointer select-none" onClick={() => setShowSeniorsBreakdown(v => !v)}>
+                      <p className="text-sm font-bold text-slate-800 hover:text-purple-600 transition-colors">Sinh viên khóa cũ</p>
+                      {showSeniorsBreakdown ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {seniors}% chỉ tiêu = {quotaBasket3} suất
+                    </p>
                   </div>
-                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-500" : "bg-blue-600"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                  <div className="flex-1">
+                    <div className="flex justify-between text-xs font-semibold text-slate-500 mb-1">
+                      <span>{basket3Count} hồ sơ</span>
+                      <span>{Math.round(pct)}%</span>
+                    </div>
+                    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${diff > 0 ? "bg-blue-500" : "bg-blue-600"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                  </div>
+                  <div className="w-36 shrink-0 flex items-center justify-end gap-2">
+                    <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
+                    <DiffBadge diff={diff} />
                   </div>
                 </div>
-                <div className="w-36 shrink-0 flex items-center justify-end gap-2">
-                  <span className={`text-xl font-black ${diff > 0 ? "text-rose-600" : diff < 0 ? "text-amber-500" : "text-emerald-600"}`}>{diff > 0 ? `+${diff}` : diff}</span>
-                  <DiffBadge diff={diff} />
-                </div>
+                {showSeniorsBreakdown && (
+                  <div className="px-14 py-3 bg-slate-50/50">
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-left">Chi tiết số lượng theo khoa (Đã duyệt):</span>
+                    {Object.keys(statsData.approvedSeniorsFaculties || {}).length === 0 ? (
+                      <span className="text-xs text-slate-450 italic">Không có sinh viên khóa cũ nào được duyệt</span>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Object.entries(statsData.approvedSeniorsFaculties)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([fac, count]) => (
+                            <div key={fac} className="flex flex-col text-xs bg-white border border-slate-150 p-3 rounded-xl shadow-sm text-left gap-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-900 font-bold truncate pr-2" title={fac}>{fac}</span>
+                                <span className="font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-[11px] shrink-0">{count} SV đã duyệt</span>
+                              </div>
+                              <p className="text-[10px] text-slate-500 leading-relaxed mt-0.5">
+                                {getFacultyExplanation(fac, count, false)}
+                              </p>
+                            </div>
+                          ))
+                        }
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })()}
