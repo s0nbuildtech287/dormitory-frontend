@@ -172,6 +172,8 @@ const RegistrationList = ({
   const [showBulkEmailModal, setShowBulkEmailModal] = useState(false);
   const [composeEmail, setComposeEmail] = useState(null);
   const [sendEmailOnApprove, setSendEmailOnApprove] = useState(true);
+  const [errorAlert, setErrorAlert] = useState(null); // { title: string, message: string }
+
 
   // Google Sheets sync state
   const [sheetUrl, setSheetUrl] = useState("");
@@ -258,11 +260,11 @@ const RegistrationList = ({
           onRefresh();
         }
       } else {
-        alert(res.message || "Tự động phân bổ thất bại");
+        setErrorAlert({ title: "Phân bổ thất bại", message: res.message || "Tự động phân bổ thất bại" });
       }
     } catch (err) {
       clearInterval(timer);
-      alert(err.message || "Có lỗi xảy ra");
+      setErrorAlert({ title: "Lỗi phân bổ", message: err.message || "Có lỗi xảy ra" });
     } finally {
       setAutoAllocating(false);
     }
@@ -870,7 +872,7 @@ const RegistrationList = ({
               header: "Nhóm",
               align: "left",
               accessor: (reg) => (
-                <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs font-black">
+                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded-lg text-[9px] font-bold whitespace-nowrap">
                   {getGroupName(reg.year, reg.priority_reasons)}
                 </span>
               ),
@@ -887,7 +889,7 @@ const RegistrationList = ({
               align: "left",
               accessor: (reg) => (
                 <div
-                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-tight whitespace-nowrap ${reg.ai_suggestion === AISuggestionType.RECOMMENDED
                     ? "bg-emerald-50 text-emerald-600"
                     : reg.ai_suggestion === AISuggestionType.CONSIDER
                       ? "bg-amber-50 text-amber-600"
@@ -908,7 +910,7 @@ const RegistrationList = ({
               accessor: (reg) => (
                 <div className="flex items-center gap-1 flex-wrap">
                   <span
-                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${reg.status === RegistrationStatus.PENDING
+                    className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-tight whitespace-nowrap ${reg.status === RegistrationStatus.PENDING
                       ? "bg-amber-100 text-amber-700"
                       : reg.status === RegistrationStatus.APPROVED
                         ? "bg-emerald-100 text-emerald-700"
@@ -1362,7 +1364,7 @@ const RegistrationList = ({
             if (onRefresh) onRefresh();
           } catch (error) {
             console.error("Error:", error.message);
-            alert(error.message || "Có lỗi xảy ra");
+            setErrorAlert({ title: "Không thể phê duyệt", message: error.message || "Có lỗi xảy ra khi phê duyệt hồ sơ." });
           }
         }}
         title={isConfirming?.status === "DELETE" ? "Xóa hồ sơ?" : "Xác nhận quyết định?"}
@@ -1455,7 +1457,8 @@ const RegistrationList = ({
             clearSelection();
             if (onRefresh) onRefresh();
           } catch (error) {
-            alert(error.message || "Có lỗi xảy ra");
+            setBulkAction(null);
+            setErrorAlert({ title: "Không thể thực hiện tác vụ hàng loạt", message: error.message || "Có lỗi xảy ra khi xử lý hàng loạt." });
           }
         }}
         title={bulkAction?.status === RegistrationStatus.APPROVED ? "Duyệt hàng loạt?" : "Từ chối hàng loạt?"}
@@ -2447,6 +2450,35 @@ const RegistrationList = ({
             </div>
           </div>
         </div>
+        </ModalPortal>
+      )}
+
+      {/* ERROR ALERT MODAL */}
+      {errorAlert && (
+        <ModalPortal>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{backdropFilter:'blur(4px)', backgroundColor:'rgba(0,0,0,0.4)'}}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
+                    <AlertTriangle size={20} className="text-rose-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-slate-900 font-bold text-base">{errorAlert.title}</h3>
+                    <p className="text-slate-600 text-sm mt-1 leading-relaxed">{errorAlert.message}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="px-6 pb-5 flex justify-end">
+                <button
+                  onClick={() => setErrorAlert(null)}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm rounded-xl transition-all"
+                >
+                  Đã hiểu
+                </button>
+              </div>
+            </div>
+          </div>
         </ModalPortal>
       )}
     </>
